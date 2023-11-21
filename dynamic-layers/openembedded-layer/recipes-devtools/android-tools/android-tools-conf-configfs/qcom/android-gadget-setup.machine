@@ -1,0 +1,4 @@
+manufacturer=Qualcomm
+model=`hostname`
+androidserial="$(printf "%x" "$(cat /sys/devices/soc0/serial_number)")"
+[ -n "$androidserial" ] && serial="$androidserial"
