@@ -1,12 +1,18 @@
 DESCRIPTION = "Recipe to install firmware files on rootfs"
 
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
-LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
+LIC_FILES_CHKSUM = "file://${QCM_FIRMWARE}/license.qcom.txt;md5=41ac068aa1eb11d6e04b08f4dca0f655"
 
 QCM_FIRMWARE = "QCM6490_MSL"
 
-SRC_URI ="git://qpm-git.qualcomm.com/home2/git/qualcomm/qualcomm-linux-spf-1-0_test_device_public.git;branch=master;protocol=https"
-SRCREV = "78937e14c5d782cf68e2f6f791066dc58b4c75ed"
+S = "${WORKDIR}"
+
+SRC_URI =""
+
+do_fetch() {
+    wget -nH -O ${QCM_FIRMWARE}.zip --no-check-certificate https://artifacts.codelinaro.org/artifactory/clo-386-k2c-yocto/r1.0.00001.12/${QCM_FIRMWARE}.zip
+    cp ${QCM_FIRMWARE}.zip ${WORKDIR}
+}
 
 python do_unpack() {
     bb.build.exec_func('base_do_unpack', d)
@@ -42,6 +48,7 @@ INHIBIT_SYSROOT_STRIP = "1"
 do_install() {
     mkdir -p ${D}/lib/firmware
     cp -r ${WORKDIR}/${QCM_FIRMWARE}/lib/firmware/* ${D}/lib/firmware/
+    cp -r ${WORKDIR}/${QCM_FIRMWARE}/license.qcom.txt ${D}/lib/firmware/
 }
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
