@@ -34,7 +34,13 @@ python do_install() {
         if os.path.exists(zipfile):
             shutil.unpack_archive(zipfile, dstdir)
 
-    shutil.copytree(os.path.join(dstdir, firmware), d.getVar('D'), dirs_exist_ok = True)
+    # Move content into ${D}
+    root = os.path.join(dstdir, firmware)
+    for item in os.listdir(root):
+        if os.path.isdir(os.path.join(root, item)):
+            shutil.copytree(os.path.join(root, item), os.path.join(d.getVar('D'), item))
+        elif os.path.isfile(os.path.join(root, item)):
+            shutil.copy2(os.path.join(root, item), d.getVar('D'))
 }
 
 do_configure[noexec] = "1"

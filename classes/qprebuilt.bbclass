@@ -40,3 +40,6 @@ fakeroot python do_install() {
 addtask install after do_unpack
 
 INSANE_SKIP:${PN}:append = " already-stripped"
+
+#Disable the split of debug information into -dbg files
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"

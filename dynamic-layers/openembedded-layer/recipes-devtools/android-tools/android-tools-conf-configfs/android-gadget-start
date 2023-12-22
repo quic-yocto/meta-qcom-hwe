@@ -16,3 +16,17 @@ while true; do
 done
 
 ls /sys/class/udc/ | xargs echo -n > /sys/kernel/config/usb_gadget/adb/UDC
+
+n=0
+# Try writing to UDC again as it can fail due ADb/Diag service dependency
+while true; do
+    configfs_udc=`cat /sys/kernel/config/usb_gadget/adb/UDC`
+    if [ "$configfs_udc" = "$udcname" ] || [ $n -eq 30 ]; then
+        break
+    fi
+
+    ls /sys/class/udc/ | xargs echo -n > /sys/kernel/config/usb_gadget/adb/UDC
+    sleep 1
+    n=$(expr $n + 1)
+done
+

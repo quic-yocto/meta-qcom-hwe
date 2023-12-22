@@ -13,7 +13,7 @@ SRCREV = "${CHIPCODE_SRC_REV}"
 
 python do_install() {
 
-    import os 
+    import os
     import shutil
 
     srcdir = d.getVar('QCM_DSPSO_PATH')
@@ -34,7 +34,13 @@ python do_install() {
         if os.path.exists(zipfile):
             shutil.unpack_archive(zipfile, dstdir)
 
-    shutil.copytree(os.path.join(dstdir, dspso_files), d.getVar('D'), dirs_exist_ok = True)
+    # Move content into ${D}
+    root = os.path.join(dstdir, firmware)
+    for item in os.listdir(root):
+        if os.path.isdir(os.path.join(root, item)):
+            shutil.copytree(os.path.join(root, item), os.path.join(d.getVar('D'), item))
+        elif os.path.isfile(os.path.join(root, item)):
+            shutil.copy2(os.path.join(root, item), d.getVar('D'))
 }
 
 do_configure[noexec] = "1"
@@ -43,15 +49,6 @@ do_compile[noexec] = "1"
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_SYSROOT_STRIP = "1"
-
-#do_install() {
-#    for file in ${WORKDIR}/${QCM_DSPSO}/*; do
-#        if [ -f "$file" ] || [ -d "$file" ]; then
-#            cp -r ${WORKDIR}/${QCM_DSPSO}/* ${D}/
-#            break
-#        fi
-#    done
-#}
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

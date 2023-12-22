@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 DESCRIPTION = "Camx"
 
 DEPENDS += "syslog-plumber property-vault glib-2.0 gbm fastrpc"
+RDEPENDS:${PN} += "cameradlkm"
 
 SRCREV = "87e9e28a5714ffa7cb291eb480b61b8ac6a59c49"
 
