@@ -10,8 +10,10 @@ inherit kernel
 
 COMPATIBLE_MACHINE = "(qcom)"
 
-
-SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom;protocol=https;branch=kernel.qclinux.1.0.r1-rel;rev=0add36bad2a3adee1c6de4225688d985cc96dfa8"
+SRC_URI += "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=acf5b4dc1f7bde43af5e3c9c1f637540a9e39b03;branch=kernel.qclinux.1.0.r1-rel \
+           ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux.cfg', '', d)} \
+           ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux_debug.cfg', '', d)} \
+           "
 
 S = "${WORKDIR}/git"
 
@@ -20,6 +22,24 @@ KERNEL_DEFCONFIG = "${S}/arch/arm64/configs/qcom_defconfig"
 KERNEL_CONFIG_FRAGMENTS:append = " ${S}/arch/arm64/configs/qcom_addons.config"
 KERNEL_CONFIG_FRAGMENTS:append = " ${@oe.utils.vartrue('DEBUG_BUILD', '${S}/arch/arm64/configs/qcom_debug.config', '', d)}"
 KERNEL_CONFIG_FRAGMENTS:append = " ${@oe.utils.vartrue('DEBUG_BUILD', '${S}/arch/arm64/configs/qcom_addons_debug.config', '', d)}"
+
+# Enable selinux support
+SELINUX_CFG = "${@oe.utils.vartrue('DEBUG_BUILD', 'selinux_debug.cfg', 'selinux.cfg', d)}"
+KERNEL_CONFIG_FRAGMENTS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '${WORKDIR}/${SELINUX_CFG}', '', d)}"
+
+# List of kernel modules that will be auto-loaded for Qualcomm platforms.
+
+# Coresight and stm modules for QDSS functions
+KERNEL_MODULE_AUTOLOAD += "coresight coresight-tmc coresight-funnel"
+KERNEL_MODULE_AUTOLOAD += "coresight-replicator coresight-etm4x coresight-stm"
+KERNEL_MODULE_AUTOLOAD += "coresight-cti coresight-tpdm coresight-tpda coresight-dummy"
+KERNEL_MODULE_AUTOLOAD += "stm_core stm_p_ost stm_console stm_heartbeat stm_ftrace "
+
+# IPA
+KERNEL_MODULE_AUTOLOAD += "ipa"
+
+#Add DTC_FLAGS to compile DTB with symbols.
+KERNEL_DTC_FLAGS += "-@"
 
 kernel_conf_variable() {
     sed -e "/CONFIG_$1[ =]/d;" -i ${B}/.config
@@ -87,4 +107,8 @@ do_configure:append() {
 do_install:prepend() {
     install -d ${D}${nonarch_base_libdir}/modules/${KERNEL_VERSION}
     ln -rs ${STAGING_KERNEL_DIR} ${D}${nonarch_base_libdir}/modules/${KERNEL_VERSION}/source
+}
+
+do_deploy:append() {
+    install -m 0644 ${D}/boot/vmlinux-${KERNEL_VERSION_NAME} -D ${DEPLOYDIR}/vmlinux
 }

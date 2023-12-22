@@ -1,0 +1,63 @@
+From 30508386634cd9ebd0fa082372800ed73d737a3c Mon Sep 17 00:00:00 2001
+From: mangadi <mangadi@qti.qualcomm.com>
+Date: Wed, 22 Nov 2023 14:28:42 +0530
+Subject: [PATCH] Add VkSharedPresentSurfaceCapabilitiesKHR to
+ vkGetPhysicalDeviceSurfaceCapabilities2KHR
+
+which is required by VK_KHR_shared_presentable_image
+also expose VK_KHR_get_surface_capabilities2 as supported
+extention from loader
+
+Signed-off-by: Mahesh Angadi <mangadi@qti.qualcomm.com>
+
+diff --git a/loader/loader.c b/loader/loader.c
+index b5b144455..dfbd522f4 100644
+--- a/loader/loader.c
++++ b/loader/loader.c
+@@ -1145,6 +1145,14 @@ VkResult loader_get_icd_loader_instance_extensions(const struct loader_instance
+     // Traverse loader's extensions, adding non-duplicate extensions to the list
+     debug_utils_AddInstanceExtensions(inst, inst_exts);
+ 
++    // Add VK_KHR_GET_SURFACE_CAPABILITIES_2
++    static const VkExtensionProperties loader_internal_extension_info[] = {
++        {VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, VK_KHR_GET_SURFACE_CAPABILITIES_2_SPEC_VERSION},
++    };
++
++    loader_add_to_ext_list(inst, inst_exts, sizeof(loader_internal_extension_info) / sizeof(VkExtensionProperties),
++                           loader_internal_extension_info);
++
+ out:
+     return res;
+ }
+diff --git a/loader/wsi.c b/loader/wsi.c
+index 1df2c4249..f0362bd8b 100644
+--- a/loader/wsi.c
++++ b/loader/wsi.c
+@@ -2537,11 +2537,20 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceSurfaceCapabilities2K
+         VkResult res = icd_term->dispatch.GetPhysicalDeviceSurfaceCapabilitiesKHR(phys_dev_term->phys_dev, surface,
+                                                                                   &pSurfaceCapabilities->surfaceCapabilities);
+ 
+-        if (pSurfaceCapabilities->pNext != NULL) {
+-            loader_log(icd_term->this_instance, VULKAN_LOADER_WARN_BIT, 0,
+-                       "vkGetPhysicalDeviceSurfaceCapabilities2KHR: Emulation found unrecognized structure type in "
+-                       "pSurfaceCapabilities->pNext - this struct will be ignored");
++        VkBaseOutStructure *pNext = (VkBaseOutStructure *)pSurfaceCapabilities->pNext;
++        while (pNext != NULL) {
++            if ((int)pNext->sType == VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR) {
++                // Update usage flags for shared presentable image surface
++                VkImageUsageFlags surfaceUsageFlags = pSurfaceCapabilities->surfaceCapabilities.supportedUsageFlags;
++                ((VkSharedPresentSurfaceCapabilitiesKHR*)(pSurfaceCapabilities->pNext))->sharedPresentSupportedUsageFlags = surfaceUsageFlags;
++            } else {
++                loader_log(icd_term->this_instance, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
++                       "vkGetPhysicalDeviceSurfaceCapabilities2KHR: Emulation found unrecognized structure type 0x%x in "
++                       "pSurfaceCapabilities->pNext - this struct will be ignored", pNext->sType);
++            }
++            pNext = (VkBaseOutStructure *)pNext->pNext;
+         }
++
+         return res;
+     }
+ }
+-- 
+2.17.1
+

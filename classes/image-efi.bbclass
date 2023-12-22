@@ -15,6 +15,8 @@ MKFSVFAT_EXTRAOPTS ?= "-S 512"
 
 ESPIMG_DEPLOYDIR = "${WORKDIR}/espimg-${PN}"
 EFIDIR = "/EFI/BOOT"
+EFILINUXDIR = "EFI/Linux"
+EFIDTBDIR = "dtb"
 EFIIMGDIR = "${B}/efi_img"
 EFIIMG = "${ESPIMG_DEPLOYDIR}/efi.bin"
 EFI_BOOT_IMAGE = "boot${EFI_ARCH}.efi"
@@ -71,9 +73,11 @@ build_fat_img() {
 build_esp() {
     mkdir -p ${EFIIMGDIR}
 
+    rm -f ${DEPLOY_DIR_IMAGE}/efi.bin
+
     #Kernel uki efi
-    mkdir -p ${EFIIMGDIR}/EFI/Linux
-    cp ${DEPLOY_DIR_IMAGE}/${UKI_FILENAME} ${EFIIMGDIR}/EFI/Linux/
+    mkdir -p ${EFIIMGDIR}/${EFILINUXDIR}
+    cp ${DEPLOY_DIR_IMAGE}/${UKI_FILENAME} ${EFIIMGDIR}/${EFILINUXDIR}
 
     #loader.conf
     mkdir -p ${EFIIMGDIR}/loader
@@ -83,8 +87,15 @@ build_esp() {
     mkdir -p ${EFIIMGDIR}${EFIDIR}
     cp ${DEPLOY_DIR_IMAGE}/systemd-boot${EFI_ARCH}.efi ${EFIIMGDIR}${EFIDIR}/${EFI_BOOT_IMAGE}
 
-    # Uefi dtb
-    cp ${DEPLOY_DIR_IMAGE}/${UEFI_DTB} ${EFIIMGDIR}
+    #Uefi dtb
+    mkdir -p ${EFIIMGDIR}/${EFIDTBDIR}
+    #Workaround: Trim "addons-" from the dtb name to meet UEFI lookup needs
+    for dtb in ${KERNEL_DEVICETREE}; do
+        dtb=${dtb##*/}
+        dtb_trimmed="$(echo "$dtb" | sed -e 's:addons-::g' )"
+        bbdebug 1 "UEFI_DTB before: $dtb after: $dtb_trimmed"
+        cp ${DEPLOY_DIR_IMAGE}/DTOverlays/$dtb ${EFIIMGDIR}/${EFIDTBDIR}/$dtb_trimmed
+    done
 
     # Create a vfat image
     build_fat_img ${EFIIMGDIR} ${EFIIMG}

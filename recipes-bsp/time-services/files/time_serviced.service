@@ -1,0 +1,24 @@
+# Copyright (c) 2017, 2019, 2021 Qualcomm Technologies, Inc.
+# All Rights Reserved.
+# Confidential and Proprietary - Qualcomm Technologies, Inc.
+#
+
+[Unit]
+Description=time serviced Service
+SourcePath=/usr/bin/time_daemon
+After=data.mount mount-data.service
+
+[Service]
+User=system
+Group=system
+SupplementaryGroups=net_raw
+Restart=always
+RemainAfterExit=yes
+CapabilityBoundingSet=CAP_SYS_TIME
+AmbientCapabilities=CAP_SYS_TIME
+ExecStartPre=+/bin/chmod 0660 /dev/rtc0
+ExecStartPre=+/bin/chown system:system /dev/rtc0
+ExecStart=/usr/bin/time_daemon
+
+[Install]
+WantedBy=multi-user.target

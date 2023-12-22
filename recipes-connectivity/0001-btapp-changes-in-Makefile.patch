@@ -1,0 +1,218 @@
+From 306cf3f24a1de74236ea588ff493746c7c1649f5 Mon Sep 17 00:00:00 2001
+From: Chirag Jain <quic_chirjain@quicinc.com>
+Date: Wed, 20 Dec 2023 16:09:10 +0530
+Subject: [PATCH] btapp: changes in Makefile
+
+changes to remove dependency on WORKSPACE variable
+
+Change-Id: I28bfc9fbcbb5b02e5aa3ff80d979eed87f12a575
+---
+ bt-app/gatt/Makefile.am   | 23 ++++++-----
+ bt-app/main/Makefile.am   | 81 ++++++++++++++++++---------------------
+ bt-app/osi/Makefile.am    | 14 +++----
+ bt-app/utils/Makefile.am  |  4 +-
+ obex_profiles/Makefile.am | 19 +++++----
+ 5 files changed, 67 insertions(+), 74 deletions(-)
+
+diff --git a/bt-app/gatt/Makefile.am b/bt-app/gatt/Makefile.am
+index 56bc90f..c8b49a6 100644
+--- a/bt-app/gatt/Makefile.am
++++ b/bt-app/gatt/Makefile.am
+@@ -2,18 +2,17 @@ if USE_GEN_GATT
+ AM_CPPFLAGS = -O2 \
+               -D_GNU_SOURCE \
+               -std=c++11 \
+-              -I${WORKSPACE}/bluetooth/btapp/bt-app/utils/include \
+-              -I${WORKSPACE}/bluetooth/btapp/bt-app/gatt/native/include \
+-              -I${WORKSPACE}/bluetooth/btapp/bt-app/gatt/lib/include \
+-              -I${WORKSPACE}/bluetooth/btapp/bt-app/gatt/framework/include \
+-              -I${WORKSPACE}/bluetooth/btapp/bt-app/include \
+-              -I${WORKSPACE}/bluetooth/btapp/bt-app/ \
+-              -I${WORKSPACE}/bluetooth/bt_audio/hal/include/ \
+-              -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/vhal/include \
+-              -I${WORKSPACE}/bluetooth/stack/system/bt \
+-              -I${WORKSPACE}/bluetooth/stack/system/bt/include \
+-              -I${WORKSPACE}/bluetooth/stack/system/bt/types 
+-              #-I${WORKSPACE}/system/core/include
++              -I${BT_SOURCE}/btapp/bt-app/utils/include \
++              -I${BT_SOURCE}/btapp/bt-app/gatt/native/include \
++              -I${BT_SOURCE}/btapp/bt-app/gatt/lib/include \
++              -I${BT_SOURCE}/btapp/bt-app/gatt/framework/include \
++              -I${BT_SOURCE}/btapp/bt-app/include \
++              -I${BT_SOURCE}/btapp/bt-app/ \
++              -I${BT_SOURCE}/bt_audio/hal/include/ \
++              -I${BT_SOURCE}/stack/bluetooth_ext/vhal/include \
++              -I${BT_SOURCE}/stack/system/bt \
++              -I${BT_SOURCE}/stack/system/bt/include \
++              -I${BT_SOURCE}/stack/system/bt/types
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+diff --git a/bt-app/main/Makefile.am b/bt-app/main/Makefile.am
+index 75e4238..cb414dc 100644
+--- a/bt-app/main/Makefile.am
++++ b/bt-app/main/Makefile.am
+@@ -13,52 +13,47 @@ AM_CFLAGS += -DOI_CPU_TYPE=19
+ endif
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-AM_CPPFLAGS += -I${WORKSPACE}/bluetooth/btapp/bt-app \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/utils/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/audio_manager/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/a2dp_sink/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/avrcp/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/a2dp_src/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/osi/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/gap/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/pan/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/hid/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/rsp/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/gatt/native/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/gatt/framework/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/gatt/lib/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/gattctest/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/gattstest/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/main/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/hfp_client/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/hfp_ag/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/sdp_client/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/spp_client/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/spp_server/include \
+-               -I${WORKSPACE}/system/media/audio/include \
+-               -I${WORKSPACE}/hardware/qcom/audio/qahw_api/inc \
+-							 -I${WORKSPACE}/vendor/qcom/opensource/audio-hal/primary-hal/qahw_api/inc \
+-               -I${WORKSPACE}/hardware/libhardware/include \
+-               -I${WORKSPACE}/bluetooth/bt_audio/hal/include \
+-               -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/vhal/include \
+-               -I${WORKSPACE}/mcm-api/api \
+-               -I${WORKSPACE}/bluetooth/stack/system/bt \
+-               -I${WORKSPACE}/bluetooth/stack/system/bt/include \
+-							 -I${WORKSPACE}/bluetooth/stack/system/bt/include/hardware \
+-               -I${WORKSPACE}/bluetooth/stack/system/bt/types \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/utils/include
++AM_CPPFLAGS += -I${BT_SOURCE}/btapp/bt-app \
++               -I${BT_SOURCE}/btapp/bt-app/utils/include \
++               -I${BT_SOURCE}/btapp/bt-app/audio_manager/include \
++               -I${BT_SOURCE}/btapp/bt-app/a2dp_sink/include \
++               -I${BT_SOURCE}/btapp/bt-app/avrcp/include \
++               -I${BT_SOURCE}/btapp/bt-app/a2dp_src/include \
++               -I${BT_SOURCE}/btapp/bt-app/osi/include \
++               -I${BT_SOURCE}/btapp/bt-app/gap/include \
++               -I${BT_SOURCE}/btapp/bt-app/pan/include \
++               -I${BT_SOURCE}/btapp/bt-app/hid/include \
++               -I${BT_SOURCE}/btapp/bt-app/rsp/include \
++               -I${BT_SOURCE}/btapp/bt-app/gatt/native/include \
++               -I${BT_SOURCE}/btapp/bt-app/gatt/framework/include \
++               -I${BT_SOURCE}/btapp/bt-app/gatt/lib/include \
++               -I${BT_SOURCE}/btapp/bt-app/gattctest/include \
++               -I${BT_SOURCE}/btapp/bt-app/gattstest/include \
++               -I${BT_SOURCE}/btapp/bt-app/main/include \
++               -I${BT_SOURCE}/btapp/bt-app/hfp_client/include \
++               -I${BT_SOURCE}/btapp/bt-app/hfp_ag/include \
++               -I${BT_SOURCE}/btapp/bt-app/include \
++               -I${BT_SOURCE}/btapp/bt-app/sdp_client/include \
++               -I${BT_SOURCE}/btapp/bt-app/spp_client/include \
++               -I${BT_SOURCE}/btapp/bt-app/spp_server/include \
++               -I${BT_SOURCE}/bt_audio/hal/include \
++               -I${BT_SOURCE}/stack/bluetooth_ext/vhal/include \
++               -I${BT_SOURCE}/stack/system/bt \
++               -I${BT_SOURCE}/stack/system/bt/include \
++               -I${BT_SOURCE}/stack/system/bt/include/hardware \
++               -I${BT_SOURCE}/stack/system/bt/types \
++               -I${BT_SOURCE}/btapp/bt-app/utils/include
+ 
+ if USE_BT_OBEX
+ AM_CPPFLAGS += -DOI_CPU_TYPE=19 \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/pbap_client/include \
+-               -I${WORKSPACE}/bluetooth/btapp/bt-app/opp/include \
+-               -I${WORKSPACE}/bluetooth/btapp/obex_profiles/include \
+-               -I${WORKSPACE}/bluetooth/btapp/obex_profiles/include/profiles \
+-               -I${WORKSPACE}/bluetooth/btapp/obex_profiles/profiles/obex \
+-               -I${WORKSPACE}/bluetooth/btapp/obex_profiles/sdk/include \
+-               -I${WORKSPACE}/bluetooth/btapp/obex_profiles/sdk/include/profiles \
+-               -I${WORKSPACE}/bluetooth/btapp/obex_profiles/sdk/oem
++               -I${BT_SOURCE}/btapp/bt-app/pbap_client/include \
++               -I${BT_SOURCE}/btapp/bt-app/opp/include \
++               -I${BT_SOURCE}/btapp/obex_profiles/include \
++               -I${BT_SOURCE}/btapp/obex_profiles/include/profiles \
++               -I${BT_SOURCE}/btapp/obex_profiles/profiles/obex \
++               -I${BT_SOURCE}/btapp/obex_profiles/sdk/include \
++               -I${BT_SOURCE}/btapp/obex_profiles/sdk/include/profiles \
++               -I${BT_SOURCE}/btapp/obex_profiles/sdk/oem
+ endif
+ 
+ if AUDIO_HAL_SUPPORTED
+diff --git a/bt-app/osi/Makefile.am b/bt-app/osi/Makefile.am
+index 6146222..5687a6a 100644
+--- a/bt-app/osi/Makefile.am
++++ b/bt-app/osi/Makefile.am
+@@ -9,13 +9,13 @@ AM_CFLAGS = -Wall \
+             -DHAS_NO_BDROID_BUILDCFG \
+             -D__GLIBC__
+ 
+-AM_CPPFLAGS = -I${WORKSPACE}/bluetooth/btapp/bt-app \
+-              -I${WORKSPACE}/bluetooth/btapp/bt-app/osi/include \
+-              -I${WORKSPACE}/bluetooth/stack/system/bt \
+-              -I${WORKSPACE}/bluetooth/stack/system/bt/include \
+-							-I${WORKSPACE}/bluetooth/stack/system/bt/include/hardware \
+-              -I${WORKSPACE}/bluetooth/stack/system/bt/types \
+-              -I${WORKSPACE}/bluetooth/bt_audio/hal/include
++AM_CPPFLAGS = -I${BT_SOURCE}/btapp/bt-app \
++              -I${BT_SOURCE}/btapp/bt-app/osi/include \
++              -I${BT_SOURCE}/stack/system/bt \
++              -I${BT_SOURCE}/stack/system/bt/include \
++							-I${BT_SOURCE}/stack/system/bt/include/hardware \
++              -I${BT_SOURCE}/stack/system/bt/types \
++              -I${BT_SOURCE}/bt_audio/hal/include
+ 
+ c_sources = \
+     src/alarm.cc \
+diff --git a/bt-app/utils/Makefile.am b/bt-app/utils/Makefile.am
+index 44a0fcc..ed79009 100644
+--- a/bt-app/utils/Makefile.am
++++ b/bt-app/utils/Makefile.am
+@@ -8,8 +8,8 @@ AM_CFLAGS = -Wall \
+             -fpermissive \
+             -D__GLIBC__
+ 
+-AM_CPPFLAGS = -I${WORKSPACE}/bluetooth/btapp/bt-app \
+-              -I${WORKSPACE}/bluetooth/btapp/bt-app/utils/include
++AM_CPPFLAGS = -I${BT_SOURCE}/btapp/bt-app \
++              -I${BT_SOURCE}/btapp/bt-app/utils/include
+ 
+ cpp_sources = src/uuid.cc
+ 
+diff --git a/obex_profiles/Makefile.am b/obex_profiles/Makefile.am
+index 1e3c30f..4aeeb31 100644
+--- a/obex_profiles/Makefile.am
++++ b/obex_profiles/Makefile.am
+@@ -11,16 +11,15 @@ AM_CFLAGS = -Wall \
+         -DOI_USE_NATIVE_MALLOC \
+         -DOI_USE_NATIVE_MEMCPY \
+         -DOI_OBEX_OVER_L2CAP \
+-        -I${WORKSPACE}/bluetooth/bt_audio/hal/include/ \
+-        -I${WORKSPACE}/bluetooth/stack/system/bt/include/ \
+-        -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/vhal/include \
+-        -I${WORKSPACE}/system/core/include/ \
+-        -I${WORKSPACE}/bluetooth/btapp/obex_profiles/include \
+-        -I${WORKSPACE}/bluetooth/btapp/obex_profiles/include/profiles \
+-        -I${WORKSPACE}/bluetooth/btapp/obex_profiles/sdk/include \
+-        -I${WORKSPACE}/bluetooth/btapp/obex_profiles/sdk/include/profiles \
+-        -I${WORKSPACE}/bluetooth/btapp/obex_profiles/sdk/oem \
+-        -I${WORKSPACE}/bluetooth/btapp/obex_profiles/platform/linux/include
++        -I${BT_SOURCE}hal/include/ \
++        -I${BT_SOURCE}/stack/system/bt/include/ \
++        -I${BT_SOURCE}/stack/bluetooth_ext/vhal/include \
++        -I${BT_SOURCE}/btapp/obex_profiles/include \
++        -I${BT_SOURCE}/btapp/obex_profiles/include/profiles \
++        -I${BT_SOURCE}/btapp/obex_profiles/sdk/include \
++        -I${BT_SOURCE}/btapp/obex_profiles/sdk/include/profiles \
++        -I${BT_SOURCE}/btapp/obex_profiles/sdk/oem \
++        -I${BT_SOURCE}/btapp/obex_profiles/platform/linux/include
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-- 
+2.25.1
+

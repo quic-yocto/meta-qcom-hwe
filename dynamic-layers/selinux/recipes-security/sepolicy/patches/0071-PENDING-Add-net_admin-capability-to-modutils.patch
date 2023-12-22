@@ -1,0 +1,29 @@
+From 7038b9c78a8aa2262d5977c7b0bcc28102b368ff Mon Sep 17 00:00:00 2001
+From: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+Date: Wed, 15 Nov 2023 16:19:05 +0530
+Subject: [PATCH] PENDING: Add net_admin capability to modutils
+
+Added net_admin permission to modutils.
+
+Upstream-Status: Pending
+
+Signed-off-by: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+---
+ policy/modules/system/modutils.te | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/policy/modules/system/modutils.te b/policy/modules/system/modutils.te
+index 008f286a8..3ab7abee7 100644
+--- a/policy/modules/system/modutils.te
++++ b/policy/modules/system/modutils.te
+@@ -43,6 +43,7 @@ allow kmod_t self:rawip_socket create_socket_perms;
+
+ allow kmod_t self:lockdown confidentiality;
+ allow kmod_t self:key write;
++allow kmod_t self:capability net_admin;
+
+ # Read module config and dependency information
+ list_dirs_pattern(kmod_t, modules_conf_t, modules_conf_t)
+--
+2.17.1
+

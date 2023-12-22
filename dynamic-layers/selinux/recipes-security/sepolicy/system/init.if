@@ -1,0 +1,33 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+
+########################################
+## <summary>
+##       Add rules for property-vault interaction
+##       TBD: Context would change after property-vault assigns a proper context to their nodes
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to communicate with property-vault for read/write of properties.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to read/write
+##      </summary>
+## </param>
+#
+interface(`qcom_connect_to_property_vault',`
+    gen_require(`
+        type initrc_t, initrc_tmp_t;
+    ')
+    allow $1 initrc_tmp_t:dir search_dir_perms;
+    allow $1 initrc_tmp_t:sock_file write;
+    allow $1 initrc_t:unix_stream_socket connectto;
+')

@@ -1,0 +1,58 @@
+From a445fd1d06a86c86bf3b2654b885aeaa39b01b28 Mon Sep 17 00:00:00 2001
+From: Chirag Jain <quic_chirjain@quicinc.com>
+Date: Wed, 20 Dec 2023 16:10:29 +0530
+Subject: [PATCH] bt_audio: changes in Makefile
+
+changes to remove dependency on WORKSPACE variable
+
+Change-Id: Ia518eaecb2852cf95f06532d3c0736ed3924e304
+---
+ bthost_ipc/Makefile.am |  8 --------
+ hal/Makefile.am        | 13 ++++++-------
+ 2 files changed, 6 insertions(+), 15 deletions(-)
+
+diff --git a/bthost_ipc/Makefile.am b/bthost_ipc/Makefile.am
+index 1dfc627..0605505 100644
+--- a/bthost_ipc/Makefile.am
++++ b/bthost_ipc/Makefile.am
+@@ -9,14 +9,6 @@ AM_CFLAGS = -Wall \
+ 
+ AM_CPPFLAGS= \
+         -I. \
+-        -I${WORKSPACE}/vendor/qcom/opensource/system/bt \
+-        -I${WORKSPACE}/vendor/qcom/opensource/system/bt/include \
+-        -I${WORKSPACE}/vendor/qcom/opensource/system/bt/types \
+-        -I${WORKSPACE}/vendor/qcom/opensource/system/bt/utils/include \
+-        -I${WORKSPACE}/vendor/qcom/opensource/system/bt/audio_a2dp_hw/include \
+-        -I${WORKSPACE}/frameworks/system/media/audio/include \
+-        -I${WORKSPACE}/hardware/libhardware/include \
+-        -I${WORKSPACE}/system/core/include \
+         -I$(bdroid_C_INCLUDES)
+ 
+ common_LDFLAGS = -lpthread  -lrt -llog @GLIB_LIBS@
+diff --git a/hal/Makefile.am b/hal/Makefile.am
+index 7dd0d02..5afd1f5 100644
+--- a/hal/Makefile.am
++++ b/hal/Makefile.am
+@@ -1,12 +1,11 @@
+ lib_LTLIBRARIES = libbtvendorhal.la
+ libbtvendorhal_la_SOURCES = hardware.cc
+-$(info $$WORKSPACE val is [${WORKSPACE}])
+ libbtvendorhal_la_CFLAGS = -DLINUX_ENABLED -fpermissive
+-libbtvendorhal_la_CFLAGS += -I${WORKSPACE}/bluetooth/stack/system/bt/include
+-libbtvendorhal_la_CFLAGS += -I${WORKSPACE}/bluetooth/bt_audio/hal/include
++libbtvendorhal_la_CFLAGS += -I${BT_SOURCE}/stack/system/bt/include
++libbtvendorhal_la_CFLAGS += -I${BT_SOURCE}/bt_audio/hal/include
+ libbtvendorhal_la_CPPFLAGS = -DLINUX_ENABLED -fpermissive -D__GLIBC__
+-libbtvendorhal_la_CPPFLAGS += -I${WORKSPACE}/bluetooth/stack/system/bt/include
+-libbtvendorhal_la_CPPFLAGS += -I${WORKSPACE}/bluetooth/stack/system/bt
+-libbtvendorhal_la_CPPFLAGS += -I${WORKSPACE}/bluetooth/btapp/bt-app/osi
+-libbtvendorhal_la_CPPFLAGS += -I${WORKSPACE}/bluetooth/bt_audio/hal/include
++libbtvendorhal_la_CPPFLAGS += -I${BT_SOURCE}/stack/system/bt/include
++libbtvendorhal_la_CPPFLAGS += -I${BT_SOURCE}/stack/system/bt
++libbtvendorhal_la_CPPFLAGS += -I${BT_SOURCE}/btapp/bt-app/osi
++libbtvendorhal_la_CPPFLAGS += -I${BT_SOURCE}/bt_audio/hal/include
+ libbtvendorhal_la_LDFLAGS = -ldl -D__GLIBC__
+-- 
+2.25.1
+

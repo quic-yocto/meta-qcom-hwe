@@ -1,0 +1,14 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+Description=Qualcomm USB Service
+SourcePath=/usr/bin/qusb
+After=android-tools-adbd.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/qusb init
+Nice=-5

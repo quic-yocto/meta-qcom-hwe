@@ -1,0 +1,6 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#file_context for location hal daemon
+
+/usr/bin/location_hal_daemon -- gen_context(system_u:object_r:qcom_loc_hal_daemon_exec_t,s0)

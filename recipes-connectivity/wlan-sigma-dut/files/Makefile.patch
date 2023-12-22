@@ -1,0 +1,16 @@
+diff --git a/Makefile b/Makefile
+index 47a3bdd..d858d4e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -84,10 +84,8 @@ CFLAGS += -DMIRACAST -DMIRACAST_DHCP_M
+ LIBS += -ldl
+ endif
+
+-ifdef NL80211_SUPPORT
+-CFLAGS += -DNL80211_SUPPORT -I /usr/include/libnl3
++CFLAGS += -DNL80211_SUPPORT
+ LIBS += -lnl-3 -lnl-genl-3
+-endif
+
+ sigma_dut: $(OBJS)
+ 	$(LDO) $(LDFLAGS) -o sigma_dut $(OBJS) $(LIBS)

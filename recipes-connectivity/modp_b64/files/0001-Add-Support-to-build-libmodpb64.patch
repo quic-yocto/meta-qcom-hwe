@@ -1,0 +1,122 @@
+From d1549b996e4fe2798cdc671f4d95dee62019dd23 Mon Sep 17 00:00:00 2001
+From: Lakshmi Pola <ppriyank@codeaurora.org>
+Date: Fri, 13 Apr 2018 14:32:13 +0530
+Subject: [PATCH] meta-qti-bt:libmodpb64 patch
+
+bt.lnx.le.1.0 support
+
+Change-Id: I1a2497ac964063976b2aadf6bb30b0d92cb32363
+---
+ Makefile.am      | 23 +++++++++++++++++++++++
+ configure.ac     | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ libmodpb64.pc.in | 16 ++++++++++++++++
+ 3 files changed, 84 insertions(+)
+ create mode 100644 Makefile.am
+ create mode 100644 configure.ac
+ create mode 100644 libmodpb64.pc.in
+
+diff --git a/Makefile.am b/Makefile.am
+new file mode 100644
+index 0000000..c8a4460
+--- /dev/null
++++ b/Makefile.am
+@@ -0,0 +1,23 @@
++common_sources := modp_b64.cc
++
++# Build libmodpb64.so
++lib_LTLIBRARIES := libmodpb64.la
++
++libmodpb64_la_SOURCES  := $(common_sources)
++libmodpb64_la_CPPFLAGS := -DHAVE_PTHREADS
++libmodpb64_la_CPPFLAGS += -DLINUX_ENABLED
++libmodpb64_la_CPPFLAGS += -D__linux__
++libmodpb64_la_CPPFLAGS += -D_GNU_SOURCE
++libmodpb64_la_CPPFLAGS += -std=c++11
++libmodpb64_la_CPPFLAGS += -Imodp_b64 -I
++libmodpb64_la_LDFLAGS  := -lpthread
++
++# Export headers
++modp_b64_includedir=$(includedir)/modp_b64
++modp_b64_include_HEADERS := modp_b64/modp_b64.h
++
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = libmodpb64.pc
++EXTRA_DIST = $(pkgconfig_DATA)
++
+diff --git a/configure.ac b/configure.ac
+new file mode 100644
+index 0000000..dfed1ca
+--- /dev/null
++++ b/configure.ac
+@@ -0,0 +1,45 @@
++AC_PREREQ(2.61)
++AC_INIT([libmodpb64],1.0.0)
++AM_INIT_AUTOMAKE([-Wall gnu foreign])
++AC_CONFIG_SRCDIR([Makefile.am])
++AC_CONFIG_HEADERS([config.h])
++AC_CONFIG_MACRO_DIR([m4])
++
++# Check for programs
++AM_PROG_AS
++AC_PROG_CC
++AM_PROG_CC_C_O
++AC_PROG_LIBTOOL
++AC_PROG_AWK
++AC_PROG_CPP
++AC_PROG_CXX
++AC_PROG_INSTALL
++AC_PROG_LN_S
++AC_PROG_MAKE_SET
++PKG_PROG_PKG_CONFIG
++
++AC_ARG_WITH([extra_includes],
++    AC_HELP_STRING([--with-extra-includes=@<:@dir@:>@],
++       [Specify the location of the common headers]),
++    [extra_incdir=$withval],
++    with_extra_includes=no)
++
++AC_ARG_WITH([host-os],
++        [AS_HELP_STRING([--with-host-os=HOST_OS],[Host OS to build adb host.(default: linux)])],
++        [HOST_OS="$withval"],
++        [HOST_OS='linux'])
++
++if test "x$HOST_OS" = "xlinux-gnueabi"; then
++  HOST_OS=linux
++else
++  AC_MSG_NOTICE([Unknown host OS $HOST_OS detected.])
++fi
++
++AM_CONDITIONAL([HOST_OS_LINUX], [test "x$HOST_OS" = "xlinux"])
++
++AC_CONFIG_FILES([ \
++    Makefile \
++    libmodpb64.pc
++])
++AC_OUTPUT
++
+diff --git a/libmodpb64.pc.in b/libmodpb64.pc.in
+new file mode 100644
+index 0000000..2b8d431
+--- /dev/null
++++ b/libmodpb64.pc.in
+@@ -0,0 +1,16 @@
++#libevent pkg-config source file
++
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: libmodpb64
++Description: libmodpb64 is an asynchronous library
++Version: @VERSION@
++Requires:
++Conflicts:
++Libs: -L${libdir} -lmodpb64
++Libs.private: @LIBS@:
++Cflags: -I${includedir}/modp_b64
++
+--
+1.9.1
+

@@ -1,0 +1,16 @@
+# Based on the user unit
+
+[Unit]
+Description=PulseAudio Sound Service
+After=adbd.service
+
+[Service]
+# Note that notify will only work if --daemonize=no
+Type=notify
+ExecStart=/usr/bin/pulseaudio --system --daemonize=no -vvvv
+Restart=on-failure
+RestartSec=3
+StateDirectory=pulse
+
+[Install]
+WantedBy=multi-user.target

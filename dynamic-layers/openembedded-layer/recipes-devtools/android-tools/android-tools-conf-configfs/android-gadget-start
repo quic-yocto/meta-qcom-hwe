@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+sleep 3
+
+n=0
+while true; do
+    udcname=`ls -1 /sys/class/udc | head -n 1`
+    if [ -n "$udcname" ] || [ $n -eq 30 ]; then
+        break
+    fi
+
+    sleep 1
+    n=$(expr $n + 1)
+done
+
+ls /sys/class/udc/ | xargs echo -n > /sys/kernel/config/usb_gadget/adb/UDC

@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=fi.w1.wpa_supplicant1
+ExecStart=/usr/sbin/wpa_supplicant -u -i wlan0 -c /data/misc/wifi/wpa_supplicant.conf -B
+User=wifi
+SystemdService=wpa_supplicant.service

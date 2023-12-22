@@ -1,0 +1,41 @@
+From 826acde961a7698a553ea6beceb904aa4a468ab8 Mon Sep 17 00:00:00 2001
+From: Rohit kumar <quic_rohkumar@quicinc.com>
+Date: Wed, 18 Oct 2023 21:13:39 +0530
+Subject: [PATCH] service: device: Add support of new channel map mixer control
+
+With upstream drivers, Playback/Capture Chmap mixer control is
+used. Fallback to new mixer control if old mixer control is
+not found.
+
+Change-Id: Ic2b4ff0f690a868cbd5a1b05bb87743a3b52bf8f
+---
+ service/src/device.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/service/src/device.c b/service/src/device.c
+index dbed34d..bf72054 100644
+--- a/service/src/device.c
++++ b/service/src/device.c
+@@ -869,11 +869,16 @@ int device_get_channel_map(struct device_obj *dev_obj, uint32_t **chmap)
+     ctl = mixer_get_ctl_by_name(mixer, mixer_str);
+     if (!ctl) {
+         AGM_LOGE("Invalid mixer control: %s\n", mixer_str);
+-        ret = -ENOENT;
+-        goto err_get_ctl;
++        ctl = mixer_get_ctl_by_name_and_device(mixer, (dev_obj->hw_ep_info.dir == AUDIO_OUTPUT) ?
++                    "Playback Channel Map" : "Capture Channel Map", dev_obj->pcm_id);
++        if (!ctl) {
++            ret = -ENOENT;
++            goto err_get_ctl;
++        }
++        ret = mixer_ctl_get_array(ctl, payload, 2 * sizeof(uint32_t));
++    } else {
++        ret = mixer_ctl_get_array(ctl, payload, 16 * sizeof(uint32_t));
+     }
+-
+-    ret = mixer_ctl_get_array(ctl, payload, 16 * sizeof(uint32_t));
+     if (ret < 0) {
+         AGM_LOGE("Failed to mixer_ctl_get_array\n");
+         goto err_get_ctl;
+--
+2.17.1

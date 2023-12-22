@@ -1,0 +1,19 @@
+# Copyright (c) 2018 Qualcomm Technologies, Inc.
+# All Rights Reserved.
+# Confidential and Proprietary - Qualcomm Technologies, Inc.
+#
+
+[Unit]
+Description= qrtr-ns Service
+SourcePath=/usr/bin/qrtr-ns
+DefaultDependencies=no
+
+[Service]
+User=qrtr
+Group=qrtr
+Restart=on-failure
+RemainAfterExit=yes
+ExecStart=/usr/bin/qrtr-ns
+
+[Install]
+WantedBy=sysinit.target

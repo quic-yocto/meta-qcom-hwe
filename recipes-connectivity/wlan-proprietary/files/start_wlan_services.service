@@ -1,0 +1,21 @@
+# Copyright (c) 2017 Qualcomm Technologies, Inc.
+# All Rights Reserved.
+# Confidential and Proprietary - Qualcomm Technologies, Inc.
+#
+
+[Unit]
+Description=start wlan services
+SourcePath=/etc/initscripts/start_wlan_services
+
+[Service]
+Restart=no
+RemainAfterExit=yes
+ExecStart=/etc/initscripts/start_wlan_services start
+ExecStop=/etc/initscripts/start_wlan_services stop
+User=wifi
+Group=wifi
+SupplementaryGroups=net_admin
+AmbientCapabilities=CAP_NET_ADMIN
+
+[Install]
+WantedBy=multi-user.target

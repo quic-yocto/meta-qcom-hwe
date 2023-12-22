@@ -1,0 +1,479 @@
+From 9895aa997009f20e644519dccc744ac02d6839a7 Mon Sep 17 00:00:00 2001
+From: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+Date: Mon, 16 Oct 2023 19:42:17 +0530
+Subject: [PATCH] add selinux label to the rootfs files while building image.
+
+Added code changes for build time selinux labelling
+in mke2fs module
+
+Patch authored by Sasi Kumar Maddineni.
+
+Upstream-Status: Pending
+
+Signed-off-by: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+---
+ misc/Makefile.in    |  16 ++++-
+ misc/create_inode.c | 158 ++++++++++++++++++++++++++++++++++++++++++--
+ misc/create_inode.h |  16 ++++-
+ misc/mke2fs.c       |  58 +++++++++++++++-
+ 4 files changed, 236 insertions(+), 12 deletions(-)
+
+diff --git a/misc/Makefile.in b/misc/Makefile.in
+index 4db59cdf..c95feb41 100644
+--- a/misc/Makefile.in
++++ b/misc/Makefile.in
+@@ -281,7 +281,7 @@ mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBBLKID) $(DEPLIBUUID) \
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBBLKID) \
+ 		$(LIBUUID) $(LIBEXT2FS) $(LIBE2P) $(LIBINTL) \
+-		$(SYSLIBS) $(LIBMAGIC)
++		$(SYSLIBS) $(LIBMAGIC) $(LIBSELINUX)
+
+ mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBUUID) \
+ 		$(DEPSTATIC_LIBBLKID)
+@@ -289,7 +289,7 @@ mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIB
+ 	$(Q) $(CC) $(LDFLAGS_STATIC) -o mke2fs.static $(MKE2FS_OBJS) \
+ 		$(STATIC_LIBS) $(STATIC_LIBE2P) \
+ 		$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(LIBINTL) $(SYSLIBS) \
+-		$(LIBMAGIC)
++		$(LIBMAGIC) $(LIBSELINUX)
+
+ mke2fs.profiled: $(MKE2FS_OBJS) $(PROFILED_DEPLIBS) \
+ 	$(PROFILED_LIBE2P) $(PROFILED_DEPLIBBLKID) $(PROFILED_DEPLIBUUID)
+@@ -297,7 +297,17 @@ mke2fs.profiled: $(MKE2FS_OBJS) $(PROFILED_DEPLIBS) \
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o mke2fs.profiled \
+ 		$(PROFILED_MKE2FS_OBJS) $(PROFILED_LIBBLKID) \
+ 		$(PROFILED_LIBUUID) $(PROFILED_LIBE2P) \
+-		$(LIBINTL) $(PROFILED_LIBS) $(SYSLIBS) $(LIBMAGIC)
++		$(LIBINTL) $(PROFILED_LIBS) $(SYSLIBS) $(LIBMAGIC) $(LIBSELINUX)
++
++create_inode.o: $(srcdir)/create_inode.c
++	$(E) "  CC $@"
++	$(Q) $(CC) -c $(ALL_CFLAGS) -DHAVE_SELINUX -I$(srcdir) \
++		$(srcdir)/create_inode.c -o $@
++
++mke2fs.o: $(srcdir)/mke2fs.c
++	$(E) "  CC $@"
++	$(Q) $(CC) -c $(ALL_CFLAGS) -DHAVE_SELINUX -I$(srcdir) \
++		$(srcdir)/mke2fs.c -o $@
+
+ chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
+ 	$(E) "	LD $@"
+diff --git a/misc/create_inode.c b/misc/create_inode.c
+index c00d5458..a8599260 100644
+--- a/misc/create_inode.c
++++ b/misc/create_inode.c
+@@ -42,6 +42,19 @@
+ /* 64KiB is the minimum blksize to best minimize system call overhead. */
+ #define COPY_FILE_BUFLEN	65536
+
++#ifdef HAVE_SELINUX
++#ifndef XATTR_SELINUX_SUFFIX
++#define XATTR_SELINUX_SUFFIX  "selinux"
++#endif
++#define EXT2_ROOT_NODE_PATH "/"
++#endif
++
++struct file_info {
++        char *path;
++        size_t path_len;
++        size_t path_max_len;
++};
++
+ static int ext2_file_type(unsigned int mode)
+ {
+ 	if (LINUX_S_ISREG(mode))
+@@ -136,6 +149,87 @@ static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
+ }
+
+ #ifdef HAVE_LLISTXATTR
++#ifdef HAVE_SELINUX
++static errcode_t ino_add_selinux_xattr(ext2_filsys fs, ext2_ino_t ino, const char *name,
++                               const void *value, int value_len)
++{
++        errcode_t retval, close_retval;
++        struct ext2_xattr_handle *xhandle;
++
++        retval = ext2fs_xattrs_open(fs, ino, &xhandle);
++        if (retval) {
++                com_err(__func__, retval, _("while opening inode %u"), ino);
++                return retval;
++        }
++        retval = ext2fs_xattrs_read(xhandle);
++        if (retval) {
++                com_err(__func__, retval,
++                        _("while reading xattrs of inode %u"), ino);
++                goto sexattrs_close;
++        }
++        retval = ext2fs_xattr_set(xhandle, name, value, value_len);
++        if (retval) {
++                com_err(__func__, retval,
++                        _("while setting xattrs of inode %u"), ino);
++                goto sexattrs_close;
++        }
++sexattrs_close:
++        close_retval = ext2fs_xattrs_close(&xhandle);
++        if (close_retval) {
++                com_err(__func__, close_retval,
++                        _("while closing xattrs of inode %u"), ino);
++                return retval ? retval : close_retval;
++        }
++        return retval;
++}
++
++static errcode_t set_inode_selinux_xattr(ext2_filsys fs, ext2_ino_t ino,
++					struct file_info *target,
++					struct selabel_handle *sehnd)
++{
++        errcode_t retval;
++        char *secontext = NULL;
++        struct ext2_inode inode;
++	const char *sepath = NULL;
++
++	if (!sehnd) {
++		com_err(__func__, 0,
++                        _("unable to populate sehandle"));
++		return 0;
++	}
++
++	if (ino == EXT2_ROOT_INO)
++		sepath = EXT2_ROOT_NODE_PATH;
++	else if (ino != EXT2_ROOT_INO && target != NULL)
++		sepath = target->path;
++
++        retval = ext2fs_read_inode(fs, ino, &inode);
++        if (retval) {
++                com_err(__func__, retval,
++                        _("while reading inode %u"), ino);
++                return retval;
++        }
++
++        retval = selabel_lookup(sehnd, &secontext, sepath,
++                                inode.i_mode);
++        if (retval < 0) {
++		//missing file_context
++		com_err(__func__, 0,
++                        _("Missing file context for the file:%s\n"), sepath);
++		retval  = 0;
++		goto sexattrs_close;
++        }
++
++        retval = ino_add_selinux_xattr(fs, ino,  "security." XATTR_SELINUX_SUFFIX,
++                               secontext, strlen(secontext) + 1);
++
++sexattrs_close:
++	if(secontext)
++        freecon(secontext);
++        return retval;
++}
++#endif
++
+ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
+ 				 const char *filename)
+ {
+@@ -377,7 +471,6 @@ errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
+ 	ext2_ino_t		parent_ino;
+ 	errcode_t		retval;
+
+-
+ 	cp = strrchr(name, '/');
+ 	if (cp) {
+ 		*cp = 0;
+@@ -718,12 +811,6 @@ out:
+ 	return retval;
+ }
+
+-struct file_info {
+-	char *path;
+-	size_t path_len;
+-	size_t path_max_len;
+-};
+-
+ static errcode_t path_append(struct file_info *target, const char *file)
+ {
+ 	if (strlen(file) + target->path_len + 1 > target->path_max_len) {
+@@ -804,11 +891,20 @@ static int alphasort(const struct dirent **a, const struct dirent **b) {
+ #endif
+
+ /* Copy files from source_dir to fs in alphabetical order */
++#ifdef HAVE_SELINUX
++static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
++                               const char *source_dir, ext2_ino_t root,
++                               struct hdlinks_s *hdlinks,
++                               struct file_info *target,
++                               struct fs_ops_callbacks *fs_callbacks,
++                               struct selabel_handle *sehnd)
++#else
+ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
+ 			       const char *source_dir, ext2_ino_t root,
+ 			       struct hdlinks_s *hdlinks,
+ 			       struct file_info *target,
+ 			       struct fs_ops_callbacks *fs_callbacks)
++#endif
+ {
+ 	const char	*name;
+ 	struct dirent	**dent;
+@@ -965,8 +1061,20 @@ find_lnf:
+ 					goto out;
+ 			}
+ 			/* Populate the dir recursively*/
++#ifdef HAVE_SELINUX
++                        retval = set_inode_selinux_xattr(fs, ino, target, sehnd);
++                        if (retval) {
++                                com_err(__func__, retval,
++                                        _("while setting selinux xattrs for \"%s\""), target->path);
++                                goto out;
++                        }
++
++                        retval = __populate_fs(fs, ino, name, root, hdlinks,
++                                               target, fs_callbacks, sehnd);
++#else
+ 			retval = __populate_fs(fs, ino, name, root, hdlinks,
+ 					       target, fs_callbacks);
++#endif
+ 			if (retval)
+ 				goto out;
+ 			if (chdir("..")) {
+@@ -1002,6 +1110,15 @@ find_lnf:
+ 			goto out;
+ 		}
+
++#ifdef HAVE_SELINUX
++                retval = set_inode_selinux_xattr(fs, ino, target, sehnd);
++                if (retval) {
++                        com_err(__func__, retval,
++                                _("while setting selinux xattrs for \"%s\""), target->path);
++                        goto out;
++                }
++#endif
++
+ 		if (fs_callbacks && fs_callbacks->end_create_new_inode) {
+ 			retval = fs_callbacks->end_create_new_inode(fs,
+ 				target->path, name, parent_ino, root,
+@@ -1045,9 +1162,16 @@ out:
+ 	return retval;
+ }
+
++#ifdef HAVE_SELINUX
++errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
++                       const char *source_dir, ext2_ino_t root,
++                       struct fs_ops_callbacks *fs_callbacks,
++                       struct selabel_handle *sehnd)
++#else
+ errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
+ 		       const char *source_dir, ext2_ino_t root,
+ 		       struct fs_ops_callbacks *fs_callbacks)
++#endif
+ {
+ 	struct file_info file_info;
+ 	struct hdlinks_s hdlinks;
+@@ -1077,9 +1201,20 @@ errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
+ 			_("while copying xattrs on root directory"));
+ 		goto out;
+ 	}
++#ifdef HAVE_SELINUX
++	retval = set_inode_selinux_xattr(fs, root, NULL, sehnd);
++	if (retval) {
++		com_err(__func__, retval,
++			_("while setting selinux xattrs for root"));
++		goto out;
++	}
+
++        retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks,
++                               &file_info, fs_callbacks, sehnd);
++#else
+ 	retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks,
+ 			       &file_info, fs_callbacks);
++#endif
+
+ out:
+ 	free(file_info.path);
+@@ -1087,8 +1222,17 @@ out:
+ 	return retval;
+ }
+
++#ifdef HAVE_SELINUX
++errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
++                      const char *source_dir, ext2_ino_t root,
++                      struct selabel_handle *sehnd)
++{
++        return populate_fs2(fs, parent_ino, source_dir, root, NULL, sehnd);
++}
++#else
+ errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
+ 		      const char *source_dir, ext2_ino_t root)
+ {
+ 	return populate_fs2(fs, parent_ino, source_dir, root, NULL);
+ }
++#endif
+diff --git a/misc/create_inode.h b/misc/create_inode.h
+index b5eeb420..62702b2c 100644
+--- a/misc/create_inode.h
++++ b/misc/create_inode.h
+@@ -8,6 +8,11 @@
+ #include "e2p/e2p.h"
+ #include "ext2fs/ext2fs.h"
+
++#ifdef HAVE_SELINUX
++#include <selinux/selinux.h>
++#include <selinux/label.h>
++#endif
++
+ struct hdlink_s
+ {
+ 	dev_t src_dev;
+@@ -23,7 +28,6 @@ struct hdlinks_s
+ };
+
+ #define HDLINK_CNT	(4)
+-
+ struct fs_ops_callbacks {
+ 	errcode_t (* create_new_inode)(ext2_filsys fs, const char *target_path,
+ 		const char *name, ext2_ino_t parent_ino, ext2_ino_t root,
+@@ -37,11 +41,21 @@ extern int no_copy_xattrs; 	/* this should eventually be a flag
+ 				   passed to populate_fs3() */
+
+ /* For populating the filesystem */
++#ifdef HAVE_SELINUX
++extern errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
++                             const char *source_dir, ext2_ino_t root,
++                             struct selabel_handle *sehnd);
++extern errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
++                              const char *source_dir, ext2_ino_t root,
++                              struct fs_ops_callbacks *fs_callbacks,
++                              struct selabel_handle *sehnd);
++#else
+ extern errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
+ 			     const char *source_dir, ext2_ino_t root);
+ extern errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
+ 			      const char *source_dir, ext2_ino_t root,
+ 			      struct fs_ops_callbacks *fs_callbacks);
++#endif
+ extern errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd,
+ 				   const char *name, unsigned int st_mode,
+ 				   unsigned int st_rdev);
+diff --git a/misc/mke2fs.c b/misc/mke2fs.c
+index 04b2fbce..54625c4a 100644
+--- a/misc/mke2fs.c
++++ b/misc/mke2fs.c
+@@ -22,6 +22,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <strings.h>
++#include <stdlib.h>
+ #include <ctype.h>
+ #include <time.h>
+ #ifdef __linux__
+@@ -73,6 +74,7 @@ extern int optind;
+
+ #define DISCARD_STEP_MB		(2048)
+
++
+ extern int isatty(int);
+ extern FILE *fpopen(const char *cmd, const char *mode);
+
+@@ -126,6 +128,10 @@ static int sys_page_size = 4096;
+
+ static int errors_behavior = 0;
+
++#ifdef HAVE_SELINUX
++static struct selabel_handle *sehnd = NULL;
++#endif
++
+ static void usage(void)
+ {
+ 	fprintf(stderr, _("Usage: %s [-c|-l filename] [-b block-size] "
+@@ -138,7 +144,11 @@ static void usage(void)
+ 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
+ 	"[-r fs-revision] [-E extended-option[,...]]\n"
+ 	"\t[-t fs-type] [-T usage-type ] [-U UUID] [-e errors_behavior]"
++#ifdef HAVE_SELINUX
++        "[-z undo_file] [-f obsolute path to file_contexts]\n"
++#else
+ 	"[-z undo_file]\n"
++#endif
+ 	"\t[-jnqvDFSV] device [blocks-count]\n"),
+ 		program_name);
+ 	exit(1);
+@@ -1582,7 +1592,12 @@ static void PRS(int argc, char *argv[])
+ #ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
+ 	struct device_param dev_param;
+ #endif
+-
++#ifdef HAVE_SELINUX
++        static char *context;
++        static int context_len;
++        static struct stat context_st;
++        static int n_opt= 0;
++#endif
+ 	if (oldpath)
+ 		pathlen += strlen(oldpath);
+ 	newpath = malloc(pathlen);
+@@ -1650,7 +1665,11 @@ profile_error:
+ 	}
+
+ 	while ((c = getopt (argc, argv,
++#ifdef HAVE_SELINUX
++                    "b:cd:e:g:i:jl:m:no:qr:s:t:f:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:Vz:")) != EOF) {
++#else
+ 		    "b:cd:e:g:i:jl:m:no:qr:s:t:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:Vz:")) != EOF) {
++#endif
+ 		switch (c) {
+ 		case 'b':
+ 			blocksize = parse_num_blocks2(optarg, -1);
+@@ -1713,6 +1732,38 @@ profile_error:
+ 		case 'F':
+ 			force++;
+ 			break;
++#ifdef HAVE_SELINUX
++                case 'f':
++                        context_len = strlen(optarg);
++                        context = (char *) calloc(context_len + 1,1);
++                        if (!context) {
++                                com_err(program_name, 0, "%s",
++                                _("calloc failed"));
++                                exit(1);
++                        }
++                        memcpy(context, optarg, context_len);
++
++                        /* Make sure root directory exists */
++                        if (stat(context, &context_st)) {
++                                com_err(program_name, 0,
++                                _("Bad file_contexts file : %s"), context);
++                                exit(1);
++                        }
++
++                        if (context) {
++				struct selinux_opt seopt_file[] = {
++					{ SELABEL_OPT_PATH, context }
++				};
++
++				sehnd = selabel_open(SELABEL_CTX_FILE, seopt_file, 1);
++				if (!sehnd){
++					com_err(program_name, 0,
++						_("Could not open selinux context file : %s"), context);
++						exit(1);
++					}
++			}
++                        break;
++#endif
+ 		case 'g':
+ 			fs_param.s_blocks_per_group = strtoul(optarg, &tmp, 0);
+ 			if (*tmp) {
+@@ -3480,8 +3531,13 @@ no_journal:
+ 		if (!quiet)
+ 			printf("%s", _("Copying files into the device: "));
+
++#ifdef HAVE_SELINUX
++                retval = populate_fs(fs, EXT2_ROOT_INO, src_root_dir,
++                                     EXT2_ROOT_INO, sehnd);
++#else
+ 		retval = populate_fs(fs, EXT2_ROOT_INO, src_root_dir,
+ 				     EXT2_ROOT_INO);
++#endif
+ 		if (retval) {
+ 			com_err(program_name, retval, "%s",
+ 				_("while populating file system"));
+--
+2.17.1
+

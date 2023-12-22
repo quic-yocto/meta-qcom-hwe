@@ -1,0 +1,44 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_loc_hal_daemon, 1.0)
+
+type qcom_loc_hal_daemon_t;
+type qcom_loc_hal_daemon_exec_t;
+
+init_daemon_domain(qcom_loc_hal_daemon_t, qcom_loc_hal_daemon_exec_t)
+
+# Send syslog messages.
+logging_send_syslog_msg(qcom_loc_hal_daemon_t)
+logging_rw_runtime_sockets(qcom_loc_hal_daemon_t)
+
+# read location /etc files
+qcom_loc_read_loc_etc_files(qcom_loc_hal_daemon_t)
+
+files_read_etc_files(qcom_loc_hal_daemon_t)
+files_read_etc_runtime_files(qcom_loc_hal_daemon_t)
+
+dev_read_sysfs(qcom_loc_hal_daemon_t)
+dev_read_urand(qcom_loc_hal_daemon_t)
+
+rw_fifo_files_pattern(qcom_loc_hal_daemon_t, self, self);
+
+fs_search_tmpfs(qcom_loc_hal_daemon_t)
+files_read_generic_tmp_symlinks(qcom_loc_hal_daemon_t)
+
+allow qcom_loc_hal_daemon_t self:process getsched;
+
+allow qcom_loc_hal_daemon_t self:{socket udp_socket unix_dgram_socket qipcrtr_socket} create_socket_perms;
+
+qcom_loc_manage_loc_data_files(qcom_loc_hal_daemon_t)
+qcom_loc_manage_loc_sock_files(qcom_loc_hal_daemon_t)
+
+qcom_loc_interact_with_loclauncher(qcom_loc_hal_daemon_t)
+
+allow qcom_loc_hal_daemon_t self:netlink_route_socket r_netlink_socket_perms;
+
+# communicate with self and location daemons
+allow qcom_loc_hal_daemon_t self:unix_dgram_socket sendto;
+qcom_loc_launcherdaemon_unix_dgram_sendto(qcom_loc_hal_daemon_t, {qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t })
+
+qcom_connect_to_property_vault(qcom_loc_hal_daemon_t)

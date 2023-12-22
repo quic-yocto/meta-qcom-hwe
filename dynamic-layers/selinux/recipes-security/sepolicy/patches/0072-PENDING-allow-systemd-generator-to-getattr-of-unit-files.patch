@@ -1,0 +1,279 @@
+From 71ecfca69afdc1d73a7ddc58cebe2f0053b2b5e6 Mon Sep 17 00:00:00 2001
+From: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+Date: Wed, 15 Nov 2023 16:36:54 +0530
+Subject: [PATCH] PENDING: allow systemd generator to getattr of some unit and
+ script files
+
+allow systemd to getattr of :
+		avahi unit and script files
+		bluetooth unit and script files
+		chronyd unit and script files
+		alsa unit file
+		rpcbind script file
+		rpcd unit file
+		systemd unit file
+
+Upstream-Status: Pending
+
+Signed-off-by: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+---
+ policy/modules/admin/alsa.if         | 20 ++++++++++++++
+ policy/modules/services/avahi.if     | 38 ++++++++++++++++++++++++++
+ policy/modules/services/bluetooth.if | 41 ++++++++++++++++++++++++++++
+ policy/modules/services/chronyd.if   | 39 ++++++++++++++++++++++++++
+ policy/modules/services/rpc.if       | 20 ++++++++++++++
+ policy/modules/services/rpcbind.if   | 20 ++++++++++++++
+ policy/modules/system/systemd.te     | 11 ++++++++
+ 7 files changed, 189 insertions(+)
+
+diff --git a/policy/modules/admin/alsa.if b/policy/modules/admin/alsa.if
+index 57dd48df4..9267ebcf9 100644
+--- a/policy/modules/admin/alsa.if
++++ b/policy/modules/admin/alsa.if
+@@ -248,3 +248,23 @@ interface(`alsa_write_lib',`
+ 	files_search_var_lib($1)
+ 	write_files_pattern($1, alsa_var_lib_t, alsa_var_lib_t)
+ ')
++
++########################################
++## <summary>
++##   Getattr for the alsa init unit file.
++## </summary>
++## <param name="type">
++##      <summary>
++##      Type to be used for getattr alsa
++##      init unit file.
++##      </summary>
++## </param>
++#
++interface(`alsa_getattr_init_unit_file',`
++        gen_require(`
++                type alsa_unit_t;
++        ')
++
++        allow $1 alsa_unit_t:file getattr;
++')
++
+diff --git a/policy/modules/services/avahi.if b/policy/modules/services/avahi.if
+index c223e8b3a..826fcc8ca 100644
+--- a/policy/modules/services/avahi.if
++++ b/policy/modules/services/avahi.if
+@@ -359,3 +359,41 @@ interface(`avahi_admin',`
+ 	files_search_var_lib($1)
+ 	admin_pattern($1, avahi_var_lib_t)
+ ')
++
++########################################
++## <summary>
++##   Getattr for the avahi init unit file.
++## </summary>
++## <param name="type">
++##      <summary>
++##      Type to be used for getattr avahi
++##      init unit file.
++##      </summary>
++## </param>
++#
++interface(`avahi_getattr_init_unit_file',`
++        gen_require(`
++                type avahi_unit_t;
++        ')
++
++        allow $1 avahi_unit_t:file getattr;
++')
++
++########################################
++## <summary>
++##   Getattr for the avahi init script file.
++## </summary>
++## <param name="type">
++##      <summary>
++##      Type to be used for getattr of avahi
++##      init script file.
++##      </summary>
++## </param>
++#
++interface(`avahi_getattr_init_script_file',`
++        gen_require(`
++                type avahi_initrc_exec_t;
++        ')
++
++        allow $1 avahi_initrc_exec_t:file getattr;
++')
+diff --git a/policy/modules/services/bluetooth.if b/policy/modules/services/bluetooth.if
+index c7e1c3f14..98057b221 100644
+--- a/policy/modules/services/bluetooth.if
++++ b/policy/modules/services/bluetooth.if
+@@ -208,3 +208,44 @@ interface(`bluetooth_admin',`
+ 	files_list_runtime($1)
+ 	admin_pattern($1, bluetooth_runtime_t)
+ ')
++
++########################################
++## <summary>
++##   Getattr for the bluetooth
++##   init unit file.
++## </summary>
++## <param name="type">
++##      <summary>
++##      Type to be used for getattr
++##      bluetooth init unit file.
++##      </summary>
++## </param>
++#
++interface(`bluetooth_getattr_init_unit_file',`
++        gen_require(`
++                type bluetooth_unit_t;
++        ')
++
++        allow $1 bluetooth_unit_t:file getattr;
++')
++
++########################################
++## <summary>
++##   Getattr for the bluetooth init
++##   script file.
++## </summary>
++## <param name="type">
++##      <summary>
++##      Type to be used for getattr of
++##      bluetooth init script file.
++##      </summary>
++## </param>
++#
++interface(`bluetooth_getattr_init_script_file',`
++        gen_require(`
++                type bluetooth_initrc_exec_t;
++        ')
++
++        allow $1 bluetooth_initrc_exec_t:file getattr;
++')
++
+diff --git a/policy/modules/services/chronyd.if b/policy/modules/services/chronyd.if
+index 05689b81e..25fb1b0d7 100644
+--- a/policy/modules/services/chronyd.if
++++ b/policy/modules/services/chronyd.if
+@@ -359,3 +359,42 @@ interface(`chronyd_admin',`
+ 	files_search_runtime($1)
+ 	admin_pattern($1, chronyd_runtime_t)
+ ')
++
++########################################
++## <summary>
++##   Getattr for chronyd init unit file.
++## </summary>
++## <param name="type">
++##      <summary>
++##      Type to be used for getattr chronyd
++##      init unit file.
++##      </summary>
++## </param>
++#
++interface(`chronyd_getattr_init_unit_file',`
++        gen_require(`
++                type chronyd_unit_t;
++        ')
++
++        allow $1 chronyd_unit_t:file getattr;
++')
++
++########################################
++## <summary>
++##   Getattr for the chronyd init script file.
++## </summary>
++## <param name="type">
++##      <summary>
++##      Type to be used for getattr of chronyd
++##      init script file.
++##      </summary>
++## </param>
++#
++interface(`chronyd_getattr_init_script_file',`
++        gen_require(`
++                type chronyd_initrc_exec_t;
++        ')
++
++        allow $1 chronyd_initrc_exec_t:file getattr;
++')
++
+diff --git a/policy/modules/services/rpc.if b/policy/modules/services/rpc.if
+index 676aaa63b..6d934e1a5 100644
+--- a/policy/modules/services/rpc.if
++++ b/policy/modules/services/rpc.if
+@@ -389,3 +389,23 @@ interface(`rpc_admin',`
+
+ 	fs_search_nfsd_fs($1)
+ ')
++
++########################################
++## <summary>
++##   Getattr for the rpcd init unit file.
++## </summary>
++## <param name="type">
++##      <summary>
++##      Type to be used for getattr rpcd
++##      init unit file.
++##      </summary>
++## </param>
++#
++interface(`rpcd_getattr_init_unit_file',`
++        gen_require(`
++                type rpcd_unit_t;
++        ')
++
++        allow $1 rpcd_unit_t:file getattr;
++')
++
+diff --git a/policy/modules/services/rpcbind.if b/policy/modules/services/rpcbind.if
+index b815d02de..8bc72ec25 100644
+--- a/policy/modules/services/rpcbind.if
++++ b/policy/modules/services/rpcbind.if
+@@ -165,3 +165,23 @@ interface(`rpcbind_admin',`
+
+ 	rpcbind_stream_connect($1)
+ ')
++
++########################################
++## <summary>
++##   Getattr for the rpcbind init script file.
++## </summary>
++## <param name="type">
++##      <summary>
++##      Type to be used for getattr of rpcbind
++##      init script file.
++##      </summary>
++## </param>
++#
++interface(`rpcbind_getattr_init_script_file',`
++        gen_require(`
++                type rpcbind_initrc_exec_t;
++        ')
++
++        allow $1 rpcbind_initrc_exec_t:file getattr;
++')
++
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index 14ebe7999..0bd8d340a 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -1690,6 +1690,17 @@ userdom_manage_user_runtime_dirs(systemd_user_runtime_dir_t)
+ userdom_mounton_user_runtime_dirs(systemd_user_runtime_dir_t)
+ userdom_relabelto_user_runtime_dirs(systemd_user_runtime_dir_t)
+
++alsa_getattr_init_unit_file(systemd_generator_t)
++avahi_getattr_init_unit_file(systemd_generator_t)
++avahi_getattr_init_script_file(systemd_generator_t)
++bluetooth_getattr_init_unit_file(systemd_generator_t)
++bluetooth_getattr_init_script_file(systemd_generator_t)
++chronyd_getattr_init_unit_file(systemd_generator_t)
++chronyd_getattr_init_script_file(systemd_generator_t)
++rpcbind_getattr_init_script_file(systemd_generator_t)
++rpcd_getattr_init_unit_file(systemd_generator_t)
++init_read_generic_units_files(systemd_generator_t)
++
+ optional_policy(`
+ 	dbus_system_bus_client(systemd_user_runtime_dir_t)
+ ')
+--
+2.17.1
+

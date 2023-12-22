@@ -1,0 +1,13 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+SourcePath=/etc/initscripts/log_restrict.sh
+Description=logging restriction service
+
+[Service]
+ExecStart=/etc/initscripts/log_restrict.sh start
+ExecStop=/etc/initscripts/log_restrict.sh stop
+
+[Install]
+WantedBy=multi-user.target

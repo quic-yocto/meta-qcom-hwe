@@ -1,0 +1,20 @@
+# Copyright (c) 2021 Qualcomm Technologies, Inc.
+# All Rights Reserved.
+# Confidential and Proprietary - Qualcomm Technologies, Inc.
+#
+
+[Unit]
+Description=start cnss diag daemon
+SourcePath=/usr/sbin/cnss_diag
+
+[Service]
+Restart=no
+RemainAfterExit=yes
+ExecStart=/usr/sbin/cnss_diag -f
+User=wifi
+Group=wifi
+SupplementaryGroups=net_admin
+AmbientCapabilities=CAP_NET_ADMIN
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,243 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>location launcher</summary>
+
+########################################
+## <summary>
+##    Read location conf files in /etc.
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to read location conf
+##    files in /etc. These files are location framework
+##    related system configuration files
+##    </p>
+## </desc>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access for location conf files.
+##    </summary>
+## </param>
+#
+interface(`qcom_loc_read_loc_etc_files',`
+    gen_require(`
+        type etc_t, qcom_loc_etc_t;
+    ')
+
+    allow $1 etc_t:dir list_dir_perms;
+    read_files_pattern($1, etc_t, qcom_loc_etc_t)
+    read_lnk_files_pattern($1, etc_t, qcom_loc_etc_t)
+')
+
+########################################
+## <summary>
+##       Read location data  files
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to read location data
+##    files. These files are location framework related
+##    files.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to read
+##      </summary>
+## </param>
+#
+interface(`qcom_loc_read_loc_data_files',`
+    gen_require(`
+        type var_t, var_lib_t, qcom_loc_data_t;
+    ')
+    allow $1 var_t:dir search_dir_perms;
+    allow $1 var_lib_t:dir search_dir_perms;
+    read_files_pattern($1, var_lib_t, qcom_loc_data_t)
+    read_lnk_files_pattern($1, var_lib_t, qcom_loc_data_t)
+')
+
+########################################
+## <summary>
+##       Read location socket files
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to read location socket
+##    files. These socket files are created by location
+##    daemons or client application for communication.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to read
+##      </summary>
+## </param>
+#
+interface(`qcom_loc_read_loc_sock_files',`
+    gen_require(`
+        type var_run_t, qcom_loc_sock_t;
+    ')
+    allow $1 var_run_t:dir search_dir_perms;
+    read_files_pattern($1, var_run_t, qcom_loc_sock_t)
+    read_lnk_files_pattern($1, var_run_t, qcom_loc_sock_t)
+')
+
+########################################
+## <summary>
+##       Read, write and manage location data files
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to manage location data
+##    files. These files are location framework related
+##    files.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to read/write
+##      </summary>
+## </param>
+#
+interface(`qcom_loc_manage_loc_data_files',`
+    gen_require(`
+        type var_t, var_lib_t, qcom_loc_data_t;
+    ')
+    allow $1 var_t:dir search_dir_perms;
+    allow $1 var_lib_t:dir search_dir_perms;
+    manage_dirs_pattern($1, qcom_loc_data_t, qcom_loc_data_t)
+    manage_files_pattern($1, qcom_loc_data_t, qcom_loc_data_t)
+')
+
+########################################
+## <summary>
+##       Read, write and manage location socket files
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to manage location socket
+##    files. These socket files are created by location
+##    daemons or client application for communication.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to read/write
+##      </summary>
+## </param>
+#
+interface(`qcom_loc_manage_loc_sock_files',`
+    gen_require(`
+        type qcom_loc_sock_t;
+    ')
+    manage_dirs_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t)
+    manage_sock_files_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t)
+    manage_lnk_files_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t)
+')
+
+########################################
+## <summary>
+##       Add rules for daemons to communicate with loc_launcher
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to communicate with location launcher
+##    service. These rules are required only for location related
+##    daemons or services.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to read/write
+##      </summary>
+## </param>
+#
+interface(`qcom_loc_interact_with_loclauncher',`
+    gen_require(`
+        type qcom_loc_launcher_t;
+    ')
+    allow $1 qcom_loc_launcher_t:unix_stream_socket { connectto rw_stream_socket_perms };
+    allow $1 qcom_loc_launcher_t:unix_dgram_socket { read write };
+    allow $1 qcom_loc_launcher_t:unix_dgram_socket sendto;
+')
+
+########################################
+## <summary>
+##       Util interface for adding sendto permission for unix_dgram_socket for location launcher services domain.
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain with sendto permission to unix_dgram_socket for location launcher services domain.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to read/write
+##      </summary>
+## </param>
+#
+interface(`qcom_loc_launcherdaemon_unix_dgram_sendto',`
+    gen_require(`
+        type qcom_loc_launcher_t, qcom_xtwifi_agent_t, qcom_xtwifi_client_t, qcom_xtra_daemon_t, qcom_edgnss_daemon_t, qcom_lowi_server_t;
+    ')
+    allow $1 $2:unix_dgram_socket sendto;
+')
+
+########################################
+## <summary>
+##       Util interface to set required permission for tcp connect
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified location domain with permissions for tcp connect operations.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to read/write
+##      </summary>
+## </param>
+#
+interface(`qcom_loc_tcp_socket_connect',`
+    gen_require(`
+        type commplex_main_port_t, xen_port_t;
+    ')
+    corenet_tcp_connect_http_port($1)
+    allow $1  self:tcp_socket { read write create connect getattr setopt name_connect getopt };
+')

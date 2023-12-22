@@ -1,0 +1,527 @@
+#!/bin/sh
+
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+# --------------------* HELP *------------------------
+#
+# init    - creates configfs and mounts functionfs.
+# bind    - binds configfs with USB gadget.
+# unbind  - stops/unbinds USB gadget.
+# setpid  - Sets 'diag, adb' compostion.
+# showpid - Lists the available USB compostions.
+# help    - Lists out the supported arguments.
+#
+# ----------------------------------------------------
+
+# List of allowed PIDs & interfaces included in each PID.
+# - Maintain the format --> PID: PID_DESCRIPTION;\
+# - 'XX: XX' marks the end of the string.
+allowed_pids="\
+A4A1: NCM;\
+4EE7: ADB;\
+900E: DIAG;\
+901C: DIAG,UAC2;\
+901D: DIAG,ADB;\
+9015: MASS_STORAGE,ADB;\
+9024: RNDIS,ADB;\
+902A: RNDIS,MASS_STORAGE;\
+902B: RNDIS,ADB,MASS_STORAGE;\
+902C: RNDIS,DIAG;\
+902D: RNDIS,DIAG,ADB;\
+902F: RNDIS,DIAG,MASS_STORAGE;\
+9030: RNDIS,ADB,DIAG,MASS_STORAGE;\
+908C: NCM,ADB;\
+90CA: DIAG,UAC2,ADB;\
+90CB: DIAG,UVC,ADB;\
+90CC: DIAG,UAC2,UVC,ADB;\
+90DF: DIAG,UVC;\
+90E0: DIAG,UAC2,UVC;\
+F000: MASS_STORAGE;\
+F00E: RNDIS;\
+XX: XX;"
+
+usb_unbind() {
+	if [ -d /sys/kernel/config/usb_gadget ]; then
+		# Stopping USB Android Gadget
+		echo '' > /sys/kernel/config/usb_gadget/adb/UDC
+	fi
+}
+
+usb_bind() {
+	udcname=`ls -1 /sys/class/udc | head -n 1`
+	if [ -d /sys/kernel/config/usb_gadget ]; then
+		# Binding UDC with gadget
+		# TODO make sure to run adbd/diag-router before binding
+		echo $udcname > /sys/kernel/config/usb_gadget/adb/UDC
+	fi
+}
+
+remove_configs() {
+	usb_unbind
+	cd /sys/kernel/config/usb_gadget/adb/
+	rm os_desc/c* 2> /dev/null
+	rm -r configs/c*/f* 2> /dev/null
+	rmdir configs/c.2/strings/* configs/c.3/strings/* 2> /dev/null
+	rmdir configs/c.2 configs/c.3 2> /dev/null
+	echo 0x05c6 > idVendor
+	echo 0x80 > configs/c.1/bmAttributes
+}
+
+# Standalone ADB
+run_4EE7() {
+	remove_configs
+	echo 0x18D1 > idVendor
+	echo 0x4EE7 > idProduct
+	echo "ADB" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.usb0 configs/c.1/f1
+	echo 0x80 > configs/c.1/bmAttributes
+	usb_bind
+	cd /
+}
+
+# Diag + ADB
+run_901D() {
+	remove_configs
+	echo 0x901d > idProduct
+	echo "DIAG_ADB" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	ln -s functions/ffs.usb0 configs/c.1/f2
+	usb_bind
+	cd /
+
+}
+
+# ADB + Mass Storage
+run_9015() {
+	remove_configs
+	echo 0x9015 > idProduct
+	echo "ADB_MS" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.usb0 configs/c.1/f1
+	ln -s functions/mass_storage.0 configs/c.1/f2
+	usb_bind
+	cd /
+}
+
+# RNDIS + ADB
+run_9024() {
+	remove_configs
+	echo 0x9024 > idProduct
+	echo "RNDIS_ADB" > configs/c.1/strings/0x409/configuration
+	ln -s functions/rndis.rndis configs/c.1/f1
+	ln -s functions/ffs.usb0 configs/c.1/f2
+	usb_bind
+	cd /
+}
+
+# Standalone RNDIS
+run_F00E() {
+	remove_configs
+	echo 0xF00E > idProduct
+	echo "RNDIS" > configs/c.1/strings/0x409/configuration
+	ln -s functions/rndis.rndis configs/c.1/f1
+	usb_bind
+	cd /
+}
+
+# RNDIS + Mass Storage
+run_902A() {
+	remove_configs
+	echo 0x902a > idProduct
+	echo "RNDIS_MS" > configs/c.1/strings/0x409/configuration
+	ln -s functions/rndis.rndis configs/c.1/f1
+	ln -s functions/mass_storage.0 configs/c.1/f2
+	usb_bind
+	cd /
+}
+
+# RNDIS + ADB + Mass Storage
+run_902B() {
+	remove_configs
+	echo 0x902b > idProduct
+	echo "RNDIS_ADB_MS" > configs/c.1/strings/0x409/configuration
+	ln -s functions/rndis.rndis configs/c.1/f1
+	ln -s functions/ffs.usb0 configs/c.1/f2
+	ln -s functions/mass_storage.0 configs/c.1/f3
+	usb_bind
+	cd /
+}
+
+# RNDIS + DIAG
+run_902C() {
+	remove_configs
+	echo 0x902c > idProduct
+	echo "rndis_diag" > configs/c.1/strings/0x409/configuration
+	ln -s functions/rndis.rndis configs/c.1/f1
+	ln -s functions/ffs.diag configs/c.1/f2
+	usb_bind
+	cd /
+}
+
+# RNDIS + DIAG + ADB
+run_902D() {
+	remove_configs
+	echo 0x902d > idProduct
+	echo "RNDIS_DIAG_ADB" > configs/c.1/strings/0x409/configuration
+	ln -s functions/rndis.rndis configs/c.1/f1
+	ln -s functions/ffs.diag configs/c.1/f2
+	ln -s functions/ffs.usb0 configs/c.1/f3
+	usb_bind
+	cd /
+}
+
+# RNDIS + DIAG + Mass Storage
+run_902F() {
+	remove_configs
+	echo 0x902f > idProduct
+	echo "RNDIS_DIAG_MS" > configs/c.1/strings/0x409/configuration
+	ln -s functions/rndis.rndis configs/c.1/f1
+	ln -s functions/ffs.diag configs/c.1/f2
+	ln -s functions/mass_storage.0 configs/c.1/f3
+	echo 0x80 > configs/c.1/bmAttributes
+	usb_bind
+	cd /
+
+}
+
+# RNDIS + ADB + DIAG + Mass Storage
+run_9030() {
+	remove_configs
+	echo 0x9030 > idProduct
+	echo "RNDIS_DIAG_ADB_MS" > configs/c.1/strings/0x409/configuration
+	ln -s functions/rndis.rndis configs/c.1/f1
+	ln -s functions/ffs.diag configs/c.1/f2
+	ln -s functions/ffs.usb0 configs/c.1/f3
+	ln -s functions/mass_storage.0 configs/c.1/f4
+	usb_bind
+	cd /
+}
+
+# Standalone mass storage
+run_F000(){
+	remove_configs
+	echo 0xF000 > idProduct
+	echo "MS" > configs/c.1/strings/0x409/configuration
+	ln -s functions/mass_storage.0 configs/c.1/f1
+	usb_bind
+	cd /
+
+}
+
+# DIAG
+run_900E(){
+	remove_configs
+	echo 0x900E > idProduct
+	echo "DIAG" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	usb_bind
+	cd /
+}
+
+# NCM
+run_A4A1(){
+	remove_configs
+	echo 0xa4a1 > idProduct
+	echo "NCM" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ncm.0 configs/c.1/f1
+	usb_bind
+	cd /
+}
+
+# NCM + ADB
+run_908C() {
+	remove_configs
+	echo 0x908c > idProduct
+	echo "NCM_ADB" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ncm.0 configs/c.1/f1
+	ln -s functions/ffs.usb0 configs/c.1/f2
+	usb_bind
+	cd /
+}
+
+# DIAG + UAC2 + ADB
+run_90CA() {
+	remove_configs
+	echo 0x90CA > idProduct
+	echo "DIAG_ADB_UAC2" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	ln -s functions/uac2.0 configs/c.1/f2
+	ln -s functions/ffs.usb0 configs/c.1/f3
+	usb_bind
+	cd /
+}
+
+# DIAG + UAC2
+run_901C() {
+	remove_configs
+	echo 0x901C > idProduct
+	echo "DIAG_UAC2" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	ln -s functions/uac2.0 configs/c.1/f2
+	usb_bind
+	cd /
+}
+
+# DIAG + UVC + ADB
+run_90CB() {
+	remove_configs
+	echo 0x90CB > idProduct
+	echo "DIAG_UVC_UAC2" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	ln -s functions/uvc.0 configs/c.1/f2
+	ln -s functions/ffs.usb0 configs/c.1/f3
+	usb_bind
+	cd /
+}
+
+# DIAG,UVC
+run_90DF() {
+	remove_configs
+	echo 0x90DF > idProduct
+	echo "DIAG_UVC" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	ln -s functions/uvc.0 configs/c.1/f2
+	usb_bind
+	cd /
+}
+
+# DIAG + UAC2 + UVC + ADB
+run_90CC() {
+	remove_configs
+	echo 0x90CC > idProduct
+	echo "DIAG_ADB_UAC2_UVC" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	ln -s functions/ffs.usb0 configs/c.1/f2
+	ln -s functions/uac2.0 configs/c.1/f3
+	ln -s functions/uvc.0 configs/c.1/f4
+	usb_bind
+	cd /
+}
+
+# DIAG + UAC2 + UVC
+run_90E0() {
+	remove_configs
+	echo 0x90E0 > idProduct
+	echo "DIAG_UAC2_UVC" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	ln -s functions/uac2.0 configs/c.1/f2
+	ln -s functions/uvc.0 configs/c.1/f3
+	usb_bind
+	cd /
+}
+
+check_valid_pid() {
+	# Validate the PID against allowed_pid list to check if its allowed.
+	i=1
+	while true
+	do
+		pid=$(echo "$allowed_pids" | cut -d ';' -f $i)
+		pid=$(echo "$pid" | cut -d ':' -f 1)
+		if [ "$pid" = "XX" ]; then
+			return 0
+		fi
+		if [ "$pid" = $1 ]; then
+			return 1
+		fi
+		i=$(( i + 1 ))
+	done
+	return 0
+}
+
+set_pid() {
+	check_valid_pid $1
+	retval=$?
+	if [ $retval = 0 ]; then
+			echo "Invalid USB PID: " $1 > /dev/kmsg
+			break;
+	else
+		echo "Switching to USB composition: " $1 > /dev/kmsg
+
+		# If persist flag is set, then write the PID to usb_pid
+		if [ "$#" -gt 1 ]  && [ $2 = y ]; then
+			echo $1 > /etc/usb/usb_pid
+		fi
+
+		# Run the corresponding composition function.
+		# Append 'run' to pid since function name can't start with number.
+		(run_$1)
+	fi
+}
+
+show_pid() {
+	i=1
+	while true
+	do
+		string=$(echo "$allowed_pids" | cut -d ';' -f $i)
+		if [ "$string" = "XX: XX" ]; then
+			break
+		fi
+
+		echo "$string"
+		i=$(( i + 1 ))
+	done
+}
+
+persist_pid() {
+	check_valid_pid $1
+	retval=$?
+	if [ $retval = 0 ]; then
+		echo "Invalid USB PID: " $1 > /dev/kmsg
+	else
+		echo $1 > /etc/usb/usb_pid
+	fi
+}
+
+init_run_pid() {
+	# android-gadget-start present in oe dynamic layer would try binding for 30s
+	echo "Switching to USB composition:" $1 > /dev/kmsg
+	# Run the corresponding composition function.
+	# Append 'run' to pid since function name can't start with number.
+	(run_$1)
+	nohup android-gadget-start &
+}
+
+usb_init() {
+	if [ ! -d /sys/kernel/config/usb_gadget ]; then
+		mount -t configfs none /sys/kernel/config
+	fi
+
+	# Check if adbd had already created configfs, if not start the USB Android Gadget
+	# TODO - Lets hope adbd doesnt race with this.
+	if [ ! -d /sys/kernel/config/usb_gadget/adb ]; then
+		cd /sys/kernel/config/usb_gadget
+		mkdir adb
+		cd adb
+		mkdir strings/0x409
+		mkdir configs/c.1
+		mkdir configs/c.1/strings/0x409
+		# instance for ADB
+		mkdir functions/ffs.usb0
+
+		# mount functionfs
+		if [ ! -d /dev/usb-ffs/adb ]; then
+			mkdir -p /dev/usb-ffs/adb
+			mount -t functionfs usb0 /dev/usb-ffs/adb
+		fi
+	else
+		cd /sys/kernel/config/usb_gadget/adb
+	fi
+
+	mkdir functions/ecm.ecm
+	mkdir functions/ffs.diag
+	mkdir functions/ffs.dun
+	mkdir functions/mass_storage.0
+	mkdir functions/ncm.0
+#	mkdir functions/qdss.qdss_sw
+	mkdir functions/rndis.rndis
+	mkdir functions/uac2.0
+	mkdir functions/uvc.0
+
+	echo "QCOM" > strings/0x409/manufacturer
+
+	serialno="$(printf "%x" "$(cat /sys/devices/soc0/serial_number)")"
+	if [ ! "$serialno" ]; then
+		serialno="12345678"
+	fi
+
+	echo $serialno > strings/0x409/serialnumber
+	serialno=$(echo $serialno | tr '[:upper:]' '[:lower:]')
+	# Didn't perform hex connversion since serialno from cmdline was already hex.
+	#TODO - update soc/platform IDs
+	echo "QCM6490_$serialno" > strings/0x409/product
+
+	# Mount ffs nodes for diag
+	if [ ! -d /dev/ffs-diag ]; then
+		mkdir -p /dev/ffs-diag
+		mount -t functionfs diag /dev/ffs-diag
+	fi
+
+	# Initialize NCM OS descriptors
+	echo "WINNCM" > functions/ncm.0/os_desc/interface.ncm/compatible_id
+
+	# Add entry for persisting the composition
+	if [ -e /etc/usb/usb_pid ]; then
+		persist_pid=`cat /etc/usb/usb_pid`
+		init_run_pid $persist_pid &
+	else
+		mkdir /etc/usb/
+		echo 901D > /etc/usb/usb_pid
+		init_run_pid 901D &
+	fi
+}
+
+help_str="\
+
+Usage: qusb [bind] [unbind] [showpid] [help]
+	    [setpid [-p] <PID>] [persist <PID>]
+
+# --------------------* HELP *---------------------------------
+#
+# bind    - Binds configfs with USB gadget.
+# unbind  - stops/unbinds USB gadget.
+# setpid  - Sets 'diag, adb' compostion.
+#     -p  - Set the composition as default (persist).
+# showpid - Lists the available USB compostions.
+# persist - Sets the composition as default from next reboot.
+# help    - Lists out the supported arguments.
+#
+# -------------------------------------------------------------"
+
+case "$1" in
+    init )
+	usb_init
+	;;
+
+     bind )
+	usb_bind
+	;;
+
+    unbind )
+	usb_unbind
+	;;
+
+    setpid )
+	if [ "$#" -lt 2 ]; then
+		echo "USB PID not specified! Use showpid to know more"
+		exit 0
+	fi
+
+	# Use nohup to avoid the script getting killed while changing the
+	# composition from ADB shell. So if setpid is called, then execute
+	# qusb script again with nohup. Instead of taking an additional arg
+	# from user, we are using nohup  for both ADB and serial consoles.
+
+	eval last_arg=\$$#
+	if [ "$last_arg" != "use_nohup" ]; then
+		nohup qusb setpid $2 $3 "use_nohup" >/dev/null 2>&1
+		exit 0
+	fi
+
+	# Notify if persist flag is set
+	if [ "$2" = "-p" ]; then
+		set_pid $3 y
+	else
+		set_pid $2
+	fi
+	;;
+
+    showpid )
+	show_pid
+	;;
+
+    persist )
+	if [ "$#" -lt 2 ]; then
+		echo "USB PID not specified! Use showpid to know more"
+		exit 0
+	fi
+	persist_pid $2
+	;;
+
+     help )
+	echo "$help_str"
+	;;
+     * )
+	echo "Invalid command, take help :)"
+	echo "$help_str"
+	;;
+esac

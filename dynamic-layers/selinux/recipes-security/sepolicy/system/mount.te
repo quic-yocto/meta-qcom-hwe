@@ -1,0 +1,4 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+qcom_loc_manage_loc_data_files(mount_t)

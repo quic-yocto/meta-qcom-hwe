@@ -1,0 +1,13 @@
+diff --git a/src/daemon/daemon.conf.in b/src/daemon/daemon.conf.in
+index a9555238..56de3b7a 100644
+--- a/src/daemon/daemon.conf.in
++++ b/src/daemon/daemon.conf.in
+@@ -81,7 +81,7 @@ ifelse(@HAVE_SYS_RESOURCE_H@, 1, [dnl
+ ])dnl
+ 
+ ; default-sample-format = s16le
+-; default-sample-rate = 44100
++  default-sample-rate = 48000
+ ; alternate-sample-rate = 48000
+ ; default-sample-channels = 2
+ ; default-channel-map = front-left,front-right

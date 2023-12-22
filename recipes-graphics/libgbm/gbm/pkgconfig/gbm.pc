@@ -1,0 +1,11 @@
+prefix=OEPREFIX
+exec_prefix=OEEXECPREFIX
+libdir=OELIBDIR
+includedir=OEINCDIR
+
+Name: gbm
+Description: gbm library
+Requires.private: libudev
+Version: 21.1.1
+Libs: -L${libdir} -lgbm
+Cflags: -I${includedir}

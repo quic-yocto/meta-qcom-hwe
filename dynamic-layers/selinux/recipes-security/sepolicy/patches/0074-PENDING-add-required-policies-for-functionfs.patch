@@ -1,0 +1,37 @@
+From d835644fe396b80bf7f97e174e9d9a01dab7c0fd Mon Sep 17 00:00:00 2001
+From: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+Date: Wed, 15 Nov 2023 23:28:56 +0530
+Subject: [PATCH] PENDING: add required policies for functionfs
+
+added required policies for functionfs.
+
+Upstream-Status: Pending
+
+Signed-off-by: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+---
+ policy/modules/kernel/filesystem.te | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/policy/modules/kernel/filesystem.te b/policy/modules/kernel/filesystem.te
+index 9d4a4318e..2ad6ea5a9 100644
+--- a/policy/modules/kernel/filesystem.te
++++ b/policy/modules/kernel/filesystem.te
+@@ -309,6 +309,15 @@ genfscon reiserfs / gen_context(system_u:object_r:nfs_t,s0)
+ genfscon panfs / gen_context(system_u:object_r:nfs_t,s0)
+ genfscon gadgetfs / gen_context(system_u:object_r:nfs_t,s0)
+
++#
++#functionfs
++#
++
++type functionfs_t;
++fs_noxattr_type(functionfs_t)
++files_mountpoint(functionfs_t)
++genfscon functionfs / gen_context(system_u:object_r:functionfs_t,s0)
++
+ ########################################
+ #
+ # Rules for all filesystem types
+--
+2.17.1
+

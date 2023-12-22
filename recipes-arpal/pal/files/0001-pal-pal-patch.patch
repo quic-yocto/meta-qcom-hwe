@@ -1,0 +1,106 @@
+From 27ad1e9f32d11710745bee407a229f1fc8d39f18 Mon Sep 17 00:00:00 2001
+From: Pratyush Meduri <quic_mpratyus@quicinc.com>
+Date: Thu, 9 Nov 2023 20:32:32 +0530
+Subject: [PATCH] pal:pal patch
+
+---
+ plugins/codecs/bt_aptx.c                        | 3 +++
+ plugins/codecs/bt_ble.c                         | 4 ++++
+ plugins/codecs/bt_bundle.c                      | 3 +++
+ plugins/customva_intf/src/CustomVAInterface.cpp | 3 +++
+ plugins/hotword_intf/src/HotwordInterface.cpp   | 2 ++
+ utils/src/MetadataParser.cpp                    | 3 +++
+ 6 files changed, 18 insertions(+)
+
+diff --git a/plugins/codecs/bt_aptx.c b/plugins/codecs/bt_aptx.c
+index c5d05d1d..f13caaba 100644
+--- a/plugins/codecs/bt_aptx.c
++++ b/plugins/codecs/bt_aptx.c
+@@ -30,7 +30,10 @@
+ #define LOG_TAG "PAL: bt_aptx"
+ //#define LOG_NDEBUG 0
+ 
++#ifndef PAL_USE_SYSLOG
+ #include <log/log.h>
++#endif
++#include "PalCommon.h"
+ #include <errno.h>
+ #include <stdlib.h>
+ #include <string.h>
+diff --git a/plugins/codecs/bt_ble.c b/plugins/codecs/bt_ble.c
+index 5913fd4e..9bc7bba2 100644
+--- a/plugins/codecs/bt_ble.c
++++ b/plugins/codecs/bt_ble.c
+@@ -35,6 +35,10 @@
+ #define LOG_TAG "PAL: bt_ble"
+ //#define LOG_NDEBUG 0
+ 
++#ifndef PAL_USE_SYSLOG
++#include <log/log.h>
++#endif
++#include "PalCommon.h"
+ #include <log/log.h>
+ #include <errno.h>
+ #include <stdlib.h>
+diff --git a/plugins/codecs/bt_bundle.c b/plugins/codecs/bt_bundle.c
+index 693effba..0324a325 100644
+--- a/plugins/codecs/bt_bundle.c
++++ b/plugins/codecs/bt_bundle.c
+@@ -30,7 +30,10 @@
+ #define LOG_TAG "PAL: bt_bundle"
+ //#define LOG_NDEBUG 0
+ 
++#ifndef PAL_USE_SYSLOG
+ #include <log/log.h>
++#endif
++#include "PalCommon.h"
+ #include <errno.h>
+ #include <stdlib.h>
+ #include <string.h>
+diff --git a/plugins/customva_intf/src/CustomVAInterface.cpp b/plugins/customva_intf/src/CustomVAInterface.cpp
+index 11c93567..47f94625 100644
+--- a/plugins/customva_intf/src/CustomVAInterface.cpp
++++ b/plugins/customva_intf/src/CustomVAInterface.cpp
+@@ -34,7 +34,10 @@
+ #define LOG_TAG "PAL: CustomVAInterface"
+ //#define LOG_NDEBUG 0
+ 
++#ifndef PAL_USE_SYSLOG
+ #include <log/log.h>
++#endif
++#include "PalCommon.h"
+ #include "CustomVAInterface.h"
+ #ifndef PAL_CUTILS_UNSUPPORTED
+ #include <cutils/properties.h>
+diff --git a/plugins/hotword_intf/src/HotwordInterface.cpp b/plugins/hotword_intf/src/HotwordInterface.cpp
+index fe214498..ae7f57fa 100644
+--- a/plugins/hotword_intf/src/HotwordInterface.cpp
++++ b/plugins/hotword_intf/src/HotwordInterface.cpp
+@@ -34,7 +34,9 @@
+ #define LOG_TAG "PAL: HotwordInterface"
+ //#define LOG_NDEBUG 0
+ 
++#ifndef PAL_USE_SYSLOG
+ #include <log/log.h>
++#endif
+ #include "HotwordInterface.h"
+ 
+ extern "C" int32_t get_vui_interface(struct vui_intf_t *intf,
+diff --git a/utils/src/MetadataParser.cpp b/utils/src/MetadataParser.cpp
+index 9791e1c4..99464c18 100644
+--- a/utils/src/MetadataParser.cpp
++++ b/utils/src/MetadataParser.cpp
+@@ -6,7 +6,10 @@
+ #define LOG_TAG "PAL: MetadataParser"
+ 
+ #include <string>
++#ifndef PAL_USE_SYSLOG
+ #include <log/log.h>
++#endif
++#include "PalCommon.h"
+ #include <unistd.h>
+ #include "PalDefs.h"
+ #include "MetadataParser.h"
+-- 
+2.17.1
+

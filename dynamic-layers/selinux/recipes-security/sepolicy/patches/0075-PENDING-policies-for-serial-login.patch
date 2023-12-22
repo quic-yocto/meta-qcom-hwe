@@ -1,0 +1,64 @@
+From d90e7e98b2b4a86ceb55fb9c797f33c5e5029273 Mon Sep 17 00:00:00 2001
+From: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+Date: Wed, 29 Nov 2023 15:32:40 +0530
+Subject: [PATCH] PENDING: policies for serial login
+
+added policies for serial login
+
+Upstream-Status: Pending
+
+Signed-off-by: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+---
+ policy/modules/system/locallogin.te |  5 +++++
+ policy/modules/system/logging.if    | 19 +++++++++++++++++++
+ 2 files changed, 24 insertions(+)
+
+diff --git a/policy/modules/system/locallogin.te b/policy/modules/system/locallogin.te
+index 313112371..7c8f9e77a 100644
+--- a/policy/modules/system/locallogin.te
++++ b/policy/modules/system/locallogin.te
+@@ -265,6 +265,11 @@ userdom_use_unpriv_users_fds(sulogin_t)
+ userdom_search_user_home_dirs(sulogin_t)
+ userdom_use_user_ptys(sulogin_t)
+
++logging_rw_runtime_sockets(local_login_t)
++init_unix_stream_socket_connectto(local_login_t)
++busybox_nosuid_execute(local_login_t)
++systemd_stream_connect_userdb(local_login_t)
++
+ optional_policy(`
+ 	sysadm_shell_domtrans(sulogin_t)
+ ')
+diff --git a/policy/modules/system/logging.if b/policy/modules/system/logging.if
+index 30d402c75..05e87d800 100644
+--- a/policy/modules/system/logging.if
++++ b/policy/modules/system/logging.if
+@@ -878,6 +878,25 @@ interface(`logging_manage_runtime_sockets',`
+ 	files_search_runtime($1)
+ ')
+
++########################################
++## <summary>
++##      getattr, open, read, write, append syslog PID sockets.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`logging_rw_runtime_sockets',`
++        gen_require(`
++                type syslogd_runtime_t;
++        ')
++
++        rw_sock_files_pattern($1, syslogd_runtime_t, syslogd_runtime_t)
++        files_search_runtime($1)
++')
++
+ ########################################
+ ## <summary>
+ ##	Allows the domain to open a file in the
+--
+2.17.1
+

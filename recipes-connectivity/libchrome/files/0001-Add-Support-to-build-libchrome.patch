@@ -1,0 +1,643 @@
+From a53483bf9b003db5a3357a3c9079f14f71f8912b Mon Sep 17 00:00:00 2001
+From: Lakshmi Pola <ppriyank@codeaurora.org>
+Date: Thu, 27 Jun 2019 11:25:36 +0530
+Subject: [PATCH] meta-qti-bt
+
+Support of libchrome for bt.lnx.le.1.0
+
+Change-Id: Icd8e74ad5848d05e772d0e232f66fffcf9caa7f0
+---
+ Makefile.am                       | 372 ++++++++++++++++++++++++++++++
+ base/allocator/allocator_shim.cc  |  14 +-
+ base/cancelable_callback.h        |   1 -
+ base/files/file_util_posix.cc     |   2 +-
+ base/logging.cc                   |   8 +-
+ base/message_loop/message_loop.cc |  14 +-
+ base/third_party/libevent/event.h |   4 -
+ build/build_config.h              |   8 +-
+ configure.ac                      |  45 ++++
+ libchrome.pc.in                   |  15 ++
+ 10 files changed, 455 insertions(+), 28 deletions(-)
+ create mode 100644 Makefile.am
+ create mode 100644 configure.ac
+ create mode 100644 libchrome.pc.in
+
+diff --git a/Makefile.am b/Makefile.am
+new file mode 100644
+index 000000000..bcbb6d59f
+--- /dev/null
++++ b/Makefile.am
+@@ -0,0 +1,372 @@
++common_sources := base/at_exit.cc
++common_sources += base/base64.cc
++common_sources += base/base64url.cc
++common_sources += base/base_switches.cc
++common_sources += base/bind_helpers.cc
++common_sources += base/build_time.cc
++common_sources += base/callback_helpers.cc
++common_sources += base/callback_internal.cc
++common_sources += base/command_line.cc
++common_sources += base/cpu.cc
++common_sources += base/debug/alias.cc
++common_sources += base/debug/debugger.cc
++common_sources += base/debug/debugger_posix.cc
++common_sources += base/debug/stack_trace.cc
++common_sources += base/debug/stack_trace_posix.cc
++common_sources += base/debug/task_annotator.cc
++common_sources += base/environment.cc
++common_sources += base/files/file.cc
++common_sources += base/files/file_enumerator.cc
++common_sources += base/files/file_enumerator_posix.cc
++common_sources += base/files/file_path.cc
++common_sources += base/files/file_path_constants.cc
++common_sources += base/files/file_path_watcher.cc
++common_sources += base/files/file_posix.cc
++common_sources += base/files/file_tracing.cc
++common_sources += base/files/file_util.cc
++common_sources += base/files/file_util_posix.cc
++common_sources += base/files/important_file_writer.cc
++common_sources += base/files/memory_mapped_file.cc
++common_sources += base/files/memory_mapped_file_posix.cc
++common_sources += base/files/scoped_file.cc
++common_sources += base/files/scoped_temp_dir.cc
++common_sources += base/guid.cc
++common_sources += base/hash.cc
++common_sources += base/json/json_file_value_serializer.cc
++common_sources += base/json/json_parser.cc
++common_sources += base/json/json_reader.cc
++common_sources += base/json/json_string_value_serializer.cc
++common_sources += base/json/json_value_converter.cc
++common_sources += base/json/json_writer.cc
++common_sources += base/json/string_escape.cc
++common_sources += base/lazy_instance.cc
++common_sources += base/location.cc
++common_sources += base/logging.cc
++common_sources += base/md5.cc
++common_sources += base/memory/aligned_memory.cc
++common_sources += base/memory/ref_counted.cc
++common_sources += base/memory/ref_counted_memory.cc
++common_sources += base/memory/singleton.cc
++common_sources += base/memory/weak_ptr.cc
++common_sources += base/message_loop/incoming_task_queue.cc
++common_sources += base/message_loop/message_loop.cc
++common_sources += base/message_loop/message_loop_task_runner.cc
++common_sources += base/message_loop/message_pump.cc
++common_sources += base/message_loop/message_pump_default.cc
++common_sources += base/message_loop/message_pump_libevent.cc
++common_sources += base/metrics/bucket_ranges.cc
++common_sources += base/metrics/field_trial.cc
++common_sources += base/metrics/metrics_hashes.cc
++common_sources += base/metrics/histogram_base.cc
++common_sources += base/metrics/histogram.cc
++common_sources += base/metrics/histogram_samples.cc
++common_sources += base/metrics/histogram_snapshot_manager.cc
++common_sources += base/metrics/persistent_histogram_allocator.cc
++common_sources += base/metrics/persistent_memory_allocator.cc
++common_sources += base/metrics/persistent_sample_map.cc
++common_sources += base/metrics/sample_map.cc
++common_sources += base/metrics/sample_vector.cc
++common_sources += base/metrics/sparse_histogram.cc
++common_sources += base/metrics/statistics_recorder.cc
++common_sources += base/pending_task.cc
++common_sources += base/pickle.cc
++common_sources += base/posix/file_descriptor_shuffle.cc
++common_sources += base/posix/safe_strerror.cc
++common_sources += base/process/kill.cc
++common_sources += base/process/kill_posix.cc
++common_sources += base/process/launch.cc
++common_sources += base/process/launch_posix.cc
++common_sources += base/process/process_handle.cc
++common_sources += base/process/process_handle_posix.cc
++common_sources += base/process/process_iterator.cc
++common_sources += base/process/process_metrics.cc
++common_sources += base/process/process_metrics_posix.cc
++common_sources += base/process/process_posix.cc
++common_sources += base/profiler/scoped_profile.cc
++common_sources += base/profiler/scoped_tracker.cc
++common_sources += base/profiler/tracked_time.cc
++common_sources += base/rand_util.cc
++common_sources += base/rand_util_posix.cc
++common_sources += base/run_loop.cc
++common_sources += base/sequence_checker_impl.cc
++common_sources += base/sequenced_task_runner.cc
++common_sources += base/sha1_portable.cc
++common_sources += base/strings/pattern.cc
++common_sources += base/strings/safe_sprintf.cc
++common_sources += base/strings/string16.cc
++common_sources += base/strings/string_number_conversions.cc
++common_sources += base/strings/string_piece.cc
++common_sources += base/strings/stringprintf.cc
++common_sources += base/strings/string_split.cc
++common_sources += base/strings/string_util.cc
++common_sources += base/strings/string_util_constants.cc
++common_sources += base/strings/utf_string_conversions.cc
++common_sources += base/strings/utf_string_conversion_utils.cc
++common_sources += base/synchronization/cancellation_flag.cc
++common_sources += base/synchronization/condition_variable_posix.cc
++common_sources += base/synchronization/lock.cc
++common_sources += base/synchronization/lock_impl_posix.cc
++common_sources += base/synchronization/read_write_lock_posix.cc
++common_sources += base/synchronization/waitable_event_posix.cc
++common_sources += base/sync_socket_posix.cc
++common_sources += base/sys_info.cc
++common_sources += base/sys_info_posix.cc
++common_sources += base/task/cancelable_task_tracker.cc
++common_sources += base/task_runner.cc
++common_sources += base/task_scheduler/scheduler_lock_impl.cc
++common_sources += base/task_scheduler/sequence.cc
++common_sources += base/task_scheduler/sequence_sort_key.cc
++common_sources += base/task_scheduler/task.cc
++common_sources += base/task_scheduler/task_traits.cc
++common_sources += base/test/trace_event_analyzer.cc
++common_sources += base/third_party/icu/icu_utf.cc
++common_sources += base/third_party/nspr/prtime.cc
++common_sources += base/threading/non_thread_safe_impl.cc
++common_sources += base/threading/platform_thread_posix.cc
++common_sources += base/threading/post_task_and_reply_impl.cc
++common_sources += base/threading/sequenced_task_runner_handle.cc
++common_sources += base/threading/sequenced_worker_pool.cc
++common_sources += base/threading/simple_thread.cc
++common_sources += base/threading/thread.cc
++common_sources += base/threading/thread_checker_impl.cc
++common_sources += base/threading/thread_collision_warner.cc
++common_sources += base/threading/thread_id_name_manager.cc
++common_sources += base/threading/thread_local_posix.cc
++common_sources += base/threading/thread_local_storage.cc
++common_sources += base/threading/thread_local_storage_posix.cc
++common_sources += base/threading/thread_restrictions.cc
++common_sources += base/threading/thread_task_runner_handle.cc
++common_sources += base/threading/worker_pool.cc
++common_sources += base/threading/worker_pool_posix.cc
++common_sources += base/time/clock.cc
++common_sources += base/time/default_clock.cc
++common_sources += base/time/default_tick_clock.cc
++common_sources += base/time/tick_clock.cc
++common_sources += base/time/time.cc
++common_sources += base/time/time_posix.cc
++common_sources += base/timer/elapsed_timer.cc
++common_sources += base/timer/timer.cc
++common_sources += base/trace_event/heap_profiler_allocation_context.cc
++common_sources += base/trace_event/heap_profiler_allocation_context_tracker.cc
++common_sources += base/trace_event/heap_profiler_allocation_register.cc
++common_sources += base/trace_event/heap_profiler_allocation_register_posix.cc
++common_sources += base/trace_event/heap_profiler_heap_dump_writer.cc
++common_sources += base/trace_event/heap_profiler_stack_frame_deduplicator.cc
++common_sources += base/trace_event/heap_profiler_type_name_deduplicator.cc
++common_sources += base/trace_event/malloc_dump_provider.cc
++common_sources += base/trace_event/memory_allocator_dump.cc
++common_sources += base/trace_event/memory_allocator_dump_guid.cc
++common_sources += base/trace_event/memory_dump_manager.cc
++common_sources += base/trace_event/memory_dump_request_args.cc
++common_sources += base/trace_event/memory_dump_session_state.cc
++common_sources += base/trace_event/memory_infra_background_whitelist.cc
++common_sources += base/trace_event/process_memory_dump.cc
++common_sources += base/trace_event/process_memory_maps.cc
++common_sources += base/trace_event/process_memory_totals.cc
++common_sources += base/trace_event/trace_buffer.cc
++common_sources += base/trace_event/trace_config.cc
++common_sources += base/trace_event/trace_event_argument.cc
++common_sources += base/trace_event/trace_event_impl.cc
++common_sources += base/trace_event/trace_event_memory_overhead.cc
++common_sources += base/trace_event/trace_event_synthetic_delay.cc
++common_sources += base/trace_event/trace_log.cc
++common_sources += base/trace_event/trace_log_constants.cc
++common_sources += base/trace_event/trace_sampling_thread.cc
++common_sources += base/tracked_objects.cc
++common_sources += base/tracking_info.cc
++common_sources += base/values.cc
++common_sources += base/version.cc
++common_sources += base/vlog.cc
++common_sources += base/files/file_path_watcher_linux.cc
++common_sources += base/files/file_util_linux.cc
++common_sources += base/memory/shared_memory_posix.cc
++common_sources += base/posix/unix_domain_socket_linux.cc
++common_sources += base/process/internal_linux.cc
++common_sources += base/process/process_handle_linux.cc
++common_sources += base/process/process_iterator_linux.cc
++common_sources += base/process/process_metrics_linux.cc
++common_sources += base/strings/sys_string_conversions_posix.cc
++common_sources += base/sys_info_linux.cc
++common_sources += base/threading/platform_thread_internal_posix.cc
++common_sources += base/threading/platform_thread_linux.cc
++common_sources += components/timers/alarm_timer_chromeos.cc
++common_sources += base/allocator/allocator_shim.cc
++common_sources += base/allocator/allocator_shim_default_dispatch_to_glibc.cc
++requiredlibs = -lpthread -lbase
++
++# Build libchrome.so
++lib_LTLIBRARIES := libchrome.la
++
++libchrome_la_SOURCES  := $(common_sources)
++libchrome_la_CPPFLAGS := -DHAVE_PTHREADS
++libchrome_la_CPPFLAGS += -DLINUX_ENABLED
++libchrome_la_CPPFLAGS += -D__linux__ -DOS_LINUX
++libchrome_la_CPPFLAGS += -D_GNU_SOURCE
++libchrome_la_CPPFLAGS += -std=c++11
++libchrome_la_CPPFLAGS += -Ibase -I.. -I../libevent -Iinclude
++libchrome_la_CPPFLAGS += -I../googletest -I../googletest/googletest
++libchrome_la_CPPFLAGS += -I${WORKSPACE}/external/modp_b64 -I${WORKSPACE}/external/libevent/include
++libchrome_la_CPPFLAGS += -I${WORKSPACE}/external/googletest/googletest/include -I${WORKSPACE}/external/libevent
++libchrome_la_LDFLAGS  := -lpthread -levent -lmodpb64
++
++# Export headers
++chrome_includedir=$(includedir)/chrome
++base_includedir=$(includedir)/chrome/base
++containers_includedir=$(includedir)/chrome/base/containers
++debug_includedir=$(includedir)/chrome/base/debug
++thread_includedir=$(includedir)/chrome/base/threading
++ml_includedir=$(includedir)/chrome/base/message_loop
++build_includedir=$(includedir)/chrome/build
++string_includedir=$(includedir)/chrome/base/strings
++memory_includedir=$(includedir)/chrome/base/memory
++sync_includedir=$(includedir)/chrome/base/synchronization
++time_includedir=$(includedir)/chrome/base/time
++num_includedir=$(includedir)/chrome/base/numerics
++profiler_includedir=$(includedir)/chrome/base/profiler
++process_includedir=$(includedir)/chrome/base/process
++files_includedir=$(includedir)/chrome/base/files
++test_includedir=$(includedir)/chrome/testing/gtest/include/gtest
++
++files_include_HEADERS := base/files/file_path.h
++
++process_include_HEADERS := base/process/process_handle.h
++
++containers_include_HEADERS := base/containers/hash_tables.h
++containers_include_HEADERS += base/containers/linked_list.h
++containers_include_HEADERS += base/containers/mru_cache.h
++containers_include_HEADERS += base/containers/stack_container.h
++containers_include_HEADERS += base/containers/adapters.h
++containers_include_HEADERS += base/containers/scoped_ptr_hash_map.h
++containers_include_HEADERS += base/containers/small_map.h
++
++profiler_include_HEADERS := base/profiler/tracked_time.h
++
++test_include_HEADERS := testing/gtest/include/gtest/gtest_prod.h
++
++build_include_HEADERS := build/build_config.h
++
++sync_include_HEADERS := base/synchronization/lock.h
++sync_include_HEADERS += base/synchronization/lock_impl.h
++sync_include_HEADERS += base/synchronization/read_write_lock.h
++sync_include_HEADERS += base/synchronization/waitable_event.h
++
++string_include_HEADERS := base/strings/stringprintf.h
++string_include_HEADERS += base/strings/string_split.h
++#string_include_HEADERS += base/strings/string_util_win.h
++string_include_HEADERS += base/strings/string_number_conversions.h
++#string_include_HEADERS += base/strings/utf_string_conversion_utils.h
++string_include_HEADERS += base/strings/string_piece.h
++#string_include_HEADERS += base/strings/stringize_macros.h
++#string_include_HEADERS += base/strings/string_util_posix.h
++#string_include_HEADERS += base/strings/pattern.h
++#string_include_HEADERS += base/strings/safe_sprintf.h
++#string_include_HEADERS += base/strings/nullable_string16.h
++string_include_HEADERS += base/strings/string16.h
++#string_include_HEADERS += base/strings/string_util.h
++#string_include_HEADERS += base/strings/string_tokenizer.h
++#string_include_HEADERS += base/strings/utf_string_conversions.h
++#string_include_HEADERS += base/strings/sys_string_conversions.h
++
++debug_include_HEADERS := base/debug/debugger.h
++debug_include_HEADERS += base/debug/alias.h
++debug_include_HEADERS += base/debug/task_annotator.h
++debug_include_HEADERS += base/debug/leak_annotations.h
++
++time_include_HEADERS := base/time/time.h
++
++thread_include_HEADERS := base/threading/thread.h
++thread_include_HEADERS += base/threading/thread_collision_warner.h
++thread_include_HEADERS += base/threading/platform_thread.h
++thread_include_HEADERS += base/threading/sequenced_worker_pool.h
++thread_include_HEADERS += base/threading/thread_checker_impl.h
++thread_include_HEADERS += base/threading/non_thread_safe.h
++thread_include_HEADERS += base/threading/non_thread_safe_impl.h
++thread_include_HEADERS += base/threading/thread_checker.h
++thread_include_HEADERS += base/threading/thread_restrictions.h
++thread_include_HEADERS += base/threading/thread_local_storage.h
++
++ml_include_HEADERS := base/message_loop/message_loop.h
++ml_include_HEADERS += base/message_loop/incoming_task_queue.h
++ml_include_HEADERS += base/message_loop/message_loop_task_runner.h
++ml_include_HEADERS += base/message_loop/message_pump.h
++ml_include_HEADERS += base/message_loop/timer_slack.h
++ml_include_HEADERS += base/message_loop/message_pump_libevent.h
++
++num_include_HEADERS := base/numerics/safe_math.h
++num_include_HEADERS += base/numerics/safe_math_impl.h
++num_include_HEADERS += base/numerics/safe_conversions.h
++num_include_HEADERS += base/numerics/safe_conversions_impl.h
++
++memory_include_HEADERS := base/memory/ref_counted.h
++memory_include_HEADERS += base/memory/weak_ptr.h
++memory_include_HEADERS += base/memory/raw_scoped_refptr_mismatch_checker.h
++memory_include_HEADERS += base/memory/aligned_memory.h
++memory_include_HEADERS += base/memory/shared_memory_handle.h
++
++base_include_HEADERS := base/logging.h
++base_include_HEADERS += base/macros.h
++base_include_HEADERS += base/bind.h
++base_include_HEADERS += base/base_export.h
++base_include_HEADERS += base/bind_helpers.h
++base_include_HEADERS += base/at_exit.h
++#base_include_HEADERS += base/bit_cast.h
++#base_include_HEADERS += base/feature_list.h
++#base_include_HEADERS += base/format_macros.h
++#base_include_HEADERS += base/native_library.h
++#base_include_HEADERS += base/callback_helpers.h
++base_include_HEADERS += base/sequenced_task_runner.h
++#base_include_HEADERS += base/bits.h
++#base_include_HEADERS += base/atomic_sequence_num.h
++#base_include_HEADERS += base/md5.h
++base_include_HEADERS += base/atomicops_internals_portable.h
++#base_include_HEADERS += base/file_version_info.h
++#base_include_HEADERS += base/values.h
++base_include_HEADERS += base/atomicops.h
++#base_include_HEADERS += base/atomicops_internals_atomicword_compat.h
++base_include_HEADERS += base/command_line.h
++base_include_HEADERS += base/task_runner.h
++#base_include_HEADERS += base/environment.h
++#base_include_HEADERS += base/atomicops_internals_x86_msvc.h
++#base_include_HEADERS += base/guid.h
++#base_include_HEADERS += base/cpu.h
++#base_include_HEADERS += base/critical_closure.h
++base_include_HEADERS += base/pending_task.h
++#base_include_HEADERS += base/pickle.h
++#base_include_HEADERS += base/scoped_observer.h
++base_include_HEADERS += base/hash.h
++base_include_HEADERS += base/bind_internal.h
++base_include_HEADERS += base/atomic_ref_count.h
++#base_include_HEADERS += base/base_switches.h
++base_include_HEADERS += base/location.h
++#base_include_HEADERS += base/auto_reset.h
++base_include_HEADERS += base/lazy_instance.h
++base_include_HEADERS += base/stl_util.h
++#base_include_HEADERS += base/scoped_generic.h
++base_include_HEADERS += base/observer_list.h
++base_include_HEADERS += base/sequenced_task_runner_helpers.h
++base_include_HEADERS += base/cancelable_callback.h
++base_include_HEADERS += base/callback.h
++base_include_HEADERS += base/callback_forward.h
++base_include_HEADERS += base/callback_internal.h
++base_include_HEADERS += base/gtest_prod_util.h
++#base_include_HEADERS += base/optional.h
++#base_include_HEADERS += base/file_descriptor_posix.h
++#base_include_HEADERS += base/version.h
++#base_include_HEADERS += base/sys_info_internal.h
++#base_include_HEADERS += base/task_runner_util.h
++base_include_HEADERS += base/rand_util.h
++base_include_HEADERS += base/tracked_objects.h
++#base_include_HEADERS += base/build_time.h
++#base_include_HEADERS += base/sync_socket.h
++#base_include_HEADERS += base/os_compat_android.h
++#base_include_HEADERS += base/sys_byteorder.h
++#base_include_HEADERS += base/event_types.h
++base_include_HEADERS += base/tuple.h
++#base_include_HEADERS += base/vlog.h
++base_include_HEADERS += base/compiler_specific.h
++base_include_HEADERS += base/run_loop.h
++base_include_HEADERS += base/template_util.h
++base_include_HEADERS += base/sequence_checker.h
++base_include_HEADERS += base/sequence_checker_impl.h
++base_include_HEADERS += base/single_thread_task_runner.h
++base_include_HEADERS += base/tracking_info.h
+\ No newline at end of file
+diff --git a/base/allocator/allocator_shim.cc b/base/allocator/allocator_shim.cc
+index 09ed45fde..bbe817090 100644
+--- a/base/allocator/allocator_shim.cc
++++ b/base/allocator/allocator_shim.cc
+@@ -244,9 +244,9 @@ void ShimFree(void* address) {
+ // In the case of tcmalloc we also want to plumb into the glibc hooks
+ // to avoid that allocations made in glibc itself (e.g., strdup()) get
+ // accidentally performed on the glibc heap instead of the tcmalloc one.
+-#if defined(USE_TCMALLOC)
+-#include "base/allocator/allocator_shim_override_glibc_weak_symbols.h"
+-#endif
++//#if defined(USE_TCMALLOC)
++//#include "base/allocator/allocator_shim_override_glibc_weak_symbols.h"
++//#endif
+ 
+ // Cross-checks.
+ 
+@@ -254,7 +254,7 @@ void ShimFree(void* address) {
+ #error The allocator shim should not be compiled when building for memory tools.
+ #endif
+ 
+-#if (defined(__GNUC__) && defined(__EXCEPTIONS)) || \
+-    (defined(_HAS_EXCEPTIONS) && _HAS_EXCEPTIONS)
+-#error This code cannot be used when exceptions are turned on.
+-#endif
++//#if (defined(__GNUC__) && defined(__EXCEPTIONS)) || \
++//   (defined(_HAS_EXCEPTIONS) && _HAS_EXCEPTIONS)
++//#error This code cannot be used when exceptions are turned on.
++//#endif
+diff --git a/base/cancelable_callback.h b/base/cancelable_callback.h
+index 0034fddcc..f2e14146c 100644
+--- a/base/cancelable_callback.h
++++ b/base/cancelable_callback.h
+@@ -74,7 +74,6 @@ class CancelableCallback<void(A...)> {
+ 
+   // Cancels and drops the reference to the wrapped callback.
+   void Cancel() {
+-    weak_factory_.InvalidateWeakPtrs();
+     forwarder_.Reset();
+     callback_.Reset();
+   }
+diff --git a/base/files/file_util_posix.cc b/base/files/file_util_posix.cc
+index 85a1b41d4..fa02f5523 100644
+--- a/base/files/file_util_posix.cc
++++ b/base/files/file_util_posix.cc
+@@ -498,7 +498,7 @@ bool GetTempDir(FilePath* path) {
+ #if !defined(OS_MACOSX)  // Mac implementation is in file_util_mac.mm.
+ FilePath GetHomeDir() {
+ #if defined(OS_CHROMEOS)
+-  if (SysInfo::IsRunningOnChromeOS()) {
++  if (false) {
+     // On Chrome OS chrome::DIR_USER_DATA is overridden with a primary user
+     // homedir once it becomes available. Return / as the safe option.
+     return FilePath("/");
+diff --git a/base/logging.cc b/base/logging.cc
+index 381e9eea0..21cb0b96d 100644
+--- a/base/logging.cc
++++ b/base/logging.cc
+@@ -75,7 +75,7 @@ typedef pthread_mutex_t* MutexHandle;
+ #include "base/files/file_path.h"
+ #endif
+ 
+-#if defined(OS_ANDROID) || defined(__ANDROID__)
++#if defined(OS_ANDROID) || defined(__ANDROID__) || defined(OS_LINUX)
+ #include <android/log.h>
+ #endif
+ 
+@@ -669,7 +669,7 @@ LogMessage::~LogMessage() {
+ 
+       asl_send(asl_client.get(), asl_message.get());
+     }
+-#elif defined(OS_ANDROID) || defined(__ANDROID__)
++#elif defined(OS_ANDROID) || defined(__ANDROID__) || defined(OS_LINUX)
+     android_LogPriority priority =
+         (severity_ < 0) ? ANDROID_LOG_VERBOSE : ANDROID_LOG_UNKNOWN;
+     switch (severity_) {
+@@ -697,8 +697,8 @@ LogMessage::~LogMessage() {
+         str_newline.c_str());
+ #endif  // defined(OS_ANDROID)
+ #endif
+-    ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
+-    fflush(stderr);
++//    ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
++//    fflush(stderr);
+   } else if (severity_ >= kAlwaysPrintErrorLevel) {
+     // When we're only outputting to a log file, above a certain log level, we
+     // should still output to stderr so that we can better detect and diagnose
+diff --git a/base/message_loop/message_loop.cc b/base/message_loop/message_loop.cc
+index 54369a9b2..00bf7a8a3 100644
+--- a/base/message_loop/message_loop.cc
++++ b/base/message_loop/message_loop.cc
+@@ -35,9 +35,9 @@
+ #if defined(OS_ANDROID)
+ #include "base/message_loop/message_pump_android.h"
+ #endif
+-#if defined(USE_GLIB)
+-#include "base/message_loop/message_pump_glib.h"
+-#endif
++//#if defined(USE_GLIB)
++//#include "base/message_loop/message_pump_glib.h"
++//#endif
+ 
+ namespace base {
+ 
+@@ -212,11 +212,11 @@ bool MessageLoop::InitMessagePumpForUIFactory(MessagePumpFactory* factory) {
+ // static
+ std::unique_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
+ // TODO(rvargas): Get rid of the OS guards.
+-#if defined(USE_GLIB) && !defined(OS_NACL)
+-  typedef MessagePumpGlib MessagePumpForUI;
+-#elif defined(OS_LINUX) && !defined(OS_NACL)
++//#if defined(USE_GLIB) && !defined(OS_NACL)
++//  typedef MessagePumpGlib MessagePumpForUI;
++//#elif defined(OS_LINUX) && !defined(OS_NACL)
+   typedef MessagePumpLibevent MessagePumpForUI;
+-#endif
++//#endif
+ 
+ #if defined(OS_IOS) || defined(OS_MACOSX)
+ #define MESSAGE_PUMP_UI std::unique_ptr<MessagePump>(MessagePumpMac::Create())
+diff --git a/base/third_party/libevent/event.h b/base/third_party/libevent/event.h
+index d47d7973d..529cfdb59 100644
+--- a/base/third_party/libevent/event.h
++++ b/base/third_party/libevent/event.h
+@@ -1,10 +1,6 @@
+ // The Chromium build contains its own checkout of libevent. This stub is used
+ // when building the Chrome OS or Android libchrome package to instead use the
+ // system headers.
+-#if defined(__ANDROID__) || defined(__ANDROID_HOST__)
+ #include <event2/event.h>
+ #include <event2/event_compat.h>
+ #include <event2/event_struct.h>
+-#else
+-#include <event.h>
+-#endif
+diff --git a/build/build_config.h b/build/build_config.h
+index 80a93d3d4..9ef8b1342 100644
+--- a/build/build_config.h
++++ b/build/build_config.h
+@@ -27,12 +27,12 @@
+ //   within the NDK.
+ 
+ // Android targets and hosts don't use tcmalloc.
+-#if defined(__ANDROID__) || defined(__ANDROID_HOST__)
++#if defined(__ANDROID__) || defined(__ANDROID_HOST__) || defined(OS_LINUX)
+ #define NO_TCMALLOC
+ #endif  // defined(__ANDROID__) || defined(__ANDROID_HOST__)
+ 
+ // Use the Chrome OS version of the code for both Android targets and Chrome OS builds.
+-#if !defined(__ANDROID_HOST__)
++#if !defined(__ANDROID_HOST__) || !defined(OS_LINUX)
+ #define OS_CHROMEOS 1
+ #endif  // !defined(__ANDROID_HOST__)
+ 
+@@ -47,8 +47,8 @@
+ 
+ // TODO: Remove these once the GLib MessageLoopForUI isn't being used:
+ // https://crbug.com/361635
+-#define USE_GLIB 1
+-#define USE_OZONE 1
++#define USE_GLIB 0
++#define USE_OZONE 0
+ 
+ #endif  // defined(__ANDROID__)
+ 
+diff --git a/configure.ac b/configure.ac
+new file mode 100644
+index 000000000..0fc1c8739
+--- /dev/null
++++ b/configure.ac
+@@ -0,0 +1,45 @@
++AC_PREREQ(2.61)
++AC_INIT([libchrome],1.0.0)
++AM_INIT_AUTOMAKE([-Wall gnu foreign])
++AC_CONFIG_SRCDIR([Makefile.am])
++AC_CONFIG_HEADERS([config.h])
++AC_CONFIG_MACRO_DIR([m4])
++
++# Check for programs
++AM_PROG_AS
++AC_PROG_CC
++AM_PROG_CC_C_O
++AC_PROG_LIBTOOL
++AC_PROG_AWK
++AC_PROG_CPP
++AC_PROG_CXX
++AC_PROG_INSTALL
++AC_PROG_LN_S
++AC_PROG_MAKE_SET
++PKG_PROG_PKG_CONFIG
++
++AC_ARG_WITH([extra_includes],
++    AC_HELP_STRING([--with-extra-includes=@<:@dir@:>@],
++       [Specify the location of the common headers]),
++    [extra_incdir=$withval],
++    with_extra_includes=no)
++
++AC_ARG_WITH([host-os],
++        [AS_HELP_STRING([--with-host-os=HOST_OS],[Host OS to build adb host.(default: linux)])],
++        [HOST_OS="$withval"],
++        [HOST_OS='linux'])
++
++if test "x$HOST_OS" = "xlinux-gnueabi"; then
++  HOST_OS=linux
++else
++  AC_MSG_NOTICE([Unknown host OS $HOST_OS detected.])
++fi
++
++AM_CONDITIONAL([HOST_OS_LINUX], [test "x$HOST_OS" = "xlinux"])
++
++AC_CONFIG_FILES([ \
++    Makefile \
++    libchrome.pc
++])
++AC_OUTPUT
++
+diff --git a/libchrome.pc.in b/libchrome.pc.in
+new file mode 100644
+index 000000000..1b0527408
+--- /dev/null
++++ b/libchrome.pc.in
+@@ -0,0 +1,15 @@
++#libchrome pkg-config source file
++
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: libchrome
++Description: libchrome from AOSP
++Version: @VERSION@
++Requires:
++Conflicts:
++Libs: -L${libdir} -lchrome
++Libs.private: @LIBS@:
++Cflags: -I${includedir}/chrome/
+-- 
+2.17.1
+

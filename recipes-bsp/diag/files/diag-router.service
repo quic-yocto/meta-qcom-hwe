@@ -1,0 +1,24 @@
+# Copyright (c) 2020, 2022 Qualcomm Technologies, Inc.
+# All Rights Reserved.
+# Confidential and Proprietary - Qualcomm Technologies, Inc.
+#
+
+[Unit]
+Description= diag-router Service
+SourcePath=/usr/bin/diag-router
+After= usb.service
+Before= adbd.service
+Requires= usb.service
+DefaultDependencies=no
+
+[Service]
+User=system
+Group=system
+Restart=always
+RemainAfterExit=yes
+CapabilityBoundingSet=CAP_KILL
+AmbientCapabilities=CAP_KILL
+ExecStart=/usr/bin/diag-router
+
+[Install]
+WantedBy=sysinit.target

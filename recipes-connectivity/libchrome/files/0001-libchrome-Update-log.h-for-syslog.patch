@@ -1,0 +1,253 @@
+From 2d94089a713777a39f9582aead8b1239b7dcdb8f Mon Sep 17 00:00:00 2001
+From: Harish Bandi <quic_hbandi@quicinc.com>
+Date: Wed, 4 Oct 2023 12:44:18 +0530
+Subject: [PATCH] libchrome: Update log.h for syslog
+
+Change-Id: I304c0580f37f84f975f00a0584d0bcfa00d6376b
+Signed-off-by: Harish Bandi <quic_hbandi@quicinc.com>
+---
+ base/logging.cc | 34 +++++++++++++++++-----------------
+ base/logging.h  | 38 +++++++++++++++++++-------------------
+ 2 files changed, 36 insertions(+), 36 deletions(-)
+
+diff --git a/base/logging.cc b/base/logging.cc
+index 21cb0b96d1..4b2a0cef50 100644
+--- a/base/logging.cc
++++ b/base/logging.cc
+@@ -76,7 +76,7 @@ typedef pthread_mutex_t* MutexHandle;
+ #endif
+ 
+ #if defined(OS_ANDROID) || defined(__ANDROID__) || defined(OS_LINUX)
+-#include <android/log.h>
++#include <log.h>
+ #endif
+ 
+ namespace logging {
+@@ -100,7 +100,7 @@ int g_min_log_level = 0;
+ LoggingDestination g_logging_destination = LOG_DEFAULT;
+ 
+ // For LOG_ERROR and above, always print to stderr.
+-const int kAlwaysPrintErrorLevel = LOG_ERROR;
++const int kAlwaysPrintErrorLevel = BLLOG_ERROR;
+ 
+ // Which log file to use? This is initialized by InitLogging or
+ // will be lazily initialized to the default value when it is
+@@ -401,7 +401,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
+ }
+ 
+ void SetMinLogLevel(int level) {
+-  g_min_log_level = std::min(LOG_FATAL, level);
++  g_min_log_level = std::min(BLLOG_FATAL, level);
+ }
+ 
+ int GetMinLogLevel() {
+@@ -420,7 +420,7 @@ bool ShouldCreateLogMessage(int severity) {
+ }
+ 
+ int GetVlogVerbosity() {
+-  return std::max(-1, LOG_INFO - GetMinLogLevel());
++  return std::max(-1, BLLOG_INFO - GetMinLogLevel());
+ }
+ 
+ int GetVlogLevelHelper(const char* file, size_t N) {
+@@ -511,13 +511,13 @@ LogMessage::LogMessage(const char* file, int line, LogSeverity severity)
+ }
+ 
+ LogMessage::LogMessage(const char* file, int line, const char* condition)
+-    : severity_(LOG_FATAL), file_(file), line_(line) {
++    : severity_(BLLOG_FATAL), file_(file), line_(line) {
+   Init(file, line);
+   stream_ << "Check failed: " << condition << ". ";
+ }
+ 
+ LogMessage::LogMessage(const char* file, int line, std::string* result)
+-    : severity_(LOG_FATAL), file_(file), line_(line) {
++    : severity_(BLLOG_FATAL), file_(file), line_(line) {
+   Init(file, line);
+   stream_ << "Check failed: " << *result;
+   delete result;
+@@ -533,7 +533,7 @@ LogMessage::LogMessage(const char* file, int line, LogSeverity severity,
+ 
+ LogMessage::~LogMessage() {
+ #if !defined(OFFICIAL_BUILD) && !defined(OS_NACL) && !defined(__UCLIBC__)
+-  if (severity_ == LOG_FATAL && !base::debug::BeingDebugged()) {
++  if (severity_ == BLLOG_FATAL && !base::debug::BeingDebugged()) {
+     // Include a stack trace on a fatal, unless a debugger is attached.
+     base::debug::StackTrace trace;
+     stream_ << std::endl;  // Newline to separate from log message.
+@@ -648,13 +648,13 @@ LogMessage::~LogMessage() {
+ #define ASL_LEVEL_STR(level) ASL_LEVEL_STR_X(level)
+ #define ASL_LEVEL_STR_X(level) #level
+         switch (severity) {
+-          case LOG_INFO:
++          case BLLOG_INFO:
+             return ASL_LEVEL_STR(ASL_LEVEL_INFO);
+-          case LOG_WARNING:
++          case BLLOG_WARNING:
+             return ASL_LEVEL_STR(ASL_LEVEL_WARNING);
+-          case LOG_ERROR:
++          case BLLOG_ERROR:
+             return ASL_LEVEL_STR(ASL_LEVEL_ERR);
+-          case LOG_FATAL:
++          case BLLOG_FATAL:
+             return ASL_LEVEL_STR(ASL_LEVEL_CRIT);
+           default:
+             return severity < 0 ? ASL_LEVEL_STR(ASL_LEVEL_DEBUG)
+@@ -670,7 +670,7 @@ LogMessage::~LogMessage() {
+       asl_send(asl_client.get(), asl_message.get());
+     }
+ #elif defined(OS_ANDROID) || defined(__ANDROID__) || defined(OS_LINUX)
+-    android_LogPriority priority =
++    /*android_LogPriority priority = severity_;
+         (severity_ < 0) ? ANDROID_LOG_VERBOSE : ANDROID_LOG_UNKNOWN;
+     switch (severity_) {
+       case LOG_INFO:
+@@ -685,12 +685,12 @@ LogMessage::~LogMessage() {
+       case LOG_FATAL:
+         priority = ANDROID_LOG_FATAL;
+         break;
+-    }
++    }*/
+ #if defined(OS_ANDROID)
+     __android_log_write(priority, "chromium", str_newline.c_str());
+ #else
+     __android_log_write(
+-        priority,
++        severity_,
+         base::CommandLine::InitializedForCurrentProcess() ?
+             base::CommandLine::ForCurrentProcess()->
+                 GetProgram().BaseName().value().c_str() : nullptr,
+@@ -736,7 +736,7 @@ LogMessage::~LogMessage() {
+     }
+   }
+ 
+-  if (severity_ == LOG_FATAL) {
++  if (severity_ == BLLOG_FATAL) {
+     // Ensure the first characters of the string are on the stack so they
+     // are contained in minidumps for diagnostic purposes.
+     char str_stack[1024];
+@@ -919,7 +919,7 @@ void RawLog(int level, const char* message) {
+     }
+   }
+ 
+-  if (level == LOG_FATAL)
++  if (level == BLLOG_FATAL)
+     base::debug::BreakDebugger();
+ }
+ 
+@@ -939,7 +939,7 @@ std::wstring GetLogFileFullPath() {
+ #endif
+ 
+ BASE_EXPORT void LogErrorNotReached(const char* file, int line) {
+-  LogMessage(file, line, LOG_ERROR).stream()
++  LogMessage(file, line, BLLOG_ERROR).stream()
+       << "NOTREACHED() hit.";
+ }
+ 
+diff --git a/base/logging.h b/base/logging.h
+index 2bfc972601..73e583e6d7 100644
+--- a/base/logging.h
++++ b/base/logging.h
+@@ -317,35 +317,35 @@ BASE_EXPORT void SetLogMessageHandler(LogMessageHandlerFunction handler);
+ BASE_EXPORT LogMessageHandlerFunction GetLogMessageHandler();
+ 
+ typedef int LogSeverity;
+-const LogSeverity LOG_VERBOSE = -1;  // This is level 1 verbosity
++const LogSeverity BLLOG_VERBOSE = -1;  // This is level 1 verbosity
+ // Note: the log severities are used to index into the array of names,
+ // see log_severity_names.
+-const LogSeverity LOG_INFO = 0;
+-const LogSeverity LOG_WARNING = 1;
+-const LogSeverity LOG_ERROR = 2;
+-const LogSeverity LOG_FATAL = 3;
++const LogSeverity BLLOG_INFO = 0;
++const LogSeverity BLLOG_WARNING = 1;
++const LogSeverity BLLOG_ERROR = 2;
++const LogSeverity BLLOG_FATAL = 3;
+ const LogSeverity LOG_NUM_SEVERITIES = 4;
+ 
+ // LOG_DFATAL is LOG_FATAL in debug mode, ERROR in normal mode
+ #ifdef NDEBUG
+-const LogSeverity LOG_DFATAL = LOG_ERROR;
++const LogSeverity BLLOG_DFATAL = BLLOG_ERROR;
+ #else
+-const LogSeverity LOG_DFATAL = LOG_FATAL;
++const LogSeverity BLLOG_DFATAL = BLLOG_FATAL;
+ #endif
+ 
+ // A few definitions of macros that don't generate much code. These are used
+ // by LOG() and LOG_IF, etc. Since these are used all over our code, it's
+ // better to have compact code for these operations.
+ #define COMPACT_GOOGLE_LOG_EX_INFO(ClassName, ...) \
+-  logging::ClassName(__FILE__, __LINE__, logging::LOG_INFO , ##__VA_ARGS__)
+-#define COMPACT_GOOGLE_LOG_EX_WARNING(ClassName, ...) \
+-  logging::ClassName(__FILE__, __LINE__, logging::LOG_WARNING , ##__VA_ARGS__)
++  logging::ClassName(__FILE__, __LINE__, ::logging::BLLOG_INFO , ##__VA_ARGS__)
++#define COMPACT_GOOGLE_LOG_EX_WARNING(ClassName, ...)  \
++  logging::ClassName(__FILE__, __LINE__, ::logging::BLLOG_WARNING , ##__VA_ARGS__)
+ #define COMPACT_GOOGLE_LOG_EX_ERROR(ClassName, ...) \
+-  logging::ClassName(__FILE__, __LINE__, logging::LOG_ERROR , ##__VA_ARGS__)
++  logging::ClassName(__FILE__, __LINE__, ::logging::BLLOG_ERROR , ##__VA_ARGS__)
+ #define COMPACT_GOOGLE_LOG_EX_FATAL(ClassName, ...) \
+-  logging::ClassName(__FILE__, __LINE__, logging::LOG_FATAL , ##__VA_ARGS__)
++  logging::ClassName(__FILE__, __LINE__, logging::BLLOG_FATAL , ##__VA_ARGS__)
+ #define COMPACT_GOOGLE_LOG_EX_DFATAL(ClassName, ...) \
+-  logging::ClassName(__FILE__, __LINE__, logging::LOG_DFATAL , ##__VA_ARGS__)
++  logging::ClassName(__FILE__, __LINE__, logging::BLLOG_DFATAL , ##__VA_ARGS__)
+ 
+ #define COMPACT_GOOGLE_LOG_INFO \
+   COMPACT_GOOGLE_LOG_EX_INFO(LogMessage)
+@@ -369,14 +369,14 @@ const LogSeverity LOG_DFATAL = LOG_FATAL;
+   COMPACT_GOOGLE_LOG_EX_ERROR(ClassName , ##__VA_ARGS__)
+ #define COMPACT_GOOGLE_LOG_0 COMPACT_GOOGLE_LOG_ERROR
+ // Needed for LOG_IS_ON(ERROR).
+-const LogSeverity LOG_0 = LOG_ERROR;
++const LogSeverity TLOG_0 = BLLOG_ERROR;
+ #endif
+ 
+ // As special cases, we can assume that LOG_IS_ON(FATAL) always holds. Also,
+ // LOG_IS_ON(DFATAL) always holds in debug mode. In particular, CHECK()s will
+ // always fire if they fail.
+ #define LOG_IS_ON(severity) \
+-  (::logging::ShouldCreateLogMessage(::logging::LOG_##severity))
++  (::logging::ShouldCreateLogMessage(::logging::BLLOG_##severity))
+ 
+ // We can't do any caching tricks with VLOG_IS_ON() like the
+ // google-glog version since it requires GCC extensions.  This means
+@@ -705,7 +705,7 @@ enum { DEBUG_MODE = ENABLE_DLOG };
+ #define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...) \
+   COMPACT_GOOGLE_LOG_EX_FATAL(ClassName , ##__VA_ARGS__)
+ #define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_FATAL
+-const LogSeverity LOG_DCHECK = LOG_FATAL;
++const LogSeverity LOG_DCHECK = BLLOG_FATAL;
+ 
+ #else  // DCHECK_IS_ON()
+ 
+@@ -713,7 +713,7 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
+ #define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...) \
+   COMPACT_GOOGLE_LOG_EX_INFO(ClassName , ##__VA_ARGS__)
+ #define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_INFO
+-const LogSeverity LOG_DCHECK = LOG_INFO;
++const LogSeverity LOG_DCHECK = BLLOG_INFO;
+ 
+ #endif  // DCHECK_IS_ON()
+ 
+@@ -941,12 +941,12 @@ BASE_EXPORT void CloseLogFile();
+ // Async signal safe logging mechanism.
+ BASE_EXPORT void RawLog(int level, const char* message);
+ 
+-#define RAW_LOG(level, message) logging::RawLog(logging::LOG_ ## level, message)
++#define RAW_LOG(level, message) logging::RawLog(logging::BLLOG_ ## level, message)
+ 
+ #define RAW_CHECK(condition)                                                   \
+   do {                                                                         \
+     if (!(condition))                                                          \
+-      logging::RawLog(logging::LOG_FATAL, "Check failed: " #condition "\n");   \
++      logging::RawLog(logging::BLLOG_FATAL, "Check failed: " #condition "\n");   \
+   } while (0)
+ 
+ #if defined(OS_WIN)
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
+

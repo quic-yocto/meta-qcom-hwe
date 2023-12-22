@@ -1,0 +1,19 @@
+# Copyright (c) 2018 Qualcomm Technologies, Inc.
+# All Rights Reserved.
+# Confidential and Proprietary - Qualcomm Technologies, Inc.
+#
+
+[Unit]
+Description=start cnss daemon
+SourcePath=/usr/sbin/cnss_daemon
+
+[Service]
+Restart=no
+RemainAfterExit=yes
+ExecStart=/usr/sbin/cnss_daemon -n -dd
+User=wifi
+Group=wifi
+SupplementaryGroups=kmsg inet
+
+[Install]
+WantedBy=multi-user.target

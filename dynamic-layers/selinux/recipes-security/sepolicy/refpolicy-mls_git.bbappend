@@ -1,15 +1,33 @@
 POLICY_MONOLITHIC = "y"
 
 FILESEXTRAPATHS:append := "${THISDIR}:"
+FILESEXTRAPATHS:append := "${THISDIR}/patches:"
 
 SRC_URI:remove = "file://0042-policy-modules-system-systemd-systemd-user-fixes.patch"
 
+#Patches
+SRC_URI += "file://0070-PENDING-allow-logging-domains-to-execute-busybox.patch \
+            file://0071-PENDING-Add-net_admin-capability-to-modutils.patch \
+            file://0072-PENDING-allow-systemd-generator-to-getattr-of-unit-files.patch \
+            file://0073-PENDING-add-perms-to-mount-to-resolve-service-fails.patch \
+            file://0074-PENDING-add-required-policies-for-functionfs.patch \
+	    file://0075-PENDING-policies-for-serial-login.patch \
+"
+
+#Policy folders
 SRC_URI += "file://apps/ \
             file://kernel/ \
 	    file://roles/ \
 	    file://services/ \
 	    file://system/ \
             file://admin/ \
+	    file://target/ \
+"
+
+#enable test sepolicy
+ENABLE_TEST_SEPOLICY ?= "y"
+SRC_URI += "\
+	   ${@bb.utils.contains('ENABLE_TEST_SEPOLICY', 'y', 'file://test/', '', d)} \
 "
 
 EXTRA_OEMAKE += "tc_usrsbindir=${STAGING_SBINDIR_NATIVE}"
@@ -48,17 +66,71 @@ prepare_policy_store () {
         fi
 }
 
+def test_modules_list(d):
+    machine = d.getVar("MACHINE")
+
+    target_to_policy_map = {
+        'qcm6490': ['qcm6490_test', 'qcm8550_test'],
+        'qcm8550': ['qcm6490_test', 'qcm8550_test'],
+    }
+
+    if machine in target_to_policy_map:
+        return target_to_policy_map[machine]
+    else:
+        return None
+
+def target_modules_list(d):
+    machine = d.getVar("MACHINE")
+
+    target_to_policy_map = {
+        'qcm6490': ['qcm6490', 'qcm8550'],
+        'qcm8550': ['qcm6490', 'qcm8550'],
+    }
+
+    if machine in target_to_policy_map:
+        return target_to_policy_map[machine]
+    else:
+        return None
+
+def copy_target_policies(src_path, dest_path, src_folder, dest_folder, d):
+    import shutil
+    import os
+
+    if src_folder is 'test':
+        policy_modules = test_modules_list(d)
+    else:
+        policy_modules = target_modules_list(d)
+
+    if policy_modules is None:
+        return
+
+    for policy_module in policy_modules:
+        source_files = [f"{policy_module}.{ext}" for ext in ['te', 'if', 'fc']]
+
+    src_dir = os.path.join(src_path, src_folder)
+    dest_dir = os.path.join(dest_path, dest_folder)
+
+    for file in source_files:
+        src_file = os.path.join(src_dir, file)
+        dest_file = os.path.join(dest_dir, file)
+        shutil.copyfile(src_file, dest_file)
+
+
 def append_policy_file(src_path, dst_path):
     # Append our policy fragment to the end of the upstream file
     with open(src_path, 'r') as src_file:
         with open(dst_path, 'a') as dst_file:
             dst_file.write('\n')
             for line in src_file.readlines():
-                if not line.startswith('#'):
-                    dst_file.write(line)
+                dst_file.write(line)
 
-def copy_policies(src_path, dst_path, dir_list):
+def copy_policies(src_path, dst_path, dir_list, d):
     import shutil
+    copy_target_policies(src_path, dst_path, "target", "kernel", d)
+
+    if d.getVar("ENABLE_TEST_SEPOLICY") is 'y':
+        copy_target_policies(src_path, dst_path, "test", "apps", d)
+
     for dir in dir_list:
        src_dir = os.path.join(src_path, dir)
        dst_dir = os.path.join(dst_path, dir)
@@ -77,8 +149,9 @@ def install_policy(d):
     dst_path = os.path.join(d.getVar("S"), "policy", "modules")
     dir_list = ["apps","kernel","roles","services","system","admin"]
     # copy policies
-    copy_policies(src_path, dst_path, dir_list)
+    copy_policies(src_path, dst_path, dir_list,d)
 
 do_patch:append() {
     install_policy(d)
 }
+

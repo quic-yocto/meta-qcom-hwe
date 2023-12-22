@@ -1,0 +1,10 @@
+[Unit]
+Description=remove /var/tmp symlink
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "if [ -L /var/tmp ] && [ -d /var/volatile/tmp ]; then unlink /var/tmp; mkdir -p /var/tmp; fi;"
+
+[Install]
+WantedBy=local-fs.target

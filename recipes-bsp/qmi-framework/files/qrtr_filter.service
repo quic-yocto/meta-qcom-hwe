@@ -1,0 +1,19 @@
+# Copyright (c) 2021 Qualcomm Technologies, Inc.
+# All Rights Reserved.
+# Confidential and Proprietary - Qualcomm Technologies, Inc.
+#
+
+[Unit]
+Description= qrtr-filter Service
+SourcePath=/usr/bin/qrtr-filter
+DefaultDependencies=no
+
+[Service]
+User=qrtr
+Group=qrtr
+Restart=on-failure
+RemainAfterExit=yes
+ExecStart=/usr/bin/qrtr-filter
+
+[Install]
+WantedBy=sysinit.target

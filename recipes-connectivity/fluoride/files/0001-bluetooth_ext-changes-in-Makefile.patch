@@ -1,0 +1,154 @@
+From 6fe1bcc05cdabab9c5874b23b1a4cab1563eb09c Mon Sep 17 00:00:00 2001
+From: Chirag Jain <quic_chirjain@quicinc.com>
+Date: Wed, 20 Dec 2023 16:19:06 +0530
+Subject: [PATCH] bluetooth_ext: changes in Makefile
+
+changes to remove dependency on WORKSPACE variable
+
+Change-Id: I4d1b33be6cc05adf219c8badb29d8de83d1d06f9
+(cherry picked from commit c5654c5ffa80e9b0a1c41b958ec55d39a88051ab)
+---
+ certification_tools/blegatt_test/Makefile.am | 23 ++++++++++----------
+ certification_tools/l2test_ertm/Makefile.am  | 22 +++++++++----------
+ certification_tools/mcap_tool/Makefile.am    | 23 ++++++++++----------
+ certification_tools/rfcommtest/Makefile.am   | 23 ++++++++++----------
+ 4 files changed, 44 insertions(+), 47 deletions(-)
+
+diff --git a/certification_tools/blegatt_test/Makefile.am b/certification_tools/blegatt_test/Makefile.am
+index ec1bd1c..99dae73 100644
+--- a/certification_tools/blegatt_test/Makefile.am
++++ b/certification_tools/blegatt_test/Makefile.am
+@@ -13,18 +13,17 @@ AM_CFLAGS = -Wall \
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-AM_CPPFLAGS += -I${WORKSPACE}/bluetooth/stack/system/bt/stack/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/internal_include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/stack/l2cap \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/utils/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/btif/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/bta/include \
+-    -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/system_bt_ext/include \
+-    -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/vhal/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/types \
+-    -I${WORKSPACE}/system/core/include \
++AM_CPPFLAGS += -I${BT_SOURCE}/stack/system/bt/stack/include \
++    -I${BT_SOURCE}/stack/system/bt/include \
++    -I${BT_SOURCE}/stack/system/bt/internal_include \
++    -I${BT_SOURCE}/stack/system/bt/stack/l2cap \
++    -I${BT_SOURCE}/stack/system/bt/utils/include \
++    -I${BT_SOURCE}/stack/system/bt \
++    -I${BT_SOURCE}/stack/system/bt/btif/include \
++    -I${BT_SOURCE}/stack/system/bt/bta/include \
++    -I${BT_SOURCE}/stack/bluetooth_ext/system_bt_ext/include \
++    -I${BT_SOURCE}/stack/bluetooth_ext/vhal/include \
++    -I${BT_SOURCE}/stack/system/bt/types \
+     -I$(bdroid_C_INCLUDES)
+ 
+ 
+diff --git a/certification_tools/l2test_ertm/Makefile.am b/certification_tools/l2test_ertm/Makefile.am
+index f588c63..4f0cd59 100644
+--- a/certification_tools/l2test_ertm/Makefile.am
++++ b/certification_tools/l2test_ertm/Makefile.am
+@@ -13,17 +13,17 @@ AM_CFLAGS = -Wall \
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-AM_CPPFLAGS += -I${WORKSPACE}/bluetooth/stack/system/bt/stack/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/internal_include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/stack/l2cap \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/utils/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/btif/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/bta/include \
+-    -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/system_bt_ext/include \
+-    -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/vhal/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/types \
++AM_CPPFLAGS += -I${BT_SOURCE}/stack/system/bt/stack/include \
++    -I${BT_SOURCE}/stack/system/bt/include \
++    -I${BT_SOURCE}/stack/system/bt/internal_include \
++    -I${BT_SOURCE}/stack/system/bt/stack/l2cap \
++    -I${BT_SOURCE}/stack/system/bt/utils/include \
++    -I${BT_SOURCE}/stack/system/bt \
++    -I${BT_SOURCE}/stack/system/bt/btif/include \
++    -I${BT_SOURCE}/stack/system/bt/bta/include \
++    -I${BT_SOURCE}/stack/bluetooth_ext/system_bt_ext/include \
++    -I${BT_SOURCE}/stack/bluetooth_ext/vhal/include \
++    -I${BT_SOURCE}/stack/system/bt/types \
+     -I$(bdroid_C_INCLUDES)
+ 
+ 
+diff --git a/certification_tools/mcap_tool/Makefile.am b/certification_tools/mcap_tool/Makefile.am
+index 184cb66..d9b0790 100644
+--- a/certification_tools/mcap_tool/Makefile.am
++++ b/certification_tools/mcap_tool/Makefile.am
+@@ -13,18 +13,17 @@ AM_CFLAGS = -Wall \
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-AM_CPPFLAGS += -I${WORKSPACE}/bluetooth/stack/system/bt/stack/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/internal_include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/stack/l2cap \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/utils/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/btif/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/bta/include \
+-    -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/system_bt_ext/include \
+-    -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/vhal/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/types \
+-    -I${WORKSPACE}/system/core/include \
++AM_CPPFLAGS += -I${BT_SOURCE}/stack/system/bt/stack/include \
++    -I${BT_SOURCE}/stack/system/bt/include \
++    -I${BT_SOURCE}/stack/system/bt/internal_include \
++    -I${BT_SOURCE}/stack/system/bt/stack/l2cap \
++    -I${BT_SOURCE}/stack/system/bt/utils/include \
++    -I${BT_SOURCE}/stack/system/bt \
++    -I${BT_SOURCE}/stack/system/bt/btif/include \
++    -I${BT_SOURCE}/stack/system/bt/bta/include \
++    -I${BT_SOURCE}/stack/bluetooth_ext/system_bt_ext/include \
++    -I${BT_SOURCE}/stack/bluetooth_ext/vhal/include \
++    -I${BT_SOURCE}/stack/system/bt/types \
+     -I$(bdroid_C_INCLUDES)
+ 
+ 
+diff --git a/certification_tools/rfcommtest/Makefile.am b/certification_tools/rfcommtest/Makefile.am
+index c96f496..e11539c 100644
+--- a/certification_tools/rfcommtest/Makefile.am
++++ b/certification_tools/rfcommtest/Makefile.am
+@@ -13,18 +13,17 @@ AM_CFLAGS = -Wall \
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-AM_CPPFLAGS += -I${WORKSPACE}/bluetooth/stack/system/bt/stack/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/internal_include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/stack/l2cap \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/utils/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/btif/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/bta/include \
+-    -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/system_bt_ext/include \
+-    -I${WORKSPACE}/bluetooth/stack/bluetooth_ext/vhal/include \
+-    -I${WORKSPACE}/bluetooth/stack/system/bt/types \
+-    -I${WORKSPACE}/system/core/include \
++AM_CPPFLAGS += -I${BT_SOURCE}/stack/system/bt/stack/include \
++    -I${BT_SOURCE}/stack/system/bt/include \
++    -I${BT_SOURCE}/stack/system/bt/internal_include \
++    -I${BT_SOURCE}/stack/system/bt/stack/l2cap \
++    -I${BT_SOURCE}/stack/system/bt/utils/include \
++    -I${BT_SOURCE}/stack/system/bt \
++    -I${BT_SOURCE}/stack/system/bt/btif/include \
++    -I${BT_SOURCE}/stack/system/bt/bta/include \
++    -I${BT_SOURCE}/stack/bluetooth_ext/system_bt_ext/include \
++    -I${BT_SOURCE}/stack/bluetooth_ext/vhal/include \
++    -I${BT_SOURCE}/stack/system/bt/types \
+     -I$(bdroid_C_INCLUDES)
+ 
+ 
+-- 
+2.25.1
+

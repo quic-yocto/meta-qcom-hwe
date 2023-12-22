@@ -1,0 +1,255 @@
+From d9f4eb76a081b53ed3f42656993ef2b5ab8af135 Mon Sep 17 00:00:00 2001
+From: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+Date: Wed, 15 Nov 2023 23:13:39 +0530
+Subject: [PATCH] PENDING: add perms to mount to resolve service failures
+
+Added required permissions to mount to resolve
+service and mount failures while boot.
+
+Upstream-status: Pending
+
+Signed-off-by: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+---
+ policy/modules/kernel/files.if      | 20 +++++++++++
+ policy/modules/kernel/filesystem.if | 36 +++++++++++++++++++
+ policy/modules/services/chronyd.if  | 18 ++++++++++
+ policy/modules/system/init.if       | 56 +++++++++++++++++++++++++++++
+ policy/modules/system/libraries.if  | 19 ++++++++++
+ policy/modules/system/mount.te      | 13 +++++++
+ 6 files changed, 162 insertions(+)
+
+diff --git a/policy/modules/kernel/files.if b/policy/modules/kernel/files.if
+index b308eefd9..b92c2e8c4 100644
+--- a/policy/modules/kernel/files.if
++++ b/policy/modules/kernel/files.if
+@@ -7792,6 +7792,26 @@ interface(`files_manage_generic_spool',`
+ 	manage_files_pattern($1, var_spool_t, var_spool_t)
+ ')
+
++########################################
++## <summary>
++##      Mount generic spool
++##      directories (/var/spool).
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`files_mounton_spool',`
++        gen_require(`
++                type var_t, var_spool_t;
++        ')
++
++        allow $1 var_t:dir search_dir_perms;
++        allow $1 var_spool_t:dir mounton;
++')
++
+ ########################################
+ ## <summary>
+ ##	Create objects in the spool directory
+diff --git a/policy/modules/kernel/filesystem.if b/policy/modules/kernel/filesystem.if
+index 1fdba77f5..63032bcc0 100644
+--- a/policy/modules/kernel/filesystem.if
++++ b/policy/modules/kernel/filesystem.if
+@@ -1912,6 +1912,42 @@ interface(`fs_cifs_domtrans',`
+ 	domain_auto_transition_pattern($1, cifs_t, $2)
+ ')
+
++#######################################
++## <summary>
++##      getattr on a functionfs filesystem.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`fs_getattr_functionfs_files',`
++        gen_require(`
++                type functionfs_t;
++        ')
++
++        allow $1 functionfs_t:filesystem getattr;
++')
++
++#######################################
++## <summary>
++##      search on a configfs filesystem.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`fs_search_configfs_files',`
++        gen_require(`
++                type configfs_t;
++        ')
++
++        allow $1 configfs_t:dir search;
++')
++
+ #######################################
+ ## <summary>
+ ##	Create, read, write, and delete dirs
+diff --git a/policy/modules/services/chronyd.if b/policy/modules/services/chronyd.if
+index 25fb1b0d7..24a3d829b 100644
+--- a/policy/modules/services/chronyd.if
++++ b/policy/modules/services/chronyd.if
+@@ -398,3 +398,21 @@ interface(`chronyd_getattr_init_script_file',`
+         allow $1 chronyd_initrc_exec_t:file getattr;
+ ')
+
++########################################
++## <summary>
++##      Allow to read chronyd_var_lib_t
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`chronyd_var_lib_file',`
++        gen_require(`
++                type chronyd_var_lib_t;
++        ')
++
++        allow $1 chronyd_var_lib_t:dir list_dir_perms;
++')
++
+diff --git a/policy/modules/system/init.if b/policy/modules/system/init.if
+index 0171ee299..2f57eb339 100644
+--- a/policy/modules/system/init.if
++++ b/policy/modules/system/init.if
+@@ -1373,6 +1373,25 @@ interface(`init_manage_var_lib_files',`
+ 	files_search_var_lib($1)
+ ')
+
++########################################
++## <summary>
++##      Manage files in /var/lib/systemd/.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`init_manage_var_lib_dir',`
++        gen_require(`
++                type init_var_lib_t;
++        ')
++
++        manage_dirs_pattern($1, init_var_lib_t, init_var_lib_t)
++        files_search_var_lib($1)
++')
++
+ ########################################
+ ## <summary>
+ ##	Create files in /var/lib/systemd
+@@ -3025,6 +3044,43 @@ interface(`init_manage_utmp',`
+ 	allow $1 initrc_runtime_t:file manage_file_perms;
+ ')
+
++########################################
++## <summary>
++##      Create, read, write, and delete utmp directory.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`init_manage_utmp_dir',`
++        gen_require(`
++                type initrc_runtime_t;
++        ')
++
++        files_search_runtime($1)
++        allow $1 initrc_runtime_t:dir manage_dir_perms;
++')
++
++########################################
++## <summary>
++##      Delete utmp chr file.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`init_delete_utmp_chr_file',`
++        gen_require(`
++                type initrc_runtime_t;
++        ')
++
++        allow $1 initrc_runtime_t:chr_file delete_chr_file_perms;
++')
++
+ ########################################
+ ## <summary>
+ ##	Add a watch on utmp.
+diff --git a/policy/modules/system/libraries.if b/policy/modules/system/libraries.if
+index 15cba69bc..0ba278bd6 100644
+--- a/policy/modules/system/libraries.if
++++ b/policy/modules/system/libraries.if
+@@ -233,6 +233,25 @@ interface(`libs_dontaudit_write_lib_dirs',`
+ 	dontaudit $1 lib_t:dir write;
+ ')
+
++########################################
++## <summary>
++##      Mount library directory.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`libs_mount_lib',`
++        gen_require(`
++                type lib_t;
++        ')
++
++        allow $1 lib_t:dir search_dir_perms;
++        allow $1 lib_t:dir mounton;
++')
++
+ ########################################
+ ## <summary>
+ ##	Create, read, write, and delete library directories.
+diff --git a/policy/modules/system/mount.te b/policy/modules/system/mount.te
+index 3481f9294..db9082ef9 100644
+--- a/policy/modules/system/mount.te
++++ b/policy/modules/system/mount.te
+@@ -146,6 +146,19 @@ selinux_getattr_fs(mount_t)
+
+ userdom_use_all_users_fds(mount_t)
+
++init_manage_utmp(mount_t)
++init_manage_utmp_dir(mount_t)
++init_delete_utmp_chr_file(mount_t)
++allow mount_t self:capability dac_read_search;
++files_mounton_spool(mount_t)
++libs_mount_lib(mount_t)
++init_manage_var_lib_files(mount_t)
++init_manage_var_lib_dir(mount_t)
++fs_search_configfs_files(mount_t)
++fs_getattr_functionfs_files(mount_t)
++files_relabel_var_lib_dirs(mount_t)
++chronyd_var_lib_file(mount_t)
++
+ ifdef(`distro_redhat',`
+ 	optional_policy(`
+ 		auth_read_pam_console_data(mount_t)
+--
+2.17.1
+

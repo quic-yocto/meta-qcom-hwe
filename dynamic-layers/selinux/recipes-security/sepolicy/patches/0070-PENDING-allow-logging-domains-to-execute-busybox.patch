@@ -1,0 +1,103 @@
+From 7cb3bccbf81743bb25c5fce34804cc0b941014d1 Mon Sep 17 00:00:00 2001
+From: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+Date: Wed, 15 Nov 2023 12:16:46 +0530
+Subject: [PATCH] PENDING: allow logging domains to execute busybox_nosuid
+
+Added policy module for busybox_nosuid and
+also added policies allowing dmesg, syslogd, klogd to
+execute busybox_nosuid.
+
+Upstream-Status: Pending
+
+Signed-off-by: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
+---
+ policy/modules/admin/dmesg.te    |  2 ++
+ policy/modules/system/busybox.fc |  3 +++
+ policy/modules/system/busybox.if | 21 +++++++++++++++++++++
+ policy/modules/system/busybox.te |  8 ++++++++
+ policy/modules/system/logging.te |  3 +++
+ 5 files changed, 37 insertions(+)
+ create mode 100644 policy/modules/system/busybox.fc
+ create mode 100644 policy/modules/system/busybox.if
+ create mode 100644 policy/modules/system/busybox.te
+
+diff --git a/policy/modules/admin/dmesg.te b/policy/modules/admin/dmesg.te
+index d87ee5583..d2b553341 100644
+--- a/policy/modules/admin/dmesg.te
++++ b/policy/modules/admin/dmesg.te
+@@ -54,6 +54,8 @@ userdom_use_user_terminals(dmesg_t)
+ 
+ mls_file_read_to_clearance(dmesg_t)
+ 
++busybox_nosuid_execute(dmesg_t)
++
+ optional_policy(`
+ 	seutil_sigchld_newrole(dmesg_t)
+ ')
+diff --git a/policy/modules/system/busybox.fc b/policy/modules/system/busybox.fc
+new file mode 100644
+index 000000000..28585bda0
+--- /dev/null
++++ b/policy/modules/system/busybox.fc
+@@ -0,0 +1,3 @@
++#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++#SPDX-License-Identifier: BSD-3-Clause-Clear
++/usr/bin/busybox.nosuid         --      system_u:object_r:busybox_nosuid_exec_t:s0
+diff --git a/policy/modules/system/busybox.if b/policy/modules/system/busybox.if
+new file mode 100644
+index 000000000..395d65bbc
+--- /dev/null
++++ b/policy/modules/system/busybox.if
+@@ -0,0 +1,21 @@
++#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++#SPDX-License-Identifier: BSD-3-Clause-Clear
++## <summary>Busybox service</summary>
++
++######################################
++## <summary>
++##      Allow domain to execute busybox.nosuid
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`busybox_nosuid_execute',`
++	gen_require(`
++		type busybox_nosuid_exec_t;
++	')
++
++	allow $1 busybox_nosuid_exec_t:file mmap_exec_file_perms;
++')
+diff --git a/policy/modules/system/busybox.te b/policy/modules/system/busybox.te
+new file mode 100644
+index 000000000..094e6fc76
+--- /dev/null
++++ b/policy/modules/system/busybox.te
+@@ -0,0 +1,8 @@
++#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++#SPDX-License-Identifier: BSD-3-Clause-Clear
++
++policy_module(busybox, 1.0.0)
++
++type busybox_nosuid_t;
++type busybox_nosuid_exec_t;
++init_system_domain(busybox_nosuid_t, busybox_nosuid_exec_t)
+diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
+index badf56f16..a35af6e6e 100644
+--- a/policy/modules/system/logging.te
++++ b/policy/modules/system/logging.te
+@@ -527,6 +527,9 @@ seutil_read_config(syslogd_t)
+ userdom_dontaudit_use_unpriv_user_fds(syslogd_t)
+ userdom_dontaudit_search_user_home_dirs(syslogd_t)
+ 
++busybox_nosuid_execute(klogd_t)
++busybox_nosuid_execute(syslogd_t)
++
+ ifdef(`init_systemd',`
+ 	# for systemd-journal
+ 	allow syslogd_t self:capability audit_control;
+-- 
+2.17.1
+

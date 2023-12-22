@@ -32,11 +32,17 @@ do_uki[dirs] = "${B}"
 python do_uki() {
     import glob
     import subprocess
+    import os
 
     # Construct the ukify command
     ukify_cmd = ("ukify build")
 
     deploy_dir_image = d.getVar('DEPLOY_DIR_IMAGE')
+
+    # clean up uki.efi
+    uki_file = deploy_dir_image + "/uki.efi"
+    if os.path.exists(uki_file):
+        os.remove(uki_file)
 
     # Ramdisk
     if d.getVar('INITRAMFS_IMAGE'):
@@ -77,10 +83,10 @@ python do_uki() {
     ukify_cmd += " --stub %s" % stub
 
     # Add option for dtb
-    if d.getVar('KERNEL_DEVICETREE'):
+    if d.getVar('KERNEL_DEVICETREE') and d.getVar('UKI_DTB') == "1" :
         first_dtb = d.getVar('KERNEL_DEVICETREE').split()[0]
         dtbf = os.path.basename(first_dtb)
-        dtb_path = "%s/%s" % (deploy_dir_image, dtbf)
+        dtb_path = "%s/%s/%s" % (deploy_dir_image, "DTOverlays", dtbf)
 
         if not os.path.exists(dtb_path):
             bb.fatal(f"ERROR: cannot find {dtb_path}.")
@@ -105,5 +111,5 @@ do_deploy () {
     install ${B}/${UKI_FILENAME} ${DEPLOYDIR}
 }
 
-addtask uki before do_deploy do_image after do_rootfs
+addtask uki before do_deploy do_image after do_rootfs do_merge_dtbos
 addtask deploy before do_build after do_compile

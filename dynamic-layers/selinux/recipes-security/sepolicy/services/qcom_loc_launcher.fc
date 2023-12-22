@@ -1,0 +1,27 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#file_context for location launcher and child process
+/usr/bin/loc_launcher      -- gen_context(system_u:object_r:qcom_loc_launcher_exec_t,s0)
+/usr/bin/xtwifi-inet-agent -- gen_context(system_u:object_r:qcom_xtwifi_agent_exec_t,s0)
+/usr/bin/xtwifi-client     -- gen_context(system_u:object_r:qcom_xtwifi_client_exec_t,s0)
+/usr/bin/xtra-daemon       -- gen_context(system_u:object_r:qcom_xtra_daemon_exec_t,s0)
+/usr/bin/edgnss-daemon     -- gen_context(system_u:object_r:qcom_edgnss_daemon_exec_t,s0)
+/usr/bin/lowi-server       -- gen_context(system_u:object_r:qcom_lowi_server_exec_t,s0)
+
+## location data files
+/var/lib/location(/.*)?             gen_context(system_u:object_r:qcom_loc_data_t,s0)
+/var/lib/location-partner(/.*)?     gen_context(system_u:object_r:qcom_loc_data_t,s0)
+
+## socket files
+/run/location(/.*)?          gen_context(system_u:object_r:qcom_loc_sock_t,s0)
+/run/loc_client(/.*)?        gen_context(system_u:object_r:qcom_loc_sock_t,s0)
+/run/loc_client/hal_daemon   gen_context(system_u:object_r:qcom_loc_sock_t,s0)
+
+## location conf files
+/etc/batching.conf  -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
+/etc/gps.conf       -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
+/etc/izat.conf      -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
+/etc/lowi.conf      -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
+/etc/qapi.conf      -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
+/etc/xtwifi.conf    -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
