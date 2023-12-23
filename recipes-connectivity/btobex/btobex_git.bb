@@ -8,14 +8,13 @@ ${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
 DEPENDS += "glib-2.0 btvendorhal"
 
-#CFLAGS_append = " -DUSE_ANDROID_LOGGING "
-#CFLAGS_append += " ${@bb.utils.contains('VARIANT', 'debug', '-g', '', d)}"
-#LDFLAGS_append = " -llog "
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=http;rev=50f31639122c7496e0e13989c0ee97fd4ea5ac1f;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
+           "
+S = "${WORKDIR}"
 
-FILESPATH =+ "${WORKSPACE}:"
-SRC_URI = "file://bluetooth/btapp/obex_profiles/"
+EXTRA_OEMAKE += 'BT_SOURCE=${S}'
 
-S = "${WORKDIR}/bluetooth/btapp/obex_profiles"
+AUTOTOOLS_SCRIPT_PATH = "${S}/btapp/obex_profiles"
 
 EXTRA_OECONF = "--with-glib"
 EXTRA_OECONF += "--with-common-includes=${STAGING_INCDIR}"

@@ -13,19 +13,15 @@ SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/syste
            git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=c894fb1cb8aee5a3150666159334938650958cbd;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/bluetooth_ext \
            git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=50f31639122c7496e0e13989c0ee97fd4ea5ac1f;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
            git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=87f67a56b05ca12dac03b2d7c833d5e377139936;branch=bt-performant.qclinux.1.0.r1-rel;subdir=bt_audio \
-           file://0001-bt-changes-in-Makefile.patch;patchdir=stack/system/bt \
-           file://0001-bluetooth_ext-changes-in-Makefile.patch;patchdir=stack/bluetooth_ext \
-           file://0001-btapp-changes-in-Makefile.patch;patchdir=btapp \
-	   file://0001-bt_audio-changes-in-Makefile.patch;patchdir=bt_audio \
+           file://0001-stack-system-bt-makefile-fix.patch;patchdir=stack/system/bt \
            "
 
 S = "${WORKDIR}"
-BT_SOURCE = "${S}"
-S_EXT = "${BT_SOURCE}/bluetooth_ext/system_bt_ext"
+S_EXT = "${S}/stack/bluetooth_ext/system_bt_ext"
 
 AUTOTOOLS_SCRIPT_PATH = "${S}/stack/system/bt"
 
-EXTRA_OEMAKE += 'BT_SOURCE=${BT_SOURCE}'
+EXTRA_OEMAKE += 'BT_SOURCE=${S}'
 
 FILES_SOLIBSDEV = ""
 FILES:${PN} += "${libdir}"
@@ -33,13 +29,12 @@ FILES:${PN} += "${sysconfdir}/bluetooth/*"
 INSANE_SKIP:${PN} = "dev-so"
 
 CPPFLAGS:append = " -DUSE_ANDROID_LOGGING -DUSE_LIBHW_AOSP"
-CPPFLAGS:append = " ${@bb.utils.contains('VARIANT', 'debug', '-g', '', d)}"
 CPPFLAGS:append = " -w -I${STAGING_INCDIR}"
 CFLAGS:append = " -w -DNDEBUG  -I${STAGING_INCDIR}"
 
 EXTRA_OECONF = " \
                 --with-zlib \
-                --with-common-includes="${BT_SOURCE}/stack/system/bt" \
+                --with-common-includes="${S}/stack/system/bt" \
                 --with-lib-path=${STAGING_LIBDIR} \
                 --enable-static=yes \
                 --with-chrome-includes="${STAGING_INCDIR}/chrome" \
