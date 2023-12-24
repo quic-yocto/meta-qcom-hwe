@@ -16,6 +16,9 @@ deltask do_configure
 deltask do_compile
 deltask do_populate_lic
 
+addtask prepare_recipe_sysroot after do_unpack
+addtask install after do_prepare_recipe_sysroot
+
 fakeroot python do_install() {
     import shutil
 
@@ -37,9 +40,5 @@ fakeroot python do_install() {
 
     shutil.rmtree("%s/__LIC__" % dest)
 }
-addtask install after do_unpack
 
 INSANE_SKIP:${PN}:append = " already-stripped"
-
-#Disable the split of debug information into -dbg files
-INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
