@@ -8,7 +8,7 @@ ${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
 DEPENDS += "glib-2.0 btvendorhal"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=http;rev=50f31639122c7496e0e13989c0ee97fd4ea5ac1f;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=http;rev=9d20f544ae0a0e3e5054fb6a7c89368361d428a1;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
            "
 S = "${WORKDIR}"
 

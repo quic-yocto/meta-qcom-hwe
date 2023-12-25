@@ -6,7 +6,7 @@ DESCRIPTION = "Provides headers_install.sh script to sanitize kernel headers."
 LICENSE = "GPLv2.0-with-linux-syscall-note"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-SRC_URI += "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=acf5b4dc1f7bde43af5e3c9c1f637540a9e39b03;branch=kernel.qclinux.1.0.r1-rel"
+SRC_URI += "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=aea6160f0ba1c279fcdeded51e68a0da090f5ed9;branch=kernel.qclinux.1.0.r1-rel"
 
 S = "${WORKDIR}/git"
 

@@ -9,11 +9,10 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=89aea4e17d99a7ca
 DEPENDS = "zlib libchrome glib-2.0 property-vault"
 RDEPENDS:${PN} = "property-vault"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=b12be0db7b8de53203efac31c0f3234281d05851;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/system/bt \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=c894fb1cb8aee5a3150666159334938650958cbd;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/bluetooth_ext \
-           git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=50f31639122c7496e0e13989c0ee97fd4ea5ac1f;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=87f67a56b05ca12dac03b2d7c833d5e377139936;branch=bt-performant.qclinux.1.0.r1-rel;subdir=bt_audio \
-           file://0001-stack-system-bt-makefile-fix.patch;patchdir=stack/system/bt \
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=a15c5eb0ba520877ba334a4a602b0a64a50ae657;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/system/bt \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=17d14de31bbe88655f362a4527a631fef904be90;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/bluetooth_ext \
+           git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=9d20f544ae0a0e3e5054fb6a7c89368361d428a1;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=8df29e610163fb38dddaf2ed905f2dbd98b72316;branch=bt-performant.qclinux.1.0.r1-rel;subdir=bt_audio \
            "
 
 S = "${WORKDIR}"
@@ -48,16 +47,16 @@ do_install:append() {
 	cd  ${D}/${libdir}/ && ln -s libbluetoothdefault.so.0 bluetooth.default.so
 	cd  ${D}/${libdir}/ && ln -s libaudioa2dpdefault.so.0 audio.a2dp.default.so
 
-	if [ -f ${S}/conf/auto_pair_devlist.conf ]; then
-	   install -m 0660 ${S}/conf/auto_pair_devlist.conf ${D}${sysconfdir}/bluetooth/
+	if [ -f ${S}/stack/system/bt/conf/auto_pair_devlist.conf ]; then
+	   install -m 0660 ${S}/stack/system/bt/conf/auto_pair_devlist.conf ${D}${sysconfdir}/bluetooth/
 	fi
 
-	if [ -f ${S}/conf/bt_did.conf ]; then
-	   install -m 0660 ${S}/conf/bt_did.conf ${D}${sysconfdir}/bluetooth/
+	if [ -f ${S}/stack/system/bt/conf/bt_did.conf ]; then
+	   install -m 0660 ${S}/stack/system/bt/conf/bt_did.conf ${D}${sysconfdir}/bluetooth/
 	fi
 
-	if [ -f ${S}/conf/bt_stack.conf ]; then
-	   install -m 0660 ${S}/conf/bt_stack.conf ${D}${sysconfdir}/bluetooth/
+	if [ -f ${S}/stack/system/bt/conf/bt_stack.conf ]; then
+	   install -m 0660 ${S}/stack/system/bt/conf/bt_stack.conf ${D}${sysconfdir}/bluetooth/
 	fi
 
 	if [ -f ${S_EXT}/conf/interop_database.conf ]; then
@@ -68,7 +67,7 @@ do_install:append() {
 		install -m 0660 ${S_EXT}/conf/bt_profile.conf ${D}${sysconfdir}/bluetooth/
 	fi
 
-	if [ -f ${S}/conf/iot_devlist.conf ]; then
-	   install -m 0660 ${S}/conf/iot_devlist.conf ${D}${sysconfdir}/bluetooth/
+	if [ -f ${S}/stack/system/bt/conf/iot_devlist.conf ]; then
+	   install -m 0660 ${S}/stack/system/bt/conf/iot_devlist.conf ${D}${sysconfdir}/bluetooth/
 	fi
 }

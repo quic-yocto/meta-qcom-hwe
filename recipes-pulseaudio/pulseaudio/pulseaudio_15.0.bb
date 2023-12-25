@@ -2,7 +2,7 @@ require pulseaudio.inc
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/pulseaudio:"
 
-SRC_URI = "git://git.codelinaro.org/clo/le//pulseaudio.git;protocol=https;rev=0fb772faa0a61cf86c2a10444e10c45e9a599ff8;branch=pulseaudio.lnx.3.0.r5-rel \
+SRC_URI += "git://git.codelinaro.org/clo/le//pulseaudio.git;protocol=https;rev=0fb772faa0a61cf86c2a10444e10c45e9a599ff8;branch=pulseaudio.lnx.3.0.r5-rel \
            file://0001-client-conf-Add-allow-autospawn-for-root.patch \
            file://0002-do-not-display-CLFAGS-to-improve-reproducibility-bui.patch \
            file://0001-meson-Check-for-__get_cpuid.patch \

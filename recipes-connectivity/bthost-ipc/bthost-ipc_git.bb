@@ -9,7 +9,7 @@ PR = "r0"
 
 DEPENDS = "glib-2.0 fluoride"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=87f67a56b05ca12dac03b2d7c833d5e377139936;branch=bt-performant.qclinux.1.0.r1-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=8df29e610163fb38dddaf2ed905f2dbd98b72316;branch=bt-performant.qclinux.1.0.r1-rel"
 
 BT_SOURCE = "${WORKDIR}"
 S = "${WORKDIR}/git"

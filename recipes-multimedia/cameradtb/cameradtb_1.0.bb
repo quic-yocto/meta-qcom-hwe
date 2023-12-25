@@ -6,7 +6,7 @@ inherit module deploy
 
 SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-devicetree.git;protocol=https;rev=b91a411b306d91d902290944be51139a5cf29b5c;branch=camera-kernel.qclinux.1.0.r1-rel;subdir=git/camera-devicetree \
            git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=8b6ce539ff5648181020b0a509a4a22d464dd281;branch=camera-kernel.qclinux.1.0.r1-rel;subdir=git/camera-kernel \
-    	   "
+           "
 
 S = "${WORKDIR}/git/camera-devicetree"
 

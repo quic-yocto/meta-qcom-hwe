@@ -15,8 +15,6 @@ while true; do
     n=$(expr $n + 1)
 done
 
-ls /sys/class/udc/ | xargs echo -n > /sys/kernel/config/usb_gadget/adb/UDC
-
 n=0
 # Try writing to UDC again as it can fail due ADb/Diag service dependency
 while true; do
@@ -29,4 +27,3 @@ while true; do
     sleep 1
     n=$(expr $n + 1)
 done
-

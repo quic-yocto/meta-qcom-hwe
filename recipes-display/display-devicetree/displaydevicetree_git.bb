@@ -6,6 +6,7 @@ ${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 inherit module deploy
 
 SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/display-devicetree.git;protocol=https;rev=00d3210ec735c7ee8fca8fc4181684913230ee45;branch=display-kernel.qclinux.1.0.r2-rel"
+
 S = "${WORKDIR}/git"
 
 DTC := "${KBUILD_OUTPUT}/scripts/dtc/dtc"

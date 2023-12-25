@@ -6,8 +6,8 @@ inherit module
 
 DEPENDS += "linux-kernel-headers-install-native"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=8b6ce539ff5648181020b0a509a4a22d464dd281;branch=camera-kernel.qclinux.1.0.r1-rel"
-                                                                                               
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=8b6ce539ff5648181020b0a509a4a22d464dd281;branch=camera-kernel.qclinux.1.0.r1-rel"
+
 S = "${WORKDIR}/git"
 
 MODULES_INSTALL_TARGET = "modules_install headers_install"

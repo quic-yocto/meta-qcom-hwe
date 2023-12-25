@@ -7,7 +7,9 @@ DESCRIPTION = "Generates libfastcvopt"
 
 DEPENDS += "libdmabufheap syslog-plumber property-vault glib-2.0 fastrpc"
 
-SRCREV = "87e9e28a5714ffa7cb291eb480b61b8ac6a59c49"
+RDEPENDS:${PN} += "${PN}-cpu ${PN}-dsp"
+
+SRCREV = "ad944e38851618c4096293e8cb7ea82c4e7e427a"
 
 SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
 
@@ -15,16 +17,16 @@ PREBUILT_TARBALL = "fastcv-binaries_1.0_qcm6490.tar.gz"
 
 S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
-
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 PACKAGES =+ "${PN}-cpu ${PN}-dsp"
 FILES:${PN}-cpu = "${libdir}/libfastcvopt.so"
-INSANE_SKIP:${PN}-dsp = "arch"
 FILES:${PN}-dsp += "${libdir}/rfsa/adsp/* ${libdir}/libfastcvdsp_stub.so"
+
+INSANE_SKIP:${PN} = "already-stripped"
+INSANE_SKIP:${PN}-dsp = "arch"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 
-RDEPENDS:${PN} += "${PN}-cpu ${PN}-dsp"
 ALLOW_EMPTY:${PN} = "1"

@@ -5,11 +5,10 @@ LICENSE = "Apache-2.0"
 HOMEPAGE = "https://www.codeaurora.org/"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=http;rev=50f31639122c7496e0e13989c0ee97fd4ea5ac1f;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=http;rev=87f67a56b05ca12dac03b2d7c833d5e377139936;branch=bt-performant.qclinux.1.0.r1-rel;subdir=bt_audio \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=http;rev=b12be0db7b8de53203efac31c0f3234281d05851;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/system/bt \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=http;rev=c894fb1cb8aee5a3150666159334938650958cbd;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/bluetooth_ext \
-           file://0001-btapp-changes-in-Makefile.patch;patchdir=btapp \
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=9d20f544ae0a0e3e5054fb6a7c89368361d428a1;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=8df29e610163fb38dddaf2ed905f2dbd98b72316;branch=bt-performant.qclinux.1.0.r1-rel;subdir=bt_audio \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=a15c5eb0ba520877ba334a4a602b0a64a50ae657;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/system/bt \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=17d14de31bbe88655f362a4527a631fef904be90;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/bluetooth_ext \
            "
 
 S = "${WORKDIR}"
@@ -41,19 +40,19 @@ do_install:append() {
         #create /data/misc/bluetooth/ folder
         #install -d ${D}${userfsdatadir}/misc/bluetooth/
 
-        if [ -f ${S}/conf/bt_app.conf ]; then
-           install -m 0660 ${S}/conf/bt_app.conf ${D}${sysconfdir}/bluetooth/
+        if [ -f ${S}/btapp/bt-app/conf/bt_app.conf ]; then
+           install -m 0660 ${S}/btapp/bt-app/conf/bt_app.conf ${D}${sysconfdir}/bluetooth/
         fi
 
-        if [ -f ${S}/conf/AdvertiserConfigFile.txt ]; then
-           install -m 0660 ${S}/conf/AdvertiserConfigFile.txt ${D}${sysconfdir}/bluetooth/
+        if [ -f ${S}/btapp/bt-app/conf/AdvertiserConfigFile.txt ]; then
+           install -m 0660 ${S}/btapp/bt-app/conf/AdvertiserConfigFile.txt ${D}${sysconfdir}/bluetooth/
         fi
 
-        if [ -f ${S}/conf/ServerConfigFile.txt ]; then
-           install -m 0660 ${S}/conf/ServerConfigFile.txt ${D}${sysconfdir}/bluetooth/
+        if [ -f ${S}/btapp/bt-app/conf/ServerConfigFile.txt ]; then
+           install -m 0660 ${S}/btapp/bt-app/conf/ServerConfigFile.txt ${D}${sysconfdir}/bluetooth/
         fi
 
-        if [ -f ${S}/conf/ext_to_mimetype.conf ]; then
-           install -m 0660 ${S}/conf/ext_to_mimetype.conf ${D}${sysconfdir}/bluetooth/
+        if [ -f ${S}/btapp/bt-app/conf/ext_to_mimetype.conf ]; then
+           install -m 0660 ${S}/btapp/bt-app/conf/ext_to_mimetype.conf ${D}${sysconfdir}/bluetooth/
         fi
 }
