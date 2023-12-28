@@ -93,6 +93,20 @@ MACHINE="testBoard" DISTRO="qcom-wayland" source setup-environment
 bitbake qcom-multimedia-image
 ```
 
+## Known Issues
+### firmware-qcm6490-boot-2.0-r0 do_deploy error
+Following error may be observed in some cases:
+```bash
+ERROR: firmware-qcm6490-boot-2.0-r0 do_deploy: The recipe firmware-qcm6490-boot is trying to install files into a shared area when those files already exist. Those files and their manifest location are:
+  /path/to/workspace/build-dir/tmp-glibc/deploy/images/qcm6490/partition.xml
+    (matched in manifest-qcm6490-qcom-minimal-image.gen_partition_bins)
+Please verify which recipe should provide the above files.
+```
+To overcome this problem and to proceed with the build please use the following command
+```bash
+bitbake -fc cleansstate <image-recipe>
+bitbake <image-recipe>
+```
 
 ## Maintainer(s)
 1. Naveen Kumar <quic_kumarn@quicinc.com>
