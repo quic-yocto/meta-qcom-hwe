@@ -3,7 +3,7 @@
 
 [Unit]
 SourcePath=/etc/initscripts/log_restrict.sh
-Description=QCOM post boot settings service
+Description=QCOM logging service
 
 [Service]
 ExecStart=/etc/initscripts/post_boot.sh

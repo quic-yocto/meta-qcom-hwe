@@ -3,16 +3,17 @@ inherit autotools pkgconfig systemd
 DESCRIPTION = "pal"
 SECTION = "multimedia"
 LICENSE = "BSD-3-Clause"
-LIC_FILES_CHKSUM += "file://Pal.cpp;beginline=30;endline=31;md5=4a19879b8f612e3e0cd49fa53a83dc36 \
-                     file://inc/PalDefs.h;beginline=30;endline=31;md5=0f37b80cb1f8d808a27cca9f0cb5e0ac"
+LIC_FILES_CHKSUM += "file://Pal.cpp;beginline=31;endline=32;md5=e733afaf233fbcbc22769d0a9bda0b3e \
+                     file://inc/PalDefs.h;beginline=30;endline=31;md5=e733afaf233fbcbc22769d0a9bda0b3e"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/arpal-lx.git;rev=4f44782ac76d533dcbf7efe5089f8ae002f5796d;branch=audio-platform-arintf.lnx.2.0.r3-rel \
-            file://0001-pal-pal-patch.patch \
-            file://adsprpcd_audiopd.service"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/arpal-lx.git;protocol=https;rev=a5b3ce3c0fa23107a7b1228bf4d40111d8705ee9;branch=audio-platform-arintf.lnx.2.0.r3-rel \
+           file://0001-pal-pal-patch.patch \
+           file://adsprpcd_audiopd.service \
+           "
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "tinyalsa tinycompress agm mm-audio-headers audioroute dspservices-headers"
+DEPENDS = "tinyalsa tinycompress agm mm-audio-headers audioroute dspservices-headers vui-interface pal-headers"
 
 EXTRA_OECONF += "--with-glib --with-syslog"
 

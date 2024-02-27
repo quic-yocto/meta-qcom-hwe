@@ -1,15 +1,12 @@
 inherit autotools-brokensep pkgconfig
 
 DESCRIPTION = "Build Android libdmabufheap for LE"
-HOMEPAGE = "http://developer.android.com/"
 LICENSE = "Apache-2.0"
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/\
-${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/system/memory/libdmabufheap.git;protocol=https;rev=16773a1bc39088b79f8ed3de29a1cae9ca17a0f9;branch=memory-le-apps.lnx.1.0.r35-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/system/memory/libdmabufheap.git;protocol=https;rev=37bf33001a41b66676d6d1883982f0b14583fc02;branch=memory-le-apps.lnx.1.0.r35-rel"
 
 S = "${WORKDIR}/git"
-
 DEPENDS += "linux-kernel-qcom-headers"
 
 EXTRA_OECONF:append = " \

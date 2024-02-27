@@ -21,5 +21,10 @@ do_install () {
     oe_runmake install DESTDIR=${D} prefix=${prefix} servicedir=${systemd_unitdir}/system
 }
 
+do_install:prepend() {
+    # convert the service from root user to system user
+    sed -i "/ExecStart=/i\User=system\nGroup=system" pd-mapper.service.in
+}
+
 SYSTEMD_SERVICE:${PN} = "pd-mapper.service"
 RDEPENDS:${PN} += "qrtr"

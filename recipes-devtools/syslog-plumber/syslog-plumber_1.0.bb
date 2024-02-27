@@ -2,7 +2,7 @@ SUMMARY = "system logging helper"
 DESCRIPTION = "Utility to redirect ALOG style logs into syslog buffers"
 
 LICENSE = "BSD-3-Clause-Clear"
-LIC_FILES_CHKSUM = "file://include/log.h;beginline=1;endline=2;md5=aabb851d69c3a788a613fd53fa9db243"
+LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
 DEPENDS = "logrotate"
 

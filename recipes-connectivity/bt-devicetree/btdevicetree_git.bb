@@ -1,11 +1,10 @@
 DESCRIPTION = "QCOM BT devicetree"
 LICENSE = "BSD-3-Clause"
-HOMEPAGE = "https://git.codelinaro.org/"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
 inherit module deploy
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bt-devicetree.git;protocol=https;rev=6c993641b4d51f3cc4ba982eed882870478676ee;branch=bt-performant.qclinux.1.0.r1-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bt-devicetree.git;protocol=https;rev=c326166c78890b12578cc302e2f21ae32b79286f;branch=bt-performant.qclinux.1.0.r1-rel"
 
 BT_SOURCE = "${WORKDIR}"
 S = "${WORKDIR}/git"
@@ -32,3 +31,4 @@ do_deploy() {
 }
 
 addtask do_deploy after do_install
+

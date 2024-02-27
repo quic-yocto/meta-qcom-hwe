@@ -1,0 +1,36 @@
+From 8cecccc8956ff8d39117b066f8680f3133a93077 Mon Sep 17 00:00:00 2001
+From: Puneeth Prabhu <quic_pprabh@quicinc.com>
+Date: Thu, 21 Dec 2023 16:31:14 +0530
+Subject: [PATCH] Support native sample rate
+
+Change-Id: Iafcc5968718d98efaf002149174530a0799b376a
+Signed-off-by: Puneeth Prabhu <quic_pprabh@quicinc.com>
+---
+ src/daemon/daemon.conf.in | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/daemon/daemon.conf.in b/src/daemon/daemon.conf.in
+index 908ca24b0..0168e4846 100644
+--- a/src/daemon/daemon.conf.in
++++ b/src/daemon/daemon.conf.in
+@@ -54,7 +54,7 @@ ifelse(@HAVE_DBUS@, 1, [dnl
+ ; log-backtrace = 0
+ 
+ ; resample-method = speex-float-1
+-; avoid-resampling = false
++  avoid-resampling = yes
+ ; enable-remixing = yes
+ ; remixing-use-all-sink-channels = yes
+ ; remixing-produce-lfe = no
+@@ -85,7 +85,7 @@ ifelse(@HAVE_SYS_RESOURCE_H@, 1, [dnl
+ 
+ ; default-sample-format = s16le
+   default-sample-rate = 48000
+-; alternate-sample-rate = 48000
++  alternate-sample-rate = 8000
+ ; default-sample-channels = 2
+ ; default-channel-map = front-left,front-right
+ 
+-- 
+2.17.1
+

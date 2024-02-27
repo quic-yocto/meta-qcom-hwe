@@ -17,4 +17,7 @@ S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+FILES:${PN} += "/usr/bin/*"
+FILES:${PN} += "${bindir}/*"
+
 INSANE_SKIP:${PN} += "debug-files"

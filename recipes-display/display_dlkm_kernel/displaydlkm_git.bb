@@ -1,11 +1,11 @@
-DESCRIPTION = "QCOM Display drivers"
-LICENSE = "GPL-2.0-only"
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/\
-${LICENSE};md5=801f80980d171dd6425610833a22dbe6"
-
 inherit module
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/display-drivers.git;protocol=https;rev=073762ecaae4f846ed0a5a5084fae938a4c24411;branch=display-kernel.qclinux.1.0.r2-rel"
+DESCRIPTION = "QCOM Display drivers"
+
+LICENSE = "GPL-2.0-only"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=801f80980d171dd6425610833a22dbe6"
+
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/display-drivers.git;protocol=https;rev=e1b6c4ed3c204947a9082ac05b41db20bf463e9e;branch=display-kernel.qclinux.1.0.r2-rel"
 
 S = "${WORKDIR}/git"
 

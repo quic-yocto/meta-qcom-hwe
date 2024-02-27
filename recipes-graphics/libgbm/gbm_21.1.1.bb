@@ -1,7 +1,5 @@
 SUMMARY = "gbm"
-DESCRIPTION = "Provide QC contributed GBM (Generic Buffer Management) \
-library."
-HOMEPAGE = "https://git.codelinaro.org/"
+DESCRIPTION = "Provide QC contributed GBM (Generic Buffer Management) library."
 
 LICENSE = "BSD-3-Clause & BSD-3-Clause-Clear"
 BSD-3-Clause_LICENSE  = "file://inc/gbm.h;beginline=2;endline=27"
@@ -14,10 +12,12 @@ ${BSD-3-Clause_LICENSE};md5=966a1bac2e99d152d17ed2b6d7ad8bab"
 DEPENDS = "glib-2.0 wayland displaydlkm"
 PROVIDES += "virtual/libgbm libgbm"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/display/libgbm.git;rev=127016ec03659bf02640f639fba0c3b64b8f0a98;protocol=https;branch=display.qclinux.1.0.r1-rel"
-SRC_URI:append = " file://pkgconfig/gbm.pc"
-
+SRC_URI += "git://git.codelinaro.org/clo/le/display/libgbm.git;protocol=https;rev=d872637d99b251e759c7f7c5e97a6a98192cf47a;branch=display.qclinux.1.0.r1-rel \
+           file://pkgconfig/gbm.pc \
+           "
 S = "${WORKDIR}/git"
+
+SRC_URI:append = " file://pkgconfig/gbm.pc"
 
 inherit autotools-brokensep pkgconfig
 

@@ -4,25 +4,28 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 inherit packagegroup
 
-LICENSE = "BSD-3-Clause & \
-           BSD-3-Clause-Clear & \
-           Qualcomm-Technologies-Inc.-Proprietary \
-           "
+LICENSE = "BSD-3-Clause & BSD-3-Clause-Clear & Qualcomm-Technologies-Inc.-Proprietary"
 
 PROVIDES = "${PACKAGES}"
 
 PACKAGES = "${PN}"
 
-RDEPENDS:packagegroup-qcom-display = " \
+RDEPENDS:${PN} = " \
     display-hal-linux \
     kernel-module-displaydlkm \
     displaydevicetree \
+    "
+
+RDEPENDS:${PN}:append = " \
+    display-extn-linux \
+    display-color-linux \
+    "
+
+RDEPENDS:${PN}:append = " \
     libdrm \
     libdrm-tests \
     gbm \
     wayland \
     wayland-protocols \
     weston \
-    display-noship-linux \
-    display-ship-linux \
     "

@@ -6,7 +6,6 @@ require conf/machine/include/arm/arch-armv8-2a.inc
 MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
     pd-mapper \
     qrtr \
-    rmtfs \
     tqftpserv \
 "
 

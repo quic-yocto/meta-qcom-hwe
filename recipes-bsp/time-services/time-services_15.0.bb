@@ -21,3 +21,4 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 FILES:${PN} += "${sysconfdir}/system/*"
 FILES:${PN} += "${sysconfdir}/udev/rules.d/time-services.rules"
+

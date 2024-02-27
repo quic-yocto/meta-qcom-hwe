@@ -19,3 +19,5 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 FILES:${PN} += "${libdir}/*.so ${libdir}/pkgconfig/ ${systemd_unitdir}/system/* ${sysconfdir}/* ${bindir}/*"
 FILES:${PN}-dev = "${libdir}/*.la ${includedir}"
+
+SYSTEMD_SERVICE:${PN} = " adsprpcd.service cdsprpcd.service"

@@ -107,6 +107,7 @@ do_espimg[depends] += " \
     systemd-boot:do_deploy \
     virtual/kernel:do_deploy \
     ${PN}:do_uki \
+    ${PN}:do_deploy \
    "
 python do_espimg() {
     bb.build.exec_func('build_esp', d)

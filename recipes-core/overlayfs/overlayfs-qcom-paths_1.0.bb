@@ -20,6 +20,14 @@ do_install:append() {
     install -m 0644  ${WORKDIR}/var-persist.mount ${D}${systemd_unitdir}/system/var-persist.mount
     install -m 0644  ${WORKDIR}/remove-var-tmp-symlink.service ${D}${systemd_unitdir}/system/remove-var-tmp-symlink.service
 
+
+#if selinux is enabled we have to update the rootcontext /context for mounted folder
+        if ${@bb.utils.contains('DISTRO_FEATURES','selinux','true', 'false', d)}; then
+                sed -i  's/Options=/Options=rootcontext=system_u:object_r:etc_t:s0,/' ${D}${systemd_unitdir}/system/mnt-overlay.mount
+                sed -i 's/ext4/ext4\nOptions=rootcontext=system_u:object_r:qcom_persist_t:s0\n/' ${D}${systemd_unitdir}/system/var-persist.mount
+
+        fi
+
     ln -sf ${systemd_unitdir}/system/mnt-overlay.mount ${D}${systemd_unitdir}/system/local-fs.target.wants/mnt-overlay.mount
     ln -sf ${systemd_unitdir}/system/var-persist.mount ${D}${systemd_unitdir}/system/local-fs.target.wants/var-persist.mount
     ln -sf ${systemd_unitdir}/system/remove-var-tmp-symlink.service ${D}${systemd_unitdir}/system/local-fs.target.wants/remove-var-tmp-symlink.service

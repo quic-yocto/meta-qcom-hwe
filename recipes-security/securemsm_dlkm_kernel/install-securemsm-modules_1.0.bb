@@ -1,14 +1,11 @@
-HOMEPAGE = "http://support.cdmatech.com"
+DESCRIPTION = "Script for installing securemsm kernel modules"
+
 LICENSE = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
-
-DESCRIPTION = "Script for installing securemsm kernel modules"
 
 SRC_URI += "file://smcinvoke.service"
 SRC_URI += "file://start_smcinvoke_le"
 SRC_URI += "file://tz_log.service"
-
-PR = "1"
 
 INITSCRIPT_NAME = "install-securemsm-modules"
 

@@ -1,18 +1,18 @@
 inherit autotools-brokensep pkgconfig
 
 DESCRIPTION = "Bluetooth Fluoride Stack"
-HOMEPAGE = "http://codeaurora.org/"
 LICENSE = "Apache-2.0"
 
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-DEPENDS = "zlib libchrome glib-2.0 property-vault"
+DEPENDS = "zlib libchrome glib-2.0 property-vault audioroute"
 RDEPENDS:${PN} = "property-vault"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=a15c5eb0ba520877ba334a4a602b0a64a50ae657;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/system/bt \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=17d14de31bbe88655f362a4527a631fef904be90;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/bluetooth_ext \
-           git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=9d20f544ae0a0e3e5054fb6a7c89368361d428a1;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=8df29e610163fb38dddaf2ed905f2dbd98b72316;branch=bt-performant.qclinux.1.0.r1-rel;subdir=bt_audio \
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=9664854e14d51aac133b793dac110bdaf26d82c5;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/system/bt \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=5250a39cd07ffe7d8ff23909a1c90abb8e1b8c63;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/bluetooth_ext \
+           git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=35015c2fcfc38e154b5284af7d25f3eea0efa8e3;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btap \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=390a2ab14e80b5258fc9706f198dd387e72b6070;branch=bt-performant.qclinux.1.0.r1-rel;subdir=bt_audio \
+           file://fluoride_conf_systemd_tmpfiles.conf \
            "
 
 S = "${WORKDIR}"
@@ -70,4 +70,8 @@ do_install:append() {
 	if [ -f ${S}/stack/system/bt/conf/iot_devlist.conf ]; then
 	   install -m 0660 ${S}/stack/system/bt/conf/iot_devlist.conf ${D}${sysconfdir}/bluetooth/
 	fi
+
+        install -d ${D}${sysconfdir}/tmpfiles.d
+        install -m 0755 ${WORKDIR}/fluoride_conf_systemd_tmpfiles.conf \
+                -D ${D}${sysconfdir}/tmpfiles.d/fluoride_conf_systemd_tmpfiles.conf
 }

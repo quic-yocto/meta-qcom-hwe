@@ -4,9 +4,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/\
 ${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
 inherit module deploy
-
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/display-devicetree.git;protocol=https;rev=00d3210ec735c7ee8fca8fc4181684913230ee45;branch=display-kernel.qclinux.1.0.r2-rel"
-
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/display-devicetree.git;protocol=https;rev=c636b3244732a6ef8d7d364664b2db95d74681ca;branch=display-kernel.qclinux.1.0.r2-rel"
 S = "${WORKDIR}/git"
 
 DTC := "${KBUILD_OUTPUT}/scripts/dtc/dtc"
@@ -20,6 +18,7 @@ do_install() {
 do_compile() {
     oe_runmake ${EXTRA_OEMAKE} qcm6490-display
     oe_runmake ${EXTRA_OEMAKE} qcm6490-display-rb3
+    oe_runmake ${EXTRA_OEMAKE} qcs8550-display
 }
 
 do_deploy() {

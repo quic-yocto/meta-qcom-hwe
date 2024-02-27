@@ -1,12 +1,12 @@
+inherit module
+
 DESCRIPTION = "QCOM Camera drivers"
 LICENSE = "GPL-2.0-only"
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/${LICENSE};md5=801f80980d171dd6425610833a22dbe6"
-
-inherit module
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=801f80980d171dd6425610833a22dbe6"
 
 DEPENDS += "linux-kernel-headers-install-native"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=8b6ce539ff5648181020b0a509a4a22d464dd281;branch=camera-kernel.qclinux.1.0.r1-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=0862792d894d10160e96c1331bafa2fd4b1283d9;branch=camera-kernel.qclinux.1.0.r1-rel"
 
 S = "${WORKDIR}/git"
 

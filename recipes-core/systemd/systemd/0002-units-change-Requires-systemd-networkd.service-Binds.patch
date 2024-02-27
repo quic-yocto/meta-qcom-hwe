@@ -1,0 +1,32 @@
+From 51f3dc2234082c1ca9bdda403e4f355cab6be03b Mon Sep 17 00:00:00 2001
+From: Lennart Poettering <lennart@poettering.net>
+Date: Tue, 29 Nov 2022 11:18:51 +0100
+Subject: [PATCH 2/3] =?UTF-8?q?units:=20change=20Requires=3Dsystemd-networ?=
+ =?UTF-8?q?kd.service=20=E2=86=92=20BindsTo=3D=20one=20more=20time?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Follow-up for da15f8406e9aeb7908e1d92c02d2ff5147c7788a which did the
+change for systemd-networkd-wait-online.service, let's also do this for
+systemd-networkd-wait-online@.service
+---
+ units/systemd-networkd-wait-online@.service.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/units/systemd-networkd-wait-online@.service.in b/units/systemd-networkd-wait-online@.service.in
+index 949695f..2fae26d 100644
+--- a/units/systemd-networkd-wait-online@.service.in
++++ b/units/systemd-networkd-wait-online@.service.in
+@@ -12,7 +12,7 @@ Description=Wait for Network Interface %i to be Configured
+ Documentation=man:systemd-networkd-wait-online.service(8)
+ DefaultDependencies=no
+ Conflicts=shutdown.target
+-Requires=systemd-networkd.service
++BindsTo=systemd-networkd.service
+ After=systemd-networkd.service
+ Before=network-online.target shutdown.target
+ 
+-- 
+2.7.4
+

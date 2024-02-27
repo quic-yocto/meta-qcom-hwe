@@ -1,5 +1,3 @@
-DESCRIPTION  = "QCOM SENSORS package group"
-
 LICENSE = "Qualcomm-Technologies-Inc.-Proprietary"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
@@ -8,9 +6,9 @@ inherit packagegroup
 
 PROVIDES = "${PACKAGES}"
 
-PACKAGES = "packagegroup-qcom-sensors"
+PACKAGES = "${PN}"
 
 # Sensors Image and Debugging utilities
-RDEPENDS:packagegroup-qcom-sensors = "\
+RDEPENDS:${PN} = "\
     sensors-ship-qti \
 "

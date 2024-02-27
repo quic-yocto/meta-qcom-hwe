@@ -30,7 +30,6 @@ A4A1: NCM;\
 902C: RNDIS,DIAG;\
 902D: RNDIS,DIAG,ADB;\
 902F: RNDIS,DIAG,MASS_STORAGE;\
-9030: RNDIS,ADB,DIAG,MASS_STORAGE;\
 908C: NCM,ADB;\
 90CA: DIAG,UAC2,ADB;\
 90CB: DIAG,UVC,ADB;\
@@ -52,7 +51,6 @@ usb_bind() {
 	udcname=`ls -1 /sys/class/udc | head -n 1`
 	if [ -d /sys/kernel/config/usb_gadget ]; then
 		# Binding UDC with gadget
-		# TODO make sure to run adbd/diag-router before binding
 		echo $udcname > /sys/kernel/config/usb_gadget/adb/UDC
 	fi
 }
@@ -182,19 +180,6 @@ run_902F() {
 	usb_bind
 	cd /
 
-}
-
-# RNDIS + ADB + DIAG + Mass Storage
-run_9030() {
-	remove_configs
-	echo 0x9030 > idProduct
-	echo "RNDIS_DIAG_ADB_MS" > configs/c.1/strings/0x409/configuration
-	ln -s functions/rndis.rndis configs/c.1/f1
-	ln -s functions/ffs.diag configs/c.1/f2
-	ln -s functions/ffs.usb0 configs/c.1/f3
-	ln -s functions/mass_storage.0 configs/c.1/f4
-	usb_bind
-	cd /
 }
 
 # Standalone mass storage
@@ -373,11 +358,15 @@ persist_pid() {
 }
 
 init_run_pid() {
-	# android-gadget-start present in oe dynamic layer would try binding for 30s
 	echo "Switching to USB composition:" $1 > /dev/kmsg
 	# Run the corresponding composition function.
 	# Append 'run' to pid since function name can't start with number.
 	(run_$1)
+
+	# Since diag-router service starts after usb service exits, we need to bind UDC
+	# after diag opens the ep0 node. android-gadget-start present in oe dynamic layer
+	# would try binding UDC for 30s. Use nohup to keep android-gadget-start running
+	# even after usb service terminates.
 	nohup android-gadget-start &
 }
 
@@ -433,18 +422,25 @@ usb_init() {
 	# Mount ffs nodes for diag
 	if [ ! -d /dev/ffs-diag ]; then
 		mkdir -p /dev/ffs-diag
-		mount -t functionfs diag /dev/ffs-diag
+		mount -o uid=system,gid=system,no_disconnect=1,rmode=0550,fmode=0660 -t functionfs diag /dev/ffs-diag
 	fi
 
 	# Initialize NCM OS descriptors
 	echo "WINNCM" > functions/ncm.0/os_desc/interface.ncm/compatible_id
 
+	#Initialize RNDIS descriptors for SW path to be recognized by Windows Host
+	echo ef > functions/rndis.rndis/class
+	echo 4 > functions/rndis.rndis/subclass
+	echo 1 > functions/rndis.rndis/protocol
+
 	# Add entry for persisting the composition
-	if [ -e /etc/usb/usb_pid ]; then
+	if [ -s /etc/usb/usb_pid ]; then
 		persist_pid=`cat /etc/usb/usb_pid`
 		init_run_pid $persist_pid &
 	else
-		mkdir /etc/usb/
+		if [ ! -d /etc/usb/usb_pid ]; then
+			mkdir /etc/usb/
+		fi
 		echo 901D > /etc/usb/usb_pid
 		init_run_pid 901D &
 	fi
@@ -459,7 +455,7 @@ Usage: qusb [bind] [unbind] [showpid] [help]
 #
 # bind    - Binds configfs with USB gadget.
 # unbind  - stops/unbinds USB gadget.
-# setpid  - Sets 'diag, adb' compostion.
+# setpid  - Sets the compostion to given value.
 #     -p  - Set the composition as default (persist).
 # showpid - Lists the available USB compostions.
 # persist - Sets the composition as default from next reboot.

@@ -1,6 +1,5 @@
 SUMMARY = "ModemManager is a daemon controlling broadband devices/connections"
 DESCRIPTION = "ModemManager is a DBus-activated daemon which controls mobile broadband (2G/3G/4G) devices and connections"
-HOMEPAGE = "http://www.freedesktop.org/wiki/Software/ModemManager/"
 LICENSE = "GPL-2.0-or-later & LGPL-2.1-or-later"
 LIC_FILES_CHKSUM = " \
     file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
@@ -12,10 +11,8 @@ inherit gnomebase gettext systemd gobject-introspection bash-completion
 
 DEPENDS = "glib-2.0 libgudev libxslt-native dbus"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/mobile-broadband/ModemManager.git;rev=03f786ce66360d67c669f4f122f8aa458e6f01ea;branch=telephony.qclinux.0.0.r1-rel"
-
+SRC_URI = "git://git.codelinaro.org/clo/le/mobile-broadband/ModemManager.git;protocol=https;rev=03f786ce66360d67c669f4f122f8aa458e6f01ea;branch=telephony.qclinux.0.0.r1-rel"
 S = "${WORKDIR}/git"
-
 EXTRA_OECONF:append = " --enable-plugin-qcom-soc"
 
 # strict, permissive

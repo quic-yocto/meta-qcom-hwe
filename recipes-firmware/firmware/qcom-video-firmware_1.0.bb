@@ -18,3 +18,5 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 FILES:${PN} += "/lib/firmware"
 
 INSANE_SKIP:${PN} = "arch"
+
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"

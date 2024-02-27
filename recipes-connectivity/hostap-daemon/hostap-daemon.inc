@@ -7,10 +7,9 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 FILES:${PN} += "\
         /usr/bin \
         "
-INC_PR = "r4"
 
 DEPENDS = "openssl libnl"
 
 do_install() {
-        make install DESTDIR=${D} BINDIR=${sbindir}/
+    make install DESTDIR=${D} BINDIR=${sbindir}/
 }

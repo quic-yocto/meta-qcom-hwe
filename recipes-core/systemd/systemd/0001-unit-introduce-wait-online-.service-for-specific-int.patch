@@ -1,0 +1,112 @@
+From 674df18a32e6bb865ae84d39eaf8a5e5f10c7adc Mon Sep 17 00:00:00 2001
+From: Yu Watanabe <watanabe.yu+github@gmail.com>
+Date: Fri, 28 Jan 2022 15:30:01 +0900
+Subject: [PATCH] unit: introduce wait-online@.service for specific interface
+
+This should be useful when a host has multiple interfaces.
+
+Inspired by #22246.
+---
+ man/rules/meson.build                         |  2 +-
+ man/systemd-networkd-wait-online.service.xml  | 13 ++++++++++
+ units/meson.build                             |  1 +
+ .../systemd-networkd-wait-online@.service.in  | 25 +++++++++++++++++++
+ 4 files changed, 40 insertions(+), 1 deletion(-)
+ create mode 100644 units/systemd-networkd-wait-online@.service.in
+
+diff --git a/man/rules/meson.build b/man/rules/meson.build
+index b689b1c1af..7200ecf681 100644
+--- a/man/rules/meson.build
++++ b/man/rules/meson.build
+@@ -932,7 +932,7 @@ manpages = [
+  ['systemd-network-generator.service', '8', ['systemd-network-generator'], ''],
+  ['systemd-networkd-wait-online.service',
+   '8',
+-  ['systemd-networkd-wait-online'],
++  ['systemd-networkd-wait-online', 'systemd-networkd-wait-online@.service'],
+   'ENABLE_NETWORKD'],
+  ['systemd-networkd.service', '8', ['systemd-networkd'], 'ENABLE_NETWORKD'],
+  ['systemd-notify', '1', [], ''],
+diff --git a/man/systemd-networkd-wait-online.service.xml b/man/systemd-networkd-wait-online.service.xml
+index 9c6b02ac1c..a3a70db209 100644
+--- a/man/systemd-networkd-wait-online.service.xml
++++ b/man/systemd-networkd-wait-online.service.xml
+@@ -18,12 +18,14 @@
+ 
+   <refnamediv>
+     <refname>systemd-networkd-wait-online.service</refname>
++    <refname>systemd-networkd-wait-online@.service</refname>
+     <refname>systemd-networkd-wait-online</refname>
+     <refpurpose>Wait for network to come online</refpurpose>
+   </refnamediv>
+ 
+   <refsynopsisdiv>
+     <para><filename>systemd-networkd-wait-online.service</filename></para>
++    <para><filename>systemd-networkd-wait-online@.service</filename></para>
+     <para><filename>/usr/lib/systemd/systemd-networkd-wait-online</filename></para>
+   </refsynopsisdiv>
+ 
+@@ -38,6 +40,17 @@
+     to be fully configured or failed, and for at least one link to be online. Here, online means that
+     the link's operational state is equal or higher than <literal>degraded</literal>. The threshold
+     can be configured by <option>--operational-state=</option> option.</para>
++
++    <para>The service <filename>systemd-networkd-wait-online.service</filename> invokes
++    <command>systemd-networkd-wait-online</command> without any options. Thus, it waits for all managed
++    interfaces to be configured or failed, and for at least one to be online.</para>
++
++    <para>The service <filename>systemd-networkd-wait-online@.service</filename> takes an interface
++    name, and invokes <command>systemd-networkd-wait-online</command> with <option>-i</option> and the
++    specified interface name. Thus, wait for the specified interface to be configured and online. For
++    example, <filename>systemd-networkd-wait-online@eth0.service</filename> waits for
++    <filename>eth0</filename> to be configured by <command>systemd-networkd</command> and online.
++    </para>
+   </refsect1>
+ 
+   <refsect1>
+diff --git a/units/meson.build b/units/meson.build
+index 3184433b8f..2bb0a8e845 100644
+--- a/units/meson.build
++++ b/units/meson.build
+@@ -220,6 +220,7 @@ in_units = [
+         ['systemd-network-generator.service',    ''],
+         ['systemd-networkd.service',             'ENABLE_NETWORKD'],
+         ['systemd-networkd-wait-online.service', 'ENABLE_NETWORKD'],
++        ['systemd-networkd-wait-online@.service','ENABLE_NETWORKD'],
+         ['systemd-nspawn@.service',              ''],
+         ['systemd-oomd.service',                 'ENABLE_OOMD'],
+         ['systemd-portabled.service',            'ENABLE_PORTABLED',
+diff --git a/units/systemd-networkd-wait-online@.service.in b/units/systemd-networkd-wait-online@.service.in
+new file mode 100644
+index 0000000000..949695f53e
+--- /dev/null
++++ b/units/systemd-networkd-wait-online@.service.in
+@@ -0,0 +1,25 @@
++#  SPDX-License-Identifier: LGPL-2.1-or-later
++#
++#  This file is part of systemd.
++#
++#  systemd is free software; you can redistribute it and/or modify it
++#  under the terms of the GNU Lesser General Public License as published by
++#  the Free Software Foundation; either version 2.1 of the License, or
++#  (at your option) any later version.
++
++[Unit]
++Description=Wait for Network Interface %i to be Configured
++Documentation=man:systemd-networkd-wait-online.service(8)
++DefaultDependencies=no
++Conflicts=shutdown.target
++Requires=systemd-networkd.service
++After=systemd-networkd.service
++Before=network-online.target shutdown.target
++
++[Service]
++Type=oneshot
++ExecStart={{ROOTLIBEXECDIR}}/systemd-networkd-wait-online -i %i
++RemainAfterExit=yes
++
++[Install]
++WantedBy=network-online.target
+-- 
+2.34.1
+

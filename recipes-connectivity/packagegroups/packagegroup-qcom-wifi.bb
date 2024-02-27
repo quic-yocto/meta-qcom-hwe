@@ -8,16 +8,18 @@ inherit packagegroup
 
 PROVIDES = "${PACKAGES}"
 
-PACKAGES = "packagegroup-qcom-wifi"
+PACKAGES = "${PN}"
 
-RDEPENDS:packagegroup-qcom-wifi:append = "tcpdump rfkill dnsmasq dhcpcd iperf2 iperf3"
+RDEPENDS:${PN}:append = "tcpdump rfkill dnsmasq dhcpcd iperf2 iperf3"
 
-RDEPENDS:packagegroup-qcom-wifi = " \
+RDEPENDS:${PN} = " \
 	qcacld-ini \
-	wlan-devicetree \
 	wpa-supplicant \
 	hostap-daemon-qcacld \
-	kernel-module-icnss \
+	wlan-sigma-dut \
+	wlan-devicetree \
+	kernel-module-wlan-platform \
 	kernel-module-qcacld-wlan \
         "
 
+PACKAGE_ARCH = "${MACHINE_ARCH}"

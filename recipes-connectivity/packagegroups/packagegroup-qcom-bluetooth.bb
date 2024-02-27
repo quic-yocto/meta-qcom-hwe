@@ -7,18 +7,21 @@ inherit packagegroup
 
 PROVIDES = "${PACKAGES}"
 
-PACKAGES = ' \
-           packagegroup-qcom-bluetooth \
-'
+PACKAGES = "${PN}"
 
 BTVENDOR ?= 'False'
+BTVENDOR:qrbx210-rbx = 'True'
+BTVENDOR:qcs40x = 'True'
 BTVENDOR:qcm6490 = 'True'
 
 RDEPENDS:${PN} = "\
     fluoride \
     btvendorhal \
     libchrome \
+    audioroute \
+    pa-bt-audio \
     bt-app \
     bt-cert \
     bt-dlkm-kernel \
+    bthost-ipc \
     btdevicetree "

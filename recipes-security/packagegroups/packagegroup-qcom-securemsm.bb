@@ -14,8 +14,10 @@ RDEPENDS:${PN} += " \
   securemsm-headers \
   securemsm-features \
   minkipc \
-  start-scripts-qseecomd-daemon \
+  start-scripts-qtee-supplicant-daemon \
   start-scripts-sfs-config \
   install-securemsm-modules \
   start-scripts-ssgtzd-daemon \
+  start-scripts-qwesd-daemon \
+  start-scripts-qwes-licence-store \
   "

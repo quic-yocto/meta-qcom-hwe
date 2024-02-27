@@ -1,19 +1,21 @@
-# Copyright (c) 2023 Qualcomm Technologies, Inc.
+# Copyright (c) 2024 Qualcomm Technologies, Inc.
 # All Rights Reserved.
 # Confidential and Proprietary - Qualcomm Technologies, Inc.
 
  [Unit]
  Description=ssgtzd Service
  SourcePath=/usr/bin/ssgtzd
- After=qseecomd.service
+ After=qteesupplicant.service
+ StartLimitIntervalSec=0
 
  [Service]
+ User=system
+ Group=system
  AmbientCapabilities=CAP_BLOCK_SUSPEND
  CapabilityBoundingSet=CAP_BLOCK_SUSPEND
  Restart=always
  RemainAfterExit=yes
  ExecStart=/usr/bin/ssgtzd
- ExecStartPost=/bin/sh -c 'echo -n \"ssgtzd Service started\" > /dev/kmsg'
 
  [Install]
  WantedBy=multi-user.target

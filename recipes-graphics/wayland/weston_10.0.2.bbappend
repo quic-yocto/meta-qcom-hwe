@@ -2,13 +2,12 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d79ee9e66bb0f95d3386a7acae780b70"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/weston-launch:"
 
-SRC_URI = "   file://weston-kalama.ini \
+SRC_URI = "   file://weston.ini \
               file://weston.png \
               file://weston.desktop \
               file://xwayland.weston-start \
               file://systemd-notify.weston-start \
-              git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;rev=e88159f5e753e1a87056c3351fd5ffb73821c7c1;branch=display.qclinux.1.0.r1-rel \
-           "
+              git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;rev=e5bb0cd2acabb99c24982a86373ef58600cddf56;branch=display.qclinux.1.0.r1-rel"
 
 S = "${WORKDIR}/git"
 
@@ -44,8 +43,8 @@ LDFLAGS  += "-ldrmutils -ldisplaydebug -lglib-2.0 -ldmabufheap"
 #meson script's CPP flags
 CXXFLAGS += "-I${STAGING_INCDIR}/sdm"
 
-do_install:append:qcm6490() {
-    install -m 0644 ${WORKDIR}/weston-kalama.ini -D ${D}${sysconfdir}/xdg/weston/weston.ini
+do_install:append() {
+    install -m 0644 ${WORKDIR}/weston.ini -D ${D}${sysconfdir}/xdg/weston/weston.ini
 }
 
 FILES:${PN} += "${bindir}/*"

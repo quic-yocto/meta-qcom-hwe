@@ -1,5 +1,5 @@
-HOMEPAGE = "https://git.codelinaro.org/linaro/qcomlt/fastrpc.git"
 SUMMARY = "Qualcomm FastRPC applications and library"
+HOMEPAGE = "https://git.codelinaro.org/linaro/qcomlt/fastrpc.git"
 SECTION = "devel"
 
 LICENSE = "BSD-3-Clause"

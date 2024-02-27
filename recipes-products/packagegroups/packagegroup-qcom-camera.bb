@@ -8,11 +8,9 @@ inherit packagegroup
 
 PROVIDES = "${PACKAGES}"
 
-PACKAGES = ' \
-    packagegroup-qcom-camera \
-'
+PACKAGES = "${PN}"
 
-RDEPENDS:packagegroup-qcom-camera = ' \
+RDEPENDS:${PN} = ' \
     camx \
     camxlib \
     chicdk \

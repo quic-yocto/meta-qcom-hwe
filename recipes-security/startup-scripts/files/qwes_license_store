@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# qwes_license_store        init.d script to set up QWES license store.
+#
+#Copyright (c) 2020-2024 Qualcomm Technologies, Inc.
+#All Rights Reserved.
+#Confidential and Proprietary - Qualcomm Technologies, Inc.
+
+
+set -e
+
+OEM_QWES_OVERRIDE_LICENSE_STORE=/var/persist/data/pfm/licenses/
+
+echo "Creating QWES LICENSE STORE : $OEM_QWES_OVERRIDE_LICENSE_STORE" > /dev/kmsg
+mkdir -p ${OEM_QWES_OVERRIDE_LICENSE_STORE}
+
+if [ -d "${OEM_QWES_OVERRIDE_LICENSE_STORE}" ]; then
+
+    chmod o+rwx "${OEM_QWES_OVERRIDE_LICENSE_STORE}"
+
+    files=$(ls /var/cache/qwes/*.pfm 2> /dev/null | wc -l)
+    if [ "$files"  != "0" ]; then
+         echo "Source location content" > /dev/kmsg
+         ls /var/cache/qwes/ > /dev/kmsg
+         echo "Copying licenses to license store location" > /dev/kmsg
+         cp /var/cache/qwes/*.pfm "${OEM_QWES_OVERRIDE_LICENSE_STORE}" > /dev/kmsg
+         sync
+         echo "Copy status is $?" > /dev/kmsg
+         #chown system:system "${OEM_QWES_OVERRIDE_LICENSE_STORE}"/*.pfm
+         echo "Destination location content" > /dev/kmsg
+         ls -l "${OEM_QWES_OVERRIDE_LICENSE_STORE}" > /dev/kmsg
+         echo "Removing Source location files" > /dev/kmsg
+         rm -rf /var/cache/qwes/*.pfm
+    fi
+ else
+    echo "Failed to create License store!!!"  > /dev/kmsg
+fi
+

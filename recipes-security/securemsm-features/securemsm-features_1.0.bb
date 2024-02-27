@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "securemsm-features with QseecomAPI user space library to interact with qseecom driver"
 
-DEPENDS += "libxml2 libtinyxml2 linux-kernel-qcom-headers glib-2.0 glibc libdmabufheap securemsm-headers minkipc property-vault jsoncpp"
+DEPENDS += "libxml2 libtinyxml2 linux-kernel-qcom-headers glib-2.0 glibc libdmabufheap securemsm-headers minkipc property-vault jsoncpp qmi-framework curl"
 
 SRCREV = "587ec9a9723f9fe87921c998e1a53420dd3eb809"
 
@@ -16,8 +16,6 @@ PREBUILT_TARBALL = "securemsm-features_1.0_${PACKAGE_ARCH}.tar.gz"
 S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
-
-RDEPENDS:${PN}:append = " bash"
 
 FILES:${PN} += "/usr/bin/*"
 FILES:${PN} += "/usr/bin/"

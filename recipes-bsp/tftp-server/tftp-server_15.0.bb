@@ -15,7 +15,7 @@ PREBUILT_TARBALL = "tftp-server_15.0_${PACKAGE_ARCH}.tar.gz"
 
 S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
-
 FILES:${PN} += "/system /data"
 FILES:${PN} += "/lib/systemd/*"
+
+SYSTEMD_SERVICE:${PN} = "tftp_server.service"

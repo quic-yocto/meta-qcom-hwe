@@ -7,10 +7,8 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 SOLIBS='*.so'
 FILES_SOLIBSDEV=""
 
-INC_PR = "r5"
-
 DEPENDS = "openssl libnl"
 
 do_install() {
-        make install DESTDIR=${D} BINDIR=${sbindir} LIBDIR=${libdir} INCDIR=${includedir}
+    make install DESTDIR=${D} BINDIR=${sbindir} LIBDIR=${libdir} INCDIR=${includedir}
 }

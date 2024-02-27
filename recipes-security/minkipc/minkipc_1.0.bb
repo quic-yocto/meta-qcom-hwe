@@ -22,5 +22,7 @@ FILES:${PN} += "${bindir}/*"
 FILES:${PN} += "${libdir} ${includedir}"
 FILES:${PN}-dev = "${libdir}/*.la"
 
+
 INSANE_SKIP:${PN} = "dev-so"
 INSANE_SKIP:${PN} += "debug-files"
+

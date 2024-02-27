@@ -23,9 +23,7 @@ FILES:${PN} = "\
     /usr/lib/* \
     /usr/bin/* \
     /usr/include/* \
-    /data/* \
-    /lib/firmware/* \
-    /vendor/*"
+    /lib/firmware/*"
 
 FILES:${PN}-dev = ""
 INSANE_SKIP = "1"

@@ -7,8 +7,8 @@ inherit packagegroup
 
 PROVIDES = "${PACKAGES}"
 
-PACKAGES = "packagegroup-qcom-video"
+PACKAGES = "${PN}"
 
-RDEPENDS:packagegroup-qcom-video = " \
+RDEPENDS:${PN} = " \
     qcom-video-firmware \
 "

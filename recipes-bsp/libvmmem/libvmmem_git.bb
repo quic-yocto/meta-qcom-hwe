@@ -17,5 +17,7 @@ S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+PACKAGES += "${PN}-test-bin"
+
 FILES:${PN}     = "${libdir}/* ${sysconfdir}/*"
 FILES:${PN}-test-bin = "${base_bindir}/*"

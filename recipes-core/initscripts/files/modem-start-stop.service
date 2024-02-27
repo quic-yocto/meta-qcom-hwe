@@ -1,0 +1,15 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+SourcePath=/etc/initscripts/start_stop_modem.sh
+Description=Start or stops the modem
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/etc/initscripts/start_stop_modem.sh start
+ExecStop=/etc/initscripts/start_stop_modem.sh stop
+
+[Install]
+WantedBy=multi-user.target

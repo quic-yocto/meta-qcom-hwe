@@ -3,7 +3,7 @@
 
 [Unit]
 SourcePath=/etc/initscripts/log_restrict.sh
-Description=logging restriction service
+Description=QCOM logging service
 
 [Service]
 ExecStart=/etc/initscripts/log_restrict.sh start

@@ -1,6 +1,6 @@
 SUMMARY = "Partitioning tool"
-HOMEPAGE = "https://git.codelinaro.org/linaro/qcomlt/partioning_tool"
 DESCRIPTION = "Partitioning tool, generates the GPT and/or Partition MBN"
+HOMEPAGE = "https://git.codelinaro.org/linaro/qcomlt/partioning_tool"
 SECTION = "devel"
 
 LICENSE = "BSD-3-Clause"

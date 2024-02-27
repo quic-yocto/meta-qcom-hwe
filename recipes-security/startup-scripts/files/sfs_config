@@ -6,39 +6,24 @@
 # create files and give permissions to the files and directories needed by
 # secure file system
 #
-# Copyright (c) 2017, 2023 Qualcomm Technologies, Inc.
+# Copyright (c) 2017, 2023-2024 Qualcomm Technologies, Inc.
 # All Rights Reserved.
 # Confidential and Proprietary - Qualcomm Technologies, Inc.
 #==============================================================================
 set -e
 
-soc_id=`cat /sys/devices/soc0/soc_id`
-
-if [[ "$soc_id" -ne "290" && "$soc_id" -ne "296" && "$soc_id" -ne "297" && "$soc_id" -ne "298" ]]; then
-
-    echo "SFS configuration started." > /dev/kmsg
-
-    if [ ! -d /var/tmp/data/misc ]; then
-        echo "Creating /var/tmp/data/misc"
-        mkdir -p /var/tmp/data/misc
+if [ -e /var/persist ]; then
+    if [ ! -d /var/persist/qtee_supplicant ]; then
+         echo "Creating /var/persist/qtee_supplicant"
+         mkdir /var/persist/qtee_supplicant
     fi
-
-    if [ -e /var/persist ]; then
-        if [ ! -d /var/persist/data ]; then
-             echo "Creating /var/persist/data"
-             mkdir /var/persist/data
-        fi
-        chmod o+rwx /var/persist/data
-    fi
-
-    chmod o+rwx /var/tmp/data/misc
-
-    if [ ! -d /var/tmp/data/vendor/tzstorage ]; then
-        echo "Creating /var/tmp/data/vendor/tzstorage"
-        mkdir -p /var/tmp/data/vendor/tzstorage
-    fi
-    chmod o+rwx /var/tmp/data/vendor/tzstorage
-
-    echo "SFS configuration completed." > /dev/kmsg
+    chmod o+rwx /var/persist/qtee_supplicant
 fi
+
+if [ ! -d /var/tmp/qtee_supplicant/vendor/tzstorage ]; then
+    echo "Creating /var/tmp/qtee_supplicant/vendor/tzstorage"
+    mkdir -p /var/tmp/qtee_supplicant/vendor/tzstorage
+fi
+chmod o+rwx /var/tmp/qtee_supplicant/vendor/tzstorage
+
 exit 0

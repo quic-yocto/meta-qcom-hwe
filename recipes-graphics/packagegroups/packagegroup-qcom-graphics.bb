@@ -8,16 +8,15 @@ LICENSE  = "Qualcomm-Technologies-Inc.-Proprietary"
 
 PROVIDES = "${PACKAGES}"
 
-PACKAGES = " \
-            packagegroup-qcom-graphics \
-           "
+PACKAGES = "${PN}"
 
 VULKAN_LOADER = ""
 VULKAN_LOADER:qcm6490 = "True"
+VULKAN_LOADER:qcs8550 = "True"
 
-RDEPENDS:packagegroup-qcom-graphics = " \
-                                       adreno \
-                                       ${@oe.utils.conditional('VULKAN_LOADER', 'True', 'vulkan-loader', '', d)} \
-                                       graphicsdlkm \
-                                       graphicsdevicetree \
-                                      "
+RDEPENDS:${PN} = " \
+    adreno \
+    ${@oe.utils.conditional('VULKAN_LOADER', 'True', 'vulkan-loader', '', d)} \
+    graphicsdevicetree \
+    graphicsdlkm \
+"

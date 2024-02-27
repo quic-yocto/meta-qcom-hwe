@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# create_qwes_ipc        init.d script to set up qwes_ipc socket
+#
+#Copyright (c) 2023-2024 Qualcomm Technologies, Inc.
+#All Rights Reserved.
+#Confidential and Proprietary - Qualcomm Technologies, Inc.
+
+set -e
+
+QWES_IPC_DIR="/dev/socket"
+
+if [ ! -d "$QWES_IPC_DIR" ]; then
+    echo "Creating qwes_ipc" > /dev/kmsg
+    mkdir -p "$QWES_IPC_DIR" 2> /dev/kmsg
+    chown system:system "$QWES_IPC_DIR" 2> /dev/kmsg
+    chmod 750 "$QWES_IPC_DIR" 2> /dev/kmsg
+else
+    echo "qwes_ipc already exists" > /dev/kmsg
+fi
+
