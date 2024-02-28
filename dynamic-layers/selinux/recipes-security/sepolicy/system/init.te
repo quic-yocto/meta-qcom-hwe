@@ -1,7 +1,14 @@
 # Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
+unconfined_domain(initrc_t)
+
 ## location tech related rules
 qcom_loc_read_loc_sock_files(initrc_t)
+
 # add rules for default lca client app to work
 qcom_loc_locclient_generic_rules(initrc_t);
+
+# allow to get status of location services
+qcom_loc_launcher_service_get_status(initrc_t)
+qcom_loc_hal_daemon_service_get_status(initrc_t)

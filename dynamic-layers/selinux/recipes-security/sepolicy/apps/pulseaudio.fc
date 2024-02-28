@@ -1,0 +1,10 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+/etc/mixer_.*                               gen_context(system_u:object_r:qcom_pulseaudio_etc_t,s0)
+/etc/audio_.*                               gen_context(system_u:object_r:qcom_pulseaudio_etc_t,s0)
+/etc/acdbdata(/.*)?                         gen_context(system_u:object_r:qcom_pulseaudio_acdb_etc_t,s0)
+/etc/card-defs.xml                          gen_context(system_u:object_r:qcom_pulseaudio_etc_t,s0)
+/etc/resourcemanager_.*                     gen_context(system_u:object_r:qcom_pulseaudio_etc_t,s0)
+/etc/usecaseKvManager.xml                   gen_context(system_u:object_r:qcom_pulseaudio_etc_t,s0)
+/etc/backend_conf.xml                       gen_context(system_u:object_r:qcom_pulseaudio_etc_t,s0)

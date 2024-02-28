@@ -1,0 +1,9 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+
+/usr/sbin/tftp_server   --      gen_context(system_u:object_r:qcom_tftp_server_exec_t,s0)
+
+# TFTP files
+/var/lib/persist/rfs(/.*)?            gen_context(system_u:object_r:qcom_rfs_persist_t,s0)
+/var/lib/persist/hlos_rfs(/.*)?       gen_context(system_u:object_r:qcom_rfs_persist_t,s0)

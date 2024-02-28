@@ -1,0 +1,29 @@
+# Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+type qcom_audio_device_t;
+dev_node(qcom_audio_device_t)
+
+type qcom_audioml_heap_device_t;
+dev_node(qcom_audioml_heap_device_t)
+
+type qcom_qseecom_heap_dev_t;
+dev_node(qcom_qseecom_heap_dev_t)
+
+type qcom_smcinvoke_dev_t;
+dev_node(qcom_smcinvoke_dev_t)
+
+type qcom_ufs_bsg_dev_t;
+dev_node(qcom_ufs_bsg_dev_t)
+
+type qcom_adsp_secure_device_t;
+dev_node(qcom_adsp_secure_device_t)
+
+type qcom_cdsp_secure_device_t;
+dev_node(qcom_cdsp_secure_device_t)
+
+type qcom_adsp_device_t;
+dev_node(qcom_adsp_device_t)
+
+type qcom_cdsp_device_t;
+dev_node(qcom_cdsp_device_t)

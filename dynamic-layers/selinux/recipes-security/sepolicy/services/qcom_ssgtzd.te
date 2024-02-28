@@ -1,0 +1,33 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_ssgtzd, 1.0)
+
+type qcom_ssgtzd_t;
+type qcom_ssgtzd_exec_t;
+type qcom_ssgtzd_sock_t;
+
+domain_type(qcom_ssgtzd_t)
+
+init_daemon_domain(qcom_ssgtzd_t, qcom_ssgtzd_exec_t)
+
+#Allow ssgtzd to access smcinvoke.
+qcom_allow_smcinvoke_rw(qcom_ssgtzd_t)
+
+#Allow socket related operations for ssgtzd.
+allow qcom_ssgtzd_t self:unix_dgram_socket { create connect write};
+allow qcom_ssgtzd_t self:process { signal getsched };
+allow qcom_ssgtzd_t self:unix_stream_socket { accept listen };
+qcom_allow_ssgtzd_sock_manage(qcom_ssgtzd_t)
+fs_associate_tmpfs(qcom_ssgtzd_sock_t)
+
+#Allow ssgtzd to access heap (dma buf)
+qcom_qseecom_alloc_buf_rw(qcom_ssgtzd_t)
+
+#Allow ssgtzd to manage it's config file.
+init_read_runtime_files(qcom_ssgtzd_t)
+files_read_etc_files(qcom_ssgtzd_t)
+
+# Logging related
+logging_send_syslog_msg(qcom_ssgtzd_t)
+logging_rw_runtime_sockets(qcom_ssgtzd_t)

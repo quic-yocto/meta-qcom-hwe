@@ -125,6 +125,14 @@ dev_read_urand({ qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qc
 
 rw_fifo_files_pattern({ qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t }, self, self)
 
+## Read virtual memory overcommit sysctl - /proc/sys/vm/overcommit_memory
+kernel_read_vm_overcommit_sysctl(qcom_loc_launcher_t)
+kernel_read_vm_overcommit_sysctl(qcom_xtwifi_agent_t)
+kernel_read_vm_overcommit_sysctl(qcom_xtwifi_client_t)
+kernel_read_vm_overcommit_sysctl(qcom_xtra_daemon_t)
+kernel_read_vm_overcommit_sysctl(qcom_edgnss_daemon_t)
+kernel_read_vm_overcommit_sysctl(qcom_lowi_server_t)
+
 # tmp directory access
 fs_search_tmpfs( { qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t } )
 files_read_generic_tmp_symlinks({ qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t })
@@ -140,11 +148,26 @@ qcom_loc_haldaemon_unix_dgram_sendto( { qcom_loc_launcher_t qcom_xtwifi_agent_t 
 
 allow { qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t } self:netlink_route_socket r_netlink_socket_perms;
 
-allow { qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_lowi_server_t } self:{ unix_dgram_socket udp_socket } create_socket_perms;
+allow { qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_lowi_server_t } self:unix_dgram_socket create_socket_perms;
+allow { qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_lowi_server_t qcom_xtra_daemon_t } self:udp_socket create_socket_perms;
 allow { qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t } self:unix_dgram_socket { read write };
+
+# Read from random number generator - /dev/random
+dev_read_rand(qcom_xtra_daemon_t)
+dev_read_rand(qcom_xtwifi_client_t)
 
 # TCP connection required for few
 qcom_loc_tcp_socket_connect({ qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_xtwifi_agent_t })
+
+# read resolv.conf file
+systemd_read_resolved_runtime(qcom_xtra_daemon_t)
+systemd_read_resolved_runtime(qcom_edgnss_daemon_t)
+systemd_read_resolved_runtime(qcom_xtwifi_agent_t)
+
+# read /etc/hosts
+sysnet_read_config(qcom_xtra_daemon_t)
+sysnet_read_config(qcom_edgnss_daemon_t)
+sysnet_read_config(qcom_xtwifi_agent_t)
 
 allow { qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t } self:qipcrtr_socket create_socket_perms;
 

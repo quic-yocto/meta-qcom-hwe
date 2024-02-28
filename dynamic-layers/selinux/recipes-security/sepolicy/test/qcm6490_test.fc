@@ -1,3 +1,8 @@
 #Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
 #SPDX-License-Identifier: BSD-3-Clause-Clear-
 #test file_context for qcm6490
+
+/sbin/modprobe            --   gen_context(system_u:object_r:kmod_exec_t,s0)
+/kernel-tests(/.*)?           --     gen_context(system_u:object_r:qcom_kernel_tests_exec_t,s0)
+/kernel-tests/modules/lib/modules(/.*)? -- gen_context(system_u:object_r:qcom_modules_object_t,s0)
+/usr/bin/nativehaltest     --  gen_context(system_u:object_r:qcom_nativehaltest_t,s0)

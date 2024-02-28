@@ -1,0 +1,29 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+##########################
+## <summary>
+## policy module for ssgtzd service
+## </summary>
+
+
+#####################
+## <summary>
+## Allow socket operations
+## for domain
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed to manage
+##  socket operations
+##  </summary>
+## </param>
+
+interface(`qcom_allow_ssgtzd_sock_manage',`
+       gen_require(`
+               type qcom_ssgtzd_sock_t;
+       ')
+       manage_sock_files_pattern($1, qcom_ssgtzd_sock_t, qcom_ssgtzd_sock_t)
+       files_tmp_filetrans($1, qcom_ssgtzd_sock_t, sock_file)
+')
+

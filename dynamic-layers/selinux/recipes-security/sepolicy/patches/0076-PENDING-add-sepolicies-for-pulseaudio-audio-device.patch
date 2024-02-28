@@ -1,0 +1,88 @@
+From a0b95ba75d7e8cfa1fa714162604f36faac921cd Mon Sep 17 00:00:00 2001
+From: Sairamreddy Bojja <quic_sbojja@quicinc.com>
+Date: Mon, 11 Dec 2023 12:41:05 +0530
+Subject: [PATCH] PENDING: add sepolicies for pulseaudio audio device
+
+Add sepolicy rules for device node and give prmission
+to pulseaudio
+dev/dma_heap/system
+
+Upstream-Status: Pending
+Signed-off-by: Sairamreddy Bojja <quic_sbojja@quicinc.com>
+Change-Id: Idb27c476872663288ab58fce2f6a6c2ac6989efb
+---
+ policy/modules/apps/pulseaudio.te |  2 ++
+ policy/modules/kernel/devices.fc  |  1 +
+ policy/modules/kernel/devices.if  | 18 ++++++++++++++++++
+ policy/modules/kernel/devices.te  |  2 ++
+ 4 files changed, 23 insertions(+)
+
+diff --git a/policy/modules/apps/pulseaudio.te b/policy/modules/apps/pulseaudio.te
+index 15fb28136..3711de73e 100644
+--- a/policy/modules/apps/pulseaudio.te
++++ b/policy/modules/apps/pulseaudio.te
+@@ -173,6 +173,8 @@ tunable_policy(`use_samba_home_dirs',`
+ 	fs_manage_cifs_symlinks(pulseaudio_t)
+ ')
+
++dev_read_system_dmabuf(pulseaudio_t)
++
+ optional_policy(`
+ 	alsa_read_config(pulseaudio_t)
+ 	alsa_read_home_files(pulseaudio_t)
+diff --git a/policy/modules/kernel/devices.fc b/policy/modules/kernel/devices.fc
+index bd08f81d3..1aac59bbb 100644
+--- a/policy/modules/kernel/devices.fc
++++ b/policy/modules/kernel/devices.fc
+@@ -22,6 +22,7 @@
+ /dev/crash		-c	gen_context(system_u:object_r:crash_device_t,mls_systemhigh)
+ /dev/dahdi/.*		-c	gen_context(system_u:object_r:sound_device_t,s0)
+ /dev/dax[0-9]\.[0-9]	-c	gen_context(system_u:object_r:dax_device_t,mls_systemhigh)
++/dev/dma_heap/system	-c	gen_context(system_u:object_r:system_dmabuf_device_t,s0)
+ /dev/dmfm		-c	gen_context(system_u:object_r:sound_device_t,s0)
+ /dev/dmmidi.*		-c	gen_context(system_u:object_r:sound_device_t,s0)
+ /dev/drm_dp_aux[0-9]*	-c	gen_context(system_u:object_r:xserver_misc_device_t,s0)
+diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
+index aace3ccd8..263e5cf76 100644
+--- a/policy/modules/kernel/devices.if
++++ b/policy/modules/kernel/devices.if
+@@ -4089,6 +4089,24 @@ interface(`dev_write_sound_mixer',`
+ 	allow $1 sound_device_t:chr_file map;
+ ')
+
++########################################
++## <summary>
++##      Read the system device.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`dev_read_system_dmabuf',`
++	gen_require(`
++		type device_t, system_dmabuf_device_t;
++	')
++
++	read_chr_files_pattern($1, device_t, system_dmabuf_device_t)
++')
++
+ ########################################
+ ## <summary>
+ ##	Get the attributes of the the power management device.
+diff --git a/policy/modules/kernel/devices.te b/policy/modules/kernel/devices.te
+index 50bfdecfc..fa0e12bdf 100644
+--- a/policy/modules/kernel/devices.te
++++ b/policy/modules/kernel/devices.te
+@@ -259,6 +259,8 @@ dev_node(smartcard_device_t)
+ type sound_device_t;
+ dev_node(sound_device_t)
+
++type system_dmabuf_device_t;
++dev_node(system_dmabuf_device_t)
+ #
+ # Type for sysdig device
+ #
+--
+2.17.1

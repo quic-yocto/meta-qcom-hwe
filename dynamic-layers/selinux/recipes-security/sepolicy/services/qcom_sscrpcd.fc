@@ -1,0 +1,8 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#file_context for sscrpcd
+
+/usr/bin/sscrpcd -- gen_context(system_u:object_r:qcom_sscrpcd_exec_t,s0)
+/etc/sensors(/.*)? gen_context(system_u:object_r:qcom_etc_sensors_t,s0)
+/var/cache/sensors/registry(/.*)? gen_context(system_u:object_r:qcom_var_cache_sensors_t,s0)

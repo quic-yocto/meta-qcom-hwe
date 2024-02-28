@@ -1,3 +1,9 @@
-#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 #SPDX-License-Identifier: BSD-3-Clause-Clear-
 #file_context for qcm6490
+#
+#TODO: current the firmware is not seperated and should be done
+#
+/lib/firmware/qcom(/.*)? -- gen_context(system_u:object_r:lib_t,s0)
+/usr/lib/dsp(/.*)?  --  gen_context(system_u:object_r:lib_t,s0)
+/usr/lib/modem_pr(/.*)?  -- gen_context(system_u:object_r:lib_t,s0) 

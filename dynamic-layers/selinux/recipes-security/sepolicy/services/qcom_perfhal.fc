@@ -1,0 +1,11 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#file_context for perf hal service
+
+/usr/bin/perf-hal-service   -- gen_context(system_u:object_r:qcom_perfhal_exec_t,s0)
+/run/perfservice  -s           gen_context(system_u:object_r:qcom_perfhal_runtime_t,s0)
+/etc/perf(/.*)?             -- gen_context(system_u:object_r:qcom_perfhal_etc_t,s0)
+/etc/powerhint.xml          -- gen_context(system_u:object_r:qcom_perfhal_etc_t,s0)
+/var/lib/perfd              -- gen_context(system_u:object_r:qcom_perfhal_data_t,s0)
+/var/lib/perfd(/.*)?           gen_context(system_u:object_r:qcom_perfhal_data_t,s0)

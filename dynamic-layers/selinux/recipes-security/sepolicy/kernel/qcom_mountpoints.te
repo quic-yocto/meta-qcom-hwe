@@ -1,0 +1,10 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_mountpoints, 1.0)
+
+type qcom_persist_t;
+files_mountpoint(qcom_persist_t)
+
+
+

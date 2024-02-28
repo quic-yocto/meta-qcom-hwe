@@ -1,0 +1,6 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+/usr/bin/cnss_diag                gen_context(system_u:object_r:qcom_wcnss_exec_t,s0)
+/var/persist/wlan_logs(/.*)?      gen_context(system_u:object_r:qcom_wcnss_var_t,s0)
+/etc/cnss_diag.conf               gen_context(system_u:object_r:qcom_wcnss_etc_t,s0)

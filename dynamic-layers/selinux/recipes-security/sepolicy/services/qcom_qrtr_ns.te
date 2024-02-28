@@ -1,0 +1,15 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+
+policy_module(qcom_qrtr_ns, 1.0)
+
+type qcom_qrtr_ns_t;
+type qcom_qrtr_ns_exec_t;
+
+init_daemon_domain(qcom_qrtr_ns_t, qcom_qrtr_ns_exec_t)
+
+
+allow qcom_qrtr_ns_t self:socket create_socket_perms;
+allow qcom_qrtr_ns_t self:capability net_admin;
+allow qcom_qrtr_ns_t self:qipcrtr_socket { setopt create getattr write bind read };

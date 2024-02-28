@@ -1,0 +1,24 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_property_vault, 1.0)
+
+type qcom_property_vault_t;
+type qcom_property_vault_exec_t;
+
+init_daemon_domain(qcom_property_vault_t, qcom_property_vault_exec_t)
+
+#########################
+####TBD, Will attach the label for /tmp/property-vault socket
+#### property_vault socket node
+type qcom_property_vault_sock_t;
+dev_node(qcom_property_vault_sock_t)
+
+#########################
+#### TBD, Will attach the label for /etc/build.prop file
+#### property_vault build prop files
+type qcom_property_vault_prop_t;
+files_type(qcom_property_vault_prop_t)
+
+qcom_search_property_vault_tmp(qcom_property_vault_t)
+qcom_connect_to_property_vault(qcom_property_vault_t)

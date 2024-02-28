@@ -12,6 +12,11 @@ SRC_URI += "file://0070-PENDING-allow-logging-domains-to-execute-busybox.patch \
             file://0073-PENDING-add-perms-to-mount-to-resolve-service-fails.patch \
             file://0074-PENDING-add-required-policies-for-functionfs.patch \
 	    file://0075-PENDING-policies-for-serial-login.patch \
+	    file://0076-PENDING-add-sepolicies-for-pulseaudio-audio-device.patch \
+	    file://0077-PENDING-Add-sepolicy-for-systemd-failure-services.patch \
+            file://0078-PENDING-add-sepolicies-for-modem-manager.patch \
+            file://0079-PENDING-Add-sepolicy-for-systemd-networkd-wait-online.patch \
+            file://0080-PENDING-Add-sepolicy-rules-for-hostapd-hostapd_cli.patch \
 "
 
 #Policy folders
@@ -72,6 +77,7 @@ def test_modules_list(d):
     target_to_policy_map = {
         'qcm6490': ['qcm6490_test', 'qcm8550_test'],
         'qcm8550': ['qcm6490_test', 'qcm8550_test'],
+        'qcs8550': ['qcs8550_test'],
     }
 
     if machine in target_to_policy_map:
@@ -85,6 +91,7 @@ def target_modules_list(d):
     target_to_policy_map = {
         'qcm6490': ['qcm6490', 'qcm8550'],
         'qcm8550': ['qcm6490', 'qcm8550'],
+        'qcs8550': ['qcs8550'],
     }
 
     if machine in target_to_policy_map:
@@ -106,10 +113,8 @@ def copy_target_policies(src_path, dest_path, src_folder, dest_folder, d):
 
     for policy_module in policy_modules:
         source_files = [f"{policy_module}.{ext}" for ext in ['te', 'if', 'fc']]
-
     src_dir = os.path.join(src_path, src_folder)
     dest_dir = os.path.join(dest_path, dest_folder)
-
     for file in source_files:
         src_file = os.path.join(src_dir, file)
         dest_file = os.path.join(dest_dir, file)
@@ -154,4 +159,3 @@ def install_policy(d):
 do_patch:append() {
     install_policy(d)
 }
-

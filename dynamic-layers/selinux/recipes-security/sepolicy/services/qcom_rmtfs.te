@@ -1,0 +1,12 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+
+policy_module(qcom_rmtfs, 1.0)
+
+type qcom_rmtfs_t;
+type qcom_rmtfs_exec_t;
+
+init_daemon_domain(qcom_rmtfs_t, qcom_rmtfs_exec_t)
+
+dev_read_sysfs(qcom_rmtfs_t)

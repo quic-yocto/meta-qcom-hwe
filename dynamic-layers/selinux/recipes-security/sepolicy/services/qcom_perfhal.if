@@ -1,0 +1,68 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>perf-hal.</summary>
+
+########################################
+## <summary>
+##  Read perf configuration content.
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`qcom_perfhal_read_config',`
+    gen_require(`
+        type qcom_perfhal_etc_t;
+    ')
+
+    allow $1 qcom_perfhal_etc_t:file { read getattr open };
+')
+
+########################################
+## <summary>
+##       Read, write and manage perf data files
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to manage perf data
+##    files. These files are perf framework related
+##    files.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_manage_perf_data_files',`
+    gen_require(`
+        type qcom_perfhal_data_t;
+    ')
+    manage_dirs_pattern($1, qcom_perfhal_data_t, qcom_perfhal_data_t)
+    manage_files_pattern($1, qcom_perfhal_data_t, qcom_perfhal_data_t)
+')
+
+
+######################################
+## <summary>
+##      Allow manage service for initrc_exec_t scripts
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Target domain
+##  </summary>
+## </param>
+#
+interface(`qcom_init_manage_perf_service',`
+    gen_require(`
+        type qcom_perfhal_t;
+        class service { start stop status };
+    ')
+
+    allow $1 qcom_perfhal_exec_t:service { start stop status };
+')
+

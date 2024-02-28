@@ -1,0 +1,120 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+policy_module(qcs8550_test, 1.0.0)
+
+#TODO: following are added to unblock the tech team
+#      and expected to clean this going fwd.
+
+gen_require(`
+        type bluetooth_t;
+	type qcom_bluetooth_t;
+	type systemd_passwd_agent_t;
+	type dnsmasq_t;
+	type modemmanager_t;
+	type systemd_logind_t;
+	type systemd_resolved_t;
+	type ping_t;
+	type fsadm_t;
+	type ifconfig_t;
+	type dhcpc_t;
+	type systemd_modules_load_t;
+	type systemd_analyze_t;
+	type kmod_t;
+	type default_t;
+	type systemd_tmpfiles_t;
+	type tmp_t;
+	type initrc_t;
+	type mount_t;
+	type bin_t;
+	type system_dbusd_var_lib_t;
+	type var_log_t;
+	type var_t;
+	type proc_t;
+	type dmesg_t;
+    ')
+
+#TODO :
+#   need to remove this post fixing
+#   denials
+permissive bluetooth_t;
+permissive qcom_bluetooth_t;
+permissive systemd_passwd_agent_t;
+permissive dnsmasq_t;
+permissive modemmanager_t;
+permissive systemd_logind_t;
+permissive systemd_resolved_t;
+permissive systemd_analyze_t;
+
+allow systemd_modules_load_t self:key { search write };
+kernel_search_debugfs(systemd_modules_load_t)
+mmap_exec_files_pattern(ping_t, bin_t, bin_t)
+init_use_script_ptys(ping_t)
+
+mls_file_downgrade(mount_t)
+mls_file_write_all_levels(mount_t)
+mls_file_read_all_levels(mount_t)
+mls_file_upgrade(mount_t)
+
+
+init_daemon_domain(qcom_rmtfs_t, qcom_rmtfs_exec_t)
+
+
+
+## Needed for the  systemd-plot.svg
+kernel_search_proc(systemd_analyze_t)
+kernel_read_sysctl(systemd_analyze_t)
+files_getattr_var_lib_dirs(systemd_analyze_t)
+init_search_runtime(systemd_analyze_t)
+files_manage_urandom_seed(systemd_analyze_t)
+
+busybox_nosuid_execute(ifconfig_t)
+busybox_nosuid_execute(fsadm_t)
+busybox_nosuid_execute(dhcpc_t)
+
+#=========================
+#for kernel test folder
+#  used or kernel tests which will have scripts
+#  with /proc read , insmode and too many priveliged operations
+type qcom_kernel_tests_t;
+type qcom_kernel_tests_exec_t;
+type qcom_modules_object_t;
+
+init_daemon_domain(qcom_kernel_tests_t,qcom_kernel_tests_exec_t)
+
+##allow kmod_t qcom_kernel_tests_t:dir search;
+##allow kmod_t default_t:dir search;
+##allow kmod_t qcom_kernel_tests_t:file mmap_read_file_perms;
+##allow kmod_t qcom_kernel_tests_t:system module_load;
+##allow kmod_t qcom_modules_object_t:system module_load;
+
+##allow initrc_t   qcom_modules_object_t:dir search ;
+##allow initrc_t   qcom_modules_object_t:file {getattr open read };
+##allow initrc_t   self:process {execmem};
+
+permissive  qcom_kernel_tests_t;
+
+
+#========================
+#systemd_tmpfiles ========================
+allow systemd_tmpfiles_t tmp_t:dir create;
+fs_relabelfrom_tmpfs_dirs(systemd_tmpfiles_t)
+# tmpfiles does initial setup on behalf of other daemons, so exempt
+#  this from mls range constraints.
+mls_file_relabel(systemd_tmpfiles_t)
+mls_file_read_all_levels(systemd_tmpfiles_t)
+mls_file_read_all_levels(systemd_logind_t)
+mls_file_write_all_levels(systemd_tmpfiles_t)
+mls_file_upgrade(systemd_tmpfiles_t)
+mls_file_downgrade(systemd_tmpfiles_t)
+
+#systemd-journal catalog functionality
+files_map_etc_files(systemd_tmpfiles_t)
+allow systemd_tmpfiles_t system_dbusd_var_lib_t:dir create_dir_perms;
+allow systemd_tmpfiles_t etc_t:file relabelfrom;
+allow systemd_tmpfiles_t var_log_t:file relabelfrom;
+
+#============= dmesg_t ==============
+allow dmesg_t proc_t:file read_file_perms;
+
+#============= mount_t ==============
+allow mount_t var_t:dir add_name;

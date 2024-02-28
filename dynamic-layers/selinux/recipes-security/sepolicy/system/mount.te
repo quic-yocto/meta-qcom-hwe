@@ -2,3 +2,32 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 qcom_loc_manage_loc_data_files(mount_t)
+qcom_loc_read_loc_etc_files(mount_t)
+qcom_bluetooth_manage_bt_etc_files(mount_t)
+qcom_wcnss_etc_manage_mount(mount_t)
+qcom_bluetooth_manage_data_files(mount_t)
+qcom_bluetooth_manage_socket_files(mount_t)
+qcom_mounton_persist(mount_t)
+files_mounton_etc_dirs(mount_t)
+
+
+allow mount_t self:capability { dac_override dac_read_search fowner fsetid };
+logging_search_logs(mount_t)
+init_read_generic_units_files(mount_t);
+
+mls_file_downgrade(mount_t)
+mls_file_write_all_levels(mount_t)
+mls_file_read_all_levels(mount_t)
+mls_file_upgrade(mount_t)
+
+
+mount_getattr_runtime_files(mount_t)
+files_search_runtime(mount_t)
+corecmd_exec_bin(mount_t)
+#TODO: Need to clean/remove this post fixing the permission issue
+permissive mount_t;
+
+qcom_manage_perf_data_files(mount_t)
+qcom_perfhal_read_config(mount_t)
+
+modutils_read_module_config(mount_t)

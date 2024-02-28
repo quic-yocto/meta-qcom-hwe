@@ -1,0 +1,29 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>tftp_server</summary>
+
+########################################
+## <summary>
+##       Manage tftp data files
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to manage tftp rfs data
+##    files.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_manage_tftp_rfs_data_files',`
+     gen_require(`
+         type qcom_rfs_persist_t;
+     ')
+     allow $1 qcom_rfs_persist_t:file manage_file_perms;
+     allow $1 qcom_rfs_persist_t:dir manage_dir_perms;
+ ')
+

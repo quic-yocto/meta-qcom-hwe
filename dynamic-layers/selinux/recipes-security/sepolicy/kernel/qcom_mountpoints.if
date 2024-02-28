@@ -1,0 +1,66 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>qcom_mountpoints </summary>
+## <required val="true">
+##	Contains interfaces for qcom mountpoints
+## </required>
+
+
+########################################
+## <summary>
+##      Search qcom_persist
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed to  do a search and getattr
+##      </summary>
+## </param>
+#
+interface(`qcom_persist_dir_search',`
+        gen_require(`
+                type qcom_persist_t;
+        ')
+
+        allow $1 qcom_persist_t:dir search_dir_perms;
+')
+
+########################################
+## <summary>
+##      list/read qcom_persist folder
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed to  do a search ,read,open,lock  dir
+##      </summary>
+## </param>
+#
+interface(`qcom_persist_dir_read',`
+        gen_require(`
+                type qcom_persist_t;
+        ')
+
+        allow $1 qcom_persist_t:dir list_dir_perms;
+')
+
+########################################
+## <summary>
+##      this interface will mount qcom_persist
+##      to be call only with mount_t
+##      made for moduler compatablity
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed to  do a search ,read,open,lock  dir
+##      </summary>
+## </param>
+##
+#
+interface(`qcom_mounton_persist',`
+        gen_require(`
+                type qcom_persist_t;
+        ')
+
+        allow $1 qcom_persist_t:dir { search_dir_perms mounton };
+
+')

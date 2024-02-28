@@ -1,0 +1,49 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>qcom_sscrpcd</summary>
+#
+
+#####################
+## <summary>
+## Allow dir and file operations
+## under /var/cache/sensors/registry
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed dir and file operations
+##  under /var/cache/sensors/registry
+##  </summary>
+## </param>
+#
+
+interface(`qcom_allow_ops_qcom_var_cache_sensors',`
+       gen_require(`
+               type qcom_var_cache_sensors_t;
+       ')
+
+       allow $1 qcom_var_cache_sensors_t:dir manage_dir_perms;
+       allow $1 qcom_var_cache_sensors_t:file manage_file_perms;
+')
+
+#####################
+## <summary>
+## Allow dir and file operations
+## under /etc/sensors
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed dir and file operations
+##  under /etc/sensors
+##  </summary>
+## </param>
+#
+
+interface(`qcom_allow_ops_qcom_etc_sensors',`
+       gen_require(`
+               type qcom_etc_sensors_t;
+       ')
+
+       allow $1 qcom_etc_sensors_t:dir manage_dir_perms;
+       allow $1 qcom_etc_sensors_t:file manage_file_perms;
+')

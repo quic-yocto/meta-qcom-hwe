@@ -1,0 +1,162 @@
+# Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#####################
+## <summary>
+## Allow allocation of buffer from qseecom heap
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed to rw /dev/dma_heap/qseecom*
+##  heaps
+##  </summary>
+## </param>
+#
+
+interface(`qcom_qseecom_alloc_buf_rw',`
+        gen_require(`
+                type qcom_qseecom_heap_dev_t;
+        ')
+
+        allow $1 qcom_qseecom_heap_dev_t:chr_file rw_chr_file_perms;
+')
+
+#####################
+## <summary>
+## Allow open/read/write from smcinvoke device
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed rw to smcinvoke device
+##  to communicate with trustzone
+##  </summary>
+## </param>
+#
+
+interface(`qcom_allow_smcinvoke_rw',`
+        gen_require(`
+                type qcom_smcinvoke_dev_t;
+        ')
+
+        allow $1 qcom_smcinvoke_dev_t:chr_file rw_chr_file_perms;
+')
+
+#####################
+## <summary>
+## Allow open/read/write from ufs-bsg device
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed rw to ufs-bsg0 device
+##  </summary>
+## </param>
+#
+
+interface(`qcom_allow_ufs_bsg_rw',`
+       gen_require(`
+               type qcom_ufs_bsg_dev_t;
+       ')
+
+       allow $1 qcom_ufs_bsg_dev_t:chr_file rw_chr_file_perms;
+')
+
+########################################
+## <summary>
+##      Read Write the audio devices.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_dev_audio_rw_device',`
+	gen_require(`
+		type device_t, qcom_audio_device_t;
+	')
+
+	rw_chr_files_pattern($1, device_t, qcom_audio_device_t)
+')
+
+########################################
+## <summary>
+##      Allow read/ioctl/open for adsp secure device.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+##
+interface(`qcom_adsp_secure_read_device',`
+   gen_require(`
+       type device_t, qcom_adsp_secure_device_t;
+   ')
+
+   read_chr_files_pattern($1, device_t, qcom_adsp_secure_device_t)
+')
+
+########################################
+## <summary>
+##      Allow read for dmaheap/qcom,audioml device.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_audioml_dmabuf_read_device',`
+   gen_require(`
+       type device_t, qcom_audioml_heap_device_t;
+   ')
+
+   read_chr_files_pattern($1, device_t, qcom_audioml_heap_device_t)
+')
+
+########################################
+## <summary>
+##       Add rules for pd_mapper interaction
+## </summary>
+## <desc>
+##    <p>
+##    Allow the pd_mapper domain to read sysfs_t dir, file and link file.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to read
+##      </summary>
+## </param>
+#
+interface(`qcom_read_pd_mapper',`
+    gen_require(`
+        type sysfs_t;
+    ')
+    allow $1 sysfs_t:dir read;
+    allow $1 sysfs_t:file { read open };
+    allow $1 sysfs_t:lnk_file read;
+')
+
+#####################
+## <summary>
+## Allow open/read/write uhid device
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed rw to uhid device
+##  to communicate with uhid input node
+##  </summary>
+## </param>
+#
+interface(`uhid_device_rw',`
+	gen_require(`
+		type uhid_device_t;
+	')
+        allow $1 uhid_device_t:chr_file rw_chr_file_perms ;
+')

@@ -1,0 +1,75 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_bluetooth, 1.0)
+
+#########################
+## bluetooth
+type qcom_bluetooth_t;
+type qcom_bluetooth_exec_t;
+
+#########################
+#### Bluetooth conf files
+type qcom_bluetooth_etc_t;
+files_type(qcom_bluetooth_etc_t)
+
+#### Bluetooth conf files
+type qcom_bluetooth_var_t;
+files_type(qcom_bluetooth_var_t)
+
+init_daemon_domain(qcom_bluetooth_t, qcom_bluetooth_exec_t)
+corecmd_search_bin(qcom_bluetooth_t)
+
+# Send syslog messages.
+logging_send_syslog_msg(qcom_bluetooth_t)
+# RW permission to syslogd runime sockets
+logging_rw_runtime_sockets(qcom_bluetooth_t)
+
+# manage bluetooth /etc files
+qcom_bluetooth_manage_bt_etc_files(qcom_bluetooth_t)
+
+files_read_etc_files(qcom_bluetooth_t)
+files_read_etc_runtime_files(qcom_bluetooth_t)
+
+dev_read_sysfs(qcom_bluetooth_t)
+dev_read_urand(qcom_bluetooth_t)
+busybox_nosuid_execute(qcom_bluetooth_t)
+corecmd_exec_shell(qcom_bluetooth_t)
+
+qcom_bluetooth_manage_bt_etc_files(initrc_t)
+
+qcom_bluetooth_manage_data_files(qcom_bluetooth_t)
+
+rw_fifo_files_pattern({ qcom_bluetooth_t }, self, self)
+
+# tmp directory access
+fs_search_tmpfs(qcom_bluetooth_t)
+files_read_generic_tmp_symlinks(qcom_bluetooth_t)
+
+kernel_read_unlabeled_state({ qcom_bluetooth_t qcom_bluetooth_exec_t})
+kernel_read_system_state(qcom_bluetooth_t)
+
+qcom_connect_to_property_vault({ qcom_bluetooth_t qcom_bluetooth_exec_t})
+uhid_device_rw(qcom_bluetooth_t);
+
+allow qcom_bluetooth_t self:process {getsched setsched};
+
+allow qcom_bluetooth_t self:{socket udp_socket } { create_socket_perms read write };
+allow qcom_bluetooth_t self:netlink_route_socket r_netlink_socket_perms;
+
+allow qcom_bluetooth_t self:capability2 wake_alarm;
+allow qcom_bluetooth_t self:capability {sys_nice net_admin};
+
+manage_sock_files_pattern(qcom_bluetooth_t, bluetooth_conf_t, bluetooth_conf_t)
+
+allow qcom_bluetooth_t self:tcp_socket { read write create connect getattr setopt name_connect getopt shutdown bind name_bind node_bind listen};
+
+corenet_tcp_bind_generic_node(qcom_bluetooth_t)
+corenet_tcp_bind_all_unreserved_ports(qcom_bluetooth_t)
+
+allow qcom_bluetooth_t self:process {signal sigkill};
+allow qcom_bluetooth_t self:bluetooth_socket {create_socket_perms write read};
+allow qcom_bluetooth_t self:netlink_socket create_socket_perms;
+allow qcom_bluetooth_t qcom_bluetooth_t:tcp_socket accept;
+kernel_request_load_module(qcom_bluetooth_t)
+allow qcom_bluetooth_t self:capability { dac_override };

@@ -1,0 +1,18 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_time_daemon, 1.0)
+
+type qcom_time_daemon_t;
+type qcom_time_daemon_exec_t;
+type qcom_time_data_t;
+
+
+init_daemon_domain(qcom_time_daemon_t, qcom_time_daemon_exec_t)
+
+allow qcom_time_daemon_t self:capability sys_time;
+logging_send_syslog_msg(qcom_time_daemon_t)
+
+#TODO : Need to remove this line
+#       after fixing all permission issues
+permissive   qcom_time_daemon_t;

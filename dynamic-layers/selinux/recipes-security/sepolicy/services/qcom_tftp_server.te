@@ -1,0 +1,27 @@
+# Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+
+policy_module(qcom_tftp_server, 1.0)
+
+type qcom_tftp_server_t;
+type qcom_tftp_server_exec_t;
+
+init_daemon_domain(qcom_tftp_server_t, qcom_tftp_server_exec_t)
+
+
+logging_send_syslog_msg(qcom_tftp_server_t)
+allow qcom_tftp_server_t  self:qipcrtr_socket create_socket_perms;
+files_read_etc_files(qcom_tftp_server_t)
+files_search_var_lib(qcom_tftp_server_t)
+
+#Fix the latest AVC denials
+allow qcom_tftp_server_t self:unix_dgram_socket create_socket_perms;
+allow qcom_tftp_server_t self:capability { chown setpcap setuid setgid };
+allow qcom_tftp_server_t self:process { setcap getsched };
+init_search_runtime(qcom_tftp_server_t)
+files_manage_var_lib_dirs(qcom_tftp_server_t)
+
+type qcom_rfs_persist_t;
+files_type(qcom_rfs_persist_t)
+qcom_manage_tftp_rfs_data_files(qcom_tftp_server_t)

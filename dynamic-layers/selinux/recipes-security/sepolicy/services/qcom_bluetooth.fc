@@ -1,0 +1,8 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## bluetooth files
+/etc/bluetooth/(/.*)?  -- gen_context(system_u:object_r:qcom_bluetooth_etc_t,s0)
+/usr/bin/btapp         -- gen_context(system_u:object_r:qcom_bluetooth_exec_t,s0)
+/var/bluetooth/(/.*)?  -- gen_context(system_u:object_r:qcom_bluetooth_var_t,s0)
+

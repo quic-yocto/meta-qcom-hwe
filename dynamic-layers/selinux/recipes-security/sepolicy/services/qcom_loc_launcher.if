@@ -127,6 +127,32 @@ interface(`qcom_loc_manage_loc_data_files',`
 
 ########################################
 ## <summary>
+##       Create location data dirs
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to create location data
+##    dirs. Data files are created by location daemons or
+##    client application inside these directories for use.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_loc_create_loc_data_dirs',`
+    gen_require(`
+        type qcom_loc_data_t;
+    ')
+    create_dirs_pattern($1, qcom_loc_data_t, qcom_loc_data_t)
+    list_dirs_pattern($1, qcom_loc_data_t, qcom_loc_data_t)
+    setattr_dirs_pattern($1, qcom_loc_data_t, qcom_loc_data_t)
+')
+
+########################################
+## <summary>
 ##       Read, write and manage location socket files
 ## </summary>
 ## <desc>
@@ -154,6 +180,38 @@ interface(`qcom_loc_manage_loc_sock_files',`
     manage_dirs_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t)
     manage_sock_files_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t)
     manage_lnk_files_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t)
+')
+
+########################################
+## <summary>
+##       Create location socket dirs
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to create location socket
+##    dirs. Socket files are created by location daemons or
+##    client application inside these directories for
+##    communication.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <param name="type">
+##      <summary>
+##      File type allowed to create.
+##      </summary>
+## </param>
+#
+interface(`qcom_loc_create_loc_sock_dirs',`
+    gen_require(`
+        type qcom_loc_sock_t;
+    ')
+    create_dirs_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t)
+    list_dirs_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t)
+    setattr_dirs_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t)
 ')
 
 ########################################
@@ -240,4 +298,22 @@ interface(`qcom_loc_tcp_socket_connect',`
     ')
     corenet_tcp_connect_http_port($1)
     allow $1  self:tcp_socket { read write create connect getattr setopt name_connect getopt };
+')
+
+########################################
+## <summary>
+##  Allow systemd initrc to get status of location launcher service
+## </summary>
+## <param name="domain">
+##  <summary>
+##      Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`qcom_loc_launcher_service_get_status',`
+    gen_require(`
+        type qcom_loc_launcher_exec_t;
+        class service status;
+    ')
+    allow $1 qcom_loc_launcher_exec_t:service status;
 ')

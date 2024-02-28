@@ -1,0 +1,42 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_perfhal, 1.0)
+
+#########################
+## perf-hal
+type qcom_perfhal_t;
+type qcom_perfhal_exec_t;
+
+init_daemon_domain(qcom_perfhal_t, qcom_perfhal_exec_t)
+qcom_init_manage_perf_service(initrc_t)
+
+#perf_hal socket
+
+init_named_socket_activation(qcom_perfhal_t, qcom_perfhal_runtime_t)
+type qcom_perfhal_runtime_t;
+files_runtime_file(qcom_perfhal_runtime_t)
+manage_sock_files_pattern(qcom_perfhal_t, qcom_perfhal_runtime_t, qcom_perfhal_runtime_t)
+files_runtime_filetrans(qcom_perfhal_t, qcom_perfhal_runtime_t, { sock_file })
+
+
+#data files
+type qcom_perfhal_data_t;
+files_type(qcom_perfhal_data_t)
+files_search_var_lib(qcom_perfhal_t)
+qcom_manage_perf_data_files(qcom_perfhal_t)
+
+#etc files
+type qcom_perfhal_etc_t;
+files_type(qcom_perfhal_etc_t)
+
+dev_rw_sysfs(qcom_perfhal_t)
+qcom_perfhal_read_config(qcom_perfhal_t)
+
+kernel_rw_kernel_sysctl(qcom_perfhal_t)
+kernel_read_system_state(qcom_perfhal_t)
+
+logging_send_syslog_msg(qcom_perfhal_t)
+allow qcom_perfhal_t self:unix_stream_socket { connectto };
+allow qcom_perfhal_t self:process { getsched setsched };
+allow qcom_perfhal_t self:capability sys_nice;

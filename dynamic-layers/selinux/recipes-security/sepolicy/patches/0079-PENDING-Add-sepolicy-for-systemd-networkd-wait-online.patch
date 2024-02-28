@@ -1,0 +1,91 @@
+From 56af8a761fa3f1e81bf0e9697207b06fd06a1615 Mon Sep 17 00:00:00 2001
+From: Vivek Puar <quic_vpuar@quicinc.com>
+Date: Tue, 6 Feb 2024 16:49:40 +0530
+Subject: [PATCH] PENDING: Add sepolicy for systemd-networkd-wait-online
+ service
+
+Change-Id: Ia5b08d35275f676ef10a0caee0a0b0b36229fe15
+---
+ policy/modules/system/systemd.fc |  1 +
+ policy/modules/system/systemd.if | 19 +++++++++++++++++++
+ policy/modules/system/systemd.te | 21 +++++++++++++++++++++
+ 3 files changed, 41 insertions(+)
+
+diff --git a/policy/modules/system/systemd.fc b/policy/modules/system/systemd.fc
+index 1a35bd65c..470ae292e 100644
+--- a/policy/modules/system/systemd.fc
++++ b/policy/modules/system/systemd.fc
+@@ -40,6 +40,7 @@
+ /usr/lib/systemd/systemd-resolved	--	gen_context(system_u:object_r:systemd_resolved_exec_t,s0)
+ /usr/lib/systemd/systemd-rfkill		--	gen_context(system_u:object_r:systemd_rfkill_exec_t,s0)
+ /usr/lib/systemd/systemd-socket-proxyd	--	gen_context(system_u:object_r:systemd_socket_proxyd_exec_t,s0)
++/usr/lib/systemd/systemd-networkd-wait-online   --      gen_context(system_u:object_r:systemd_networkd_wait_online_exec_t,s0)
+ /usr/lib/systemd/systemd-sysctl		--	gen_context(system_u:object_r:systemd_sysctl_exec_t,s0)
+ /usr/lib/systemd/systemd-update-done	--	gen_context(system_u:object_r:systemd_update_done_exec_t,s0)
+ /usr/lib/systemd/systemd-user-runtime-dir	--	gen_context(system_u:object_r:systemd_user_runtime_dir_exec_t,s0)
+diff --git a/policy/modules/system/systemd.if b/policy/modules/system/systemd.if
+index 23066cfe0..7b62545e5 100644
+--- a/policy/modules/system/systemd.if
++++ b/policy/modules/system/systemd.if
+@@ -2027,3 +2027,22 @@ interface(`systemd_use_inherited_machined_ptys', `
+ 	allow $1 systemd_machined_t:fd use;
+ 	allow $1 systemd_machined_devpts_t:chr_file rw_inherited_term_perms;
+ ')
++
++########################################
++## <summary>
++##      detects and configures network devices as they appear
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Source domain
++##      </summary>
++## </param>
++#
++interface(`systemd_network_syslogd_runtime',`
++        gen_require(`
++                type systemd_networkd_runtime_t ;
++        ')
++
++        allow $1 systemd_networkd_runtime_t:dir { watch };
++')
++
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index c0bd9e263..35c21e6ae 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -271,6 +271,10 @@ type systemd_update_done_t;
+ type systemd_update_done_exec_t;
+ init_system_domain(systemd_update_done_t, systemd_update_done_exec_t)
+
++type systemd_networkd_wait_online_t;
++type systemd_networkd_wait_online_exec_t;
++init_daemon_domain(systemd_networkd_wait_online_t, systemd_networkd_wait_online_exec_t)
++
+ type systemd_update_run_t;
+ files_type(systemd_update_run_t)
+
+@@ -504,6 +508,23 @@ optional_policy(`
+ 	miscfiles_read_localization(systemd_generator_t)
+ ')
+
++#######################################
++#
++# Systemd networkd wait online local policy
++#
++
++init_search_run(systemd_networkd_wait_online_t)
++init_read_state(systemd_networkd_wait_online_t)
++kernel_read_kernel_sysctls(systemd_networkd_wait_online_t)
++kernel_read_system_state(systemd_networkd_wait_online_t)
++fs_getattr_tmpfs(systemd_networkd_wait_online_t)
++fs_getattr_cgroup(systemd_networkd_wait_online_t)
++logging_send_syslog_msg(systemd_networkd_wait_online_t)
++systemd_read_networkd_runtime(systemd_networkd_wait_online_t)
++systemd_network_syslogd_runtime(systemd_networkd_wait_online_t)
++allow systemd_networkd_wait_online_t self:netlink_route_socket r_netlink_socket_perms;
++allow systemd_networkd_wait_online_t self:capability net_admin;
++
+ #######################################
+ #
+ # Hostnamed policy

@@ -1,0 +1,5 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+/usr/bin/cdsprpcd         --     gen_context(system_u:object_r:qcom_cdsprpcd_exec_t,s0)
+

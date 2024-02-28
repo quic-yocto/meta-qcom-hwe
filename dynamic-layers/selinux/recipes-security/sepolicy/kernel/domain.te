@@ -1,0 +1,8 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+
+#most of code trys to check for existing of debugfs
+# which will lead to noise in logs
+# where search should be allowed.
+kernel_search_debugfs(domain)

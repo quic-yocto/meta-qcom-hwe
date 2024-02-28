@@ -1,0 +1,71 @@
+From 511c51061fd93b339a6d98a187b6b9709a5e555d Mon Sep 17 00:00:00 2001
+From: jianbinz <quic_jianbinz@quicinc.com>
+Date: Thu, 11 Jan 2024 16:27:56 +0800
+Subject: [PATCH] PENDING: Add sepolicy for systemd failure services
+
+Add sepolicy for systemd failure services
+
+Signed-off-by: jianbinz <quic_jianbinz@quicinc.com>
+---
+ policy/modules/system/init.if    | 36 ++++++++++++++++++++++++++++++++
+ policy/modules/system/systemd.te |  2 ++
+ 2 files changed, 38 insertions(+)
+
+diff --git a/policy/modules/system/init.if b/policy/modules/system/init.if
+index 2f57eb339..cf9e79c6a 100644
+--- a/policy/modules/system/init.if
++++ b/policy/modules/system/init.if
+@@ -3658,3 +3658,39 @@ interface(`init_getrlimit',`
+ 
+ 	allow $1 init_t:process getrlimit;
+ ')
++
++########################################
++## <summary>
++##      Allow connectto initrc_t unix_stream_socket
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Source domain
++##	</summary>
++## </param>
++#
++interface(`init_connectto_stream_socket',`
++	gen_require(`
++		type initrc_t ;
++	')
++
++	allow $1 initrc_t:unix_stream_socket  {connectto};
++')
++
++########################################
++## <summary>
++##      Allow ead write getattr initrc_devpts_t chr_file
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Source domain
++##	</summary>
++## </param>
++#
++interface(`init_read_write_getattr_chr_file',`
++	gen_require(`
++		type initrc_devpts_t;
++	')
++
++	allow $1 initrc_devpts_t:chr_file { read write getattr };
++')
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index 0bd8d340a..c0bd9e263 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -618,6 +618,8 @@ allow systemd_logind_t self:netlink_kobject_uevent_socket create_socket_perms;
+ allow systemd_logind_t self:unix_dgram_socket create_socket_perms;
+ allow systemd_logind_t self:fifo_file rw_fifo_file_perms;
+ 
++init_connectto_stream_socket(systemd_logind_t)
++init_read_write_getattr_chr_file(systemd_passwd_agent_t)
+ allow systemd_logind_t systemd_logind_var_lib_t:dir manage_dir_perms;
+ allow systemd_logind_t systemd_logind_var_lib_t:file manage_file_perms;
+ init_var_lib_filetrans(systemd_logind_t, systemd_logind_var_lib_t, dir)
+

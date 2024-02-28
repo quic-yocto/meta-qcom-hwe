@@ -1,0 +1,30 @@
+# Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#qcom_qseecom_heap will have:
+#label: system_u:object_r:qcom_qseecom_heap_dev_t:s0
+#MLS sensitivity: s0
+#MCS categories: <none>
+
+/dev/dma_heap/qcom,qseecom    -c gen_context(system_u:object_r:qcom_qseecom_heap_dev_t,s0)
+/dev/dma_heap/qcom,qseecom-ta -c gen_context(system_u:object_r:qcom_qseecom_heap_dev_t,s0)
+/dev/bsg/ufs-bsg0             -c gen_context(system_u:object_r:qcom_ufs_bsg_dev_t,s0)
+/dev/bsg/0:0:0:49476          -c gen_context(system_u:object_r:qcom_ufs_bsg_dev_t,s0)
+
+#qcom_smcinvoke will have:
+#label: system_u:object_r:qcom_smcinvoke_dev_t:s0
+#MLS sensitivity: s0
+#MCS categories: <none>
+
+/dev/smcinvoke                -c gen_context(system_u:object_r:qcom_smcinvoke_dev_t,s0)
+
+/dev/fastrpc-adsp-secure  -c    gen_context(system_u:object_r:qcom_adsp_secure_device_t,s0)
+/dev/fastrpc-cdsp-secure  -c    gen_context(system_u:object_r:qcom_cdsp_secure_device_t,s0)
+/dev/fastrpc-adsp  -c           gen_context(system_u:object_r:qcom_adsp_device_t,s0)
+/dev/fastrpc-cdsp  -c           gen_context(system_u:object_r:qcom_cdsp_device_t,s0)
+
+#Audio driver nodes
+/dev/dma_heap/qcom,audio-ml   -c gen_context(system_u:object_r:qcom_audioml_heap_device_t,s0)
+/dev/aud_pasthru_adsp         -c gen_context(system_u:object_r:qcom_audio_device_t,s0)
+/dev/msm_audio_mem            -c gen_context(system_u:object_r:qcom_audio_device_t,s0)
+/dev/msm_audio_mem_cma        -c gen_context(system_u:object_r:qcom_audio_device_t,s0)

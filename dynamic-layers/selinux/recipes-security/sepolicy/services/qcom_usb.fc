@@ -1,0 +1,7 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#qusb executable will have:
+#label: system_u:object_r:qcom_usb_exec_t
+
+/usr/bin/qusb -- gen_context(system_u:object_r:qcom_usb_exec_t,s0)

@@ -1,0 +1,9 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#qtee_supplicant executable will have:
+#label: system_u:object_r:qcom_qtee_supplicant_exec_t
+
+/usr/bin/qtee_supplicant           -- gen_context(system_u:object_r:qcom_qtee_supplicant_exec_t,s0)
+/var/persist/qtee_supplicant(/.*)?    gen_context(system_u:object_r:qcom_qtee_supplicant_persist_t,s0)
+/var/tmp/qtee_supplicant(/.*)?        gen_context(system_u:object_r:qcom_qtee_supplicant_data_t,s0)

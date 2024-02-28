@@ -1,0 +1,43 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+########################################
+## <summary>
+##	Allow execute permissions for mount
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed to execute mount.
+##	</summary>
+## </param>
+#
+
+interface(`mount_exec_files',`
+	gen_require(`
+		type mount_exec_t;
+	')
+
+	allow $1 mount_exec_t:file exec_file_perms;
+')
+
+########################################
+## <summary>
+##	Allow read, write, execute permissions for
+##	mount runtime files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed to access.
+##	</summary>
+## </param>
+#
+
+interface(`mount_rw_runtime_dirs',`
+	gen_require(`
+		type mount_runtime_t;
+	')
+
+	allow $1 mount_runtime_t:dir rw_dir_perms;
+')
+
+

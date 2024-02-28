@@ -57,3 +57,21 @@ interface(`qcom_loc_haldaemon_unix_dgram_sendto',`
     ')
     allow $1 qcom_loc_hal_daemon_t:unix_dgram_socket sendto;
 ')
+
+########################################
+## <summary>
+##  Allow systemd initrc to get status of location hal daemon service
+## </summary>
+## <param name="domain">
+##  <summary>
+##      Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`qcom_loc_hal_daemon_service_get_status',`
+    gen_require(`
+        type qcom_loc_hal_daemon_exec_t;
+        class service status;
+    ')
+    allow $1 qcom_loc_hal_daemon_exec_t:service status;
+')

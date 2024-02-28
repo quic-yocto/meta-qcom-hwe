@@ -1,0 +1,88 @@
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From 01a1675278a4227c0f86dc84524c56cc53204c8e Mon Sep 17 00:00:00 2001
+From: Sai Pavan Akhil Remella <quic_saipavan@quicinc.com>
+Date: Fri, 2 Feb 2024 11:54:10 +0530
+Subject: [PATCH] PENDING: Add sepolicy rules for hostapd/hostapd_cli
+
+Added rules for hostapd to access conf files under /etc/
+and rules for hostapd_cli.
+
+Signed-off: Sai Pavan Akhil Remella <quic_saipavan@quicinc.com>
+---
+ policy/modules/services/hostapd.fc |  2 ++
+ policy/modules/services/hostapd.te | 24 ++++++++++++++++++++++++
+ 2 files changed, 26 insertions(+)
+
+diff --git a/policy/modules/services/hostapd.fc b/policy/modules/services/hostapd.fc
+index c0a9e3354..f8c527f3c 100644
+--- a/policy/modules/services/hostapd.fc
++++ b/policy/modules/services/hostapd.fc
+@@ -2,6 +2,8 @@
+
+ /usr/sbin/hostapd               --      gen_context(system_u:object_r:hostapd_exec_t,s0)
+
++/usr/sbin/hostapd_cli               --      gen_context(system_u:object_r:hostapd_cli_exec_t,s0)
++
+ /var/run/hostapd(/.*)?          gen_context(system_u:object_r:hostapd_runtime_t,s0)
+
+ /etc/hostapd(/.*)?          gen_context(system_u:object_r:hostapd_conf_t,s0)
+diff --git a/policy/modules/services/hostapd.te b/policy/modules/services/hostapd.te
+index e04e4035e..670381e81 100644
+--- a/policy/modules/services/hostapd.te
++++ b/policy/modules/services/hostapd.te
+@@ -15,6 +15,13 @@ files_type(hostapd_conf_t)
+ type hostapd_runtime_t alias hostapd_var_run_t;
+ files_runtime_file(hostapd_runtime_t)
+
++type hostapd_tmp_t;
++files_tmp_file(hostapd_tmp_t)
++
++type hostapd_cli_t;
++type hostapd_cli_exec_t;
++init_system_domain(hostapd_cli_t, hostapd_cli_exec_t)
++
+ ########################################
+ #
+ # hostapd local policy
+@@ -27,6 +34,7 @@ allow hostapd_t self:netlink_socket create_socket_perms;
+ allow hostapd_t self:netlink_generic_socket create_socket_perms;
+ allow hostapd_t self:netlink_route_socket create_netlink_socket_perms;
+ allow hostapd_t self:packet_socket create_socket_perms;
++allow hostapd_t hostapd_cli_t:unix_dgram_socket sendto;
+
+ read_files_pattern(hostapd_t, hostapd_conf_t, hostapd_conf_t)
+
+@@ -35,6 +43,10 @@ manage_files_pattern(hostapd_t, hostapd_runtime_t, hostapd_runtime_t)
+ manage_lnk_files_pattern(hostapd_t, hostapd_runtime_t, hostapd_runtime_t)
+ manage_sock_files_pattern(hostapd_t, hostapd_runtime_t, hostapd_runtime_t)
+ files_runtime_filetrans(hostapd_t, hostapd_runtime_t, { dir file lnk_file sock_file })
++files_read_etc_runtime_files(hostapd_t)
++
++rw_sock_files_pattern(hostapd_t, hostapd_tmp_t, hostapd_tmp_t)
++files_tmp_filetrans(hostapd_t, hostapd_tmp_t, sock_file)
+
+ kernel_read_system_state(hostapd_t)
+ kernel_read_network_state(hostapd_t)
+@@ -54,3 +66,15 @@ auth_use_nsswitch(hostapd_t)
+ logging_send_syslog_msg(hostapd_t)
+
+ miscfiles_read_localization(hostapd_t)
++
++########################################
++#
++# hostapd_cli local policy
++#
++
++allow hostapd_cli_t self:unix_dgram_socket create_socket_perms;
++init_use_script_ptys(hostapd_cli_t)
++manage_sock_files_pattern(hostapd_cli_t, hostapd_tmp_t, hostapd_tmp_t)
++files_tmp_filetrans(hostapd_cli_t, hostapd_tmp_t, sock_file)
++rw_sock_files_pattern(hostapd_cli_t, hostapd_runtime_t, hostapd_runtime_t);
++allow hostapd_cli_t hostapd_t:unix_dgram_socket sendto;
+--
+2.17.1
+

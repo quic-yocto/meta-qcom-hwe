@@ -1,0 +1,41 @@
+From 5e6952dbc2658309becd8f497f4a2b29c6f83ba6 Mon Sep 17 00:00:00 2001
+From: Kamesh Relangi <krelangi@qti.qualcomm.com>
+Date: Mon, 12 Feb 2024 11:32:05 +0530
+Subject: [PATCH] PENDING: Add sepolicy rules for modem manager
+
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+Change-Id: I2c49f0126e4ee38101f5e74780b5ec9f6f931468
+Signed-off-by: Kamesh Relangi <quic_krelangi@quicinc.com>
+---
+ policy/modules/services/modemmanager.te | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/policy/modules/services/modemmanager.te b/policy/modules/services/modemmanager.te
+index deadee404..af4a63763 100644
+--- a/policy/modules/services/modemmanager.te
++++ b/policy/modules/services/modemmanager.te
+@@ -19,9 +19,17 @@ allow modemmanager_t self:process { getsched signal };
+ allow modemmanager_t self:fifo_file rw_fifo_file_perms;
+ allow modemmanager_t self:unix_stream_socket create_stream_socket_perms;
+ allow modemmanager_t self:netlink_kobject_uevent_socket create_socket_perms;
++allow modemmanager_t self:process setsched;
++allow modemmanager_t self:qipcrtr_socket create;
+
+ kernel_read_system_state(modemmanager_t)
+
++fs_search_tmpfs(modemmanager_t)
++
++logging_search_logs(modemmanager_t)
++
++corecmd_dontaudit_search_bin(modemmanager_t)
++
+ dev_read_sysfs(modemmanager_t)
+ dev_rw_modem(modemmanager_t)
+
+--
+2.25.1
+

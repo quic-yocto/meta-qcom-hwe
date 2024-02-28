@@ -1,0 +1,21 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+##########################
+## <summary>
+## Qualcomm USB
+## </summary>
+## <desc>
+## <p>
+## This script creates the usb_gadget in configfs and takes care
+## of mounting function_fs which is needed for diag-router. It
+## helps in enumeration of USB gadget in Diag/ADB composition
+## during device bootup.
+## </p>
+## <p>
+## Additionally it can used to change USB composition from shell,
+## persist a new composition, list all supported usb compositions,
+## and bind/unbind usb_gadget.
+## </p>
+## </desc>
+

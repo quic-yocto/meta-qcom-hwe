@@ -1,0 +1,41 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_qtee_supplicant, 1.0)
+type qcom_qtee_supplicant_t;
+type qcom_qtee_supplicant_exec_t;
+domain_type(qcom_qtee_supplicant_t)
+init_daemon_domain(qcom_qtee_supplicant_t, qcom_qtee_supplicant_exec_t)
+
+type qcom_qtee_supplicant_persist_t;
+files_type(qcom_qtee_supplicant_persist_t)
+
+type qcom_qtee_supplicant_data_t;
+files_type(qcom_qtee_supplicant_data_t)
+
+# Access DMA-BUF heaps and smcinvoke
+qcom_qseecom_alloc_buf_rw(qcom_qtee_supplicant_t)
+qcom_allow_smcinvoke_rw(qcom_qtee_supplicant_t)
+
+# Access UFS storage
+qcom_allow_ufs_bsg_rw(qcom_qtee_supplicant_t)
+allow qcom_qtee_supplicant_t self:capability { setgid setuid sys_rawio };
+
+# Access gpfspath_oem_config.xml file for data paths
+files_read_etc_files(qcom_qtee_supplicant_t)
+init_read_runtime_files(qcom_qtee_supplicant_t)
+
+# Access /proc/cmdline
+kernel_read_system_state(qcom_qtee_supplicant_t)
+allow qcom_qtee_supplicant_t self:process getsched;
+allow qcom_qtee_supplicant_t self:process setcap;
+
+# Logging related
+allow qcom_qtee_supplicant_t self:unix_dgram_socket { connect create write };
+logging_send_syslog_msg(qcom_qtee_supplicant_t)
+logging_rw_runtime_sockets(qcom_qtee_supplicant_t)
+
+# FS/SFS directories
+qcom_persist_dir_search(qcom_qtee_supplicant_t)
+qcom_allow_ops_qtee_supplicant_persist(qcom_qtee_supplicant_t)
+qcom_allow_ops_qtee_supplicant_data(qcom_qtee_supplicant_t)

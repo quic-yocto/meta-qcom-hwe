@@ -1,0 +1,24 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+########################################
+## <summary>
+##       Add rules for property-vault interaction
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to communicate with property-vault for search of properties.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_search_property_vault_tmp',`
+    gen_require(`
+        type tmp_t;
+    ')
+    allow $1 tmp_t:dir search_dir_perms;
+')

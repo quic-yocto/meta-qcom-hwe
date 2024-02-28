@@ -1,0 +1,52 @@
+# Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+##########################
+## <summary>
+## policy module for qtee_supplicant service
+## </summary>
+
+#####################
+## <summary>
+## Allow dir and file operations
+## under /var/persist/qtee_supplicant
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed dir and file operations
+##  under /var/persist/qtee_supplicant
+##  </summary>
+## </param>
+#
+
+interface(`qcom_allow_ops_qtee_supplicant_persist',`
+       gen_require(`
+               type qcom_qtee_supplicant_persist_t;
+       ')
+
+       allow $1 qcom_qtee_supplicant_persist_t:dir manage_dir_perms;
+       allow $1 qcom_qtee_supplicant_persist_t:file manage_file_perms;
+')
+
+#####################
+## <summary>
+## Allow dir and file operations
+## under /var/tmp/qtee_supplicant
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed dir and file operations
+##  under /var/tmp/qtee_supplicant
+##  </summary>
+## </param>
+#
+
+interface(`qcom_allow_ops_qtee_supplicant_data',`
+       gen_require(`
+               type var_t, qcom_qtee_supplicant_data_t;
+       ')
+
+       allow $1 var_t:dir list_dir_perms;
+       allow $1 qcom_qtee_supplicant_data_t:dir manage_dir_perms;
+       allow $1 qcom_qtee_supplicant_data_t:file manage_file_perms;
+')

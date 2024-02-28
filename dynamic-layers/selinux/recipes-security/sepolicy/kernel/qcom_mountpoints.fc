@@ -1,0 +1,5 @@
+# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+/mnt/overlay(/.*)?              gen_context(system_u:object_r:etc_t,s0)
+/var/persist(/.*)?              gen_context(system_u:object_r:qcom_persist_t,s0)

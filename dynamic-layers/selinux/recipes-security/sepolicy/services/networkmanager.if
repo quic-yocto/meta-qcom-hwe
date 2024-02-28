@@ -1,0 +1,44 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+####################################
+## <summary>
+##  Connect with networkmanager over
+##  a unix domain datagram socket.
+## </summary>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access.
+##    </summary>
+## </param>
+#
+interface(`networkmanager_dgram_send', `
+    gen_require(`
+        type NetworkManager_t, NetworkManager_runtime_t;
+    ')
+
+    allow $1 NetworkManager_t:unix_dgram_socket sendto;
+    list_dirs_pattern($1, NetworkManager_runtime_t, NetworkManager_runtime_t)
+    rw_sock_files_pattern($1, NetworkManager_runtime_t, NetworkManager_runtime_t)
+
+')
+
+####################################
+## <summary>
+##  Transition /tmp/wpa_ctrl* sock files created by
+##  calls to wpa_ctrl_open api's.
+## </summary>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access.
+##    </summary>
+## </param>
+#
+interface(`networkmanager_tmp_filetrans', `
+    gen_require(`
+        type NetworkManager_tmp_t;
+    ')
+
+    manage_sock_files_pattern($1, NetworkManager_tmp_t, NetworkManager_tmp_t)
+    files_tmp_filetrans($1, NetworkManager_tmp_t, sock_file)
+')

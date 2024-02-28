@@ -1,0 +1,81 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>Bluetooth package</summary>
+
+########################################
+## <summary>
+##    manage bluetooth conf files in /etc.
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to read bluetooth conf
+##    files in /etc. These files are bluetooth framework
+##    related system configuration files
+##    </p>
+## </desc>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access for bluetooth conf files.
+##    </summary>
+## </param>
+#
+interface(`qcom_bluetooth_manage_bt_etc_files',`
+    gen_require(`
+        type etc_t, qcom_bluetooth_etc_t, bluetooth_conf_t;
+    ')
+
+    allow $1 bluetooth_conf_t:dir list_dir_perms;
+    allow $1 qcom_bluetooth_etc_t:file {manage_file_perms};
+    allow $1 qcom_bluetooth_etc_t:dir {manage_dir_perms};
+    allow $1 bluetooth_conf_t:file {manage_file_perms};
+    allow $1 bluetooth_conf_t:dir {manage_dir_perms};
+
+    read_files_pattern($1, etc_t, qcom_bluetooth_etc_t)
+    read_lnk_files_pattern($1, etc_t, qcom_bluetooth_etc_t)
+')
+
+#######################################
+## <summary>
+##       manage bluetooth data  files
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to manage bluetooth data
+##    files. These files are bluetooth framework related
+##    files.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_bluetooth_manage_data_files',`
+    gen_require(`
+        type qcom_bluetooth_t, qcom_bluetooth_var_t;
+    ')
+    allow $1 qcom_bluetooth_var_t:dir {manage_dir_perms};
+	allow $1 qcom_bluetooth_var_t:file manage_file_perms;
+')
+
+
+########################################
+## <summary>
+##       Util interface to manage sock files pattern
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified bluetooth domain with mage sock files pattern.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_bluetooth_manage_socket_files',`
+	manage_sock_files_pattern($1, bluetooth_conf_t, bluetooth_conf_t)
+')

@@ -1,0 +1,45 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_usb, 1.0)
+type qcom_usb_t;
+type qcom_usb_exec_t;
+init_script_domain(qcom_usb_t, qcom_usb_exec_t)
+
+# Allow qusb domain to execute busybox.nosuid
+busybox_nosuid_execute(qcom_usb_t)
+
+# Allows to use shell commands such as mkdir/ln/rm/nohup etc
+corecmd_exec_all_executables(qcom_usb_t)
+
+# allow to create /dev/ffs-diag
+dev_create_generic_dirs(qcom_usb_t)
+dev_mounton(qcom_usb_t)
+allow qcom_usb_t self:fifo_file {getattr open read write ioctl};
+
+# allow reading udc name from sysfs
+dev_read_sysfs(qcom_usb_t)
+kernel_read_system_state(qcom_usb_t)
+
+# Allow mount access for functionfs mounting
+allow qcom_usb_t self:capability sys_admin;
+mount_exec_files(qcom_usb_t)
+mount_rw_runtime_dirs(qcom_usb_t)
+fs_mount_functionfs(qcom_usb_t)
+
+# Allow QUSB script to print composition switch info the dmesg
+mls_file_write_all_levels(qcom_usb_t)
+mls_file_read_all_levels(qcom_usb_t)
+dev_write_kmsg(qcom_usb_t)
+
+# Allow QUSB to create UVC.0 interface
+kernel_request_load_module(qcom_usb_t)
+
+# Allow accessing configfs usb_gadget
+fs_manage_configfs_dirs(qcom_usb_t)
+fs_manage_configfs_files(qcom_usb_t)
+fs_manage_configfs_lnk_files(qcom_usb_t)
+
+# Allow access to etc for caching/persisting the pid info
+files_manage_etc_dirs(qcom_usb_t)
+files_manage_etc_files(qcom_usb_t)

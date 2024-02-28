@@ -1,0 +1,21 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_wcnss, 1.0)
+type qcom_wcnss_t;
+type qcom_wcnss_exec_t;
+type qcom_wcnss_var_t;
+files_type(qcom_wcnss_var_t)
+type qcom_wcnss_etc_t;
+files_type(qcom_wcnss_etc_t)
+init_daemon_domain(qcom_wcnss_t, qcom_wcnss_exec_t)
+qcom_wcnss_manage_persist(qcom_wcnss_t)
+
+allow qcom_wcnss_t self:unix_dgram_socket { connect create write };
+allow qcom_wcnss_t self:netlink_generic_socket { create setopt bind getattr read write };
+allow qcom_wcnss_t self:netlink_socket { create bind };
+logging_send_syslog_msg(qcom_wcnss_t);
+allow qcom_wcnss_t self:capability { dac_read_search dac_override };
+files_etc_filetrans(qcom_wcnss_t,qcom_wcnss_etc_t,file)
+init_stream_connect_script(qcom_wcnss_t)
+fs_getattr_xattr_fs(qcom_wcnss_t)
