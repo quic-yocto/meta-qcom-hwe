@@ -9,11 +9,11 @@ DEPENDS += "syslog-plumber property-vault glib-2.0 gbm fastrpc"
 
 RDEPENDS:${PN} += "cameradlkm"
 
-SRCREV = "ad944e38851618c4096293e8cb7ea82c4e7e427a"
+SRCREV = "587ec9a9723f9fe87921c998e1a53420dd3eb809"
 
 SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
 
-PREBUILT_TARBALL = "camxlib_1.0_qcm6490.tar.gz"
+PREBUILT_TARBALL = "camxlib_1.0_${PACKAGE_ARCH}.tar.gz"
 
 S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 

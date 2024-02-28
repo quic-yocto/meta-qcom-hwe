@@ -5,11 +5,11 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "Common mm-audio headers installation"
 
-SRCREV = "ad944e38851618c4096293e8cb7ea82c4e7e427a"
+SRCREV = "587ec9a9723f9fe87921c998e1a53420dd3eb809"
 
 SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
 
-PREBUILT_TARBALL = "mm-audio-headers_git_armv8-2a.tar.gz"
+PREBUILT_TARBALL = "mm-audio-headers_git_${PACKAGE_ARCH}.tar.gz"
 
 S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
