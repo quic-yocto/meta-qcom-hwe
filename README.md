@@ -67,26 +67,6 @@ require qcm6490.conf
 ```
 Adding MACHINEOVERRIDES helps to reuse the configurations in recipes created for qcm6490.
 
-### Setup Pulseaudio configration file for testBoard Machine
-Following modification is required to include the pulseaudio configuration file for testBoard.
-Open file layers/meta-qcom-hwe/recipes-pulseaudio/pulseaudio/pulseaudio_15.0.bb
-At line #11 in the file change system-${MACHINE}.pa to file://system-qcm6490.pa.
-
-A sample `git diff` output after this modification is made in the pulseaudio_15.0.bb file.
-```bash
-diff --git a/recipes-pulseaudio/pulseaudio/pulseaudio_15.0.bb b/recipes-pulseaudio/pulseaudio/pulseaudio_15.0.bb
-index 5dcb4c2..e5247a8 100644
---- a/recipes-pulseaudio/pulseaudio/pulseaudio_15.0.bb
-+++ b/recipes-pulseaudio/pulseaudio/pulseaudio_15.0.bb
-@@ -10,5 +10,5 @@ SRC_URI += "git://git.codelinaro.org/clo/le//pulseaudio.git;protocol=https;rev=0
-            file://0001-doxygen-meson.build-remove-dependency-on-doxygen-bin.patch \
-            file://pulseaudio.service \
--           file://system-${MACHINE}.pa \
-+           file://system-qcm6490.pa \
-            file://daemon_conf_in.patch \
-            "
-```
-
 ### Build an image for the machine added
 ```bash
 MACHINE="testBoard" DISTRO="qcom-wayland" source setup-environment
@@ -94,20 +74,8 @@ bitbake qcom-multimedia-image
 ```
 
 ## Known Issues
-### firmware-qcm6490-boot-2.0-r0 do_deploy error
-Following error may be observed in some cases:
-```bash
-ERROR: firmware-qcm6490-boot-2.0-r0 do_deploy: The recipe firmware-qcm6490-boot is trying to install files into a shared area when those files already exist. Those files and their manifest location are:
-  /path/to/workspace/build-dir/tmp-glibc/deploy/images/qcm6490/partition.xml
-    (matched in manifest-qcm6490-qcom-minimal-image.gen_partition_bins)
-Please verify which recipe should provide the above files.
-```
-To overcome this problem and to proceed with the build please use the following command
-```bash
-bitbake -fc cleansstate <image-recipe>
-bitbake <image-recipe>
-```
 
 ## Maintainer(s)
 1. Naveen Kumar <quic_kumarn@quicinc.com>
 2. Sourabh Banerjee <quic_sbanerje@quicinc.com>
+3. Viswanath Kraleti <quic_vkraleti@quicinc.com>
