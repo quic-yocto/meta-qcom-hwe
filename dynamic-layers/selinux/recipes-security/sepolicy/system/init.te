@@ -12,3 +12,8 @@ qcom_loc_locclient_generic_rules(initrc_t);
 # allow to get status of location services
 qcom_loc_launcher_service_get_status(initrc_t)
 qcom_loc_hal_daemon_service_get_status(initrc_t)
+
+
+# allow initrc_t to communicate with property-vault
+qcom_property_vault_service_get_status(initrc_t)
+qcom_connect_cmdline_to_property_vault(initrc_t)

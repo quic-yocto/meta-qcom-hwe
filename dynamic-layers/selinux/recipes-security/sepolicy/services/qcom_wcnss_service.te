@@ -1,7 +1,7 @@
 #Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
 #SPDX-License-Identifier: BSD-3-Clause-Clear
 
-policy_module(qcom_wcnss, 1.0)
+policy_module(qcom_wcnss_service, 1.0)
 type qcom_wcnss_t;
 type qcom_wcnss_exec_t;
 type qcom_wcnss_var_t;

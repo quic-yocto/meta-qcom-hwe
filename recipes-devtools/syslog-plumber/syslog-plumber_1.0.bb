@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=3771d4920bd6
 
 DEPENDS = "logrotate"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/le-utils.git;protocol=https;rev=26df736e1e803e5552349ee7aae0048503d4df97;branch=le-utils.qclinux.1.0.r2-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/le-utils.git;protocol=https;rev=989cee526729c3a622a3c2726f45e86636636fa1;branch=le-utils.qclinux.1.0.r2-rel"
 
 S = "${WORKDIR}/git/syslog-plumber"
 

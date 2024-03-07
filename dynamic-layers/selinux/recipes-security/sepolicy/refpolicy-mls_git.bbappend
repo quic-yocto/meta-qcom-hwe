@@ -104,7 +104,10 @@ def copy_target_policies(src_path, dest_path, src_folder, dest_folder, d):
     import os
 
     if src_folder is 'test':
-        policy_modules = test_modules_list(d)
+        policy_modules = ["common_test"]
+        test_modules = test_modules_list(d)
+        if test_modules:
+            policy_modules += test_modules
     else:
         policy_modules = target_modules_list(d)
 
@@ -113,12 +116,12 @@ def copy_target_policies(src_path, dest_path, src_folder, dest_folder, d):
 
     for policy_module in policy_modules:
         source_files = [f"{policy_module}.{ext}" for ext in ['te', 'if', 'fc']]
-    src_dir = os.path.join(src_path, src_folder)
-    dest_dir = os.path.join(dest_path, dest_folder)
-    for file in source_files:
-        src_file = os.path.join(src_dir, file)
-        dest_file = os.path.join(dest_dir, file)
-        shutil.copyfile(src_file, dest_file)
+        src_dir = os.path.join(src_path, src_folder)
+        dest_dir = os.path.join(dest_path, dest_folder)
+        for file in source_files:
+            src_file = os.path.join(src_dir, file)
+            dest_file = os.path.join(dest_dir, file)
+            shutil.copyfile(src_file, dest_file)
 
 
 def append_policy_file(src_path, dst_path):

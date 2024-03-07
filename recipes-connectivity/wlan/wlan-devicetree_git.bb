@@ -4,25 +4,31 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 
 inherit module deploy
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=691eec8b0a360751eb3104765bad0df0c2f8af9a;branch=wlan-platform.qclinux.1.0.r2-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=4e3ce6199b98e4ffffc7c0352206f50e7df2620b;branch=wlan-platform.qclinux.1.0.r2-rel"
 
 S = "${WORKDIR}/git"
 
 DTC := "${KBUILD_OUTPUT}/scripts/dtc/dtc"
 KERNEL_INCLUDE := "${STAGING_KERNEL_DIR}/include/"
 EXTRA_OEMAKE += "DTC='${DTC}' KERNEL_INCLUDE='${KERNEL_INCLUDE}'"
-DTSO_TARGETS := ""
 
-# The DTSO file names must start with '${MACHINE}-'
+COMPATIBLE_MACHINE = "qcm6490|qcs8550"
+
+# The DTSO file names must start with '${COMPATIBLE_MACHINE}-'
+DTBO_TARGETS = ""
 python get_dtbo_targets() {
-    import re
-    dtso_dir = d.getVar('S')
-    machine = d.getVar('MACHINE')
-
-    for f in os.listdir(dtso_dir):
-        if (re.match(machine + '-.*.dtso', f)):
-            dtbo_target = os.path.splitext(os.path.basename(f))[0]
-            d.appendVar('DTBO_TARGETS', dtbo_target + " ")
+    need_machine = d.getVar('COMPATIBLE_MACHINE')
+    if need_machine:
+        import re
+        compat_machines = (d.getVar('MACHINEOVERRIDES') or "").split(":")
+        for m in compat_machines:
+            if re.match(need_machine, m):
+                dtso_dir = d.getVar('S')
+                for f in os.listdir(dtso_dir):
+                    if (re.match(m + '-.*.dtso', f)):
+                        dtbo_target = os.path.splitext(os.path.basename(f))[0]
+                        d.appendVar('DTBO_TARGETS', dtbo_target + " ")
+                break
 }
 
 do_compile[prefuncs] += "get_dtbo_targets"

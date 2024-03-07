@@ -1,0 +1,120 @@
+From 472a83f655bafd6b44e95ca3d74def33e43025a3 Mon Sep 17 00:00:00 2001
+From: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
+Date: Wed, 28 Feb 2024 21:00:14 +0530
+Subject: [PATCH] Setting default values in main.conf.patch
+
+Setting default adapter status to powered off
+
+Signed-off-by: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
+Upstream-Status: Inappropriate [target specific custom configuration]
+---
+ src/main.conf | 49 ++++++++++++++++++++++++++++---------------------
+ 1 file changed, 28 insertions(+), 21 deletions(-)
+
+diff --git a/src/main.conf b/src/main.conf
+index 2796f15..75bc775 100644
+--- a/src/main.conf
++++ b/src/main.conf
+@@ -49,7 +49,7 @@
+ # Restricts all controllers to the specified transport. Default value
+ # is "dual", i.e. both BR/EDR and LE enabled (when supported by the HW).
+ # Possible values: "dual", "bredr", "le"
+-#ControllerMode = dual
++ControllerMode = dual
+ 
+ # Maximum number of controllers allowed to be exposed to the system.
+ # Default=0 (unlimited)
+@@ -171,41 +171,48 @@
+ # The Bluetooth Core Specification should be consulted for the meaning and valid
+ # domain of each of these values.
+ # LE advertisement interval (used for legacy advertisement interface only)
+-#MinAdvertisementInterval=
+-#MaxAdvertisementInterval=
++#setting min and max adv interval to 1.28s
++MinAdvertisementInterval=0x800
++MaxAdvertisementInterval=0x800
+ #MultiAdvertisementRotationInterval=
+ 
+ # LE scanning parameters used for passive scanning supporting auto connect
+ # scenarios
+-#ScanIntervalAutoConnect=
+-#ScanWindowAutoConnect=
++#scan interval - 60ms, scan window - 30ms
++ScanIntervalAutoConnect=0x60
++ScanWindowAutoConnect=0x30
+ 
+ # LE scanning parameters used for passive scanning supporting wake from suspend
+ # scenarios
+-#ScanIntervalSuspend=
+-#ScanWindowSuspend=
++#scan interval - 1.28s, scan window - 30ms
++ScanIntervalSuspend=0x800
++ScanWindowSuspend=0x30
+ 
+ # LE scanning parameters used for active scanning supporting discovery
+ # proceedure
+-#ScanIntervalDiscovery=
+-#ScanWindowDiscovery=
++#scan interval - 11.25ms, scan window - 11.25ms
++ScanIntervalDiscovery=0x12
++ScanWindowDiscovery=0x12
+ 
+ # LE scanning parameters used for passive scanning supporting the advertisement
+ # monitor Apis
+-#ScanIntervalAdvMonitor=
+-#ScanWindowAdvMonitor=
++#scan interval - 60ms, scan window - 30ms
++ScanIntervalAdvMonitor=0x60
++ScanWindowAdvMonitor=0x30
+ 
+ # LE scanning parameters used for connection establishment.
+-#ScanIntervalConnect=
+-#ScanWindowConnect=
++#scan interval - 60ms, scan window - 30ms
++ScanIntervalConnect=0x60
++ScanWindowConnect=0x30
+ 
+ # LE default connection parameters.  These values are superceeded by any
+ # specific values provided via the Load Connection Parameters interface
+-#MinConnectionInterval=
+-#MaxConnectionInterval=
+-#ConnectionLatency=
+-#ConnectionSupervisionTimeout=
+-#Autoconnecttimeout=
++#min conn interval - 30ms, max conn interval - 50ms, latency - 0, supervision timeout - 500ms, auto conn time out - 30s
++MinConnectionInterval=0x18
++MaxConnectionInterval=0x28
++ConnectionLatency=0
++ConnectionSupervisionTimeout=0x32
++Autoconnecttimeout=0xBB8
+ 
+ # Scan duration during interleaving scan. Only used when scanning for ADV
+ # monitors. The units are msec.
+@@ -230,12 +237,12 @@
+ # yes: Only cache attributes of paired devices.
+ # no: Never cache attributes
+ # Default: always
+-#Cache = always
++Cache = always
+ 
+ # Minimum required Encryption Key Size for accessing secured characteristics.
+ # Possible values: 0 and 7-16. 0 means don't care.
+ # Defaults to 0
+-#KeySize = 0
++KeySize = 0
+ 
+ # Exchange MTU size.
+ # Possible values: 23-517
+@@ -282,7 +289,7 @@
+ # AutoEnable defines option to enable all controllers when they are found.
+ # This includes adapters present on start as well as adapters that are plugged
+ # in later on. Defaults to 'true'.
+-#AutoEnable=true
++AutoEnable=false
+ 
+ # Audio devices that were disconnected due to suspend will be reconnected on
+ # resume. ResumeDelay determines the delay between when the controller
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
+

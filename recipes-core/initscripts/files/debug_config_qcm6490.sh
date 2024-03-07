@@ -65,15 +65,14 @@ enable_tracing_events()
     echo 1 > /sys/kernel/debug/tracing/tracing_on
 }
 
-
 # function to enable ftrace events
 enable_ftrace_event_tracing()
 {
     # bail out if its perf config
-    #if [ ! -d /sys/module/msm_rtb ]
-    #then
-    #    return
-    #fi
+    if [ "$debug_build" = false ]
+    then
+        return
+    fi
 
     # bail out if ftrace events aren't present
     if [ ! -d /sys/kernel/debug/tracing/events ]
@@ -84,13 +83,24 @@ enable_ftrace_event_tracing()
     enable_tracing_events
 }
 
-#ftrace_disable=`getprop persist.debug.ftrace_events_disable`
+
+find_build_type()
+{
+    if [ $(cat /proc/config.gz | gunzip | grep "^$CONFIG_OPTION=y") ]
+    then
+        debug_build=true
+    fi
+}
+
+#ftrace_disable=`getprop persist.debug.ftrace_events_disable
+CONFIG_OPTION="CONFIG_DEBUG_LIST"
+debug_build=false
 enable_debug()
 {
     echo "QCM6490 debug"
-    #enable_lpm_with_dcvs_tracing
+    find_build_type
     #if [ ${ftrace_disable} != "Yes" ]; then
-        enable_ftrace_event_tracing
+    enable_ftrace_event_tracing
     #fi
 }
 

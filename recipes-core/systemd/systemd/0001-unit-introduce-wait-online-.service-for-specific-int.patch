@@ -1,4 +1,4 @@
-From 674df18a32e6bb865ae84d39eaf8a5e5f10c7adc Mon Sep 17 00:00:00 2001
+From 37a5db50992e6c42b86be9681ca2a616a7483a2e Mon Sep 17 00:00:00 2001
 From: Yu Watanabe <watanabe.yu+github@gmail.com>
 Date: Fri, 28 Jan 2022 15:30:01 +0900
 Subject: [PATCH] unit: introduce wait-online@.service for specific interface
@@ -6,6 +6,7 @@ Subject: [PATCH] unit: introduce wait-online@.service for specific interface
 This should be useful when a host has multiple interfaces.
 
 Inspired by #22246.
+
 ---
  man/rules/meson.build                         |  2 +-
  man/systemd-networkd-wait-online.service.xml  | 13 ++++++++++
@@ -15,10 +16,10 @@ Inspired by #22246.
  create mode 100644 units/systemd-networkd-wait-online@.service.in
 
 diff --git a/man/rules/meson.build b/man/rules/meson.build
-index b689b1c1af..7200ecf681 100644
+index 26ac25dbdd..6e8eec6af5 100644
 --- a/man/rules/meson.build
 +++ b/man/rules/meson.build
-@@ -932,7 +932,7 @@ manpages = [
+@@ -933,7 +933,7 @@ manpages = [
   ['systemd-network-generator.service', '8', ['systemd-network-generator'], ''],
   ['systemd-networkd-wait-online.service',
    '8',
@@ -62,20 +63,20 @@ index 9c6b02ac1c..a3a70db209 100644
 +    <filename>eth0</filename> to be configured by <command>systemd-networkd</command> and online.
 +    </para>
    </refsect1>
- 
+
    <refsect1>
 diff --git a/units/meson.build b/units/meson.build
-index 3184433b8f..2bb0a8e845 100644
+index 11d3644168..371ea4ba37 100644
 --- a/units/meson.build
 +++ b/units/meson.build
-@@ -220,6 +220,7 @@ in_units = [
+@@ -218,6 +218,7 @@ in_units = [
          ['systemd-network-generator.service',    ''],
          ['systemd-networkd.service',             'ENABLE_NETWORKD'],
          ['systemd-networkd-wait-online.service', 'ENABLE_NETWORKD'],
 +        ['systemd-networkd-wait-online@.service','ENABLE_NETWORKD'],
          ['systemd-nspawn@.service',              ''],
-         ['systemd-oomd.service',                 'ENABLE_OOMD'],
-         ['systemd-portabled.service',            'ENABLE_PORTABLED',
+         ['systemd-oomd.service',                 'ENABLE_OOMD',
+          'dbus-org.freedesktop.oom1.service'],
 diff --git a/units/systemd-networkd-wait-online@.service.in b/units/systemd-networkd-wait-online@.service.in
 new file mode 100644
 index 0000000000..949695f53e
@@ -107,6 +108,3 @@ index 0000000000..949695f53e
 +
 +[Install]
 +WantedBy=network-online.target
--- 
-2.34.1
-

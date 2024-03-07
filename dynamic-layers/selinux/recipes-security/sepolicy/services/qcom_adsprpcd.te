@@ -14,7 +14,7 @@ type qcom_adsprpcd_exec_t;
 init_daemon_domain(qcom_adsprpcd_t, qcom_adsprpcd_exec_t)
 
 allow qcom_adsprpcd_t self:unix_dgram_socket { create_socket_perms };
-allow qcom_adsprpcd_t qcom_adsp_secure_device_t:chr_file { ioctl open read };
+qcom_adsp_secure_read_device(qcom_adsprpcd_t);
 
 init_search_runtime(qcom_adsprpcd_t)
 logging_send_syslog_msg(qcom_adsprpcd_t)

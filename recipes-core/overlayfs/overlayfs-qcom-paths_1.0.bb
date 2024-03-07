@@ -7,7 +7,7 @@ SRC_URI += " file://mnt-overlay.mount"
 SRC_URI += " file://var-persist.mount"
 SRC_URI += " file://remove-var-tmp-symlink.service"
 
-OVERLAYFS_WRITABLE_PATHS[mnt-overlay] += "/opt /etc /var"
+OVERLAYFS_WRITABLE_PATHS[mnt-overlay] += "/opt /etc /var /home"
 OVERLAYFS_MOUNT_POINT[mnt-overlay] = "/mnt/overlay"
 OVERLAYFS_QA_SKIP[mnt-overlay] = "mount-configured"
 

@@ -15,6 +15,7 @@ DEPENDS:append = " \
             systemd-boot-native \
             python3-native \
             python3-pefile-native \
+            os-release \
             "
 
 inherit features_check
@@ -91,6 +92,9 @@ python do_uki() {
         if not os.path.exists(dtb_path):
             bb.fatal(f"ERROR: cannot find {dtb_path}.")
         ukify_cmd += " --devicetree %s" % dtb_path
+    # Os-release
+    osrelease = d.getVar('RECIPE_SYSROOT') + d.getVar('libdir') + "/os-release"
+    ukify_cmd += " --os-release @%s" % osrelease
 
     # Custom UKI name
     output = " --output=%s" % d.getVar('UKI_FILENAME')

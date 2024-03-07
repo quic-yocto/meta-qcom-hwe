@@ -10,6 +10,8 @@ QCM_BOOTBINARIES_PATH = "${WORKDIR}/git/${BUILD_ID}/${BIN_PATH}"
 SRC_URI ="git://${CHIPCODE_SRC_URI}.git;branch=${CHIPCODE_SRC_BRANCH};protocol=https"
 SRCREV = "${CHIPCODE_SRC_REV}"
 
+PROVIDES += "virtual/bootbins"
+
 python do_install() {
 
     import os

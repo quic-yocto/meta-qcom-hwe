@@ -23,9 +23,21 @@ mls_file_upgrade(mount_t)
 
 mount_getattr_runtime_files(mount_t)
 files_search_runtime(mount_t)
+# As we have overlay on /etc /var following will be needed
+files_getattr_all_tmp_files(mount_t)
+files_relabel_all_tmp_files(mount_t)
+files_manage_var_dirs(mount_t)
+files_manage_generic_tmp_dirs(mount_t)
+files_manage_var_lib_dirs(mount_t)
+files_manage_etc_dirs(mount_t)
+files_manage_etc_files(mount_t);
 corecmd_exec_bin(mount_t)
 #TODO: Need to clean/remove this post fixing the permission issue
 permissive mount_t;
+
+# connecting property-vault service
+qcom_mount_property_vault_to_var(mount_t)
+qcom_connect_property_vault_to_var(mount_t)
 
 qcom_manage_perf_data_files(mount_t)
 qcom_perfhal_read_config(mount_t)

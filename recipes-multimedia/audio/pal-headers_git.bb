@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = " \
     file://${COMMON_LICENSE_DIR}/BSD-3-Clause-Clear;md5=7a434440b651f4a472ca93716d01033a \
 "
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/arpal-lx.git;protocol=https;rev=a5b3ce3c0fa23107a7b1228bf4d40111d8705ee9;branch=audio-platform-arintf.lnx.2.0.r3-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/arpal-lx.git;protocol=https;rev=a01601b65d00946e8c2d9ce66eedefa5d4f9bd96;branch=audio-platform-arintf.lnx.2.0.r3-rel"
 
 S = "${WORKDIR}/git/inc"
 

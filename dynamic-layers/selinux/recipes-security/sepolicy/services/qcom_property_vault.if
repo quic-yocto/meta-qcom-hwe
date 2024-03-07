@@ -19,9 +19,102 @@
 #
 interface(`qcom_connect_to_property_vault',`
     gen_require(`
-        type qcom_property_vault_t, initrc_tmp_t ;
+        type qcom_property_vault_t, qcom_property_vault_sock_t ;
     ')
-    allow $1 initrc_tmp_t:dir { search_dir_perms write add_name};
-    allow $1 initrc_tmp_t:sock_file { write create};
+    allow $1 qcom_property_vault_sock_t:dir { search_dir_perms write add_name};
+    allow $1 qcom_property_vault_sock_t:sock_file { write create setattr unlink };
     allow $1 qcom_property_vault_t:unix_stream_socket connectto;
+')
+
+########################################
+## <summary>
+##       Add rules to get status of property_vault service
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_property_vault_service_get_status',`
+    gen_require(`
+        type qcom_property_vault_exec_t ;
+    ')
+    allow $1 qcom_property_vault_exec_t:service { status };
+')
+
+########################################
+## <summary>
+##       Add rules to allow property-vault service to store a socket in /tmp
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_allow_property_vault_sock_manage',`
+    gen_require(`
+            type qcom_property_vault_sock_t;
+    ')
+    manage_sock_files_pattern($1, qcom_property_vault_sock_t, qcom_property_vault_sock_t)
+    files_tmp_filetrans($1, qcom_property_vault_sock_t, sock_file)
+    allow $1 qcom_property_vault_sock_t:file manage_file_perms;
+    allow $1 qcom_property_vault_sock_t:sock_file { write create setattr unlink };
+')
+
+########################################
+## <summary>
+##       Add rules for property-vault to fetch persist properties from /var/leutils/build.prop
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_connect_property_vault_to_var',`
+    gen_require(`
+        type qcom_property_vault_var_t ;
+    ')
+
+    allow $1 qcom_property_vault_var_t:file { read open write setattr getattr };
+')
+
+########################################
+## <summary>
+##       Add rules for mounting build.prop in /var/leutils
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_mount_property_vault_to_var',`
+    gen_require(`
+        type qcom_property_vault_var_t ;
+    ')
+
+    allow $1 qcom_property_vault_var_t:file { link };
+    allow $1 var_t:dir { create rename reparent add_name };
+')
+
+########################################
+## <summary>
+##       Add rules for getprop and setprop to get/set values from command line
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_connect_cmdline_to_property_vault',`
+    gen_require(`
+        type qcom_property_vault_var_t, qcom_property_vault_sock_t;
+    ')
+
+    allow $1 qcom_property_vault_var_t:file { getattr write };
+    allow $1 qcom_property_vault_sock_t:sock_file { getattr write };
 ')

@@ -25,10 +25,5 @@ do_patch() {
 }
 
 do_install() {
-    if [ ${BASEMACHINE} == "sdxlemur" ]; then
-        make install DESTDIR=${D} BINDIR=${sbindir}/mcc
-        ln -sf /systemrw/wlan/bin/sigma_dut ${D}/usr/sbin/sigma_dut
-    else
-        make install DESTDIR=${D} BINDIR=${sbindir}/
-    fi
+    make install DESTDIR=${D} BINDIR=${sbindir}/
 }

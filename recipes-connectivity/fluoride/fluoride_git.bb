@@ -10,7 +10,7 @@ RDEPENDS:${PN} = "property-vault"
 
 SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=9664854e14d51aac133b793dac110bdaf26d82c5;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/system/bt \
            git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=5250a39cd07ffe7d8ff23909a1c90abb8e1b8c63;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/bluetooth_ext \
-           git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=35015c2fcfc38e154b5284af7d25f3eea0efa8e3;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btap \
+           git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=35015c2fcfc38e154b5284af7d25f3eea0efa8e3;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
            git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=390a2ab14e80b5258fc9706f198dd387e72b6070;branch=bt-performant.qclinux.1.0.r1-rel;subdir=bt_audio \
            file://fluoride_conf_systemd_tmpfiles.conf \
            "

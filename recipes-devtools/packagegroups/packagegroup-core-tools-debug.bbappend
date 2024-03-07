@@ -3,4 +3,5 @@
 RDEPENDS:${PN}:append = " \
     valgrind \
     ltrace \
+    perf \
 "

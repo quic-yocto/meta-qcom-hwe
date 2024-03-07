@@ -1,12 +1,12 @@
+From 3f147d45c0d0923f446b2403b103868278144d9a Mon Sep 17 00:00:00 2001
+From: Sai Pavan Akhil Remella <quic_saipavan@quicinc.com>
+Date: Fri, 2 Feb 2024 11:54:10 +0530
+Subject: [PATCH] PENDING: Add sepolicy rules for hostapd/hostapd_cli
+
 This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
 
 Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
 SPDX-License-Identifier: BSD-3-Clause-Clear
-
-From 01a1675278a4227c0f86dc84524c56cc53204c8e Mon Sep 17 00:00:00 2001
-From: Sai Pavan Akhil Remella <quic_saipavan@quicinc.com>
-Date: Fri, 2 Feb 2024 11:54:10 +0530
-Subject: [PATCH] PENDING: Add sepolicy rules for hostapd/hostapd_cli
 
 Added rules for hostapd to access conf files under /etc/
 and rules for hostapd_cli.

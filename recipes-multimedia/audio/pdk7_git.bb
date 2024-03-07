@@ -7,7 +7,7 @@ DESCRIPTION = "pdk7"
 
 DEPENDS += "sva-common capiv2-headers sva-ml-commondwarf sva-ml-commondwarf2 sva-ml-commondwarf2-3 sva-eai sva-eai-utils pdk-wrapper-headers"
 
-SRCREV = "587ec9a9723f9fe87921c998e1a53420dd3eb809"
+SRCREV = "9d16a54e57fc1802f5b81361efc92c423415c4b1"
 
 SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
 

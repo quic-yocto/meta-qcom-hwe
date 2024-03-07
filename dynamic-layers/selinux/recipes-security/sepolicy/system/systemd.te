@@ -15,9 +15,11 @@ mls_file_downgrade(systemd_tmpfiles_t)
 
 #systemd-journal catalog functionality
 files_map_etc_files(systemd_tmpfiles_t)
+fs_relabelfrom_tmpfs_dirs(systemd_tmpfiles_t)
 
 # allow systemd-tmpfiles to create location data and socket dirs.
 qcom_loc_create_loc_sock_dirs(systemd_tmpfiles_t)
 qcom_loc_create_loc_data_dirs(systemd_tmpfiles_t)
 
 allow systemd_modules_load_t  self:key manage_key_perms;
+

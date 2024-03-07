@@ -1,5 +1,7 @@
 require pulseaudio.inc
 
+FILESEXTRAPATHS:prepend := "${THISDIR}/pulseaudio:"
+
 SRC_URI += "git://git.codelinaro.org/clo/le/pulseaudio.git;protocol=https;rev=702778ac4e7b9aa2461859eb2b851ddb278c9e47;branch=pulseaudio.lnx.3.0.r5-rel \
            file://0001-client-conf-Add-allow-autospawn-for-root.patch \
            file://0002-do-not-display-CLFAGS-to-improve-reproducibility-bui.patch \
@@ -9,7 +11,6 @@ SRC_URI += "git://git.codelinaro.org/clo/le/pulseaudio.git;protocol=https;rev=70
            file://pulseaudio.service \
            file://system-qcm6490.pa \
            file://daemon_conf_in.patch \
-           file://0001-Support-native-sample-rate.patch \
            "
 
 S = "${WORKDIR}/git"

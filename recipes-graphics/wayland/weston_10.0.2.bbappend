@@ -7,7 +7,7 @@ SRC_URI = "   file://weston.ini \
               file://weston.desktop \
               file://xwayland.weston-start \
               file://systemd-notify.weston-start \
-              git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;rev=e5bb0cd2acabb99c24982a86373ef58600cddf56;branch=display.qclinux.1.0.r1-rel"
+              git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;rev=73ce406fe4817a8e6e775bfaa2ca927a158b8dbf;branch=display.qclinux.1.0.r1-rel"
 
 S = "${WORKDIR}/git"
 

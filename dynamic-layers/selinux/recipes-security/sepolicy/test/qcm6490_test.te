@@ -13,6 +13,7 @@ gen_require(`
 	type systemd_analyze_t;
 	type default_t;
 	type initrc_t;
+	type unconfined_t;
     ')
 
 
@@ -63,4 +64,4 @@ can_exec(initrc_t, qcom_nativehaltest_t)
 permissive  qcom_nativehaltest_t;
 
 #ssgtzd_unite test
-allow initrc_t qcom_ssgtzd_sock_t:sock_file { getattr write };
+qcom_allow_ssgtzd_sock_write(initrc_t);

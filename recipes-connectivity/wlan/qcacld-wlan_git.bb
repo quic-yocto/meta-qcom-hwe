@@ -7,10 +7,10 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/ISC;md5=f3b90e78ea0cffb20bf5cca
 
 DEPENDS += "wlan-platform"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https;rev=3329054d19dd76213a25fd50f6626867d00ea6d0;branch=wlan-cld3.driver.lnx.2.0.14.r1-rel;subdir=git/qcacld-3.0 \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https;rev=abe65a4d058250a1fbc2511e4c3039e3cf7929b2;branch=wlan-cmn.driver.lnx.2.0.14.r1-rel;subdir=git/qca-wifi-host-cmn \
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https;rev=d662f200cb32ff64492a8949a5bc13014c7e6a51;branch=wlan-cld3.driver.lnx.2.0.14.r1-rel;subdir=git/qcacld-3.0 \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https;rev=e884f35f7460c36107e1271f415c7ce4c303847c;branch=wlan-cmn.driver.lnx.2.0.14.r1-rel;subdir=git/qca-wifi-host-cmn \
            git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/fw-api.git;protocol=https;rev=211522e2908b158fd72f233a35ab94a9864c1d03;branch=wlan-api.lnx.1.0.r230-rel;subdir=git/fw-api \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=9a622c87a60b17063eed7d0388dfe26a324b3134;branch=wlan-platform.qclinux.1.0.r2-rel;subdir=git/platform \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=a94a95c8017495153b5633bbcbe8a9db2d15118d;branch=wlan-platform.qclinux.1.0.r2-rel;subdir=git/platform \
            file://qcacld-kbuild.patch \
            "
 

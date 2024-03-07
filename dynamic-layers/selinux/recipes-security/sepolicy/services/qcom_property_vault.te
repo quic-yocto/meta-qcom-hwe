@@ -8,17 +8,37 @@ type qcom_property_vault_exec_t;
 
 init_daemon_domain(qcom_property_vault_t, qcom_property_vault_exec_t)
 
-#########################
-####TBD, Will attach the label for /tmp/property-vault socket
-#### property_vault socket node
-type qcom_property_vault_sock_t;
-dev_node(qcom_property_vault_sock_t)
+allow qcom_property_vault_t self:unix_dgram_socket { create connect write };
+allow qcom_property_vault_t self:unix_stream_socket { accept listen };
+allow qcom_property_vault_t self:process { signal getsched };
+qcom_allow_property_vault_sock_manage(qcom_property_vault_t)
 
 #########################
-#### TBD, Will attach the label for /etc/build.prop file
-#### property_vault build prop files
-type qcom_property_vault_prop_t;
-files_type(qcom_property_vault_prop_t)
+#### label for syslog
+type qcom_property_vault_log_t;
+logging_log_file(qcom_property_vault_log_t)
+
+logging_log_filetrans(qcom_property_vault_t, qcom_property_vault_log_t, { file dir })
+allow qcom_property_vault_t qcom_property_vault_log_t:file manage_file_perms;
+
+#########################
+#### label for /tmp/property-vault socket
+#### property_vault creates this socket at runtime.
+type qcom_property_vault_sock_t;
+fs_associate_tmpfs(qcom_property_vault_sock_t)
+
+#########################
+#### label for /etc/build.prop file.
+#### property-vault is only reading this file at runtime.
+init_read_runtime_files(qcom_property_vault_t)
+files_read_etc_files(qcom_property_vault_t)
 
 qcom_search_property_vault_tmp(qcom_property_vault_t)
-qcom_connect_to_property_vault(qcom_property_vault_t)
+
+##########################
+#### label for /var/leutils/build.prop file.
+#### property-vault is using this file for persisting properties
+type qcom_property_vault_var_t;
+
+qcom_connect_property_vault_to_var(qcom_property_vault_t)
+

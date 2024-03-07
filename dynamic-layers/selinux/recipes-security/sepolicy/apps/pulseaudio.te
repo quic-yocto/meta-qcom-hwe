@@ -11,6 +11,10 @@ type qcom_pulseaudio_acdb_etc_t;
 files_type(qcom_pulseaudio_acdb_etc_t)
 
 qcom_connect_to_property_vault(pulseaudio_t)
+init_stream_connect_script(pulseaudio_t)
+
+kernel_read_vm_overcommit_sysctl(pulseaudio_t)
+kernel_search_vm_sysctl(pulseaudio_t)
 
 allow pulseaudio_t qcom_pulseaudio_etc_t:file read_file_perms;
 allow pulseaudio_t qcom_pulseaudio_acdb_etc_t:file manage_file_perms;

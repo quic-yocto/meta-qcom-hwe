@@ -1,17 +1,18 @@
-From 97211510b06b01a4f053d4cacba4ad4184849bcf Mon Sep 17 00:00:00 2001
+From 40502ca08be26d898ca1ea836b855da5c50b097c Mon Sep 17 00:00:00 2001
 From: Daan De Meyer <daan.j.demeyer@gmail.com>
 Date: Sun, 7 May 2023 10:49:57 +0200
-Subject: [PATCH 3/3] units: Add CAP_NET_ADMIN condition to
+Subject: [PATCH] units: Add CAP_NET_ADMIN condition to
  systemd-networkd-wait-online@.service as well
 
 It was added to CAP_NET_ADMIN but we forgot to add it to the template
 service as well.
+
 ---
  units/systemd-networkd-wait-online@.service.in | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/units/systemd-networkd-wait-online@.service.in b/units/systemd-networkd-wait-online@.service.in
-index 2fae26d..b7a1e40 100644
+index 2fae26d1c0..b7a1e409f4 100644
 --- a/units/systemd-networkd-wait-online@.service.in
 +++ b/units/systemd-networkd-wait-online@.service.in
 @@ -10,6 +10,7 @@
@@ -22,6 +23,3 @@ index 2fae26d..b7a1e40 100644
  DefaultDependencies=no
  Conflicts=shutdown.target
  BindsTo=systemd-networkd.service
--- 
-2.7.4
-

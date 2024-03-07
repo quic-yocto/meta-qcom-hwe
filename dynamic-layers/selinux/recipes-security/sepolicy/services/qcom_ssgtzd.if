@@ -27,3 +27,22 @@ interface(`qcom_allow_ssgtzd_sock_manage',`
        files_tmp_filetrans($1, qcom_ssgtzd_sock_t, sock_file)
 ')
 
+####################
+## <summary>
+## 	Allow write in socket
+## 	for domain
+## </summary>
+## <param name="domain">
+## 	<summary>
+##  		Domain allowed to write into
+##  		socket
+##  	</summary>
+## </param>
+
+interface(`qcom_allow_ssgtzd_sock_write',`
+	gen_require(`
+		type qcom_ssgtzd_sock_t;
+	')
+	allow $1 qcom_ssgtzd_sock_t:sock_file write_sock_file_perms;
+')
+

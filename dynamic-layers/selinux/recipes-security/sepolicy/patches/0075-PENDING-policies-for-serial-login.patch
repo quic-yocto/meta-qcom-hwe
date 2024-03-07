@@ -1,4 +1,4 @@
-From 1119e3a7f07ed88fe4a09f62d590e4f2b3eb4213 Mon Sep 17 00:00:00 2001
+From ca5aac2011f5ca6c04d3339e5d1d296f4bc576aa Mon Sep 17 00:00:00 2001
 From: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
 Date: Wed, 29 Nov 2023 15:32:40 +0530
 Subject: [PATCH] PENDING: policies for serial login
@@ -8,24 +8,24 @@ added policies for serial login
 Upstream-Status: Pending
 
 Signed-off-by: Sasi Kumar Maddineni <quic_sasikuma@quicinc.com>
-
 ---
- policy/modules/system/locallogin.te |  5 +++++
+ policy/modules/system/locallogin.te |  6 ++++++
  policy/modules/system/logging.if    | 19 +++++++++++++++++++
- 2 files changed, 24 insertions(+)
+ 2 files changed, 25 insertions(+)
 
 diff --git a/policy/modules/system/locallogin.te b/policy/modules/system/locallogin.te
-index 109980e79..710c12041 100644
+index 313112371..7c8bdbfd5 100644
 --- a/policy/modules/system/locallogin.te
 +++ b/policy/modules/system/locallogin.te
-@@ -278,6 +278,11 @@ ifdef(`sulogin_pam', `
+@@ -280,6 +280,12 @@ ifdef(`sulogin_pam', `
  	selinux_compute_user_contexts(sulogin_t)
  ')
- 
+
 +logging_rw_runtime_sockets(local_login_t)
 +init_unix_stream_socket_connectto(local_login_t)
 +busybox_nosuid_execute(local_login_t)
 +systemd_stream_connect_userdb(local_login_t)
++init_stream_connect_script(local_login_t)
 +
  optional_policy(`
  	nis_use_ypbind(sulogin_t)
@@ -60,3 +60,6 @@ index 30d402c75..05e87d800 100644
  ########################################
  ## <summary>
  ##	Allows the domain to open a file in the
+--
+2.17.1
+

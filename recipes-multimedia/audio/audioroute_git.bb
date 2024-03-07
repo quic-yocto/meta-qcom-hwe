@@ -12,3 +12,4 @@ S = "${WORKDIR}/git/audio-route"
 DEPENDS = "glib-2.0 tinyalsa expat"
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
+

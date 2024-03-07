@@ -8,9 +8,7 @@ inherit packagegroup
 
 PROVIDES = "${PACKAGES}"
 
-PACKAGES = ' \
-    packagegroup-qcom-audio \
-'
+PACKAGES = "${PN}"
 
 PULSEAUDIO_PKGS = " \
     pulseaudio-server \
@@ -26,7 +24,7 @@ PULSEAUDIO_PKGS = " \
     pulseaudio-module-qal-voiceui-card \
 "
 
-RDEPENDS:packagegroup-qcom-audio += ' \
+RDEPENDS:${PN}:append = ' \
     tinyalsa \
     tinycompress \
     agm \

@@ -24,7 +24,7 @@
 
 interface(`qcom_wcnss_manage_persist',`
     gen_require(`
-        type qcom_wcnss_var_t, qcom_wcnss_etc_t, qcom_perist_t;
+        type qcom_wcnss_var_t, qcom_wcnss_etc_t, qcom_persist_t;
     ')
     filetrans_pattern($1, qcom_persist_t, qcom_wcnss_var_t, { file dir })
     allow $1 qcom_wcnss_var_t:dir {manage_dir_perms};
