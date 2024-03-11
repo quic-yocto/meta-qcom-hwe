@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "AROSP."
 
-DEPENDS += "glib-2.0 linux-kernel-qcom diag diag-router"
+DEPENDS += "glib-2.0 virtual/kernel diag diag-router"
 
 RDEPENDS:${PN} = "glib-2.0 diag diag-router"
 
