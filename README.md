@@ -17,14 +17,13 @@ This layer depends on:
 | https://github.com/quic-yocto/meta-qcom-distro | kirkstone |
 
 ## Steps for creating a nodistro build
-Follow up to the section "Download the Yocto Project BSP"
-in the README at https://github.com/quic-yocto/qcom-manifest
+Follow up to the section "Download the Yocto Project BSP" in the README at https://github.com/quic-yocto/qcom-manifest
 
 ### Run setup-environment
 ```bash
 MACHINE="qcm6490" DISTRO="nodistro" source setup-environment
 ```
-After the above command executes the directory chnages to "build-nodistro".
+The directory changes to `build-nodistro` after executing the above command.
 
 ### Changes in Configuration Files
 ```bash
@@ -44,18 +43,16 @@ VIRTUAL-RUNTIME_dev_manager  = "udev"
 bitbake qcom-minimal-image
 ```
 
-### Flashing the device
-Flash the images to device using qdl tool as per the steps in main documentation.
+### Flashing the images on the device
+Flash the images on the device using qdl tool as per the steps in the main documentation.
 
-### Image recipes suported with 'nodistro'
-Currently only qcom-minimal-image supports 'nodistro'.
+### Image recipes suported with `nodistro`
+Currently, only `qcom-minimal-image` supports `nodistro`.
 
 
 ## Adding a new machine
 ### Add Machine
-To add a new machine introduce a new machine configuration
-file at layers/meta-qcom-hwe/conf/machine/, for example,
-layers/meta-qcom-hwe/conf/machine/testBoard.conf
+To add a new machine introduce a new machine configuration file at `layers/meta-qcom-hwe/conf/machine/`, for example, `layers/meta-qcom-hwe/conf/machine/testBoard.conf`
 
 ```bash
 #@TYPE: Machine
@@ -65,7 +62,7 @@ layers/meta-qcom-hwe/conf/machine/testBoard.conf
 MACHINEOVERRIDES =. "qcm6490:"
 require qcm6490.conf
 ```
-Adding MACHINEOVERRIDES helps to reuse the configurations in recipes created for qcm6490.
+Adding `MACHINEOVERRIDES` helps to re-use the configurations in recipes created for qcm6490.
 
 ### Build an image for the machine added
 ```bash
