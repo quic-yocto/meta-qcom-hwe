@@ -6,15 +6,15 @@ BSD-3-Clause_LICENSE  = "file://sdm/include/core/display_interface.h;beginline=2
 BSD-3-Clause-Clear_LICENSE = "file://sdm/include/core/display_interface.h;beginline=28;endline=29"
 
 LIC_FILES_CHKSUM = " \
-    ${BSD-3-Clause-Clear_LICENSE};md5=de893869f66f7d366d6b07f5cec50842 \
+    ${BSD-3-Clause-Clear_LICENSE};md5=05a078dc8c6f02f6f67fa9078a5e2a3c \
     ${BSD-3-Clause_LICENSE};md5=ef93dc3f1e145b6c1f89b90a5230ef8a \
 "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/hardware/qcom/display.git;protocol=https;rev=a119db7d730dbaccf53db3e7de1616b3cb04c3b6;branch=display.qclinux.1.0.r1-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/hardware/qcom/display.git;protocol=https;rev=571b13964f67d499cbb70dc7d92f2031aad0ed93;branch=display.qclinux.1.0.r1-rel;destsuffix=display/hardware/qcom/display"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/display/hardware/qcom/display"
 
 EXTRA_OECONF += " --with-sanitized-headers=${STAGING_INCDIR}/linux-kernel-qcom/usr/include"
 EXTRA_OECONF += " --enable-displayle"

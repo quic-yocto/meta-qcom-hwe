@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 
 PV = "1.0"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/sigma-dut.git;protocol=https;rev=ce12148ad394b2f2971715adf2c97df2bdbd09f2;branch=wlan-os-service.qclinux.1.1.r1-rel \
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/sigma-dut.git;protocol=https;rev=ce12148ad394b2f2971715adf2c97df2bdbd09f2;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=wlan/utils/sigma-dut \
            file://Makefile.patch \
            "
 PACKAGE_ARCH ?= "${MACHINE_ARCH}"
@@ -17,7 +17,7 @@ DEPENDS = "libnl"
 CFLAGS += "-DLINUX_EMBEDDED"
 CFLAGS += "-I ${STAGING_INCDIR}/libnl3"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/wlan/utils/sigma-dut"
 
 do_patch() {
     cd ${S}

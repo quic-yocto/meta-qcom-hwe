@@ -2,7 +2,12 @@
 #SPDX-License-Identifier: BSD-3-Clause-Clear
 
 ## bluetooth files
-/etc/bluetooth/(/.*)?  -- gen_context(system_u:object_r:qcom_bluetooth_etc_t,s0)
-/usr/bin/btapp         -- gen_context(system_u:object_r:qcom_bluetooth_exec_t,s0)
-/var/bluetooth/(/.*)?  -- gen_context(system_u:object_r:qcom_bluetooth_var_t,s0)
+/etc/bluetooth/(/.*)?     -- gen_context(system_u:object_r:qcom_bluetooth_etc_t,s0)
+/usr/bin/btapp            -- gen_context(system_u:object_r:qcom_bluetooth_exec_t,s0)
+/var/bluetooth/(/.*)?     -- gen_context(system_u:object_r:qcom_bluetooth_var_t,s0)
 
+## bluetooth Audio sink
+/tmp/a2dp_avk_ctrl.socket -- gen_context(system_u:object_r:qcom_bluetooth_snk_ctrl_sock_t,s0)
+
+## bluetooth Audio source
+/tmp/a2dp_ctrl.socket     -- gen_context(system_u:object_r:qcom_bluetooth_src_ctrl_sock_t,s0)

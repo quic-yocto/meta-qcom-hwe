@@ -1,5 +1,5 @@
 CHIPCODE_SRC_URI    = "qpm-git.qualcomm.com/home2/git/qualcomm/qualcomm-linux-spf-1-0_test_device_public"
-CHIPCODE_SRC_REV    = "75f5ea137569f109f6b1a58236b0e1a055e07142"
+CHIPCODE_SRC_REV    = "44a5dcea0a7a486955c51694eb761a7472eeeba8"
 CHIPCODE_SRC_BRANCH = "master"
 
 BUILD_ID  = "QCM8550.LE.2.0"

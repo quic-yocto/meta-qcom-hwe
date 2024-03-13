@@ -1,0 +1,7 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#qseecomd executable will have:
+#label: system_u:object_r:qcom_rpmsgexport_t
+
+/usr/bin/rpmsgexport -- gen_context(system_u:object_r:qcom_rpmsgexport_exec_t,s0)

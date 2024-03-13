@@ -25,6 +25,7 @@ do_install:append() {
         if ${@bb.utils.contains('DISTRO_FEATURES','selinux','true', 'false', d)}; then
                 sed -i  's/Options=/Options=rootcontext=system_u:object_r:etc_t:s0,/' ${D}${systemd_unitdir}/system/mnt-overlay.mount
                 sed -i 's/ext4/ext4\nOptions=rootcontext=system_u:object_r:qcom_persist_t:s0\n/' ${D}${systemd_unitdir}/system/var-persist.mount
+		sed -i  's/Options=/Options=rootcontext=system_u:object_r:usr_t:s0,/' ${D}${systemd_unitdir}/system/opt.mount
 
         fi
 

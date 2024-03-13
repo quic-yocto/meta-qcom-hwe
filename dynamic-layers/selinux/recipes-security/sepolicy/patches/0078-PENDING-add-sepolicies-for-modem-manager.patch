@@ -1,37 +1,74 @@
-From 5e6952dbc2658309becd8f497f4a2b29c6f83ba6 Mon Sep 17 00:00:00 2001
-From: Kamesh Relangi <krelangi@qti.qualcomm.com>
-Date: Mon, 12 Feb 2024 11:32:05 +0530
+From 01bfc545e16d17c2eb726e3280f45aa85118985e Mon Sep 17 00:00:00 2001
+From: Kamesh Relangi <quic_krelangi@quicinc.com>
+Date: Tue, 27 Feb 2024 17:06:16 +0530
 Subject: [PATCH] PENDING: Add sepolicy rules for modem manager
 
-This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
-
-Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-SPDX-License-Identifier: BSD-3-Clause-Clear
-
-Change-Id: I2c49f0126e4ee38101f5e74780b5ec9f6f931468
+Change-Id: Ic83cb17aeaf63615a4729da63c39953d0fe3ef76
 Signed-off-by: Kamesh Relangi <quic_krelangi@quicinc.com>
 ---
- policy/modules/services/modemmanager.te | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ policy/modules/services/modemmanager.fc |  5 +++++
+ policy/modules/services/modemmanager.te | 28 +++++++++++++++++++++++--
+ 2 files changed, 31 insertions(+), 2 deletions(-)
 
+diff --git a/policy/modules/services/modemmanager.fc b/policy/modules/services/modemmanager.fc
+index 88d8ff3f6..7732746f4 100644
+--- a/policy/modules/services/modemmanager.fc
++++ b/policy/modules/services/modemmanager.fc
+@@ -3,3 +3,8 @@
+
+ /usr/sbin/ModemManager	--	gen_context(system_u:object_r:modemmanager_exec_t,s0)
+ /usr/sbin/modem-manager	--	gen_context(system_u:object_r:modemmanager_exec_t,s0)
++
++/etc/ModemManager(/.*)? --      gen_context(system_u:object_r:modemmanager_etc_t,s0)
++
++/etc/ModemManager/connection.d   --   gen_context(system_u:object_r:etc_t,s0)
++/etc/ModemManager/fcc-unlock.d   --   gen_context(system_u:object_r:etc_t,s0)
 diff --git a/policy/modules/services/modemmanager.te b/policy/modules/services/modemmanager.te
-index deadee404..af4a63763 100644
+index deadee404..3fe1ec9b2 100644
 --- a/policy/modules/services/modemmanager.te
 +++ b/policy/modules/services/modemmanager.te
-@@ -19,9 +19,17 @@ allow modemmanager_t self:process { getsched signal };
+@@ -9,19 +9,43 @@ type modemmanager_t;
+ type modemmanager_exec_t;
+ init_daemon_domain(modemmanager_t, modemmanager_exec_t)
+
++type modemmanager_var_log_t;
++logging_log_file(modemmanager_var_log_t)
++logging_log_filetrans(modemmanager_t, modemmanager_var_log_t, file, "mmlog.txt")
++
++type modemmanager_etc_t;
++files_type(modemmanager_etc_t)
++filetrans_pattern(modemmanager_t, etc_t, modemmanager_etc_t, { dir file })
++files_config_file(modemmanager_etc_t)
+ ########################################
+ #
+ # Local policy
+ #
+
+ allow modemmanager_t self:capability { net_admin sys_admin sys_tty_config };
+-allow modemmanager_t self:process { getsched signal };
++allow modemmanager_t self:process { getsched signal setsched setpgid };
  allow modemmanager_t self:fifo_file rw_fifo_file_perms;
- allow modemmanager_t self:unix_stream_socket create_stream_socket_perms;
+-allow modemmanager_t self:unix_stream_socket create_stream_socket_perms;
++allow modemmanager_t self:unix_stream_socket { connectto create_stream_socket_perms };
  allow modemmanager_t self:netlink_kobject_uevent_socket create_socket_perms;
-+allow modemmanager_t self:process setsched;
-+allow modemmanager_t self:qipcrtr_socket create;
++allow modemmanager_t self:qipcrtr_socket { create getattr getopt read write };
++allow modemmanager_t modemmanager_etc_t:dir manage_dir_perms;
++allow modemmanager_t modemmanager_etc_t:file manage_file_perms;
++allow modemmanager_t modemmanager_var_log_t:file manage_file_perms;
 
  kernel_read_system_state(modemmanager_t)
 
 +fs_search_tmpfs(modemmanager_t)
 +
-+logging_search_logs(modemmanager_t)
++logging_rw_generic_log_dirs(modemmanager_t)
++
++logging_dontaudit_write_generic_logs(modemmanager_t)
 +
 +corecmd_dontaudit_search_bin(modemmanager_t)
++
++corecmd_exec_bin(modemmanager_t)
++
++init_dbus_send_script(modemmanager_t)
 +
  dev_read_sysfs(modemmanager_t)
  dev_rw_modem(modemmanager_t)

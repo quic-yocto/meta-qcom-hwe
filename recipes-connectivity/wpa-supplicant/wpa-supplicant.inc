@@ -10,5 +10,5 @@ FILES_SOLIBSDEV=""
 DEPENDS = "openssl libnl"
 
 do_install() {
-    make install DESTDIR=${D} BINDIR=${sbindir} LIBDIR=${libdir} INCDIR=${includedir}
+	make install DESTDIR=${D} BINDIR=${sbindir} LIBDIR=${libdir} INCDIR=${includedir}
 }

@@ -1,0 +1,10 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_rpmsgexport, 1.0)
+type qcom_rpmsgexport_t;
+type qcom_rpmsgexport_exec_t;
+domain_type(qcom_rpmsgexport_t)
+init_daemon_domain(qcom_rpmsgexport_t, qcom_rpmsgexport_exec_t)
+
+qcom_rpmsg_device_rw(qcom_rpmsgexport_t)

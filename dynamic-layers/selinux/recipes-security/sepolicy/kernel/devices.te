@@ -27,3 +27,21 @@ dev_node(qcom_adsp_device_t)
 
 type qcom_cdsp_device_t;
 dev_node(qcom_cdsp_device_t)
+
+type qcom_rpmsg_device_t;
+dev_node(qcom_rpmsg_device_t)
+
+type qcom_system_heap_dev_t;
+dev_node(qcom_system_heap_dev_t)
+
+type qcom_secure_pixel_heap_dev_t;
+dev_node(qcom_secure_pixel_heap_dev_t)
+
+type qcom_secure_non_pixel_heap_dev_t;
+dev_node(qcom_secure_non_pixel_heap_dev_t)
+
+type qcom_mem_buf_dev_t;
+dev_node(qcom_mem_buf_dev_t)
+
+type qcom_mem_buf_vm_dev_t;
+dev_node(qcom_mem_buf_vm_dev_t)

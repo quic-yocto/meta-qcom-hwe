@@ -6,7 +6,13 @@ sleep 3
 
 n=0
 while true; do
-    udcname=`ls -1 /sys/class/udc | head -n 1`
+    count=`ls /sys/class/udc | wc -l`
+    if [ $count -gt 1 ]; then
+        udcname=a600000.usb
+    else
+        udcname=`ls -1 /sys/class/udc | head -n 1`
+    fi
+
     if [ -n "$udcname" ] || [ $n -eq 30 ]; then
         break
     fi
@@ -23,7 +29,7 @@ while true; do
         break
     fi
 
-    ls /sys/class/udc/ | xargs echo -n > /sys/kernel/config/usb_gadget/adb/UDC
+    echo $udcname > /sys/kernel/config/usb_gadget/adb/UDC
     sleep 1
     n=$(expr $n + 1)
 done

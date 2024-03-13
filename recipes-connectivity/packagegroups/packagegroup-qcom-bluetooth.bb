@@ -10,8 +10,7 @@ PROVIDES = "${PACKAGES}"
 PACKAGES = "${PN}"
 
 BTVENDOR ?= 'False'
-BTVENDOR:qrbx210-rbx = 'True'
-BTVENDOR:qcs40x = 'True'
+
 BTVENDOR:qcm6490 = 'True'
 
 RDEPENDS:${PN} = "\
@@ -24,4 +23,5 @@ RDEPENDS:${PN} = "\
     bt-cert \
     bt-dlkm-kernel \
     bthost-ipc \
+    btftm \
     btdevicetree "

@@ -17,6 +17,6 @@ VULKAN_LOADER:qcs8550 = "True"
 RDEPENDS:${PN} = " \
     adreno \
     ${@oe.utils.conditional('VULKAN_LOADER', 'True', 'vulkan-loader', '', d)} \
-    graphicsdevicetree \
     graphicsdlkm \
+    graphicsdevicetree \
 "

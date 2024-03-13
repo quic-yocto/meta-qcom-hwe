@@ -11,8 +11,8 @@ PROVIDES = "${PACKAGES}"
 PACKAGES = "${PN}"
 
 RDEPENDS:${PN} = ' \
-    camx \
-    camxlib \
-    chicdk \
+    camx-kt \
+    camxlib-kt \
+    chicdk-kt \
 '
 

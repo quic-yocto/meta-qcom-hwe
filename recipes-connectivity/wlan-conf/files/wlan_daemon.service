@@ -1,4 +1,4 @@
-# Copyright (c) 2018 The Linux Foundation. All rights reserved.
+# Copyright (c) 2018, 2021 The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -25,17 +25,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Changes from Qualcomm Innovation Center are provided under the following
+# license:
+#
+# Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
 
 [Unit]
 Description=Wlan Service
 SourcePath=/etc/init.d/wlan
-Requires=wcnss_wlan.service
-After=persist.mount firmware-links.service wcnss_wlan.service usb.service
+After=persist.mount firmware-links.service usb.service
 
 [Service]
 Restart=no
 RemainAfterExit=yes
-ExecStart=/etc/initscripts/wlan start
+ExecStart=/etc/initscripts/wlan init-start
+Type=oneshot
 ExecStop=/etc/initscripts/wlan stop
 
 [Install]

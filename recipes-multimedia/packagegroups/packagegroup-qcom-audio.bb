@@ -20,8 +20,8 @@ PULSEAUDIO_PKGS = " \
     pulseaudio-module-role-cork \
     pulseaudio-module-role-exclusive \
     pulseaudio-module-role-ignore \
-    pulseaudio-module-qal-card \
-    pulseaudio-module-qal-voiceui-card \
+    pulseaudio-module-pal-card \
+    pulseaudio-module-pal-voiceui-card \
 "
 
 RDEPENDS:${PN}:append = ' \

@@ -4,9 +4,9 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 
 inherit module deploy
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=4e3ce6199b98e4ffffc7c0352206f50e7df2620b;branch=wlan-platform.qclinux.1.0.r2-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=366a159aeed238c8b686fdc5046a5629bc064559;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/wlan-devicetree"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/wlan/wlan-devicetree"
 
 DTC := "${KBUILD_OUTPUT}/scripts/dtc/dtc"
 KERNEL_INCLUDE := "${STAGING_KERNEL_DIR}/include/"

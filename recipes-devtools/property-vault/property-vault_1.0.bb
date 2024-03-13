@@ -3,11 +3,11 @@ inherit autotools pkgconfig systemd useradd
 DESCRIPTION = "property vault managment"
 SUMMARY = "property vault managment"
 LICENSE = "BSD-3-Clause-Clear"
-LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=3771d4920bd6cdb8cbdf1e8344489ee0"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a472ca93716d01033a"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/le-utils.git;protocol=https;rev=989cee526729c3a622a3c2726f45e86636636fa1;branch=le-utils.qclinux.1.0.r2-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/le-utils.git;protocol=https;rev=989cee526729c3a622a3c2726f45e86636636fa1;branch=le-utils.qclinux.1.0.r2-rel;destsuffix=le-utils"
 
-S = "${WORKDIR}/git/property-vault"
+S = "${WORKDIR}/le-utils/property-vault"
 
 DEPENDS += "libselinux syslog-plumber glib-2.0"
 
@@ -16,7 +16,7 @@ EXTRA_OECONF = "${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '--with-syste
 SYSTEMD_SERVICE:${PN} = "property-vault.service persist-property-vault.service"
 
 do_install:append() {
-    install -b -m 0644 /dev/null -D ${D}${sysconfdir}/build.prop
+    install -b -m 0644 /dev/null -D ${D}${sysconfdir}/build.prop 
     chown system:system ${D}${sysconfdir}/build.prop
     install -b -m 0644 /dev/null -D ${D}/var/leutils/build.prop
     chown system:system ${D}/var/leutils/build.prop

@@ -7,6 +7,12 @@ policy_module(qcom_bluetooth, 1.0)
 ## bluetooth
 type qcom_bluetooth_t;
 type qcom_bluetooth_exec_t;
+type qcom_bluetooth_src_ctrl_sock_t;
+type qcom_bluetooth_snk_ctrl_sock_t;
+
+fs_associate_tmpfs(qcom_bluetooth_src_ctrl_sock_t)
+fs_associate_tmpfs(qcom_bluetooth_snk_ctrl_sock_t)
+
 
 #########################
 #### Bluetooth conf files
@@ -73,3 +79,8 @@ allow qcom_bluetooth_t self:netlink_socket create_socket_perms;
 allow qcom_bluetooth_t qcom_bluetooth_t:tcp_socket accept;
 kernel_request_load_module(qcom_bluetooth_t)
 allow qcom_bluetooth_t self:capability { dac_override };
+
+#Bluetooth Audio usecases
+pulseaudio_stream_connect(qcom_bluetooth_t)
+qcom_connect_to_btipc_src(qcom_bluetooth_t)
+qcom_pulseaudio_socket_connect(qcom_bluetooth_t)

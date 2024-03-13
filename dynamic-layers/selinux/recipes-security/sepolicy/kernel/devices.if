@@ -177,3 +177,115 @@ interface(`qcom_cdsp_secure_read_device',`
 	')
 	read_chr_files_pattern($1, device_t, qcom_cdsp_secure_device_t)
 ')
+
+########################################
+## <summary>
+##      Allow read/write/ioctl/open for rpmsg device.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+##
+interface(`qcom_rpmsg_device_rw',`
+   gen_require(`
+       type device_t, qcom_rpmsg_device_t;
+   ')
+    allow $1 qcom_rpmsg_device_t:chr_file rw_chr_file_perms;
+')
+
+####################
+## <summary>
+## Allow allocation of buffer from qcom,system heap
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed to rw /dev/dma_heap/qcom,system*
+##  heaps
+##  </summary>
+## </param>
+#
+interface(`qcom_system_alloc_buf_rw',`
+	gen_require(`
+		type qcom_system_heap_dev_t;
+	')
+
+	allow $1 qcom_system_heap_dev_t:chr_file rw_chr_file_perms;
+')
+
+####################
+## <summary>
+## Allow allocation of buffer from qcom,secure-pixel heap
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed to rw /dev/dma_heap/qcom,secure-pixel*
+##  heaps
+##  </summary>
+## </param>
+#
+interface(`qcom_secure_pixel_alloc_buf_rw',`
+	gen_require(`
+		type qcom_secure_pixel_heap_dev_t;
+		')
+
+	allow $1 qcom_secure_pixel_heap_dev_t:chr_file rw_chr_file_perms;
+')
+
+####################
+## <summary>
+## Allow allocation of buffer from qcom,secure-non-pixel heap
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed to rw /dev/dma_heap/qcom,secure-non-pixel*
+##  heaps
+##  </summary>
+## </param>
+#
+interface(`qcom_secure_non_pixel_alloc_buf_rw',`
+	gen_require(`
+		type qcom_secure_non_pixel_heap_dev_t;
+	')
+
+	allow $1 qcom_secure_non_pixel_heap_dev_t:chr_file rw_chr_file_perms;
+')
+
+#####################
+## <summary>
+## Allow rw access to mem_buf node
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed to rw /dev/mem_buf*
+##  heaps
+##  </summary>
+## </param>
+##
+interface(`qcom_mem_buf_rw',`
+	gen_require(`
+		type qcom_mem_buf_dev_t;
+		')
+
+	allow $1 qcom_mem_buf_dev_t:chr_file rw_chr_file_perms;
+')
+
+#####################
+## <summary>
+## Allow rw access to mem_buf_vm node
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed to rw /dev/mem_buf_vm*
+##  heaps
+##  </summary>
+## </param>
+##
+interface(`qcom_mem_buf_vm_rw',`
+	gen_require(`
+		type qcom_mem_buf_vm_dev_t;
+		')
+
+	allow $1 qcom_mem_buf_vm_dev_t:chr_file rw_chr_file_perms;
+')

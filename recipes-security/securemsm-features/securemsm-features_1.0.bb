@@ -7,7 +7,7 @@ DESCRIPTION = "securemsm-features with QseecomAPI user space library to interact
 
 DEPENDS += "libxml2 libtinyxml2 linux-kernel-qcom-headers glib-2.0 glibc libdmabufheap securemsm-headers minkipc property-vault jsoncpp qmi-framework curl"
 
-SRCREV = "9d16a54e57fc1802f5b81361efc92c423415c4b1"
+SRCREV = "c738c1a85e20a7182bab084597ae5adef2df03cd"
 
 SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
 
@@ -23,7 +23,9 @@ FILES:${PN} += "${bindir}/*"
 FILES:${PN} += "${libdir} ${includedir}"
 FILES:${PN}-dev = "${libdir}/*.la"
 
+
 INSANE_SKIP:${PN} = "dev-so"
 INSANE_SKIP:${PN} += "dev-deps"
 INSANE_SKIP:${PN} += "debug-files"
 INSANE_SKIP:${PN} += "file-rdeps"
+

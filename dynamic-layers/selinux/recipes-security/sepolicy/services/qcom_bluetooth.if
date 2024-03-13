@@ -57,7 +57,7 @@ interface(`qcom_bluetooth_manage_data_files',`
         type qcom_bluetooth_t, qcom_bluetooth_var_t;
     ')
     allow $1 qcom_bluetooth_var_t:dir {manage_dir_perms};
-	allow $1 qcom_bluetooth_var_t:file manage_file_perms;
+    allow $1 qcom_bluetooth_var_t:file manage_file_perms;
 ')
 
 
@@ -77,5 +77,56 @@ interface(`qcom_bluetooth_manage_data_files',`
 ## </param>
 #
 interface(`qcom_bluetooth_manage_socket_files',`
-	manage_sock_files_pattern($1, bluetooth_conf_t, bluetooth_conf_t)
+    gen_require(`
+        type bluetooth_conf_t;
+    ')
+    manage_sock_files_pattern($1, bluetooth_conf_t, bluetooth_conf_t)
+')
+
+
+
+########################################
+## <summary>
+##       Add rules to allow bluetooth service to store a socket in /tmp for Bluetooth Audio Source
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+
+interface(`qcom_connect_to_btipc_src',`
+    gen_require(`
+        type qcom_bluetooth_t, qcom_bluetooth_src_ctrl_sock_t;
+    ')
+    manage_sock_files_pattern($1, qcom_bluetooth_src_ctrl_sock_t, qcom_bluetooth_src_ctrl_sock_t)
+    files_tmp_filetrans($1, qcom_bluetooth_src_ctrl_sock_t, sock_file)
+    allow $1 qcom_bluetooth_src_ctrl_sock_t:dir { search_dir_perms write add_name};
+    allow $1 qcom_bluetooth_src_ctrl_sock_t:sock_file { write create setattr unlink };
+    allow $1 qcom_bluetooth_src_ctrl_sock_t:file manage_file_perms;
+    allow $1 qcom_bluetooth_t:unix_stream_socket connectto;
+')
+
+########################################
+## <summary>
+##       Add rules to allow bluetooth service to store a socket in /tmp for Bluetooth Audio Sink
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+
+interface(`qcom_connect_to_btipc_snk',`
+    gen_require(`
+        type qcom_bluetooth_t, qcom_bluetooth_snk_ctrl_sock_t;
+    ')
+    manage_sock_files_pattern($1, qcom_bluetooth_snk_ctrl_sock_t, qcom_bluetooth_snk_ctrl_sock_t)
+    files_tmp_filetrans($1, qcom_bluetooth_snk_ctrl_sock_t, sock_file)
+    allow $1 qcom_bluetooth_snk_ctrl_sock_t:dir { search_dir_perms write add_name};
+    allow $1 qcom_bluetooth_snk_ctrl_sock_t:sock_file { write create setattr unlink };
+    allow $1 qcom_bluetooth_snk_ctrl_sock_t:file manage_file_perms;
+    allow $1 qcom_bluetooth_t:unix_stream_socket connectto;
 ')

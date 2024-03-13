@@ -1,23 +1,22 @@
-inherit qprebuilt pkgconfig
+inherit autotools-brokensep pkgconfig
 
-LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
-LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
+DESCRIPTION      = "Build Android libvmmem for LE"
+LICENSE          = "BSD-3-Clause-Clear"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a472ca93716d01033a"
 
-DESCRIPTION = "Build Android libvmmem for LE"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/system/memory/libvmmem.git;protocol=https;rev=2b88e9bc6030893b8e9b46ae85999c8de103858d;branch=kernel.apps.lnx.4.0.r1-rel;destsuffix=system/memory/libvmmem"
 
+S = "${WORKDIR}/system/memory/libvmmem"
 DEPENDS += "linux-kernel-qcom-headers"
 
-SRCREV = "9d16a54e57fc1802f5b81361efc92c423415c4b1"
+EXTRA_OECONF:append = " \
+    --with-sanitized-headers=${STAGING_INCDIR}/linux-kernel-qcom/usr/include \
+    --disable-static \
+"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
-
-PREBUILT_TARBALL = "libvmmem_git_${PACKAGE_ARCH}.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
-
-PACKAGE_ARCH = "${MACHINE_ARCH}"
-
-PACKAGES += "${PN}-test-bin"
+PACKAGES +="${PN}-test-bin"
 
 FILES:${PN}     = "${libdir}/* ${sysconfdir}/*"
 FILES:${PN}-test-bin = "${base_bindir}/*"
+
+PACKAGE_ARCH = "${MACHINE_ARCH}"

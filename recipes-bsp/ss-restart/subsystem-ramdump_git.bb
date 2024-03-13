@@ -2,11 +2,11 @@ inherit autotools pkgconfig systemd
 
 DESCRIPTION = "subsystem ramdump"
 LICENSE = "BSD-3-Clause-Clear"
-LIC_FILES_CHKSUM += "file://${COMMON_LICENSE_DIR}/BSD-3-Clause-Clear;md5=7a434440b651f4a472ca93716d01033a"
+LIC_FILES_CHKSUM += "file://subsystem_ramdump.c;beginline=1;endline=4;md5=e19ba7a648e00191388321a1e8a5c974"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/ss-restart.git;protocol=https;rev=74c35bdb8c9f28fbc72da5e5168d97401d5548a6;branch=kernel.apps.lnx.4.0.r1-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/ss-restart.git;protocol=https;rev=74c35bdb8c9f28fbc72da5e5168d97401d5548a6;branch=kernel.apps.lnx.4.0.r1-rel;destsuffix=ss-restart"
 
-S = "${WORKDIR}/git/subsystem_ramdump"
+S = "${WORKDIR}/ss-restart/subsystem_ramdump"
 
 DEPENDS = "glib-2.0"
 

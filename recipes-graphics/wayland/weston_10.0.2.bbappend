@@ -7,9 +7,9 @@ SRC_URI = "   file://weston.ini \
               file://weston.desktop \
               file://xwayland.weston-start \
               file://systemd-notify.weston-start \
-              git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;rev=73ce406fe4817a8e6e775bfaa2ca927a158b8dbf;branch=display.qclinux.1.0.r1-rel"
+               git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;rev=4aea656b8f0e059cadb6313d6b82e5563542e354;branch=display.qclinux.1.0.r1-rel;destsuffix=display/vendor/qcom/opensource/display/weston"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/display/vendor/qcom/opensource/display/weston"
 
 DEPENDS:append:qcom = " property-vault gbm display-hal-linux libdmabufheap"
 

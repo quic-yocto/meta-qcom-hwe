@@ -7,7 +7,8 @@
 ## </summary>
 ## <param name="domain">
 ##	<summary>
-##	Domain allowed to execute mount.
+##	Domain allowed to execute mount. Currntly only USB driver need this
+##	other should not used
 ##	</summary>
 ## </param>
 #

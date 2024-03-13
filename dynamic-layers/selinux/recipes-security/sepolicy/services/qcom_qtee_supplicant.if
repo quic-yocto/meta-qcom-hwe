@@ -43,10 +43,11 @@ interface(`qcom_allow_ops_qtee_supplicant_persist',`
 
 interface(`qcom_allow_ops_qtee_supplicant_data',`
        gen_require(`
-               type var_t, qcom_qtee_supplicant_data_t;
+               type qcom_qtee_supplicant_data_t;
        ')
 
-       allow $1 var_t:dir list_dir_perms;
+       files_list_var($1)
+       files_list_tmp($1)
        allow $1 qcom_qtee_supplicant_data_t:dir manage_dir_perms;
        allow $1 qcom_qtee_supplicant_data_t:file manage_file_perms;
 ')

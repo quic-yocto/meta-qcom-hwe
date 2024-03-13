@@ -9,7 +9,7 @@ SSTATE_ALLOW_OVERLAP_FILES = "/"
 DEPENDS += "glib-2.0"
 DEPENDS += "gtest"
 DEPENDS += "gbm"
-DEPENDS:append:qcm6490 = " property-vault syslog-plumber protobuf-native protobuf-c protobuf-c-native camx "
+DEPENDS:append:qcm6490 = " property-vault syslog-plumber protobuf-native protobuf-c protobuf-c-native camx-kt"
 
 RDEPENDS:${PN} += "gbm"
 
@@ -19,17 +19,16 @@ EXTRA_OECMAKE += "-DSYSROOT_INCDIR=${STAGING_INCDIR}"
 EXTRA_OECMAKE += "-DSYSROOT_LIBDIR=${STAGING_LIBDIR}"
 EXTRA_OECMAKE += "-DKERNEL_INCDIR=${STAGING_INCDIR}/linux-msm"
 EXTRA_OECMAKE += "-DBUILD_CATEGORY=ALL"
-EXTRA_OECMAKE += "-DTARGET_PRODUCT_PLATFORM=${PRODUCT}"
 EXTRA_OECMAKE += "-DCAM_SERVER_SYSTEMD_DIR=${sysconfdir}/systemd/system"
 EXTRA_OECMAKE += "-DGBM_FREE_FD=${GBM_FREE_FD}"
 EXTRA_OECMAKE:append:qcm6490 = "-DCMAKE_SYSROOT_NATIVE=${WORKDIR}/recipe-sysroot-native/"
 EXTRA_OECMAKE:append:qcm6490 = " -DTARGET_BOARD_PLATFORM=qcm6490 "
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/le-services.git;protocol=https;rev=1d01b80c2fe043a4ff1d6b9bd06d93ab9e5d9ef0;branch=le-services.lnx.1.0.r1-rel \
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/le-services.git;protocol=https;rev=b8d03884188eeb646efb09b1ae66a73b021da5ec;branch=le-services.lnx.1.0.r1-rel;destsuffix=le-camera-server \
            file://cam-server-env \
            "
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/le-camera-server"
 
 SOLIBS = ".so*"
 FILES_SOLIBSDEV = ""

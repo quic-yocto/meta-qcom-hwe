@@ -6,5 +6,5 @@ policy_module(qcom_mountpoints, 1.0)
 type qcom_persist_t;
 files_mountpoint(qcom_persist_t)
 
-
-
+type var_coredump_t;
+files_mountpoint(var_coredump_t)

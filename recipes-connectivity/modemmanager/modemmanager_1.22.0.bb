@@ -12,9 +12,9 @@ inherit gnomebase gettext systemd gobject-introspection bash-completion
 
 DEPENDS = "glib-2.0 libgudev libxslt-native dbus json-glib  gtk+3"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/mobile-broadband/ModemManager.git;protocol=https;rev=f764192aa9496951d9d6bdb4ee0f2f6e3773b85b;branch=telephony.qclinux.0.0.r1-rel"
-S = "${WORKDIR}/git"
-
+SRC_URI = "git://git.codelinaro.org/clo/le/mobile-broadband/ModemManager.git;protocol=https;rev=f764192aa9496951d9d6bdb4ee0f2f6e3773b85b;branch=telephony.qclinux.0.0.r1-rel;destsuffix=mobile-broadband/ModemManager"
+S = "${WORKDIR}/mobile-broadband/ModemManager"
+#RDEPENDS:${PN} += " bash"
 EXTRA_OECONF:append = " --enable-plugin-qcom-soc"
 
 # strict, permissive

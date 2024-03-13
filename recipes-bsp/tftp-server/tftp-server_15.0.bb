@@ -7,7 +7,7 @@ DESCRIPTION = "tftp_server server module"
 
 DEPENDS += "glib-2.0 virtual/kernel qmi-framework property-vault libcap"
 
-SRCREV = "9d16a54e57fc1802f5b81361efc92c423415c4b1"
+SRCREV = "c738c1a85e20a7182bab084597ae5adef2df03cd"
 
 SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
 
@@ -17,5 +17,6 @@ S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
 FILES:${PN} += "/system /data"
 FILES:${PN} += "/lib/systemd/*"
+
 
 SYSTEMD_SERVICE:${PN} = "tftp_server.service"

@@ -2,7 +2,7 @@ require pulseaudio.inc
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/pulseaudio:"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/pulseaudio.git;protocol=https;rev=702778ac4e7b9aa2461859eb2b851ddb278c9e47;branch=pulseaudio.lnx.3.0.r5-rel \
+SRC_URI += "git://git.codelinaro.org/clo/le/pulseaudio.git;protocol=https;rev=d999c02445ad69eb273a94b20424d5e745ee0600;branch=pulseaudio.lnx.3.0.r5-rel;destsuffix=audio/opensource/pulseaudio \
            file://0001-client-conf-Add-allow-autospawn-for-root.patch \
            file://0002-do-not-display-CLFAGS-to-improve-reproducibility-bui.patch \
            file://0001-meson-Check-for-__get_cpuid.patch \
@@ -13,12 +13,13 @@ SRC_URI += "git://git.codelinaro.org/clo/le/pulseaudio.git;protocol=https;rev=70
            file://daemon_conf_in.patch \
            "
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/audio/opensource/pulseaudio"
 
 do_compile:prepend() {
 	mkdir -p ${S}/libltdl
 	cp ${STAGING_LIBDIR}/libltdl* ${S}/libltdl
 }
+
 
 do_install:append() {
 	install -d ${D}${systemd_system_unitdir}
@@ -58,13 +59,13 @@ EXTRA_OEMESON:append:qcm6490 = " -Dpal-support-cutils=false"
 
 # Build the pal module on qcm6490
 DEPENDS:append:qcm6490 = " pal"
-EXTRA_OEMESON:append:qcm6490 = " -Dwith-qal=${STAGING_INCDIR}/pal"
-RDEPENDS:pulseaudio-server:append:qcm6490 = " pulseaudio-module-qal-card"
+EXTRA_OEMESON:append:qcm6490 = " -Dwith-pal=${STAGING_INCDIR}/pal"
+RDEPENDS:pulseaudio-server:append:qcm6490 = " pulseaudio-module-pal-card"
 RDEPENDS:pulseaudio-server:append:qcm6490 = " pulseaudio-module-dbus-protocol"
 
 # Build the pal voiceui card on qcm6490
-EXTRA_OEMESON:append:qcm6490 = " -Dwith-qal-voiceui=${STAGING_INCDIR}/pal"
-RDEPENDS:pulseaudio-server:append:qcm6490 = " pulseaudio-module-qal-voiceui-card"
+EXTRA_OEMESON:append:qcm6490 = " -Dwith-pal-voiceui=${STAGING_INCDIR}/pal"
+RDEPENDS:pulseaudio-server:append:qcm6490 = " pulseaudio-module-pal-voiceui-card"
 
-FILES:${PN}-module-qal-card += "${datadir}/pulseaudio/qal"
+FILES:${PN}-module-pal-card += "${datadir}/pulseaudio/pal"
 FILES:${PN} = "${datadir}/* ${libdir}/* ${sysconfdir}/* ${bindir}/* ${base_libdir}/* ${prefix}/libexec/"

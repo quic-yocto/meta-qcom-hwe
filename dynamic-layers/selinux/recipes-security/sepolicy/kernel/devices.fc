@@ -28,3 +28,17 @@
 /dev/aud_pasthru_adsp         -c gen_context(system_u:object_r:qcom_audio_device_t,s0)
 /dev/msm_audio_mem            -c gen_context(system_u:object_r:qcom_audio_device_t,s0)
 /dev/msm_audio_mem_cma        -c gen_context(system_u:object_r:qcom_audio_device_t,s0)
+
+#rpmsg dev nodes
+/dev/rpmsg_ctrl0 -c gen_context(system_u:object_r:qcom_rpmsg_device_t,s0)
+/dev/rpmsg_ctrl1 -c gen_context(system_u:object_r:qcom_rpmsg_device_t,s0)
+/dev/rpmsg_ctrl2 -c gen_context(system_u:object_r:qcom_rpmsg_device_t,s0)
+
+#Dmabuf Heap Nodes
+/dev/dma_heap/qcom,system    -c gen_context(system_u:object_r:qcom_system_heap_dev_t,s0)
+/dev/dma_heap/qcom,secure-pixel    -c gen_context(system_u:object_r:qcom_secure_pixel_heap_dev_t,s0)
+/dev/dma_heap/qcom,secure-non-pixel    -c gen_context(system_u:object_r:qcom_secure_non_pixel_heap_dev_t,s0)
+
+#Membuf nodes
+/dev/mem_buf    -c gen_context(system_u:object_r:qcom_mem_buf_dev_t,s0)
+/dev/mem_buf_vm    -c gen_context(system_u:object_r:qcom_mem_buf_vm_dev_t,s0)

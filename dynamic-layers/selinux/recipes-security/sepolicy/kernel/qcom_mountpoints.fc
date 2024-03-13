@@ -3,3 +3,4 @@
 
 /mnt/overlay(/.*)?              gen_context(system_u:object_r:etc_t,s0)
 /var/persist(/.*)?              gen_context(system_u:object_r:qcom_persist_t,s0)
+/var/coredump(/.*)?             gen_context(system_u:object_r:var_coredump_t,s0)

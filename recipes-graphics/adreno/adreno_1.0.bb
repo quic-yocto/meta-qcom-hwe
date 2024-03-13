@@ -9,7 +9,7 @@ DEPENDS += "wayland glib-2.0 linux-kernel-qcom-headers property-vault libdmabufh
 
 PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl"
 
-SRCREV = "9d16a54e57fc1802f5b81361efc92c423415c4b1"
+SRCREV = "c738c1a85e20a7182bab084597ae5adef2df03cd"
 
 SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
 
@@ -19,15 +19,16 @@ S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-RPROVIDES:${PN} += "virtual/libgles1 virtual/libgles2 virtual/egl"
-
-INSANE_SKIP:${PN} = "dev-deps file-rdeps dev-so arch"
-
 FILES:${PN} = "${includedir}/* \
                ${nonarch_base_libdir}/firmware/* \
                ${nonarch_libdir}/* \
                ${base_libdir}/firmware/* \
                ${libdir}/* \
+               ${bindir}/* \
                /usr/local/share/vulkan/icd.d/* "
-
 FILES:${PN}-dev = ""
+FILES:${PN}-dbg = ""
+
+
+INSANE_SKIP:${PN} = "installed-vs-shipped dev-deps file-rdeps dev-so arch already-stripped"
+

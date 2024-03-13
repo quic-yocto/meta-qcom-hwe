@@ -4,8 +4,8 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/\
 ${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
 inherit module deploy
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/display-devicetree.git;protocol=https;rev=c636b3244732a6ef8d7d364664b2db95d74681ca;branch=display-kernel.qclinux.1.0.r2-rel"
-S = "${WORKDIR}/git"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/display-devicetree.git;protocol=https;rev=df2271ae82d26607f2f5cc05a2b71673c577b2e5;branch=display-kernel.qclinux.1.0.r2-rel;destsuffix=display/vendor/qcom/opensource/display-devicetree"
+S = "${WORKDIR}/display/vendor/qcom/opensource/display-devicetree"
 
 DTC := "${KBUILD_OUTPUT}/scripts/dtc/dtc"
 KERNEL_INCLUDE := "${STAGING_KERNEL_DIR}/include/"

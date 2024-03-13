@@ -10,7 +10,7 @@ inherit kernel
 
 COMPATIBLE_MACHINE = "(qcom)"
 
-SRC_URI += "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=20af2b06b28ec4dd0a680de2553ed8696663788b;branch=kernel.qclinux.1.0.r1-rel \
+SRC_URI += "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=53e07033f465c57fa9424207055fbfa07f7cff65;branch=kernel.qclinux.1.0.r1-rel \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux.cfg', '', d)} \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux_debug.cfg', '', d)} \
            "

@@ -10,5 +10,6 @@ PACKAGES = "${PN}"
 
 # Sensors Image and Debugging utilities
 RDEPENDS:${PN} = "\
+    sensinghub \
     sensors-ship-qti \
 "

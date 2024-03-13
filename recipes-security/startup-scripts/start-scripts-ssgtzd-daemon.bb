@@ -15,6 +15,4 @@ do_install:append() {
 }
 
 SYSTEMD_SERVICE:${PN} = "ssgtzd.service"
-SYSTEMD_AUTO_ENABLE:${PN}:qcs8550 = "disable"
-PACKAGE_ARCH = "${MACHINE_ARCH}"
 FILES:${PN} += "${systemd_unitdir}/system/*"

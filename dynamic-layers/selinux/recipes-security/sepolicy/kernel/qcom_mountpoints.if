@@ -64,3 +64,24 @@ interface(`qcom_mounton_persist',`
         allow $1 qcom_persist_t:dir { search_dir_perms mounton };
 
 ')
+
+
+########################################
+## <summary>
+##      this interface will provide access to /var/coredump
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed to read, write /var/coredump
+##      </summary>
+## </param>
+##
+#
+interface(`qcom_coredump_read_write',`
+        gen_require(`
+                type var_coredump_t;
+        ')
+
+        allow $1 var_coredump_t:dir manage_dir_perms;
+        allow $1 var_coredump_t:file manage_file_perms;
+')

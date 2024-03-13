@@ -7,7 +7,7 @@ DESCRIPTION = "sva-cnn"
 
 DEPENDS += "sva-common sva-listen-common sva-swmad sva-ml-commondwarf sva-ml-commondwarf2 sva-ml-commondwarf2-3 sva-eai capiv2-headers sva-eai-utils pdk-wrapper"
 
-SRCREV = "9d16a54e57fc1802f5b81361efc92c423415c4b1"
+SRCREV = "c738c1a85e20a7182bab084597ae5adef2df03cd"
 
 SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
 

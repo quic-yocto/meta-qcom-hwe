@@ -1,0 +1,29 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+########################################
+## <summary>
+##    Interface to communicate with Pulseaudio service
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to read pulseaudio files.
+##    And give access to socket connection.
+##    </p>
+## </desc>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access for pulseaudio file access.
+##    </summary>
+## </param>
+#
+
+interface(`qcom_pulseaudio_socket_connect',`
+        gen_require(`
+                type pulseaudio_t;
+        ')
+        allow $1 pulseaudio_t:dir search;
+        allow $1 pulseaudio_t:file { open read };
+        allow $1 pulseaudio_t:lnk_file read;
+        allow $1 pulseaudio_t:unix_stream_socket connectto;
+')

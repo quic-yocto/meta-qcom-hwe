@@ -4,10 +4,12 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 
 inherit module deploy
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bt-devicetree.git;protocol=https;rev=c326166c78890b12578cc302e2f21ae32b79286f;branch=bt-performant.qclinux.1.0.r1-rel"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bt-devicetree.git;protocol=https;rev=c326166c78890b12578cc302e2f21ae32b79286f;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/bt-devicetree \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=5250a39cd07ffe7d8ff23909a1c90abb8e1b8c63;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/bluetooth_ext \
+           "
 
-BT_SOURCE = "${WORKDIR}"
-S = "${WORKDIR}/git"
+BT_SOURCE = "${WORKDIR}/bluetooth"
+S = "${BT_SOURCE}/bt-devicetree"
 S_EXT = "${BT_SOURCE}/stack/bluetooth_ext/system_bt_ext"
 
 DEPENDS += "virtual/kernel"

@@ -8,14 +8,13 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=89aea4e17d99a7ca
 DEPENDS = "zlib libchrome glib-2.0 property-vault audioroute"
 RDEPENDS:${PN} = "property-vault"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=9664854e14d51aac133b793dac110bdaf26d82c5;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/system/bt \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=5250a39cd07ffe7d8ff23909a1c90abb8e1b8c63;branch=bt-performant.qclinux.1.0.r1-rel;subdir=stack/bluetooth_ext \
-           git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=35015c2fcfc38e154b5284af7d25f3eea0efa8e3;branch=bt-performant.qclinux.1.0.r1-rel;subdir=btapp \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=390a2ab14e80b5258fc9706f198dd387e72b6070;branch=bt-performant.qclinux.1.0.r1-rel;subdir=bt_audio \
-           file://fluoride_conf_systemd_tmpfiles.conf \
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=5c924afb77845b72591a41108f98ce91ae0c1373;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/system/bt \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=5250a39cd07ffe7d8ff23909a1c90abb8e1b8c63;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/bluetooth_ext \
+           git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=4292e7df90538d94d0e63afec52d78301e8411e2;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/btapp \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=808a5314f33e9cb1507c0c0db102d82c15ee6f8f;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/bt_audio \
            "
 
-S = "${WORKDIR}"
+S = "${WORKDIR}/bluetooth"
 S_EXT = "${S}/stack/bluetooth_ext/system_bt_ext"
 
 AUTOTOOLS_SCRIPT_PATH = "${S}/stack/system/bt"
@@ -70,8 +69,4 @@ do_install:append() {
 	if [ -f ${S}/stack/system/bt/conf/iot_devlist.conf ]; then
 	   install -m 0660 ${S}/stack/system/bt/conf/iot_devlist.conf ${D}${sysconfdir}/bluetooth/
 	fi
-
-        install -d ${D}${sysconfdir}/tmpfiles.d
-        install -m 0755 ${WORKDIR}/fluoride_conf_systemd_tmpfiles.conf \
-                -D ${D}${sysconfdir}/tmpfiles.d/fluoride_conf_systemd_tmpfiles.conf
 }
