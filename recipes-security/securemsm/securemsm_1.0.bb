@@ -17,9 +17,9 @@ S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-FILES:${PN} += "/usr/bin/*"
-FILES:${PN} += "${bindir}/*"
+do_install[dirs] = "${D}/var/cache/qwes"
 
+FILES:${PN} += "/usr/bin/*"
+FILES:${PN} += "${bindir}/* /var/cache/*"
 
 INSANE_SKIP:${PN} += "debug-files"
-
