@@ -1,0 +1,62 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>cam_server</summary>
+######################################
+## <summary>
+##      Allow to manage camera service for initrc_exec_t scripts
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Target domain
+##  </summary>
+## </param>
+#
+interface(`qcom_init_manage_cam_service_admin',`
+    gen_require(`
+        type qcom_cam_server_t;
+        class service { start stop status };
+    ')
+
+    allow $1 qcom_cam_server_exec_t:service { start stop status };
+')
+
+####################################
+## <summary>
+##  Allow to manage camera socket files
+## </summary>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access.
+##    </summary>
+## </param>
+#
+interface(`qcom_manage_cam_server_sock_file', `
+    gen_require(`
+        type qcom_cam_server_tmp_t;
+    ')
+    manage_sock_files_pattern($1, qcom_cam_server_tmp_t, qcom_cam_server_tmp_t)
+')
+
+########################################
+## <summary>
+##       Read write qcom_cam_server_var_t files and directories
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to read write qcom_cam_server_var_t
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_cam_server_rw_var',`
+    gen_require(`
+        type qcom_cam_server_var_t;
+    ')
+    allow $1 qcom_cam_server_var_t:dir { manage_dir_perms };
+    allow $1 qcom_cam_server_var_t:file { manage_file_perms };
+')

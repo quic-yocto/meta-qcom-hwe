@@ -1,0 +1,19 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+########################################
+## <summary>
+##      watch lib dirs
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`libs_watch_shared_libs_dirs',`
+        gen_require(`
+                type lib_t;
+        ')
+        allow $1 lib_t:dir watch;
+')

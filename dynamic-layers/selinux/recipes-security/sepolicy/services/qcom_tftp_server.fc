@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 
@@ -7,3 +7,6 @@
 # TFTP files
 /var/lib/persist/rfs(/.*)?            gen_context(system_u:object_r:qcom_rfs_persist_t,s0)
 /var/lib/persist/hlos_rfs(/.*)?       gen_context(system_u:object_r:qcom_rfs_persist_t,s0)
+
+# TFTP PD dump files
+/var/pddump(/.*)?            gen_context(system_u:object_r:qcom_rfs_persist_t,s0)

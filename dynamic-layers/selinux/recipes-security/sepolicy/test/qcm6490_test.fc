@@ -6,3 +6,4 @@
 /kernel-tests(/.*)?           --     gen_context(system_u:object_r:qcom_kernel_tests_exec_t,s0)
 /kernel-tests/modules/lib/modules(/.*)? -- gen_context(system_u:object_r:qcom_modules_object_t,s0)
 /usr/bin/nativehaltest     --  gen_context(system_u:object_r:qcom_nativehaltest_t,s0)
+/var/cache/sensors/test(/.*)? gen_context(system_u:object_r:qcom_sensors_test_t,s0)

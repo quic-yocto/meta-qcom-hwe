@@ -36,6 +36,7 @@ logging_send_syslog_msg(qcom_qtee_supplicant_t)
 logging_rw_runtime_sockets(qcom_qtee_supplicant_t)
 
 # FS/SFS directories
-qcom_persist_dir_search(qcom_qtee_supplicant_t)
+qcom_persist_dir_manage(qcom_qtee_supplicant_t)
+qcom_persist_files_manage(qcom_qtee_supplicant_t)
 qcom_allow_ops_qtee_supplicant_persist(qcom_qtee_supplicant_t)
 qcom_allow_ops_qtee_supplicant_data(qcom_qtee_supplicant_t)

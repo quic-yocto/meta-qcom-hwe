@@ -4,6 +4,7 @@
 qcom_dev_audio_rw_device(pulseaudio_t)
 qcom_audioml_dmabuf_read_device(pulseaudio_t)
 qcom_connect_to_btipc_src(pulseaudio_t)
+qcom_coredump_read_write(pulseaudio_t)
 
 type qcom_pulseaudio_etc_t;
 files_type(qcom_pulseaudio_etc_t)

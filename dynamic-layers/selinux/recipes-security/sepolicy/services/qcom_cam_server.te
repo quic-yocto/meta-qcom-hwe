@@ -1,0 +1,48 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_cam_server, 1.0)
+
+#########################
+## cam-server
+type qcom_cam_server_t;
+type qcom_cam_server_exec_t;
+
+init_daemon_domain(qcom_cam_server_t, qcom_cam_server_exec_t)
+logging_send_syslog_msg(qcom_cam_server_t)
+
+qcom_allow_initrc_rw(qcom_cam_server_t)
+search_dev(qcom_cam_server_t)
+mls_file_read_all_levels(qcom_cam_server_t)
+qcom_cam_server_device_rw(qcom_cam_server_t)
+qcom_connect_to_property_vault(qcom_cam_server_t)
+rw_fifo_files_pattern({ qcom_cam_server_t }, self, self)
+
+type qcom_cam_server_tmp_t;
+files_tmp_file(qcom_cam_server_tmp_t)
+files_tmp_filetrans(qcom_cam_server_t, qcom_cam_server_tmp_t, { file dir sock_file})
+qcom_manage_cam_server_sock_file(qcom_cam_server_t)
+
+allow qcom_cam_server_t self:capability sys_time;
+allow qcom_cam_server_t self:process { getsched signal };
+allow qcom_cam_server_t self:qipcrtr_socket { connected_socket_perms };
+
+dev_rw_dri(qcom_cam_server_t)
+qcom_cdsp_rw(qcom_cam_server_t)
+dev_read_sysfs(qcom_cam_server_t)
+
+libs_watch_shared_libs_dirs(qcom_cam_server_t)
+qcom_dev_read_write_system_dmabuf(qcom_cam_server_t)
+
+dev_read_video_dev(qcom_cam_server_t)
+dev_write_video_dev(qcom_cam_server_t)
+
+type qcom_cam_server_var_t;
+files_type(qcom_cam_server_var_t)
+
+qcom_cam_server_rw_var(qcom_cam_server_t)
+qcom_manage_debugfs(qcom_cam_server_t)
+qcom_dev_gpu_rw_device(qcom_cam_server_t)
+
+fs_dontaudit_getattr_xattr_fs(qcom_cam_server_t)
+qcom_connect_perf_hal_socket(qcom_cam_server_t)

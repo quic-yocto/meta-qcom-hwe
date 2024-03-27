@@ -1,0 +1,4 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+/usr/bin/loadalgo            --   gen_context(system_u:object_r:qcom_loadalgo_exec_t,s0)

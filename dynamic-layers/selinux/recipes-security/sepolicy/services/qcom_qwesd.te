@@ -1,0 +1,130 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_qwesd, 1.0)
+type qcom_qwesd_t;
+type qcom_qwesd_exec_t;
+domain_type(qcom_qwesd_t)
+init_daemon_domain(qcom_qwesd_t, qcom_qwesd_exec_t)
+
+#/run/qwes/qwes_ipc
+type qcom_qwesd_run_t;
+
+type qcom_var_cache_qwes_t;
+files_type(qcom_var_cache_qwes_t)
+##################################################################
+# Rules starting for loading TA using QSEECOM
+##################################################################
+qcom_allow_smcinvoke_rw(qcom_qwesd_t)
+#################################################################
+# Rules starting for generic permissions for qwesd.
+##################################################################
+#logging to kmsg
+dev_rw_kmsg(qcom_qwesd_t)
+logging_send_syslog_msg(qcom_qwesd_t)
+
+kernel_read_system_state(qcom_qwesd_t)
+files_getattr_all_files(qcom_qwesd_t)
+
+# manage runtime created files in /run
+files_runtime_file(qcom_qwesd_run_t)
+files_runtime_filetrans(qcom_qwesd_t, qcom_qwesd_run_t, {sock_file})
+allow qcom_qwesd_t qcom_qwesd_run_t:chr_file rw_chr_file_perms;
+
+# manage qwes_ipc socket
+manage_files_pattern(qcom_qwesd_t, qcom_qwesd_run_t, qcom_qwesd_run_t)
+manage_sock_files_pattern(qcom_qwesd_t, qcom_qwesd_run_t, qcom_qwesd_run_t)
+manage_dirs_pattern(qcom_qwesd_t, qcom_qwesd_run_t, qcom_qwesd_run_t)
+
+# for using busy box commands
+busybox_nosuid_execute(qcom_qwesd_t)
+
+# Allow read access to /etc for nsswitch.conf and passwd file.
+files_read_etc_files(qcom_qwesd_t)
+
+#Allow to manage path /var/cache/qwes/
+manage_dirs_pattern(qcom_qwesd_t, qcom_var_cache_qwes_t, qcom_var_cache_qwes_t)
+manage_files_pattern(qcom_qwesd_t, qcom_var_cache_qwes_t, qcom_var_cache_qwes_t)
+
+# allow qwesd for self capability.
+allow qcom_qwesd_t self:capability { chown };
+allow qcom_qwesd_t self:process { signal getsched signull };
+allow qcom_qwesd_t self:fifo_file rw_fifo_file_perms;
+allow qcom_qwesd_t self:qipcrtr_socket create_socket_perms;
+allow qcom_qwesd_t self:capability2 { block_suspend wake_alarm };
+allow qcom_qwesd_t self:socket { create rw_socket_perms };
+#################################################################
+# Rules ending for generic permissions for qwesd.
+##################################################################
+#################################################################################
+# Rules starting for configuring network connection for sync.
+#################################################################################
+# read /etc/ssl/openssl.cnf
+logging_send_syslog_msg(qcom_qwesd_t)
+files_read_etc_runtime_files(qcom_qwesd_t)
+miscfiles_read_generic_certs(qcom_qwesd_t)
+
+# connect to network
+corenet_tcp_connect_http_port(qcom_qwesd_t)
+sysnet_read_config(qcom_qwesd_t)
+
+allow qcom_qwesd_t self:netlink_route_socket r_netlink_socket_perms;
+allow qcom_qwesd_t self:tcp_socket create_socket_perms;
+allow qcom_qwesd_t self:udp_socket create_socket_perms;
+systemd_read_resolved_runtime(qcom_qwesd_t)
+
+allow qcom_qwesd_t self:unix_stream_socket { create accept listen };
+allow qcom_qwesd_t self:unix_dgram_socket {create  write };
+#################################################################################
+# Rules ending for configuring network connection for sync.
+#################################################################################
+
+#################################################################################
+# Rules starting for setting up qwes_license_store.
+#################################################################################
+type qcom_qwes_license_store_setup_t;
+type qcom_qwes_license_store_setup_exec_t;
+
+init_script_domain(qcom_qwes_license_store_setup_t, qcom_qwes_license_store_setup_exec_t)
+
+logging_send_syslog_msg(qcom_qwes_license_store_setup_t)
+
+# Execute qwes license store script
+corecmd_exec_bin(qcom_qwes_license_store_setup_t)
+core_cmd_allow_mmap_exec_shell(qcom_qwes_license_store_setup_t)
+
+# Allow read/write to persist path.
+qcom_allow_ops_qtee_supplicant_persist(qcom_qwes_license_store_setup_t)
+
+#allow qwes_license_store_setup_t init_t:unix_stream_socket ioctl;
+init_rw_inherited_stream_socket(qcom_qwes_license_store_setup_t)
+
+# Allow read access to /etc/nsswitch.conf.
+files_read_etc_files(qcom_qwes_license_store_setup_t)
+
+#Allow write echo messages of script to /dev/kmsg.
+dev_write_kmsg(qcom_qwes_license_store_setup_t)
+
+#allow qwes_license_store_setup_t etc_t:file map;
+files_map_etc_files(qcom_qwes_license_store_setup_t)
+
+#Allow to manage path /var/cache/qwes/
+manage_files_pattern(qcom_qwes_license_store_setup_t, qcom_var_cache_qwes_t, qcom_var_cache_qwes_t)
+manage_dirs_pattern(qcom_qwes_license_store_setup_t, qcom_var_cache_qwes_t, qcom_var_cache_qwes_t)
+
+#search persist dir
+qcom_persist_dir_search(qcom_qwes_license_store_setup_t)
+
+# Generic permissions for script.
+allow qcom_qwes_license_store_setup_t self:fifo_file rw_fifo_file_perms;
+mls_file_read_all_levels(qcom_qwes_license_store_setup_t)
+mls_file_write_all_levels(qcom_qwes_license_store_setup_t)
+kernel_read_system_state(qcom_qwes_license_store_setup_t)
+allow qcom_qwes_license_store_setup_t self:capability { chown fsetid };
+fs_getattr_xattr_fs(qcom_qwes_license_store_setup_t)
+#################################################################################
+# Rules ending for setting up qwes_license_store.
+#################################################################################
+
+#Generic polices
+fs_associate(qcom_var_cache_qwes_t)

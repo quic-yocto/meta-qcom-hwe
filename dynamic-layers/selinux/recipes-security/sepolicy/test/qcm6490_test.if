@@ -1,3 +1,24 @@
 #Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
 #SPDX-License-Identifier: BSD-3-Clause-Clear
 ## <summary>qcm6490 test specific policies</summary>
+#####################
+## <summary>
+## Allow dir and file operations
+## under /var/cache/sensors/test
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed dir and file operations
+##  under /var/cache/sensors/test
+##  </summary>
+## </param>
+#
+
+interface(`qcom_allow_ops_qcom_sensors_test',`
+       gen_require(`
+               type qcom_sensors_test_t;
+       ')
+
+       allow $1 qcom_sensors_test_t:dir manage_dir_perms;
+       allow $1 qcom_sensors_test_t:file manage_file_perms;
+')

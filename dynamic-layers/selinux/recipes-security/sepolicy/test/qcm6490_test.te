@@ -11,6 +11,8 @@ gen_require(`
         type default_t;
         type initrc_t;
         type unconfined_t;
+        type qcom_sscrpcd_t;
+	type systemd_unit_t;
     ')
 
 
@@ -62,3 +64,25 @@ permissive  qcom_nativehaltest_t;
 
 #ssgtzd_unite test
 qcom_allow_ssgtzd_sock_write(initrc_t);
+
+type qcom_sensors_test_t;
+files_type(qcom_sensors_test_t)
+
+qcom_allow_ops_qcom_sensors_test(qcom_sscrpcd_t)
+
+systemd_status_user_runtime_units(unconfined_t)
+systemd_stop_user_runtime_units(unconfined_t)
+systemd_start_user_runtime_units(unconfined_t)
+
+
+#TODO : both serial and adb shell need  control.
+allow unconfined_t systemd_unit_t:service { start stop status };
+allow initrc_t systemd_unit_t:service { start stop status };
+#only root shell should be able to manage
+# adding only for test scripts expected to remove this as
+# part of production process
+init_manage_all_units(initrc_t)
+
+#added to control start/stop/status on property-vault
+qcom_property_vault_service_admin(initrc_t)
+qcom_property_vault_service_admin(unconfined_t)

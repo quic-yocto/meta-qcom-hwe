@@ -23,6 +23,8 @@
 /dev/fastrpc-adsp  -c           gen_context(system_u:object_r:qcom_adsp_device_t,s0)
 /dev/fastrpc-cdsp  -c           gen_context(system_u:object_r:qcom_cdsp_device_t,s0)
 
+/dev/byte-cntr    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
+
 #Audio driver nodes
 /dev/dma_heap/qcom,audio-ml   -c gen_context(system_u:object_r:qcom_audioml_heap_device_t,s0)
 /dev/aud_pasthru_adsp         -c gen_context(system_u:object_r:qcom_audio_device_t,s0)
@@ -40,5 +42,12 @@
 /dev/dma_heap/qcom,secure-non-pixel    -c gen_context(system_u:object_r:qcom_secure_non_pixel_heap_dev_t,s0)
 
 #Membuf nodes
-/dev/mem_buf    -c gen_context(system_u:object_r:qcom_mem_buf_dev_t,s0)
-/dev/mem_buf_vm    -c gen_context(system_u:object_r:qcom_mem_buf_vm_dev_t,s0)
+/dev/membuf    -c gen_context(system_u:object_r:qcom_membuf_dev_t,s0)
+/dev/mem_buf_vm(/.*)?    -c gen_context(system_u:object_r:qcom_mem_buf_vm_dev_t,s0)
+
+#camera service nodes
+/dev/media[0-1]               -c gen_context(system_u:object_r:qcom_cam_server_dev_t,s0)
+/dev/v4l-subdev[0-9]|1[0-8]   -c gen_context(system_u:object_r:qcom_cam_server_dev_t,s0)
+
+#gpu dev node
+/dev/kgsl-3d0   -c gen_context(system_u:object_r:qcom_gpu_device_t,s0)

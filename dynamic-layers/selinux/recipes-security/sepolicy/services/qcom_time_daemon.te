@@ -10,9 +10,14 @@ type qcom_time_data_t;
 
 init_daemon_domain(qcom_time_daemon_t, qcom_time_daemon_exec_t)
 
+allow qcom_time_daemon_t self:fifo_file rw_fifo_file_perms;
+allow qcom_time_daemon_t self:process signal;
+allow qcom_time_daemon_t self:qipcrtr_socket { write read create getattr setopt };
+allow qcom_time_daemon_t self:unix_stream_socket { accept listen };
+
 allow qcom_time_daemon_t self:capability sys_time;
+files_list_var_lib(qcom_time_daemon_t)
+qcom_time_data_files(qcom_time_daemon_t)
+dev_read_realtime_clock(qcom_time_daemon_t)
 logging_send_syslog_msg(qcom_time_daemon_t)
 
-#TODO : Need to remove this line
-#       after fixing all permission issues
-permissive   qcom_time_daemon_t;

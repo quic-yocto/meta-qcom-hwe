@@ -15,6 +15,7 @@ init_daemon_domain(qcom_adsprpcd_t, qcom_adsprpcd_exec_t)
 
 allow qcom_adsprpcd_t self:unix_dgram_socket { create_socket_perms };
 qcom_adsp_secure_read_device(qcom_adsprpcd_t);
+dev_read_system_dmabuf(qcom_cdsprpcd_t)
 
 init_search_runtime(qcom_adsprpcd_t)
 logging_send_syslog_msg(qcom_adsprpcd_t)

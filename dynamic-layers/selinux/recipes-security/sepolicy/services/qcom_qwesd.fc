@@ -1,0 +1,11 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#qwesd executable will have:
+#label: system_u:object_r:qcom_qwesd_exec_t
+
+/usr/bin/qwesd -- gen_context(system_u:object_r:qcom_qwesd_exec_t,s0)
+/run/qwes(/.*)? gen_context(system_u:object_r:qcom_qwesd_run_t,s0)
+/run/qwes/qwes_ipc gen_context(system_u:object_r:qcom_qwesd_run_t,s0)
+/etc/initscripts/qwes_license_store  -- gen_context(system_u:object_r:qcom_qwes_license_store_setup_exec_t,s0)
+/var/cache/qwes(/.*)? gen_context(system_u:object_r:qcom_var_cache_qwes_t,s0)

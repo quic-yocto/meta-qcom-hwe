@@ -2,3 +2,28 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 ## <summary>time_daemon</summary>
+
+########################################
+## <summary>
+##       Read, write and manage time data files
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to manage time data
+##    files. These files are time services related
+##    files.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_time_data_files',`
+    gen_require(`
+        type qcom_time_data_t;
+    ')
+    manage_dirs_pattern($1, qcom_time_data_t, qcom_time_data_t)
+    manage_files_pattern($1, qcom_time_data_t, qcom_time_data_t)
+')

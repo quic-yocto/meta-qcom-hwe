@@ -22,17 +22,18 @@ SRC_URI += "file://0070-PENDING-allow-logging-domains-to-execute-busybox.patch \
 #Policy folders
 SRC_URI += "file://apps/ \
             file://kernel/ \
-	    file://roles/ \
-	    file://services/ \
-	    file://system/ \
+            file://roles/ \
+            file://services/ \
+            file://system/ \
             file://admin/ \
-	    file://target/ \
+            file://target/ \
 "
 
 #enable test sepolicy
 ENABLE_TEST_SEPOLICY ?= "y"
 SRC_URI += "\
-	   ${@bb.utils.contains('ENABLE_TEST_SEPOLICY', 'y', 'file://test/', '', d)} \
+            ${@bb.utils.contains('ENABLE_TEST_SEPOLICY', 'y', 'file://test/', '', d)} \
+            file://0999-Move-root-user-to-unconfined-context.patch \
 "
 
 EXTRA_OEMAKE += "tc_usrsbindir=${STAGING_SBINDIR_NATIVE}"

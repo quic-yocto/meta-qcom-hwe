@@ -1,0 +1,23 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_loadalgo,1.0)
+
+########################################
+#
+# Declarations
+
+
+type qcom_loadalgo_t;
+type qcom_loadalgo_exec_t;
+
+application_domain(qcom_loadalgo_t, qcom_loadalgo_exec_t)
+
+qcom_cdsp_secure_read_device(qcom_loadalgo_t);
+dev_read_system_dmabuf(qcom_loadalgo_t)
+qcom_membuf_rw(qcom_loadalgo_t);
+qcom_allow_smcinvoke_rw(qcom_loadalgo_t);
+qcom_mem_buf_vm_rw(qcom_loadalgo_t);
+
+init_search_runtime(qcom_loadalgo_t)
+logging_send_syslog_msg(qcom_loadalgo_t)

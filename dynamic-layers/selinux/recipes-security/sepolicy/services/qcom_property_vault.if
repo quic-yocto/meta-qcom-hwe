@@ -39,8 +39,27 @@ interface(`qcom_connect_to_property_vault',`
 interface(`qcom_property_vault_service_get_status',`
     gen_require(`
         type qcom_property_vault_exec_t ;
-    ')
+        class service status;
+       ')
     allow $1 qcom_property_vault_exec_t:service { status };
+')
+
+########################################
+## <summary>
+##       Add rules to get status of property_vault service
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_property_vault_service_admin',`
+    gen_require(`
+        type qcom_property_vault_exec_t ;
+        class service {start stop status };
+       ')
+    allow $1 qcom_property_vault_exec_t:service { status start stop };
 ')
 
 ########################################

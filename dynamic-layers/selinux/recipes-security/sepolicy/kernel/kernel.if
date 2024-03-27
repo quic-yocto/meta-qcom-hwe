@@ -1,0 +1,25 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+########################################
+## <summary>
+##       Add rules for interaction with debugfs
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to interact with the debug files.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_manage_debugfs',`
+    gen_require(`
+        type debugfs_t ;
+    ')
+    manage_files_pattern($1, debugfs_t, debugfs_t)
+')
+

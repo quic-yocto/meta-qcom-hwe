@@ -1,0 +1,5 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+/usr/bin/cam-server             --      gen_context(system_u:object_r:qcom_cam_server_exec_t,s0)
+/var/cache/camera(/.*)?                 gen_context(system_u:object_r:qcom_cam_server_var_t,s0)

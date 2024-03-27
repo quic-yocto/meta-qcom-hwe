@@ -1,0 +1,90 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+##########################
+## <summary>
+## policy module for qwesd service
+## </summary>
+
+########################################
+## <summary>
+##    Execute license store script
+## </summary>
+## <desc>
+##    <p>
+##    Execute license store script target for initrc_t
+##    </p>
+## </desc>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access for qwes license store script files.
+##    </summary>
+## </param>
+#
+interface(`qcom_execute_license_store_script',`
+    gen_require(`
+        type qcom_qwes_license_store_setup_exec_t;
+    ')
+
+    allow $1 qcom_qwes_license_store_setup_exec_t:file exec_file_perms;
+')
+
+########################################
+## <summary>
+##  Allow systemd initrc to get status
+##  of qwes daemon and license service
+## </summary>
+## <param name="domain">
+##  <summary>
+##      Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`qcom_qwes_service_get_status',`
+    gen_require(`
+        type qcom_qwesd_exec_t;
+        type qcom_qwes_license_store_setup_exec_t;
+        class service status;
+    ')
+    allow $1 qcom_qwesd_exec_t:service status;
+    allow $1 qcom_qwes_license_store_setup_exec_t:service status;
+')
+
+########################################
+## <summary>
+##  Allow specified domain to add files
+##  at qwes cache files.
+## </summary>
+## <param name="domain">
+##  <summary>
+##      Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`qcom_qwes_cache_manage_files',`
+    gen_require(`
+        type qcom_var_cache_qwes_t;
+    ')
+    allow $1 qcom_var_cache_qwes_t:dir manage_dir_perms;
+    allow $1 qcom_var_cache_qwes_t:file manage_file_perms;
+')
+
+########################################
+## <summary>
+##  Allow specified domain to connect to
+##  at qwes socket.
+## </summary>
+## <param name="domain">
+##  <summary>
+##      Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`qcom_connect_socket_qwes',`
+    gen_require(`
+        type qcom_qwesd_t, qcom_qwesd_run_t;
+    ')
+    allow $1 qcom_qwesd_run_t:dir search;
+    allow $1 qcom_qwesd_run_t:sock_file write;
+    allow $1 qcom_qwesd_t:unix_stream_socket connectto;
+')

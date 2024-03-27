@@ -9,7 +9,8 @@ qcom_bluetooth_manage_data_files(mount_t)
 qcom_bluetooth_manage_socket_files(mount_t)
 qcom_mounton_persist(mount_t)
 files_mounton_etc_dirs(mount_t)
-
+qcom_qwes_cache_manage_files(mount_t)
+qcom_execute_license_store_script(mount_t)
 
 allow mount_t self:capability { dac_override dac_read_search fowner  };
 logging_search_logs(mount_t)
@@ -66,3 +67,9 @@ qcom_perfhal_read_config(mount_t)
 
 modutils_read_module_config(mount_t)
 
+qcom_cam_server_rw_var(mount_t)
+
+#Addressing SSH denials
+auth_dontaudit_read_shadow(mount_t);
+auth_rw_lastlog(mount_t);
+auth_write_login_records(mount_t);

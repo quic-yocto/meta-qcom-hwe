@@ -66,3 +66,21 @@ interface(`qcom_init_manage_perf_service',`
     allow $1 qcom_perfhal_exec_t:service { start stop status };
 ')
 
+######################################
+## <summary>
+##      Allow connecting to perf hal socket
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Target domain
+##  </summary>
+## </param>
+#
+interface(`qcom_connect_perf_hal_socket',`
+    gen_require(`
+        type qcom_perfhal_t, qcom_perfhal_runtime_t;
+    ')
+    allow $1 qcom_perfhal_runtime_t:sock_file write;
+    allow $1 qcom_perfhal_t:unix_stream_socket connectto;
+')
+

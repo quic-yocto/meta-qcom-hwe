@@ -1,4 +1,4 @@
-#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 #SPDX-License-Identifier: BSD-3-Clause-Clear
 
 policy_module(qcom_loc_hal_daemon, 1.0)
@@ -25,6 +25,9 @@ rw_fifo_files_pattern(qcom_loc_hal_daemon_t, self, self);
 
 fs_search_tmpfs(qcom_loc_hal_daemon_t)
 files_read_generic_tmp_symlinks(qcom_loc_hal_daemon_t)
+
+# qwes interaction
+qcom_connect_socket_qwes(qcom_loc_hal_daemon_t)
 
 allow qcom_loc_hal_daemon_t self:process getsched;
 
