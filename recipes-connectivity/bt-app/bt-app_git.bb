@@ -4,11 +4,10 @@ DESCRIPTION = "Bluetooth application layer"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=4292e7df90538d94d0e63afec52d78301e8411e2;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/btapp \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=808a5314f33e9cb1507c0c0db102d82c15ee6f8f;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/bt_audio \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=5c924afb77845b72591a41108f98ce91ae0c1373;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/system/bt \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=5250a39cd07ffe7d8ff23909a1c90abb8e1b8c63;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/bluetooth_ext \
-           "
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=0bd2f1ee10289635ecd1cd058b3c874186d6e66f;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/btapp \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=feac37f59b09e012753bb7f4f48121619d227f2b;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/bt_audio \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=09b2d0f5ff746b9d0e7c79793af52ea5a0ecee44;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/system/bt \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=68de38ed9163e5b1764042715fad380fe8d52e36;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/bluetooth_ext"
 
 S = "${WORKDIR}/bluetooth"
 
@@ -16,7 +15,7 @@ EXTRA_OEMAKE += 'BT_SOURCE=${S}'
 
 AUTOTOOLS_SCRIPT_PATH = "${S}/btapp/bt-app"
 
-DEPENDS += "btvendorhal glib-2.0 property-vault libchrome fluoride audioroute pa-bt-audio"
+DEPENDS += "btvendorhal glib-2.0 property-vault libchrome fluoride audioroute pa-bt-audio libbsd"
 RDEPENDS:${PN} = "property-vault"
 
 CPPFLAGS:append = " -DUSE_LIBHW_AOSP -DUSE_GEN_GATT"

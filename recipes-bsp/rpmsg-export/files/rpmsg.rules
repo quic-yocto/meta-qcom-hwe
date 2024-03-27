@@ -1,0 +1,15 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+ACTION=="add", SUBSYSTEM=="rpmsg", \
+	       KERNEL=="rpmsg_ctrl[0-9]*", \
+	       ATTRS{rpmsg_name}=="modem", \
+	       RUN+="/usr/bin/rpmsgexport /dev/$name DS"
+
+SUBSYSTEM=="rpmsg", KERNEL=="rpmsg_ctrl[0-9]*", \
+		    ATTRS{rpmsg_name}=="?*", \
+		    SYMLINK+="rpmsg/$attr{rpmsg_name}/ctrl"
+SUBSYSTEM=="rpmsg", KERNEL=="rpmsg[0-9]*", \
+		    ATTR{name}=="?*", \
+		    ATTRS{rpmsg_name}=="?*", \
+		    SYMLINK+="rpmsg/$attr{rpmsg_name}/$attr{name}"

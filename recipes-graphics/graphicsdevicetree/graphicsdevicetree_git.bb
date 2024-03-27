@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=801f80980d171dd6
 
 inherit module deploy
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/graphics-devicetree.git;protocol=https;rev=393dad208f66a6852a03c8f0cd58ff066e31fdfc;branch=gfx-kernel.le.0.0.r1-rel;destsuffix=graphics-devicetree"
+SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/graphics-devicetree.git;protocol=https;rev=9fb5da72367cc6e94bd3ccfc9982150b092be325;branch=gfx-kernel.le.0.0.r1-rel;destsuffix=graphics-devicetree"
 
 S = "${WORKDIR}/graphics-devicetree"
 
@@ -18,6 +18,7 @@ do_install() {
 }
 
 do_compile() {
+    oe_runmake ${EXTRA_OEMAKE} qcs5430-graphics
     oe_runmake ${EXTRA_OEMAKE} qcm6490-graphics
     oe_runmake ${EXTRA_OEMAKE} qcs8550-graphics
 }

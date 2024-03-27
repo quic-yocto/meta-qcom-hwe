@@ -2,7 +2,10 @@ inherit autotools-brokensep pkgconfig
 
 DESCRIPTION      = "Build Android libvmmem for LE"
 LICENSE          = "BSD-3-Clause-Clear"
-LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a472ca93716d01033a"
+LIC_FILES_CHKSUM += "file://vmmem.cpp;beginline=1;endline=4;md5=e19ba7a648e00191388321a1e8a5c974 \
+                      file://vmmem_wrapper.cpp;beginline=1;endline=4;md5=e19ba7a648e00191388321a1e8a5c974 \
+                      file://include/vmmem.h;beginline=1;endline=4;md5=e19ba7a648e00191388321a1e8a5c974 \
+                      file://include/vmmem_wrapper.h;beginline=1;endline=4;md5=e19ba7a648e00191388321a1e8a5c974"
 
 SRC_URI += "git://git.codelinaro.org/clo/le/platform/system/memory/libvmmem.git;protocol=https;rev=2b88e9bc6030893b8e9b46ae85999c8de103858d;branch=kernel.apps.lnx.4.0.r1-rel;destsuffix=system/memory/libvmmem"
 

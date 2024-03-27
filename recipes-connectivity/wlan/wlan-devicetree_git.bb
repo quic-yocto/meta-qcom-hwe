@@ -4,8 +4,8 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 
 inherit module deploy
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=366a159aeed238c8b686fdc5046a5629bc064559;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/wlan-devicetree \
-            ${@bb.utils.contains('PREFERRED_PROVIDER_virtual/kernel', 'linux-kernel-qcom-rt', 'file://0001-wlan-devicetree-disable-icnss-driver.patch', '', d)}"
+SRC_URI   =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=fb53a9d3dac81e1a28a5022cc90e059967b57f8e;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/wlan-devicetree \
+	      ${@bb.utils.contains('PREFERRED_PROVIDER_virtual/kernel', 'linux-kernel-qcom-rt', 'file://0001-wlan-devicetree-disable-icnss-driver.patch', '', d)}"
 
 S = "${WORKDIR}/wlan/wlan-devicetree"
 
@@ -30,6 +30,8 @@ python get_dtbo_targets() {
                         dtbo_target = os.path.splitext(os.path.basename(f))[0]
                         d.appendVar('DTBO_TARGETS', dtbo_target + " ")
                 break
+        if 'qcm6490' in compat_machines:
+            d.appendVar('DTBO_TARGETS', 'qcs5430-wlan-rb3')
 }
 
 do_compile[prefuncs] += "get_dtbo_targets"

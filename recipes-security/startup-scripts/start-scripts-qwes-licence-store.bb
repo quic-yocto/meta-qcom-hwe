@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/qwes_license_store;beginline=5;endline=7;m
 DESCRIPTION = "Script for creating licensestore and qwes_ipc"
 
 SRC_URI += "file://qwes_license_store"
-SRC_URI += "file://create_qwes_ipc"
+SRC_URI += "file://qwesipc.conf"
 
 INITSCRIPT_NAME = "qwes-licence-store"
 
@@ -16,11 +16,11 @@ FILES:${PN} += "${sysconfdir}/initscripts/*"
 
 do_install:append() {
     install -d ${D}${sysconfdir}/initscripts
+    install -d ${D}${systemd_unitdir}/system/
 
-        install -m 0755 ${WORKDIR}/qwes_license_store ${D}${sysconfdir}/initscripts
-        install -m 0755 ${WORKDIR}/create_qwes_ipc ${D}${sysconfdir}/initscripts
-
+    install -d ${D}${sysconfdir}/tmpfiles.d/
+    install -m 0644 ${WORKDIR}/qwesipc.conf ${D}${sysconfdir}/tmpfiles.d/qwesipc.conf
+    install -m 0755 ${WORKDIR}/qwes_license_store ${D}${sysconfdir}/initscripts
 }
 
 SYSTEMD_SERVICE:${PN} = ""
-

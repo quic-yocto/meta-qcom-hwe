@@ -4,9 +4,9 @@ DESCRIPTION = "Device specific config"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/qcom-opensource/mdm-init.git;protocol=https;rev=c339907f38426a2b4e83527458e9d4a9e728c2f7;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=mdm-init \
-           file://wlan_daemon.service \
-           "
+
+SRC_URI = "git://git.codelinaro.org/clo/le/qcom-opensource/mdm-init.git;protocol=https;rev=ab9af101cfe6685095fbfe79a4641603bdfef95c;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=mdm-init"
+SRC_URI += "file://wlan_daemon.service"
 
 S = "${WORKDIR}/mdm-init"
 
@@ -26,6 +26,7 @@ FILES:${PN} += "${sysconfdir}/systemd/system/*"
 FILES:${PN} += "${base_libdir}/firmware/wlan/qca_cld/* ${sysconfdir}/init.d/* "
 
 EXTRA_OECONF += "${@oe.utils.conditional('MACHINE','qcm6490', '--enable-qcm6490=yes', '', d)}"
+EXTRA_OECONF += "${@oe.utils.conditional('MACHINE','qcs8550', '--enable-qcs8550=yes', '', d)}"
 
 SYSTEMD_AUTO_ENABLE = "enable"
 SYSTEMD_SERVICE:${PN}  = "wlan_daemon.service"

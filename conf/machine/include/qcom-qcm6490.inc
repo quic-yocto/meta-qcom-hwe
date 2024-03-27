@@ -28,10 +28,10 @@ MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
     modemmanager \
     pd-mapper \
     qrtr \
-    tqftpserv \
 "
 
 MACHINE_EXTRA_RRECOMMENDS += " \
     fastrpc \
     subsystem-ramdump \
+    securedsp-example \
 "

@@ -7,7 +7,7 @@ SRC_URI = "   file://weston.ini \
               file://weston.desktop \
               file://xwayland.weston-start \
               file://systemd-notify.weston-start \
-               git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;rev=4aea656b8f0e059cadb6313d6b82e5563542e354;branch=display.qclinux.1.0.r1-rel;destsuffix=display/vendor/qcom/opensource/display/weston"
+              git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;rev=aeb15bcde6714a385f15ebadb2458b5cdd88c779;branch=display.qclinux.1.0.r1-rel;destsuffix=display/vendor/qcom/opensource/display/weston"
 
 S = "${WORKDIR}/display/vendor/qcom/opensource/display/weston"
 

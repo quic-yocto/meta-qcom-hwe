@@ -5,18 +5,18 @@
 [Unit]
 Description=Qwesd Service
 SourcePath=/usr/bin/qwesd
-After=qseecomd.service
-Wants=qseecomd.service
+After=qteesupplicant.service sfsconfig.service
+Wants=qteesupplicant.service sfsconfig.service
 
 [Service]
-AmbientCapabilities=CAP_BLOCK_SUSPEND CAP_WAKE_ALARM
-CapabilityBoundingSet=CAP_BLOCK_SUSPEND CAP_WAKE_ALARM
+User=system
+Group=system
 Restart=always
+AmbientCapabilities=CAP_BLOCK_SUSPEND CAP_WAKE_ALARM
 RemainAfterExit=yes
-ExecStartPre=/etc/initscripts/qwes_license_store
-ExecStartPre=/etc/initscripts/create_qwes_ipc
+ExecStartPre=+/bin/sh /etc/initscripts/qwes_license_store
 ExecStart=/usr/bin/qwesd
-ExecStartPost=/bin/sh -c 'echo -n \"Qwesd Service Completed\" > /dev/kmsg'
+ExecStartPost=+/bin/sh -c 'echo -n \"Qwesd Service Completed\" > /dev/kmsg'
 
 [Install]
 WantedBy=multi-user.target

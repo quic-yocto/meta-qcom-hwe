@@ -2,7 +2,7 @@ require pulseaudio.inc
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/pulseaudio:"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/pulseaudio.git;protocol=https;rev=d999c02445ad69eb273a94b20424d5e745ee0600;branch=pulseaudio.lnx.3.0.r5-rel;destsuffix=audio/opensource/pulseaudio \
+SRC_URI = "git://git.codelinaro.org/clo/le/pulseaudio.git;protocol=https;rev=f92d8577b315c14aec42284521a0180e5545dc56;branch=pulseaudio.lnx.3.0.r5-rel;destsuffix=audio/opensource/pulseaudio \
            file://0001-client-conf-Add-allow-autospawn-for-root.patch \
            file://0002-do-not-display-CLFAGS-to-improve-reproducibility-bui.patch \
            file://0001-meson-Check-for-__get_cpuid.patch \
@@ -66,6 +66,18 @@ RDEPENDS:pulseaudio-server:append:qcm6490 = " pulseaudio-module-dbus-protocol"
 # Build the pal voiceui card on qcm6490
 EXTRA_OEMESON:append:qcm6490 = " -Dwith-pal-voiceui=${STAGING_INCDIR}/pal"
 RDEPENDS:pulseaudio-server:append:qcm6490 = " pulseaudio-module-pal-voiceui-card"
+
+# Build the pal module on qcs8550
+DEPENDS:append:qcs8550 = " pal"
+EXTRA_OEMESON:append:qcs8550 = " -Dwith-pal=${STAGING_INCDIR}/pal"
+EXTRA_OEMESON:append:qcs8550 = " -Dpal-support-card-status=false"
+EXTRA_OEMESON:append:qcs8550 = " -Dpal-support-cutils=false"
+RDEPENDS:pulseaudio-server:append:qcs8550 = " pulseaudio-module-pal-card"
+RDEPENDS:pulseaudio-server:append:qcs8550 = " pulseaudio-module-dbus-protocol"
+
+# Build the pal voiceui card on qcs8550
+EXTRA_OEMESON:append:qcs8550 = " -Dwith-pal-voiceui=${STAGING_INCDIR}/pal"
+RDEPENDS:pulseaudio-server:append:qcs8550 = " pulseaudio-module-pal-voiceui-card"
 
 FILES:${PN}-module-pal-card += "${datadir}/pulseaudio/pal"
 FILES:${PN} = "${datadir}/* ${libdir}/* ${sysconfdir}/* ${bindir}/* ${base_libdir}/* ${prefix}/libexec/"

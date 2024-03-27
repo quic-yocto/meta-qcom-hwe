@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=801f80980d171dd6
 
 DEPENDS += "linux-kernel-headers-install-native"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=3afad1f715d59f11e82e7d24ca2c437c712841f4;branch=camera-kernel.qclinux.1.0.r1-rel;destsuffix=vendor/qcom/opensource/camera-kernel"
+SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=64f2a2e9fd0ec71abae773fbdf308b4038c19452;branch=camera-kernel.qclinux.1.0.r1-rel;destsuffix=vendor/qcom/opensource/camera-kernel"
 
 S = "${WORKDIR}/vendor/qcom/opensource/camera-kernel"
 

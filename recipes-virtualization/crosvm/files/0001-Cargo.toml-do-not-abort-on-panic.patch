@@ -1,0 +1,31 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From dc9bff16b425d2d96f578fcf5a428478083e861e Mon Sep 17 00:00:00 2001
+From: Datong Liu <quic_datoliu@quicinc.com>
+Date: Wed, 6 Dec 2023 16:33:33 +0800
+Subject: [PATCH] Cargo.toml: do not abort on panic
+
+OE's rust is configured to unwind, and this setting clashes with it/
+
+Signed-off-by: Datong Liu <quic_datoliu@quicinc.com>
+---
+ Cargo.toml | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 32b18bc1d3..9ea1c0b0d8 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -10,7 +10,6 @@ name = "crosvm"
+ path = "src/main.rs"
+ 
+ [profile.release]
+-panic = 'abort'
+ opt-level = 3
+ overflow-checks = true
+ 
+-- 
+2.25.1
+

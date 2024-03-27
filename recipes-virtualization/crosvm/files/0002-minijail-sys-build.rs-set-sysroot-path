@@ -1,0 +1,31 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From 5886e89016414ca63f22db99fe781b9a91131be3 Mon Sep 17 00:00:00 2001
+From: Datong Liu <quic_datoliu@quicinc.com>
+Date: Wed, 13 Dec 2023 17:06:25 +0800
+Subject: [PATCH] minijail-sys/build.rs: set sysroot path
+
+set sysroot path to bindgen build for cross compile, if not set, will directly use host root path
+
+Signed-off-by: Datong Liu <quic_datoliu@quicinc.com>
+---
+ rust/minijail-sys/build.rs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/rust/minijail-sys/build.rs b/rust/minijail-sys/build.rs
+index 29ef8e4..20add43 100644
+--- a/rust/minijail-sys/build.rs
++++ b/rust/minijail-sys/build.rs
+@@ -102,6 +102,7 @@ fn bindings_generation(header_path: &str) -> io::Result<()> {
+         .clang_arg("-D_FILE_OFFSET_BITS=64")
+         .clang_arg("-D_LARGEFILE_SOURCE")
+         .clang_arg("-D_LARGEFILE64_SOURCE")
++        .clang_arg("--sysroot=#TO_BE_REPLACED#")
+         .generate()
+         .expect("failed to generate bindings");
+     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+-- 
+2.25.1
+

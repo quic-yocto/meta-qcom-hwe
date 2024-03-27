@@ -24,4 +24,5 @@ RDEPENDS:${PN} = "\
     bt-dlkm-kernel \
     bthost-ipc \
     btftm \
-    btdevicetree "
+    btdevicetree \
+    bluetooth-tools "

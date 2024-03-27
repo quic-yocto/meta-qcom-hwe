@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=8afb6abdac9a
 
 DEPENDS += "synx-kernel-header synx-kernel"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/eva-kernel.git;protocol=https;rev=aa5d4d1d1a91815fc0508d25b6b0e4d2523cbdd1;branch=eva-kernel.qclinux.1.0.r1-rel;destsuffix=cv/cv-kernel/eva-kernel"
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/eva-kernel.git;protocol=https;rev=76b98e39bd730d22027e1641d8a01471de280669;branch=eva-kernel.qclinux.1.0.r1-rel;destsuffix=cv/cv-kernel/eva-kernel"
 S = "${WORKDIR}/cv/cv-kernel/eva-kernel"
 
 EXTRA_OEMAKE += "INCLUDEDIR=${STAGING_DIR_TARGET}${includedir} SOURCEDIR=${WORKSPACE}"

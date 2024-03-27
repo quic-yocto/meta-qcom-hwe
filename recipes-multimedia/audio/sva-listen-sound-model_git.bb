@@ -7,7 +7,7 @@ DESCRIPTION = "sva-listen-sound-model"
 
 DEPENDS += "sva-statereorder sva-listen-sound-model-headers sva-common sva-listen-common sva-gmm sva-swmad sva-uv sva-xs sva-eai sva-eai-utils sva-kwd-enroll sva-aml sva-ml-commondwarf2 sva-ml-commondwarf2-3 sva-paramparser sva-sub-lib sva-udk"
 
-SRCREV = "c738c1a85e20a7182bab084597ae5adef2df03cd"
+SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
 
 SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
 

@@ -1,0 +1,62 @@
+From ea08e7108f623e7a0175e366c5bba22fadc30e1c Mon Sep 17 00:00:00 2001
+From: Chaitanya Saggurthi <quic_csaggurt@quicinc.com>
+Date: Fri, 22 Mar 2024 11:50:38 +0530
+Subject: [PATCH] Increase delay for probing
+
+Increase delay for min wait, min probing,
+extra probing and qrtr node.
+
+Signed-off-by: Chaitanya Saggurthi <quic_csaggurt@quicinc.com>
+---
+ src/mm-plugin-manager.c   | 7 +++----
+ src/mm-qrtr-bus-watcher.c | 2 +-
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/src/mm-plugin-manager.c b/src/mm-plugin-manager.c
+index c2438664..228c5737 100644
+--- a/src/mm-plugin-manager.c
++++ b/src/mm-plugin-manager.c
+@@ -721,16 +721,16 @@ port_context_new (MMPluginManager *self,
+ 
+ /* Time to wait for other ports to appear once the first port is exposed
+  * (needs to be > MIN_WAIT_TIME_MSECS!!) */
+-#define MIN_PROBING_TIME_MSECS 4000
++#define MIN_PROBING_TIME_MSECS 15000
+ 
+ /* Additional time to wait for other ports to appear after the last port is
+  * exposed in the system. Longer time when not using udev, as we rely on
+  * mmcli --report-kernel-event events to report new port additions, e.g.
+  * via openwrt hotplug scripts. */
+ #if defined WITH_UDEV
+-# define EXTRA_PROBING_TIME_MSECS 2000
++# define EXTRA_PROBING_TIME_MSECS 18000
+ #else
+-# define EXTRA_PROBING_TIME_MSECS 4000
++# define EXTRA_PROBING_TIME_MSECS 18000
+ #endif
+ 
+ /* The wait time we define must always be less than the probing time */
+@@ -1409,7 +1409,6 @@ device_context_run (MMPluginManager     *self,
+                                                             MM_DEVICE_PORT_RELEASED,
+                                                             G_CALLBACK (device_context_port_released),
+                                                             device_context);
+-
+     /* Set the initial waiting timeout. We don't want to probe any port before
+      * this timeout expires, so that we get as many ports added in the device
+      * as possible. If we don't do this, some plugin filters won't work properly,
+diff --git a/src/mm-qrtr-bus-watcher.c b/src/mm-qrtr-bus-watcher.c
+index de7e6ddf..e8c54c8f 100644
+--- a/src/mm-qrtr-bus-watcher.c
++++ b/src/mm-qrtr-bus-watcher.c
+@@ -132,7 +132,7 @@ handle_qrtr_node_added (QrtrBus          *qrtr_bus,
+ 
+     qrtr_node_wait_for_services (node,
+                                  services,
+-                                 1000, /* ms */
++                                 10000, /* ms */
+                                  NULL,
+                                  (GAsyncReadyCallback) qrtr_node_services_ready,
+                                  ctx);
+-- 
+2.25.1
+

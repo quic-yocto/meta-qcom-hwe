@@ -1,36 +1,33 @@
-From b31db7702f8490b3a5ea63672404e15f19f9ffc3 Mon Sep 17 00:00:00 2001
+From f66fe44f9127ed52378e8e6170cf39d739b15773 Mon Sep 17 00:00:00 2001
 From: jie zhang <quic_jiezh@quicinc.com>
-Date: Tue, 6 Feb 2024 06:15:46 -0800
+Date: Sun, 18 Feb 2024 23:44:37 -0800
 Subject: [PATCH] kgsl: Patch for AIM300 kgsl bringup
 
 In the upstream kgsl driver, as some features are not yet supported,
 we have populated this patch to support the bringing up of AIM300.
 
 Signed-off-by: jie zhang <quic_jiezh@quicinc.com>
-Change-Id: I7021890cd13caabcd01014258e38094d38bd6f75
+Change-Id: Iab08d8e51b3cf607afac1e29bbf874ab08faffb0
 ---
- adreno-gpulist.h                              |  4 +--
- .../linux/qcom-iommu-util.h                   |  2 +-
- kgsl_sharedmem.c                              | 28 +++++++++++--------
- 3 files changed, 20 insertions(+), 14 deletions(-)
+ adreno-gpulist.h                                | 1 -
+ downstream_dependencies/linux/qcom-iommu-util.h | 2 +-
+ kgsl_sharedmem.c                                | 5 ++++-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/adreno-gpulist.h b/adreno-gpulist.h
-index 2269cb6e..0ab6e25b 100644
+index 2269cb6..766517e 100644
 --- a/adreno-gpulist.h
 +++ b/adreno-gpulist.h
-@@ -2256,8 +2256,8 @@ static const struct adreno_gen7_core adreno_gpu_core_gen7_2_1 = {
+@@ -2256,7 +2256,6 @@ static const struct adreno_gen7_core adreno_gpu_core_gen7_2_1 = {
  				UINT_MAX, UINT_MAX, UINT_MAX, ANY_ID),
  		.compatible = "qcom,adreno-gpu-gen7-2-1",
  		.features = ADRENO_APRIV | ADRENO_IOCOHERENT | ADRENO_IFPC |
 -				ADRENO_CONTENT_PROTECTION | ADRENO_LPAC |
--				ADRENO_BCL | ADRENO_L3_VOTE | ADRENO_ACD |
-+				ADRENO_CONTENT_PROTECTION | ADRENO_BCL |
-+				ADRENO_L3_VOTE | ADRENO_ACD |
+ 				ADRENO_BCL | ADRENO_L3_VOTE | ADRENO_ACD |
  				ADRENO_PREEMPTION | ADRENO_DMS,
  		.gpudev = &adreno_gen7_hwsched_gpudev.base,
- 		.perfcounters = &adreno_gen7_hwsched_perfcounters,
 diff --git a/downstream_dependencies/linux/qcom-iommu-util.h b/downstream_dependencies/linux/qcom-iommu-util.h
-index 0421ba5f..7da37b03 100644
+index 0421ba5..7da37b0 100644
 --- a/downstream_dependencies/linux/qcom-iommu-util.h
 +++ b/downstream_dependencies/linux/qcom-iommu-util.h
 @@ -44,7 +44,7 @@ static inline int qcom_iommu_get_context_bank_nr(struct iommu_domain *domain)
@@ -43,51 +40,24 @@ index 0421ba5f..7da37b03 100644
  
  static inline int qcom_iommu_set_secure_vmid(struct iommu_domain *domain, enum vmid vmid)
 diff --git a/kgsl_sharedmem.c b/kgsl_sharedmem.c
-index 7a90516d..d821448b 100644
+index 7a90516..7815394 100644
 --- a/kgsl_sharedmem.c
 +++ b/kgsl_sharedmem.c
-@@ -1706,17 +1706,17 @@ static int kgsl_alloc_secure_pages(struct kgsl_device *device,
- 	return 0;
+@@ -1712,10 +1712,13 @@ static int kgsl_allocate_secure(struct kgsl_device *device,
+ 	return kgsl_alloc_secure_pages(device, memdesc, size, flags, priv);
  }
- 
--static int kgsl_allocate_secure(struct kgsl_device *device,
--		struct kgsl_memdesc *memdesc, u64 size, u64 flags, u32 priv)
--{
--	return kgsl_alloc_secure_pages(device, memdesc, size, flags, priv);
--}
--#else
--static int kgsl_allocate_secure(struct kgsl_device *device,
--		struct kgsl_memdesc *memdesc, u64 size, u64 flags, u32 priv)
--{
+ #else
++static int kgsl_alloc_pages(struct kgsl_device *device,
++		struct kgsl_memdesc *memdesc, u64 size, u64 flags, u32 priv);
++
+ static int kgsl_allocate_secure(struct kgsl_device *device,
+ 		struct kgsl_memdesc *memdesc, u64 size, u64 flags, u32 priv)
+ {
 -	return -ENODEV;
--}
-+//static int kgsl_allocate_secure(struct kgsl_device *device,
-+//		struct kgsl_memdesc *memdesc, u64 size, u64 flags, u32 priv)
-+//{
-+//	return kgsl_alloc_secure_pages(device, memdesc, size, flags, priv);
-+//}
-+//#else
-+//static int kgsl_allocate_secure(struct kgsl_device *device,
-+//		struct kgsl_memdesc *memdesc, u64 size, u64 flags, u32 priv)
-+//{
-+//	return -ENODEV;
-+//}
++	return kgsl_alloc_pages(device, memdesc, size, flags, priv);
+ }
  #endif
  
- static int kgsl_alloc_pages(struct kgsl_device *device,
-@@ -1753,6 +1753,12 @@ static int kgsl_alloc_pages(struct kgsl_device *device,
- 	return 0;
- }
- 
-+static int kgsl_allocate_secure(struct kgsl_device *device,
-+              struct kgsl_memdesc *memdesc, u64 size, u64 flags, u32 priv)
-+{
-+	return kgsl_alloc_pages(device, memdesc, size, flags, priv);
-+}
-+
- static int _kgsl_alloc_contiguous(struct device *dev,
- 		struct kgsl_memdesc *memdesc, u64 size, unsigned long attrs)
- {
 -- 
-2.43.0.174.g055bb6e996
+2.34.1
 

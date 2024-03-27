@@ -8,7 +8,7 @@ inherit meson pkgconfig gobject-introspection
 
 DEPENDS = "glib-2.0"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/mobile-broadband/libqrtr-glib.git;protocol=https;rev=7586514fbe1580e042039519bcc6dec537ded40a;branch=telephony.qclinux.0.0.r1-rel;destsuffix=mobile-broadband/libqrtr-glib"
+SRC_URI = "git://git.codelinaro.org/clo/le/mobile-broadband/libqrtr-glib.git;protocol=https;rev=7586514fbe1580e042039519bcc6dec537ded40a;branch=telephony.qclinux.0.0.r1-rel;destsuffix=mobile-broadband/libqrtr-glib"
 S = "${WORKDIR}/mobile-broadband/libqrtr-glib"
 
 EXTRA_OEMESON = " \

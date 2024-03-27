@@ -3,7 +3,7 @@ LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
 inherit module deploy
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/eva-kernel.git;protocol=https;rev=aa5d4d1d1a91815fc0508d25b6b0e4d2523cbdd1;branch=eva-kernel.qclinux.1.0.r1-rel;destsuffix=cv/cv-kernel/eva-devicetree"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/opensource/eva-kernel.git;protocol=https;rev=76b98e39bd730d22027e1641d8a01471de280669;branch=eva-kernel.qclinux.1.0.r1-rel;destsuffix=cv/cv-kernel/eva-devicetree"
 S = "${WORKDIR}/cv/cv-kernel/eva-devicetree"
 
 DTC := "${KBUILD_OUTPUT}/scripts/dtc/dtc"

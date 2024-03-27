@@ -1,7 +1,6 @@
 SUMMARY = "Group to bring Core Open Source Packages"
 LICENSE = "BSD-3-Clause"
 LICENSE += "& Qualcomm-Technologies-Inc.-Proprietary"
-
 inherit packagegroup
 
 PROVIDES = "${PACKAGES}"
@@ -16,6 +15,7 @@ PACKAGES = ' \
 '
 
 RDEPENDS:${PN} = " \
+    rpmsgexport \
     ${@oe.utils.conditional('SECCONFIG', 'True', 'sec-config', '', d)} \
     ${@oe.utils.conditional('USB', 'True', 'usb', '', d)} \
 "

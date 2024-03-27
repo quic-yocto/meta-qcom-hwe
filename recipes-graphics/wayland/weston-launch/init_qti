@@ -150,4 +150,12 @@ case "$1" in
   ;;
 esac
 
+#For drm based display driver
+vbfile=/sys/module/drm/parameters/vblankoffdelay
+if [ -w $vbfile ]; then
+    echo -1 >  $vbfile
+else
+    echo "vblankoffdelay perms doesn't exist"
+fi
+
 exit 0

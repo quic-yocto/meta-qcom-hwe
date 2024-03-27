@@ -10,7 +10,7 @@ inherit kernel
 
 COMPATIBLE_MACHINE = "(qcom)"
 
-SRC_URI += "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=53e07033f465c57fa9424207055fbfa07f7cff65;branch=kernel.qclinux.1.0.r1-rel \
+SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=ad1a409fb8c0cf4f4b1af0d490ab05c62ab4abad;branch=kernel.qclinux.1.0.r1-rel \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux.cfg', '', d)} \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux_debug.cfg', '', d)} \
            "
@@ -33,6 +33,7 @@ KERNEL_CONFIG_FRAGMENTS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'seli
 KERNEL_MODULE_AUTOLOAD += "coresight coresight-tmc coresight-funnel"
 KERNEL_MODULE_AUTOLOAD += "coresight-replicator coresight-etm4x coresight-stm"
 KERNEL_MODULE_AUTOLOAD += "coresight-cti coresight-tpdm coresight-tpda coresight-dummy"
+KERNEL_MODULE_AUTOLOAD += "coresight-remote-etm"
 KERNEL_MODULE_AUTOLOAD += "stm_core stm_p_ost stm_console stm_heartbeat stm_ftrace "
 
 # IPA

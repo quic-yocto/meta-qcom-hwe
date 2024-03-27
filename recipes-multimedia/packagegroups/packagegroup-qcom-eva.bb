@@ -4,7 +4,6 @@ inherit packagegroup
 PACKAGES = "${PN}"
 
 RDEPENDS:${PN} += " \
-    eva-kernel \
     eva-devicetree \
     "
 

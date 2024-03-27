@@ -8,7 +8,7 @@ DEPENDS = "syslog-plumber"
 DEPENDS += "protobuf"
 DEPENDS += "protobuf-native"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/sensing-hub.git;protocol=https;rev=a9309111734695faf903ff4f63b435b2a58a00ba;branch=sensors.lnx.1.0.r1-rel;destsuffix=sensors/sensing-hub"
+SRC_URI  = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/sensing-hub.git;protocol=https;rev=20081bf1c14fa83c56051165f274cbae146ca8ec;branch=sensors.lnx.1.0.r1-rel;destsuffix=sensors/sensing-hub"
 S = "${WORKDIR}/sensors/sensing-hub"
 
 EXTRA_OECONF += " --with-systemd"

@@ -15,7 +15,7 @@ set -e
 if [ -e /var/persist ]; then
     if [ ! -d /var/persist/qtee_supplicant ]; then
          echo "Creating /var/persist/qtee_supplicant"
-         mkdir /var/persist/qtee_supplicant
+         mkdir -p /var/persist/qtee_supplicant
     fi
     chmod o+rwx /var/persist/qtee_supplicant
 fi

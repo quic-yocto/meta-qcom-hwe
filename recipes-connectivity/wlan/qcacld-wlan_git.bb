@@ -8,12 +8,11 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/ISC;md5=f3b90e78ea0cffb20bf5cca
 DEPENDS += "wlan-platform"
 
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https;rev=c6ee9123e30a4a216a57067c1dcacce5903fbad2;branch=wlan-cld3.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qcacld-3.0 \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https;rev=9ce27cd37ecaf4dd07468fb49cf02890909566ff;branch=wlan-cmn.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qca-wifi-host-cmn \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/fw-api.git;protocol=https;rev=db667d4f5d40d8ebac1f7a110db94f82e849cace;branch=wlan-api.lnx.1.0.r230-rel;destsuffix=wlan/fw-api \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=ac8d6a2ef817dac15df6c408b2513ab4920bb4e3;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/platform \
-           file://qcacld-kbuild.patch \
-           "
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https;rev=2039d83f2e864e82699712ae37d2a1dfc747910b;branch=wlan-cld3.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qcacld-3.0"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https;rev=b8ef8856e5a0482f87c46acaabd6cda307dacea2;branch=wlan-cmn.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qca-wifi-host-cmn"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/fw-api.git;protocol=https;rev=fef529c133b76d92e24f560c7184421453795dc6;branch=wlan-api.lnx.1.0.r230-rel;destsuffix=wlan/fw-api"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=ac8d6a2ef817dac15df6c408b2513ab4920bb4e3;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/platform"
+SRC_URI += "file://qcacld-kbuild.patch"
 
 S = "${WORKDIR}/wlan/qcacld-3.0"
 
@@ -54,4 +53,3 @@ do_patch() {
 
 MAKE_TARGETS = "all"
 MODULES_INSTALL_TARGET = "modules_install"
-KERNEL_MODULE_AUTOLOAD += "wlan"

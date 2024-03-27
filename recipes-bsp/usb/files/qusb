@@ -36,6 +36,8 @@ A4A1: NCM;\
 90CC: DIAG,UAC2,UVC,ADB;\
 90DF: DIAG,UVC;\
 90E0: DIAG,UAC2,UVC;\
+9135: DIAG,QDSS,ADB;\
+9136: DIAG,QDSS;\
 F000: MASS_STORAGE;\
 F00E: RNDIS;\
 XX: XX;"
@@ -297,6 +299,29 @@ run_90E0() {
 	ln -s functions/ffs.diag configs/c.1/f1
 	ln -s functions/uac2.0 configs/c.1/f2
 	ln -s functions/uvc.0 configs/c.1/f3
+	usb_bind
+	cd /
+}
+
+# DIAG + QDSS + ADB
+run_9135() {
+	remove_configs
+	echo 0x9135 > idProduct
+	echo "DIAG_QDSS_ADB" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	ln -s functions/qdss.qdss configs/c.1/f2
+	ln -s functions/ffs.usb0 configs/c.1/ffs.usb0
+	usb_bind
+	cd /
+}
+
+# DIAG + QDSS
+run_9136() {
+	remove_configs
+	echo 0x9136 > idProduct
+	echo "DIAG_QDSS" > configs/c.1/strings/0x409/configuration
+	ln -s functions/ffs.diag configs/c.1/f1
+	ln -s functions/qdss.qdss configs/c.1/f2
 	usb_bind
 	cd /
 }
@@ -566,7 +591,7 @@ usb_init() {
 	mkdir functions/ffs.dun
 	mkdir functions/mass_storage.0
 	mkdir functions/ncm.0
-#	mkdir functions/qdss.qdss_sw
+	mkdir functions/qdss.qdss
 	mkdir functions/rndis.rndis
 	mkdir functions/uac2.0
 	mkdir functions/uvc.0

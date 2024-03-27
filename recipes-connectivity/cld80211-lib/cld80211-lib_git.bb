@@ -13,7 +13,7 @@ DEPENDS += "libnl"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/hardware/qcom/wlan.git;protocol=https;rev=a6d801edeb68336a2fb730c33e502c3a742327b3;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=hardware/qcom/wlan"
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/hardware/qcom/wlan.git;protocol=https;rev=a6d801edeb68336a2fb730c33e502c3a742327b3;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=hardware/qcom/wlan"
 
 S = "${WORKDIR}/hardware/qcom/wlan/cld80211-lib"
 CFLAGS += "-I ${STAGING_INCDIR}/libnl3"
