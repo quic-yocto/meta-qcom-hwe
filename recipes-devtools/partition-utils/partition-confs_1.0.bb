@@ -11,13 +11,11 @@ S = "${WORKDIR}"
 
 SRC_URI = " \
     file://generic-ufs-partitions.conf \
-    file://qcs8550-partitions.conf \
 "
 
 do_configure[noexec] = "1"
 
 PARTCONF ?= "generic-ufs-partitions.conf"
-PARTCONF:qcs8550 = "qcs8550-partitions.conf"
 
 do_compile() {
     # Generate partition.xml using gen_partition utility
