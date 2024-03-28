@@ -17,6 +17,12 @@ S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+do_install[dirs] = "${D}/var/cache/camera"
+
+pkg_postinst:${PN} () {
+    chmod 777 -R $D/var/cache/camera
+}
+
 FILES:${PN} = "\
     /usr/lib/* \
     /usr/bin/* \
