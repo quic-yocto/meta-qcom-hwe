@@ -28,7 +28,7 @@ do_install:append() {
 	# enable the service for multi-user.target
 	ln -sf ${systemd_system_unitdir}/pulseaudio.service \
 	       ${D}${systemd_system_unitdir}/multi-user.target.wants/pulseaudio.service
-	install -m 0644 ${WORKDIR}/system-${MACHINE}.pa ${D}${sysconfdir}/pulse/system.pa
+	install -m 0644 ${WORKDIR}/system-qcm6490.pa ${D}${sysconfdir}/pulse/system.pa
 
 	for i in $(find ${S}/src/pulsecore/ -type d -printf "pulsecore/%P\n"); do
 		[ -n "$(ls ${S}/src/${i}/*.h 2>/dev/null)" ] || continue
