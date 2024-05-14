@@ -109,3 +109,4 @@ EFI_LINUX_IMG ?= "linux-${MACHINE}.efi"
 KERNEL_DTBDEST = "${EFI_DTB_DIR}"
 
 CORE_IMAGE_EXTRA_INSTALL:sota += "efimount"
+IMAGE_CLASSES += "image_types_ota_sdboot"

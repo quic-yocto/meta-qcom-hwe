@@ -108,8 +108,16 @@ do_install() {
     install -Dm 0755 ${B}${EFI_UKI_PATH}/${EFI_LINUX_IMG} ${D}${EFI_UKI_PATH}/${EFI_LINUX_IMG}
 }
 
+inherit deploy
+
+do_deploy() {
+    install ${B}${EFI_UKI_PATH}/${EFI_LINUX_IMG} ${DEPLOY_DIR_IMAGE}/${EFI_LINUX_IMG}
+}
+
 FILES:${PN} = "${EFI_UKI_PATH}/${EFI_LINUX_IMG}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 SKIP_RECIPE[linux-qcom-uki] ?= "${@bb.utils.contains('KERNEL_IMAGETYPES', 'Image', '', 'systemd-boot needs uncompressed kernel image. Add "Image" to KERNEL_IMAGETYPES.', d)}"
+
+addtask deploy after do_compile
