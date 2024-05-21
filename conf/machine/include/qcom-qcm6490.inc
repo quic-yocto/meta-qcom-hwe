@@ -1,6 +1,8 @@
 SOC_FAMILY = "qcm6490"
 require conf/machine/include/qcom-common.inc
 
+require conf/machine/include/qcom-prebuilts.inc
+
 DEFAULTTUNE = "armv8-2a-crypto"
 require conf/machine/include/arm/arch-armv8-2a.inc
 
@@ -35,3 +37,6 @@ MACHINE_EXTRA_RRECOMMENDS += " \
     subsystem-ramdump \
     securedsp-example \
 "
+
+# Set prebuilt pkgs default arch
+PBT_ARCH ?= "qcm6490"

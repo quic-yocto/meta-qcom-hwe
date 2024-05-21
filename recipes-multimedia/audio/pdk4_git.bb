@@ -7,13 +7,11 @@ DESCRIPTION = "pdk4"
 
 DEPENDS += "sva-common capiv2-headers sva-ml-commondwarf sva-ml-commondwarf2 sva-ml-commondwarf2-3 sva-eai sva-eai-utils"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+PBT_ARCH = "armv8-2a"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
+SRC_URI[sha256sum] = "f41cbd22d820edf8a6cd2492961d853058735a60f9becaaa4b95f763f722db25"
 
-PREBUILT_TARBALL = "pdk4_git_armv8-2a.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

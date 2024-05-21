@@ -7,13 +7,11 @@ DESCRIPTION = "Edglite Config XML parser"
 
 DEPENDS += "pal-headers mm-audio-headers args"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+PBT_ARCH = "armv8-2a"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
+SRC_URI[sha256sum] = "0c654556c9e760ce7c013b9eab6379796a6c9134e6b61723cd3d215ab071e9c3"
 
-PREBUILT_TARBALL = "vui-interface_git_armv8-2a.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

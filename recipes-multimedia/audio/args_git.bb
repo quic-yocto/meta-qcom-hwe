@@ -9,14 +9,11 @@ DEPENDS += "glib-2.0 virtual/kernel diag diag-router"
 
 RDEPENDS:${PN} = "glib-2.0 diag diag-router"
 
+PBT_ARCH = "armv8-2a"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+SRC_URI[sha256sum] = "f637f779917e04dd5fe4f94221b2e592a7807f752b3397ec88255179f632e69b"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
-
-PREBUILT_TARBALL = "args_git_armv8-2a.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

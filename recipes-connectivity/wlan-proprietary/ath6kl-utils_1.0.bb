@@ -1,18 +1,14 @@
-inherit qprebuilt
+inherit qprebuilt pkgconfig
 
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
-DESCRIPTION = "Recipe to install video firmware files on rootfs"
+DESCRIPTION = "Qualcomm Atheros ath6kl utils."
 
-SRC_URI[sha256sum] = "9d67d147bda646ad87b4bd9a4f617588c501e17aa7acb7537074b4b0a2a9d7f1"
+DEPENDS += "diag libnl glib-2.0"
+
+SRC_URI[sha256sum] = "270b1f22782dbec36ca14e6ce3864be75937329fdd2305a2bed829540db14066"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
-
-FILES:${PN} += "/lib/firmware"
-
-INSANE_SKIP:${PN} = "arch"
-
-INHIBIT_PACKAGE_DEBUG_SPLIT = "1"

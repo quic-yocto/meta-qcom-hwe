@@ -9,14 +9,11 @@ DEPENDS += "glib-2.0 libxml2 property-vault syslog-plumber"
 
 RDEPENDS:${PN} = "property-vault"
 
+PBT_ARCH = "armv8-2a"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+SRC_URI[sha256sum] = "d6befc68db382bcc6b018e55530dbc25887b57d6d465309853e941300f013e50"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
-
-PREBUILT_TARBALL = "perf-hal_13.0_armv8-2a.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 FILES:${PN} += " /etc/*"
 FILES:${PN} += " ${libdir} ${includedir}"
