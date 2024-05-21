@@ -6,29 +6,33 @@
 # prebuilt package instead of fetching and compiling the source.
 #
 
-BB_GIT_SHALLOW = "1"
+python qprebuilt_do_unpack() {
+    src_uri = (d.getVar('SRC_URI') or "").split()
+    if len(src_uri) == 0:
+        return
 
-# Fetch only the top commit
-BB_GIT_SHALLOW_DEPTH = "1"
+    try:
+        fetcher = bb.fetch2.Fetch(src_uri, d)
+        fetcher.unpack(d.getVar('S'))
+    except bb.fetch2.BBFetchException as e:
+        bb.fatal("Bitbake Fetcher Error: " + repr(e))
+}
+do_unpack[dirs] = "${WORKDIR}"
+do_unpack[cleandirs] = "${S}"
 
-deltask do_patch
-deltask do_configure
-deltask do_compile
-deltask do_populate_lic
+do_configure[noexec] = "1"
+do_compile[noexec] = "1"
 
-addtask prepare_recipe_sysroot after do_unpack
-addtask install after do_prepare_recipe_sysroot
-
-fakeroot python do_install() {
+python qprebuilt_do_install() {
     import shutil
 
     dest = d.getVar('D')
-    tarball = d.getVar('S') +"/" + d.getVar('PREBUILT_TARBALL')
-    bb.note("Install %s" % tarball)
-    cmd = "tar -xvzf %s -C %s" % (tarball, dest)
+    src  = d.getVar('S')
+    # Copy all files into D
+    cmd = "cp -r %s/* %s" %(src, dest)
     (retval, output) = oe.utils.getstatusoutput(cmd)
     if retval:
-       bb.fatal("Errors in extracting prebuilt: %s (%s)" % ( tarball, output))
+       bb.fatal("Errors in extracting prebuilt (%s)" % output)
 
     # Install license
     licensedir = d.getVar('LICENSE_DIRECTORY')
@@ -40,5 +44,7 @@ fakeroot python do_install() {
 
     shutil.rmtree("%s/__LIC__" % dest)
 }
+
+EXPORT_FUNCTIONS do_unpack do_install
 
 INSANE_SKIP:${PN}:append = " already-stripped"
