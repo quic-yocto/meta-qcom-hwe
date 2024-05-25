@@ -7,13 +7,9 @@ DESCRIPTION = "Library and routing applications for diagnostic traffic"
 
 DEPENDS += "glib-2.0 time-genoff"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+SRC_URI[sha256sum] = "0c45c363acbf9fa32b54ec85c1975c1a6e9dbf96de4ecd0d5a567ded2f884445"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
-
-PREBUILT_TARBALL = "diag_15.0_qcm6490.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

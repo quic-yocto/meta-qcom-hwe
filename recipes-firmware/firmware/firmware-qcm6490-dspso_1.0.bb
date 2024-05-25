@@ -8,8 +8,8 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f
 QCM_DSPSO = "QCM6490_dspso"
 QCM_DSPSO_PATH = "${WORKDIR}/git/${BUILD_ID}/${BIN_PATH}"
 
-SRC_URI ="git://${CHIPCODE_SRC_URI}.git;branch=${CHIPCODE_SRC_BRANCH};protocol=https"
-SRCREV = "${CHIPCODE_SRC_REV}"
+SRC_URI ="https://${NHLOS_ARTIFACTORY}/${BUILD_ID}/${BUILD_TYPE}/${BIN_PATH}/${QCM_DSPSO}.zip"
+SRC_URI[sha256sum] = "354db0aafcabe93785b688007f54d165a5894de5a39174e5370e0847e3dad74f"
 
 python do_install() {
 
@@ -17,23 +17,8 @@ python do_install() {
     import shutil
 
     srcdir = d.getVar('QCM_DSPSO_PATH')
-    dstdir = d.getVar('S')
-
-    def find_file(root_folder, file_name):
-        for root, dir, files in os.walk(root_folder):
-            if file_name in files:
-                return os.path.join(root, file_name)
-        return None
-
-    dspso_files = d.getVar('QCM_DSPSO', True)
-    filename = f'{dspso_files}.zip'
-
-    zipfile = find_file(srcdir, filename)
-
-    if zipfile:
-        if os.path.exists(zipfile):
-            shutil.unpack_archive(zipfile, dstdir)
-
+    dstdir = d.getVar('WORKDIR')
+    firmware = d.getVar('QCM_DSPSO')
     # Move content into ${D}
     root = os.path.join(dstdir, firmware)
     for item in os.listdir(root):

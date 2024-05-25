@@ -7,13 +7,9 @@ DESCRIPTION = "Sensors-ship Library"
 
 DEPENDS += "glib-2.0 property-vault syslog-plumber qmi-framework diag protobuf fastrpc libdmabufheap"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+SRC_URI[sha256sum] = "2d51b468ddfe5ef2b4e266c10a95563091b85f5b5f685899198af4783ae90494"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
-
-PREBUILT_TARBALL = "sensors-ship-qti_7.0_qcm6490.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

@@ -7,13 +7,9 @@ DESCRIPTION = "Generates synx os lib"
 
 DEPENDS += "glib-2.0"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+SRC_URI[sha256sum] = "7c62c6cf36e883e47502518a36f2f803a2222ee4e37927ec79efb7a62582bb1a"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
-
-PREBUILT_TARBALL = "libos_5.0_qcm6490.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

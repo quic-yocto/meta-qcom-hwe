@@ -7,13 +7,11 @@ DESCRIPTION = "sva-ml-common"
 
 DEPENDS += "sva-common"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+PBT_ARCH = "armv8-2a"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
+SRC_URI[sha256sum] = "ba281fc47e76fb6f257057bf92a2a7dbb4f0cc4a01602c977426d7701d507884"
 
-PREBUILT_TARBALL = "sva-ml-commondwarf_git_armv8-2a.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

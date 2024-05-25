@@ -9,11 +9,8 @@ DEPENDS += "libnl diag glib-2.0 property-vault ath6kl-utils"
 
 RDEPENDS:${PN} = "property-vault"
 
+PBT_ARCH = "armv8-2a"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+SRC_URI[sha256sum] = "9e6ca6958e5cb5a56daf8c395aa01037210a4adc84ca8a10f7542a8b282d6e02"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
-
-PREBUILT_TARBALL = "ftm_1.0_armv8-2a.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"

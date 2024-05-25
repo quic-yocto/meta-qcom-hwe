@@ -5,13 +5,11 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "Bluetooth tools layer"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+PBT_ARCH = "armv8-2a"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
+SRC_URI[sha256sum] = "ff53329499d83746e62bcfd627b1e42f3ea1b66a4cf3aa523483fcf8e7255f29"
 
-PREBUILT_TARBALL = "bluetooth-tools_git_armv8-2a.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 INSANE_SKIP:${PN} += "file-rdeps"
 

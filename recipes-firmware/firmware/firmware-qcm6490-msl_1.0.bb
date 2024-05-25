@@ -6,10 +6,10 @@ LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
 QCM_FIRMWARE = "QCM6490_fw"
-QCM_FIRMWARE_PATH = "${WORKDIR}/git/${BUILD_ID}/${BIN_PATH}"
+QCM_FIRMWARE_PATH = "${WORKDIR}/git/${FW_BUILD_ID}/${FW_BIN_PATH}"
 
-SRC_URI ="git://${CHIPCODE_SRC_URI}.git;branch=${CHIPCODE_SRC_BRANCH};protocol=https"
-SRCREV = "${CHIPCODE_SRC_REV}"
+SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${QCM_FIRMWARE}.zip"
+SRC_URI[sha256sum] = "ab730c467a4e0e4c5e89da980d6e5efd1129c30993aabfcfe6a83415ef6fa7a5"
 
 python do_install() {
 
@@ -17,22 +17,9 @@ python do_install() {
     import shutil
 
     srcdir = d.getVar('QCM_FIRMWARE_PATH')
-    dstdir = d.getVar('S')
-
-    def find_file(root_folder, file_name):
-        for root, dir, files in os.walk(root_folder):
-            if file_name in files:
-                return os.path.join(root, file_name)
-        return None
+    dstdir = d.getVar('WORKDIR')
 
     firmware = d.getVar('QCM_FIRMWARE')
-    filename = f'{firmware}.zip'
-
-    zipfile = find_file(srcdir, filename)
-
-    if zipfile:
-        if os.path.exists(zipfile):
-            shutil.unpack_archive(zipfile, dstdir)
 
     # Move content into ${D}
     root = os.path.join(dstdir, firmware)

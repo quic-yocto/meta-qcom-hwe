@@ -7,13 +7,9 @@ DESCRIPTION = "libsdmextension Library"
 
 DEPENDS += "display-hal-linux jsoncpp glib-2.0 display-color-linux libdrm openssl linux-kernel-qcom-headers"
 
-SRCREV = "dc86a7a99d1bbfca29591ad6e18102c92a1ff5cc"
+SRC_URI[sha256sum] = "994d6be49226344494fc63c23a0329aeb89851597665474214fd66e8cec5cf22"
 
-SRC_URI = "git://qpm-git.qualcomm.com/home2/git/revision-history/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts.git;protocol=https;branch=LE.QCLINUX.1.0.R1"
-
-PREBUILT_TARBALL = "display-extn-linux_git_qcm6490.tar.gz"
-
-S = "${WORKDIR}/git/apps_proc/prebuilt_HY22"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
