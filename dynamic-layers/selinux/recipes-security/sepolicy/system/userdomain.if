@@ -1,0 +1,21 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+########################################
+## <summary>
+##      Add file permissions for /run/user/root/.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+
+interface(`qcom_allow_rw_file_runtime',`
+        gen_require(`
+                type user_runtime_root_t;
+        ')
+        allow $1 user_runtime_root_t:file { rw_file_perms create unlink };
+        allow $1 user_runtime_root_t:sock_file { create_sock_file_perms unlink };
+')

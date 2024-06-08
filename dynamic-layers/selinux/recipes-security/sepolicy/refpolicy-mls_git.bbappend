@@ -17,6 +17,11 @@ SRC_URI += "file://0070-PENDING-allow-logging-domains-to-execute-busybox.patch \
             file://0078-PENDING-add-sepolicies-for-modem-manager.patch \
             file://0079-PENDING-Add-sepolicy-for-systemd-networkd-wait-online.patch \
             file://0080-PENDING-Add-sepolicy-rules-for-hostapd-hostapd_cli.patch \
+            file://0081-PENDING-SEPolicy-changes-to-allow-read-write-to-dbus-and-bl.patch \
+            file://0082-PENDING-sepolicy-for-bluez-to-access-uhid.patch \
+            file://0083-PENDING-Add-Docker-related-policies.patch \
+            file://0084-PENDING-Allow-SE-policy-read-and-write-access-to-dbu.patch \
+            file://0085-PENDING-Adding-rules-for-dnsmasq.patch \
 "
 
 #Policy folders
@@ -77,6 +82,7 @@ def test_modules_list(d):
 
     target_to_policy_map = {
         'qcm6490': ['qcm6490_test', 'qcm8550_test'],
+        'qcs9100': ['qcs9100_test'],
         'qcm8550': ['qcm6490_test', 'qcm8550_test'],
         'qcs8550': ['qcs8550_test'],
     }
@@ -91,6 +97,7 @@ def target_modules_list(d):
 
     target_to_policy_map = {
         'qcm6490': ['qcm6490', 'qcm8550'],
+        'qcs9100': ['qcs9100'],
         'qcm8550': ['qcm6490', 'qcm8550'],
         'qcs8550': ['qcs8550'],
     }

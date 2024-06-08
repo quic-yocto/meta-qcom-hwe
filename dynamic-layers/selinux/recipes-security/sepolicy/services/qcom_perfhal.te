@@ -30,6 +30,11 @@ qcom_manage_perf_data_files(qcom_perfhal_t)
 type qcom_perfhal_etc_t;
 files_type(qcom_perfhal_etc_t)
 
+#property_vault
+qcom_connect_to_property_vault(qcom_perfhal_t)
+qcom_coredump_read_write(qcom_perfhal_t)
+files_search_tmp(qcom_perfhal_t)
+
 dev_rw_sysfs(qcom_perfhal_t)
 qcom_perfhal_read_config(qcom_perfhal_t)
 
@@ -39,5 +44,6 @@ dev_rw_pmqos(qcom_perfhal_t)
 
 logging_send_syslog_msg(qcom_perfhal_t)
 allow qcom_perfhal_t self:unix_stream_socket { connectto };
-allow qcom_perfhal_t self:process { getsched setsched };
+allow qcom_perfhal_t self:process { getsched setsched signal };
 allow qcom_perfhal_t self:capability sys_nice;
+

@@ -1,0 +1,13 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+selinux_set_enforce_mode(staff_t)
+dev_read_kmsg(staff_t)
+#sysadm_role_change(staff_t)
+#sudo_role_template(root,staff_r,staff_t)
+domain_role_change_exemption(staff_t)
+kernel_read_ring_buffer(staff_t)
+mls_file_read_all_levels(staff_t)
+init_unix_stream_socket_connectto(staff_t)
+init_write_runtime_files(staff_t)
+init_admin(staff_t)

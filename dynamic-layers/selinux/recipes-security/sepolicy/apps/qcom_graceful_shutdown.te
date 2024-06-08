@@ -1,0 +1,15 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_graceful_shutdown, 1.0)
+
+type qcom_graceful_shutdown_t;
+type qcom_graceful_shutdown_exec_t;
+
+init_daemon_domain(qcom_graceful_shutdown_t, qcom_graceful_shutdown_exec_t)
+
+dbus_ipc(qcom_graceful_shutdown_t)
+access_bin_shell_exec(qcom_graceful_shutdown_t)
+access_init(qcom_graceful_shutdown_t)
+systemd_dbus_chat_logind(qcom_graceful_shutdown_t)
+qcom_graceful_shutdown_dbus_send_msg(qcom_graceful_shutdown_t)

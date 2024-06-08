@@ -53,6 +53,7 @@ allow qcom_qwesd_t self:fifo_file rw_fifo_file_perms;
 allow qcom_qwesd_t self:qipcrtr_socket create_socket_perms;
 allow qcom_qwesd_t self:capability2 { block_suspend wake_alarm };
 allow qcom_qwesd_t self:socket { create rw_socket_perms };
+qcom_sfs_config_trans_qtee_supplicant_persist(qcom_qwesd_t)
 #################################################################
 # Rules ending for generic permissions for qwesd.
 ##################################################################
@@ -94,6 +95,7 @@ corecmd_exec_bin(qcom_qwes_license_store_setup_t)
 core_cmd_allow_mmap_exec_shell(qcom_qwes_license_store_setup_t)
 
 # Allow read/write to persist path.
+qcom_sfs_config_trans_qtee_supplicant_persist(qcom_qwes_license_store_setup_t)
 qcom_allow_ops_qtee_supplicant_persist(qcom_qwes_license_store_setup_t)
 
 #allow qwes_license_store_setup_t init_t:unix_stream_socket ioctl;

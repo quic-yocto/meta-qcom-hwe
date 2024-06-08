@@ -1,0 +1,23 @@
+From 087db5fb27c97207cdd32dab538df45399caceb0 Mon Sep 17 00:00:00 2001
+From: Raghavender Reddy Bujala <quic_rbujala@quicinc.com>
+Date: Mon, 29 Apr 2024 14:34:12 +0530
+Subject: [PATCH] PENDING: Allow SE policy read and write access to dbus for
+ ofono service
+
+Signed-off-by: Raghavender Reddy Bujala <quic_rbujala@quicinc.com>
+---
+ policy/modules/services/dbus.te | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/policy/modules/services/dbus.te b/policy/modules/services/dbus.te
+index 2d1d09d71..9e1288b77 100644
+--- a/policy/modules/services/dbus.te
++++ b/policy/modules/services/dbus.te
+@@ -391,3 +391,4 @@ optional_policy(`
+ 
+ allow dbusd_unconfined { dbusd_session_bus_client dbusd_system_bus_client }:dbus send_msg;
+ allow dbusd_unconfined { system_dbusd_t session_bus_type }:dbus all_dbus_perms;
++init_bt_socket_manage(system_dbusd_t)
+-- 
+2.17.1
+

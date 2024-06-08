@@ -1,0 +1,25 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#######################################
+## <summary>
+##	Allow dbus IPC
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dbus_ipc',`
+	gen_require(`
+		type system_dbusd_runtime_t;
+		type system_dbusd_t;
+                class dbus {send_msg acquire_svc};
+	')
+
+	allow $1 system_dbusd_runtime_t:dir search_dir_perms;
+	allow $1 system_dbusd_runtime_t:sock_file write;
+	allow $1 system_dbusd_t:unix_stream_socket connectto;
+	allow $1 system_dbusd_t:dbus {send_msg acquire_svc};
+')

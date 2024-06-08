@@ -25,3 +25,25 @@ qcom_allow_initrc_rw(initrc_t)
 
 #allow to get status of qwes services
 qcom_qwes_service_get_status(initrc_t)
+
+#allow initrc_t to launch diag applications
+qcom_diag_domtrans(initrc_t);
+
+#allow initrc_t to communicate with kernel keyring
+mls_key_write_all_levels(initrc_t)
+kernel_view_key(initrc_t)
+kernel_write_key(initrc_t)
+kernel_setattr_key(initrc_t)
+
+#allow initrc_t to execute weston service
+qcom_weston_etc_execute(init_t)
+qcom_weston_exec_service_admin(initrc_t)
+qcom_weston_dev_socket_create_dir(initrc_t)
+qcom_weston_dev_write(initrc_t)
+qcom_weston_dev_socket_connect(initrc_t)
+
+#allow initrc_t to access Bluetooth socket files
+qcom_access_bt_socket_file(initrc_t);
+
+#allow graceful shutdown
+qcom_graceful_shutdown_dbus_send_msg(init_t)

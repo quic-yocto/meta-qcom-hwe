@@ -130,3 +130,22 @@ interface(`qcom_connect_to_btipc_snk',`
     allow $1 qcom_bluetooth_snk_ctrl_sock_t:file manage_file_perms;
     allow $1 qcom_bluetooth_t:unix_stream_socket connectto;
 ')
+
+########################################
+## <summary>
+##       Access bluetooth socket files
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+
+interface(`qcom_access_bt_socket_file',`
+    gen_require(`
+        type qcom_bluetooth_src_ctrl_sock_t;
+    ')
+
+    allow $1 qcom_bluetooth_src_ctrl_sock_t:sock_file write_sock_file_perms;
+')

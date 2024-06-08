@@ -1,0 +1,6 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+## <summary>qcs9100 target specific policies</summary>
+## <required val="true">
+##      Contains the qcs9100 specific interfaces.
+## </required>

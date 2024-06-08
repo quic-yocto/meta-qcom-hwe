@@ -1,0 +1,179 @@
+From af4c1b0d609dd2439e0f09230f7733d92ce82106 Mon Sep 17 00:00:00 2001
+From: Gargi Misra <quic_gmisra@quicinc.com>
+Date: Fri, 19 Apr 2024 11:45:30 +0530
+Subject: [PATCH] PENDING-Add Docker related policies
+
+Added Sepolicies for running docker
+
+Upstream-Status: Present (https://github.com/SELinuxProject/refpolicy/tree/main/policy/modules/services)
+
+Signed-off-by: Gargi Misra <quic_gmisra@quicinc.com>
+
+---
+ policy/modules/services/container.fc | 21 ++++++++++++++++
+ policy/modules/services/container.if | 37 ++++++++++++++++++++++++++++
+ policy/modules/services/container.te | 13 ++++++++++
+ policy/modules/services/docker.fc    | 10 ++++++++
+ policy/modules/services/docker.if    | 13 ++++++++++
+ policy/modules/services/docker.te    | 19 ++++++++++++++
+ 6 files changed, 113 insertions(+)
+ create mode 100644 policy/modules/services/container.fc
+ create mode 100644 policy/modules/services/container.if
+ create mode 100644 policy/modules/services/container.te
+ create mode 100644 policy/modules/services/docker.fc
+ create mode 100644 policy/modules/services/docker.if
+ create mode 100644 policy/modules/services/docker.te
+
+diff --git a/policy/modules/services/container.fc b/policy/modules/services/container.fc
+new file mode 100644
+index 000000000..c451333d9
+--- /dev/null
++++ b/policy/modules/services/container.fc
+@@ -0,0 +1,21 @@
++/usr/bin/crun  --      gen_context(system_u:object_r:container_engine_exec_t,s0)
++/usr/bin/runc  --      gen_context(system_u:object_r:container_engine_exec_t,s0)
++
++/usr/sbin/runc --      gen_context(system_u:object_r:container_engine_exec_t,s0)
++
++/run/containers(/.*)?          gen_context(system_u:object_r:container_runtime_t,s0)
++/run/crun(/.*)?                gen_context(system_u:object_r:container_runtime_t,s0)
++/run/libpod(/.*)?              gen_context(system_u:object_r:container_runtime_t,s0)
++/run/runc(/.*)?                gen_context(system_u:object_r:container_runtime_t,s0)
++
++/run/docker(/.*)?              gen_context(system_u:object_r:container_runtime_t,s0)
++/run/docker\.pid       --      gen_context(system_u:object_r:container_runtime_t,s0)
++/run/docker\.sock      -s      gen_context(system_u:object_r:container_runtime_t,s0)
++/run/containerd(/.*)?          gen_context(system_u:object_r:container_runtime_t,s0)
++
++/run/ipcns(/.*)?               gen_context(system_u:object_r:container_runtime_t,s0)
++/run/pidns(/.*)?               gen_context(system_u:object_r:container_runtime_t,s0)
++/run/userns(/.*)?              gen_context(system_u:object_r:container_runtime_t,s0)
++/run/utsns(/.*)?               gen_context(system_u:object_r:container_runtime_t,s0)
++
++/run/user/%{USERID}/netns(/.*)?                gen_context(system_u:object_r:container_runtime_t,s0)
+diff --git a/policy/modules/services/container.if b/policy/modules/services/container.if
+new file mode 100644
+index 000000000..5ac947f1a
+--- /dev/null
++++ b/policy/modules/services/container.if
+@@ -0,0 +1,37 @@
++## <summary>Policy for containers</summary>
++
++########################################
++## <summary>
++##      The template to define a container
++##      engine domain.
++## </summary>
++## <param name="domain_prefix">
++##      <summary>
++##      Domain prefix to be used.
++##      </summary>
++## </param>
++#
++template(`container_engine_domain_template',`
++        gen_require(`
++                attribute_role container_roles;
++                attribute container_engine_domain;
++        ')
++
++       type $1_t, container_engine_domain;
++        role container_roles types $1_t;
++        domain_type($1_t)
++        domain_subj_id_change_exemption($1_t)
++        domain_obj_id_change_exemption($1_t)
++        domain_role_change_exemption($1_t)
++
++        mls_file_read_to_clearance($1_t)
++        mls_file_write_to_clearance($1_t)
++
++        auth_use_nsswitch($1_t)
++        storage_raw_rw_fixed_disk($1_t)
++
++        optional_policy(`
++                dbus_list_system_bus_runtime($1_t)
++                dbus_system_bus_client($1_t)
++        ')
++')
+diff --git a/policy/modules/services/container.te b/policy/modules/services/container.te
+new file mode 100644
+index 000000000..d2fb3b9e0
+--- /dev/null
++++ b/policy/modules/services/container.te
+@@ -0,0 +1,13 @@
++policy_module(container, 1.0)
++
++type container_engine_t;
++type container_engine_exec_t;
++type container_runtime_t;
++
++attribute container_engine_domain;
++attribute_role container_roles;
++
++application_domain(container_engine_t, container_engine_exec_t)
++init_daemon_domain(container_engine_t, container_engine_exec_t)
++
++files_runtime_file(container_runtime_t)
+diff --git a/policy/modules/services/docker.fc b/policy/modules/services/docker.fc
+new file mode 100644
+index 000000000..6faa0b744
+--- /dev/null
++++ b/policy/modules/services/docker.fc
+@@ -0,0 +1,10 @@
++/usr/bin/docker        --      gen_context(system_u:object_r:dockerc_exec_t,s0)
++/usr/bin/dockerd       --      gen_context(system_u:object_r:dockerd_exec_t,s0)
++/usr/bin/docker-proxy  --      gen_context(system_u:object_r:dockerd_exec_t,s0)
++/usr/bin/containerd    --      gen_context(system_u:object_r:dockerd_exec_t,s0)
++/usr/bin/containerd-shim       --      gen_context(system_u:object_r:dockerd_exec_t,s0)
++/usr/bin/containerd-shim-runc-v1       --      gen_context(system_u:object_r:dockerd_exec_t,s0)
++/usr/bin/containerd-shim-runc-v2       --      gen_context(system_u:object_r:dockerd_exec_t,s0)
++/usr/bin/containerd-stress     --      gen_context(system_u:object_r:dockerd_exec_t,s0)
++/usr/sbin/dockerd      --      gen_context(system_u:object_r:dockerd_exec_t,s0)
++/usr/sbin/docker-proxy --      gen_context(system_u:object_r:dockerd_exec_t,s0)
+diff --git a/policy/modules/services/docker.if b/policy/modules/services/docker.if
+new file mode 100644
+index 000000000..73269d2b4
+--- /dev/null
++++ b/policy/modules/services/docker.if
+@@ -0,0 +1,13 @@
++## <summary>Policy for docker</summary>
++
++########################################
++## <summary>
++##      Execute docker CLI in the docker CLI domain.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed to transition.
++##      </summary>
++## </param>
++#
++
+diff --git a/policy/modules/services/docker.te b/policy/modules/services/docker.te
+new file mode 100644
+index 000000000..a2954a2c9
+--- /dev/null
++++ b/policy/modules/services/docker.te
+@@ -0,0 +1,20 @@
++policy_module(docker, 1.0)
++
++type dockerc_t;
++type dockerc_exec_t;
++type dockerd_t;
++type dockerd_exec_t;
++
++application_domain(dockerd_t, dockerd_exec_t)
++init_daemon_domain(dockerd_t, dockerd_exec_t)
++mls_trusted_object(dockerd_t)
++
++application_domain(dockerc_t, dockerc_exec_t)
++
++container_engine_domain_template(dockerd_user)
++application_domain(dockerd_user_t, dockerd_exec_t)
++mls_trusted_object(dockerd_user_t)
++
++type dockerc_user_t;
++application_domain(dockerc_user_t, dockerc_exec_t)
++init_dbus_chat(dockerd_t)
+-- 
+2.17.1
+

@@ -56,27 +56,3 @@ interface(`filetrans_var_lib',`
     ')
     filetrans_pattern($1, var_lib_t, $2, $3, $4)
 ')
-
-########################################
-## <summary>
-##       Allow sfs config to manage dirs under /var/tmp
-## </summary>
-## <desc>
-##    <p>
-##    Allow the specified domain to manage dirs
-##    under /var/tmp
-##    </p>
-## </desc>
-## <param name="domain">
-##      <summary>
-##      Domain allowed to manage.
-##      </summary>
-## </param>
-#
-interface(`tmp_dir_manage',`
-        gen_require(`
-                type tmp_t;
-        ')
-
-        allow $1 tmp_t:dir manage_dir_perms;
-')

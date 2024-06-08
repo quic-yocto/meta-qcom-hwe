@@ -1,0 +1,25 @@
+From 711c8ea98d350179048fb013492d15b2d8bb2676 Mon Sep 17 00:00:00 2001
+From: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
+Date: Wed, 13 Mar 2024 15:48:51 +0530
+Subject: [PATCH] sepolicy for bluez to access uhid
+
+Signed-off-by: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
+---
+ policy/modules/services/bluetooth.te | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/policy/modules/services/bluetooth.te b/policy/modules/services/bluetooth.te
+index 1970c719d..e1e051492 100644
+--- a/policy/modules/services/bluetooth.te
++++ b/policy/modules/services/bluetooth.te
+@@ -104,6 +104,7 @@ dev_rw_generic_usb_dev(bluetooth_t)
+ dev_read_urand(bluetooth_t)
+ dev_rw_input_dev(bluetooth_t)
+ dev_rw_wireless(bluetooth_t)
++uhid_device_rw(bluetooth_t)
+ 
+ domain_use_interactive_fds(bluetooth_t)
+ domain_dontaudit_search_all_domains_state(bluetooth_t)
+-- 
+
+

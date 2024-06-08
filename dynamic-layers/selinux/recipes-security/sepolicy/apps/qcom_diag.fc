@@ -1,0 +1,13 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#Context for the logging
+/usr/bin/diag_callback_client gen_context(system_u:object_r:qcom_diag_exec_t,s0)
+/usr/bin/diag_dci_sample      gen_context(system_u:object_r:qcom_diag_exec_t,s0)
+/usr/bin/diag_klog            gen_context(system_u:object_r:qcom_diag_exec_t,s0)
+/usr/bin/diag_mdlog           gen_context(system_u:object_r:qcom_diag_exec_t,s0)
+/usr/bin/diag_socket_log      gen_context(system_u:object_r:qcom_diag_exec_t,s0)
+/usr/bin/diag_uart_log        gen_context(system_u:object_r:qcom_diag_exec_t,s0)
+/usr/bin/diag_callback_sample gen_context(system_u:object_r:qcom_diag_exec_t,s0)
+/usr/bin/diag_dci_client      gen_context(system_u:object_r:qcom_diag_exec_t,s0)
+/var/lib/diag_logs(/.*)?      gen_context(system_u:object_r:qcom_diag_logs_t,s0)

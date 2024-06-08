@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 ## <summary>qcom_mountpoints </summary>
@@ -45,42 +45,6 @@ interface(`qcom_persist_dir_read',`
 
 ########################################
 ## <summary>
-##      manage qcom_persist folder
-## </summary>
-## <param name="domain">
-##      <summary>
-##      Domain allowed to manage dir
-##      </summary>
-## </param>
-#
-interface(`qcom_persist_dir_manage',`
-        gen_require(`
-                type qcom_persist_t;
-        ')
-
-        allow $1 qcom_persist_t:dir manage_dir_perms;
-')
-
-########################################
-## <summary>
-##      manage files in qcom_persist folder
-## </summary>
-## <param name="domain">
-##      <summary>
-##      Domain allowed to manage files
-##      </summary>
-## </param>
-#
-interface(`qcom_persist_files_manage',`
-        gen_require(`
-                type qcom_persist_t;
-        ')
-
-        allow $1 qcom_persist_t:file manage_file_perms;
-')
-
-########################################
-## <summary>
 ##      this interface will mount qcom_persist
 ##      to be call only with mount_t
 ##      made for moduler compatablity
@@ -120,4 +84,29 @@ interface(`qcom_coredump_read_write',`
 
         allow $1 var_coredump_t:dir manage_dir_perms;
         allow $1 var_coredump_t:file manage_file_perms;
+')
+
+########################################
+## <summary>
+##      Relabel context for files and folders created
+##      in /var/persist
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain wants to relabel objects
+##      </summary>
+## </param>
+## <param name="domain">
+##      <summary>
+##      Domain to relabel objects
+##      </summary>
+## </param>
+##
+#
+interface(`qcom_persist_filetrans',`
+        gen_require(`
+                type qcom_persist_t;
+        ')
+
+        filetrans_pattern($1, qcom_persist_t, $2, { file dir })
 ')

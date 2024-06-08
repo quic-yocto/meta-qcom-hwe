@@ -14,7 +14,7 @@
 #
 interface(`qcom_init_manage_cam_service_admin',`
     gen_require(`
-        type qcom_cam_server_t;
+        type qcom_cam_server_exec_t;
         class service { start stop status };
     ')
 
@@ -59,4 +59,21 @@ interface(`qcom_cam_server_rw_var',`
     ')
     allow $1 qcom_cam_server_var_t:dir { manage_dir_perms };
     allow $1 qcom_cam_server_var_t:file { manage_file_perms };
+')
+
+########################################
+## <summary>
+##       Add rules to allow cam-server fd usage
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_cam_server_fd_use',`
+    gen_require(`
+        type qcom_cam_server_t ;
+    ')
+    allow $1 qcom_cam_server_t:fd use;
 ')

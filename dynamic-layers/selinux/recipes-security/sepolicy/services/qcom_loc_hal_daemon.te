@@ -46,11 +46,16 @@ kernel_read_vm_overcommit_sysctl(qcom_loc_hal_daemon_t)
 #wpa-supplicant interaction
 networkmanager_dgram_send(qcom_loc_hal_daemon_t)
 
+# access to coredump directory - /var/coredump
+qcom_coredump_read_write(qcom_loc_hal_daemon_t)
+
 ## Context for /tmp/wpa_ctrl_* sock files created by calls to wpa_ctrl_open
 networkmanager_tmp_filetrans(qcom_loc_hal_daemon_t)
 
 # communicate with self and location daemons
 allow qcom_loc_hal_daemon_t self:unix_dgram_socket sendto;
-qcom_loc_launcherdaemon_unix_dgram_sendto(qcom_loc_hal_daemon_t, {qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t })
+qcom_loc_launcherdaemon_unix_dgram_sendto(qcom_loc_hal_daemon_t, {qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t qcom_blpsvc_t })
 
 qcom_connect_to_property_vault(qcom_loc_hal_daemon_t)
+
+miscfiles_read_localization(qcom_loc_hal_daemon_t)

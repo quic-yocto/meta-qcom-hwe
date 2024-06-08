@@ -27,6 +27,7 @@ interface(`qcom_loc_locclient_generic_rules',`
     qcom_loc_read_loc_data_files($1);
     qcom_loc_read_loc_etc_files($1);
     manage_sock_files_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t);
+    manage_lnk_files_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t);
     dgram_send_pattern($1, qcom_loc_sock_t, qcom_loc_sock_t, qcom_loc_hal_daemon_t);
     allow qcom_loc_hal_daemon_t $1:unix_dgram_socket sendto;
 ')

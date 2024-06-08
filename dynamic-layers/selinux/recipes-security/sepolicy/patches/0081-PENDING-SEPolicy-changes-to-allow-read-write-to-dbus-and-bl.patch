@@ -1,0 +1,40 @@
+From 9fc876aee9178344a919e60db2bce954fa8a2935 Mon Sep 17 00:00:00 2001
+From: Naga Bhavani Akella <quic_nakella@quicinc.com>
+Date: Thu, 21 Mar 2024 14:35:05 +0530
+Subject: [PATCH] SE Policy changes to allow read, write to dbus and
+ bluetoothctl unix stream socket
+
+Signed-off-by: Naga Bhavani Akella <quic_nakella@quicinc.com>
+---
+ policy/modules/services/bluetooth.fc | 1 +
+ policy/modules/services/bluetooth.if | 3 +++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/policy/modules/services/bluetooth.fc b/policy/modules/services/bluetooth.fc
+index e167e93f7..63aca2268 100644
+--- a/policy/modules/services/bluetooth.fc
++++ b/policy/modules/services/bluetooth.fc
+@@ -7,6 +7,7 @@
+ 
+ /usr/bin/blue.*pin	--	gen_context(system_u:object_r:bluetooth_helper_exec_t,s0)
+ /usr/bin/bluetoothd	--	gen_context(system_u:object_r:bluetooth_exec_t,s0)
++/usr/bin/bluetoothctl  --      gen_context(system_u:object_r:bluetooth_exec_t,s0)
+ /usr/bin/dund	--	gen_context(system_u:object_r:bluetooth_exec_t,s0)
+ /usr/bin/hciattach	--	gen_context(system_u:object_r:bluetooth_exec_t,s0)
+ /usr/bin/hcid	--	gen_context(system_u:object_r:bluetooth_exec_t,s0)
+diff --git a/policy/modules/services/bluetooth.if b/policy/modules/services/bluetooth.if
+index 98057b221..ef7baca69 100644
+--- a/policy/modules/services/bluetooth.if
++++ b/policy/modules/services/bluetooth.if
+@@ -82,6 +82,9 @@ interface(`bluetooth_stream_connect',`
+ 
+ 	files_search_runtime($1)
+ 	allow $1 bluetooth_t:socket rw_socket_perms;
++	allow $1 bluetooth_t:bluetooth_socket rw_socket_perms;
++	allow $1 bluetooth_t:unix_stream_socket { accept connectto listen rw_socket_perms };
++	allow $1 bluetooth_t:fd use;
+ 	stream_connect_pattern($1, bluetooth_runtime_t, bluetooth_runtime_t, bluetooth_t)
+ ')
+ 
+-- 
+

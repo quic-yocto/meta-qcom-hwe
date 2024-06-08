@@ -1,0 +1,41 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+########################################
+## <summary>
+##      Read files in bin directories.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`corecmd_exec_bin_files',`
+        gen_require(`
+                 type bin_t;
+        ')
+
+        allow $1 bin_t:file exec_file_perms;
+')
+
+########################################
+## <summary>
+##	Allow access to bin directories and execute shell.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`access_bin_shell_exec', `
+	gen_require(`
+		type bin_t;
+                type shell_exec_t;
+	')
+
+	allow $1 bin_t:lnk_file read;
+        allow $1 shell_exec_t:file exec_file_perms;
+        exec_files_pattern($1,bin_t,bin_t)
+')

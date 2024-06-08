@@ -5,23 +5,3 @@
 ##      Contains the qcm6490 specific interfaces.
 ## </required>
 
-########################################
-## <summary>
-##	Allow caller to modify coresight nodes.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_rw_qcom_coresight',`
-	gen_require(`
-		type qcom_coresight_t;
-	')
-
-	rw_files_pattern($1, qcom_coresight_t, qcom_coresight_t)
-	read_lnk_files_pattern($1, qcom_coresight_t, qcom_coresight_t)
-
-	list_dirs_pattern($1, qcom_coresight_t, qcom_coresight_t)
-')

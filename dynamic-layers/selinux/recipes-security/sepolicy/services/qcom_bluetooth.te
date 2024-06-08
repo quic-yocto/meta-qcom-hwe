@@ -70,6 +70,12 @@ manage_sock_files_pattern(qcom_bluetooth_t, bluetooth_conf_t, bluetooth_conf_t)
 
 allow qcom_bluetooth_t self:tcp_socket { read write create connect getattr setopt name_connect getopt shutdown bind name_bind node_bind listen};
 
+# access to coredump directory - /var/coredump
+qcom_coredump_read_write({ qcom_bluetooth_t qcom_bluetooth_exec_t })
+
+# read zoneinfo
+miscfiles_read_localization(qcom_bluetooth_t)
+
 corenet_tcp_bind_generic_node(qcom_bluetooth_t)
 corenet_tcp_bind_all_unreserved_ports(qcom_bluetooth_t)
 

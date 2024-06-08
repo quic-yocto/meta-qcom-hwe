@@ -1,0 +1,50 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>qcom_diag daemon</summary>
+
+########################################
+## <summary>
+##      Launch qcom_diag daemons in qcom_diag context
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_diag_domtrans',`
+    gen_require(`
+        type qcom_diag_t;
+        type qcom_diag_exec_t;
+        type qcom_diag_logs_t;
+    ')
+    domtrans_pattern($1, qcom_diag_exec_t, qcom_diag_t)
+    filetrans_var_lib($1, qcom_diag_logs_t, dir, "diag_logs")
+')
+
+########################################
+## <summary>
+##    manage log files in /var/lib
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to create log
+##    files in /var/lib
+##    </p>
+## </desc>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access for diag log files.
+##    </summary>
+## </param>
+#
+interface(`qcom_diag_logs_manage',`
+    gen_require(`
+        type qcom_diag_t, qcom_diag_logs_t;
+   ')
+    allow $1 qcom_diag_logs_t:dir manage_dir_perms;
+    allow $1 qcom_diag_logs_t:file manage_file_perms;
+    search_var_lib($1)
+')
+

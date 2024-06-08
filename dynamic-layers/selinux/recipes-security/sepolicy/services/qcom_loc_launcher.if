@@ -123,6 +123,7 @@ interface(`qcom_loc_manage_loc_data_files',`
     allow $1 var_lib_t:dir search_dir_perms;
     manage_dirs_pattern($1, qcom_loc_data_t, qcom_loc_data_t)
     manage_files_pattern($1, qcom_loc_data_t, qcom_loc_data_t)
+    manage_sock_files_pattern($1, qcom_loc_data_t, qcom_loc_data_t)
 ')
 
 ########################################
@@ -267,7 +268,7 @@ interface(`qcom_loc_interact_with_loclauncher',`
 #
 interface(`qcom_loc_launcherdaemon_unix_dgram_sendto',`
     gen_require(`
-        type qcom_loc_launcher_t, qcom_xtwifi_agent_t, qcom_xtwifi_client_t, qcom_xtra_daemon_t, qcom_edgnss_daemon_t, qcom_lowi_server_t;
+        type qcom_loc_launcher_t, qcom_xtwifi_agent_t, qcom_xtwifi_client_t, qcom_xtra_daemon_t, qcom_edgnss_daemon_t, qcom_lowi_server_t, qcom_blpsvc_t;
     ')
     allow $1 $2:unix_dgram_socket sendto;
 ')

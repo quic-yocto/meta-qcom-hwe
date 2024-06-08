@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 ########################################
@@ -35,6 +35,7 @@ interface(`core_cmd_allow_mmap_exec_shell',`
 ##      </summary>
 ## </param>
 #
+
 interface(`qcom_allow_initrc_rw',`
     gen_require(`
         type initrc_tmp_t, initrc_t ;
@@ -42,4 +43,100 @@ interface(`qcom_allow_initrc_rw',`
     allow $1 initrc_tmp_t:dir { create rw_dir_perms };
     allow $1 initrc_tmp_t:sock_file { manage_sock_file_perms };
     allow $1 initrc_t:unix_stream_socket connectto;
+')
+
+########################################
+## <summary>
+##	Send messages to initrc_t unix datagram sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`initrc_dgram_send',`
+    gen_require(`
+        type initrc_t;
+    ')
+
+    allow $1 initrc_t:unix_dgram_socket sendto;
+')
+
+########################################
+## <summary>
+##      Allow ioctl initrc_devpts_t chr_file
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Source domain
+##	</summary>
+## </param>
+#
+interface(`init_ioctl_file',`
+	gen_require(`
+		type initrc_devpts_t;
+	')
+
+	allow $1 initrc_devpts_t:chr_file { ioctl };
+')
+
+########################################
+## <summary>
+##      Allow access to init.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`access_init',`
+        gen_require(`
+                type init_runtime_t;
+                type init_t;
+                class dbus {send_msg acquire_svc};
+        ')
+
+        allow $1 init_runtime_t:dir search_dir_perms;
+        allow $1 init_t:dir search_dir_perms;
+        allow $1 init_t:dbus send_msg;
+        allow $1 init_t:lnk_file read;
+')
+
+########################################
+## <summary>
+##      Allow access to systemd units.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`access_systemd_units',`
+        gen_require(`
+                type systemd_unit_t;
+        ')
+
+        allow $1 systemd_unit_t:dir search_dir_perms;
+        allow $1 systemd_unit_t:lnk_file read;
+')
+
+########################################
+## <summary>
+##    Read, Write and manage options for bluetooth socket
+## </summary>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access.
+##    </summary>
+## </param>
+#
+
+interface(`init_bt_socket_manage',`
+        gen_require(`
+                type initrc_t;
+        ')
+        allow $1 initrc_t:bluetooth_socket { getopt read setopt write };
 ')

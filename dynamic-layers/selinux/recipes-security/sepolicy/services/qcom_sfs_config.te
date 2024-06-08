@@ -37,7 +37,8 @@ type qcom_sfs_config_initrc_exec_t;
 init_script_domain(qcom_sfs_config_initrc_t, qcom_sfs_config_initrc_exec_t)
 
 # Transition the file names for FS/SFS dirs
-qcom_sfs_config_trans_qtee_supplicant_dirs(qcom_sfs_config_initrc_t)
+qcom_sfs_config_trans_qtee_supplicant_data(qcom_sfs_config_initrc_t)
+qcom_sfs_config_trans_qtee_supplicant_persist(qcom_sfs_config_initrc_t)
 
 core_cmd_allow_mmap_exec_shell(qcom_sfs_config_initrc_t)
 
@@ -46,8 +47,6 @@ corecmd_search_bin(qcom_sfs_config_initrc_t)
 qcom_sfs_config_exec_bin_files(qcom_sfs_config_initrc_t)
 busybox_nosuid_execute(qcom_sfs_config_initrc_t)
 files_read_etc_files(qcom_sfs_config_initrc_t)
-qcom_persist_dir_manage(qcom_sfs_config_initrc_t)
-tmp_dir_manage(qcom_sfs_config_initrc_t)
 
 kernel_read_system_state(qcom_sfs_config_initrc_t)
 

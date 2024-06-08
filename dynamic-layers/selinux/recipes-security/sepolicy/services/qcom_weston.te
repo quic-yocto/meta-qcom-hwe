@@ -1,0 +1,97 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_weston, 1.0)
+type qcom_weston_t;
+type qcom_weston_exec_t;
+
+init_daemon_domain(qcom_weston_t, qcom_weston_exec_t)
+mls_file_read_all_levels(qcom_weston_t)
+
+type qcom_weston_unit_t;
+init_unit_file(qcom_weston_unit_t)
+
+type qcom_weston_tmp_t;
+type qcom_weston_etc_t;
+
+qcom_weston_etc_execute(qcom_weston_t)
+files_read_etc_files(qcom_weston_t)
+
+corecmd_exec_bin_files(qcom_weston_t)
+qcom_dev_display_getattr_device(qcom_weston_t)
+
+dev_getattr_fs(qcom_weston_t)
+
+dontaudit qcom_weston_t self:capability { setuid sys_admin } ;
+allow qcom_weston_t self:capability { net_admin sys_nice sys_tty_config chown fowner fsetid dac_read_search kill dac_override } ;
+allow qcom_weston_t self:process { getsched signal setsched } ;
+allow qcom_weston_t self:fifo_file { getattr open read write ioctl };
+allow qcom_weston_t self:netlink_kobject_uevent_socket create_socket_perms;
+allow qcom_weston_t self:unix_dgram_socket { create connect write };
+allow qcom_weston_t self:unix_stream_socket rw_stream_socket_perms;
+
+busybox_nosuid_execute(qcom_weston_t)
+
+init_read_state(qcom_weston_t)
+
+qcom_getattr_sysctl_file(qcom_weston_t)
+qcom_connect_perf_hal_socket(qcom_weston_t)
+
+dev_read_sysfs(qcom_weston_t)
+dev_write_sysfs(qcom_weston_t)
+
+
+xserver_read_xkb_libs(qcom_weston_t)
+qcom_allow_map_xkb_libs(qcom_weston_t)
+
+dev_rw_dri(qcom_weston_t)
+
+qcom_dev_gpu_rw_device(qcom_weston_t)
+
+files_tmp_file(qcom_weston_tmp_t)
+files_tmp_filetrans(qcom_weston_t, qcom_weston_tmp_t, { file dir })
+allow qcom_weston_t qcom_weston_tmp_t:file manage_file_perms;
+qcom_weston_tmp_write(qcom_weston_t)
+
+udev_search_runtime(qcom_weston_t)
+udev_read_runtime_files(qcom_weston_t)
+
+#manage socket in /dev/socket/weston
+qcom_weston_dev_socket_connect(qcom_weston_t)
+
+qcom_allow_rw_file_runtime(qcom_weston_t)
+
+core_cmd_allow_mmap_exec_shell(qcom_weston_t)
+
+kernel_read_vm_overcommit_sysctl(qcom_weston_t)
+kernel_search_vm_sysctl(qcom_weston_t)
+
+dev_rw_input_dev(qcom_weston_t)
+miscfiles_read_fonts(qcom_weston_t)
+fs_getattr_xattr_fs(qcom_weston_t)
+miscfiles_read_localization(qcom_weston_t)
+kernel_read_system_state(qcom_weston_t)
+fs_rw_tmpfs_files(qcom_weston_t)
+fs_getattr_tmpfs(qcom_weston_t)
+fs_map_tmpfs_file(qcom_weston_t)
+files_list_usr(qcom_weston_t)
+files_read_usr_files(qcom_weston_t)
+
+dev_read_system_dmabuf(qcom_weston_t)
+
+kernel_read_sysctl(qcom_weston_t)
+
+init_search_runtime(qcom_weston_t)
+files_search_mnt(qcom_weston_t)
+qcom_connect_to_property_vault(qcom_weston_t)
+
+miscfiles_manage_fonts_cache(qcom_weston_t)
+
+corecmd_list_bin(qcom_weston_t)
+
+qcom_weston_script_execute(qcom_weston_t)
+logging_send_syslog_msg(qcom_weston_t)
+corecmd_dontaudit_exec_all_executables(qcom_weston_t)
+
+qcom_cam_server_fd_use(qcom_weston_t)
+permissive qcom_weston_t;

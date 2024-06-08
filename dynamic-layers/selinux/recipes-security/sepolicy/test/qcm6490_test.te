@@ -1,4 +1,4 @@
-#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 #SPDX-License-Identifier: BSD-3-Clause-Clear
 policy_module(qcm6490_test, 1.0.0)
 
@@ -12,14 +12,26 @@ gen_require(`
         type initrc_t;
         type unconfined_t;
         type qcom_sscrpcd_t;
-	type systemd_unit_t;
-    ')
-
-
-#TODO :
-#   need to remove this post fixing
-#   denials
-permissive dnsmasq_t;
+        type systemd_unit_t;
+        type  qcom_usb_t;
+        type getty_t;
+        type  etc_t;
+        type systemd_pstore_var_lib_t;
+        type chronyd_var_lib_t;
+        type system_dbusd_var_lib_t;
+        type systemd_backlight_var_lib_t;
+        type systemd_modules_load_t;
+        type kmsg_device_t;
+        type qcom_diag_t;
+        type qcom_diag_exec_t;
+        type kmod_t;
+        type kernel_t;
+        type init_t;
+        type mount_t;
+        type var_lib_t;
+        type ntp_drift_t;
+	type  udev_t;
+')
 
 # Systemd_analyze will read each services
 # system_units and status much of privilege
@@ -86,3 +98,34 @@ init_manage_all_units(initrc_t)
 #added to control start/stop/status on property-vault
 qcom_property_vault_service_admin(initrc_t)
 qcom_property_vault_service_admin(unconfined_t)
+#diag test
+domtrans_pattern(unconfined_t, qcom_diag_exec_t, qcom_diag_t)
+domtrans_pattern(initrc_t, qcom_diag_exec_t, qcom_diag_t)
+mls_file_write_all_levels(kmsg_device_t);
+
+
+
+#### For kernel module loading
+# TO-DO : need to move to respective files and need cleanup
+allow systemd_modules_load_t kernel_t:key manage_key_perms;
+allow kmod_t kernel_t:key  manage_key_perms;
+allow init_t kernel_t:key manage_key_perms;
+
+kernel_read_modprobe_sysctls(kmod_t)
+kernel_read_modprobe_sysctls(systemd_modules_load_t)
+kernel_read_modprobe_sysctls(kernel_t)
+kernel_read_modprobe_sysctls(udev_t)
+
+mls_key_write_all_levels(kmod_t)
+mls_key_write_all_levels(kernel_t)
+mls_key_write_all_levels(systemd_modules_load_t)
+mls_key_write_all_levels(udev_t)
+kernel_load_module(udev_t)
+relabelfrom_dirs_pattern(mount_t ,var_lib_t , {systemd_pstore_var_lib_t chronyd_var_lib_t  system_dbusd_var_lib_t systemd_backlight_var_lib_t ntp_drift_t  systemd_backlight_var_lib_t})
+
+
+
+
+## needed for serial shell
+dev_rw_kmsg(unconfined_t)
+allow getty_t self:capability2  {checkpoint_restore };

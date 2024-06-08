@@ -23,3 +23,42 @@ interface(`qcom_manage_debugfs',`
     manage_files_pattern($1, debugfs_t, debugfs_t)
 ')
 
+########################################
+## <summary>
+##      allow setattr access to the kernel key ring.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain to allow.
+##      </summary>
+## </param>
+#
+interface(`kernel_setattr_key',`
+        gen_require(`
+                type kernel_t;
+        ')
+        allow $1 kernel_t:key setattr;
+')
+
+########################################
+## <summary>
+##       Add rules for sysctl read/getattr permissions.
+## </summary>
+## <desc>
+##    <p>
+##    Allow the specified domain to search and read sysctl files.
+##    </p>
+## </desc>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_getattr_sysctl_file',`
+    gen_require(`
+        type sysctl_kernel_t ;
+    ')
+     getattr_files_pattern($1, sysctl_kernel_t, sysctl_kernel_t)
+')
+

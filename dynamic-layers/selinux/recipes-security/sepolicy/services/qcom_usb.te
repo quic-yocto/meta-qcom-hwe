@@ -43,3 +43,6 @@ fs_manage_configfs_lnk_files(qcom_usb_t)
 # Allow access to etc for caching/persisting the pid info
 files_manage_etc_dirs(qcom_usb_t)
 files_manage_etc_files(qcom_usb_t)
+
+# Allow accessing stdin/out/err when using run_init
+init_use_script_ptys(qcom_usb_t)

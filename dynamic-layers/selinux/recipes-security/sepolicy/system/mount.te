@@ -11,6 +11,7 @@ qcom_mounton_persist(mount_t)
 files_mounton_etc_dirs(mount_t)
 qcom_qwes_cache_manage_files(mount_t)
 qcom_execute_license_store_script(mount_t)
+qcom_diag_logs_manage(mount_t)
 
 allow mount_t self:capability { dac_override dac_read_search fowner  };
 logging_search_logs(mount_t)
@@ -73,3 +74,8 @@ qcom_cam_server_rw_var(mount_t)
 auth_dontaudit_read_shadow(mount_t);
 auth_rw_lastlog(mount_t);
 auth_write_login_records(mount_t);
+
+systemd_backlight_dir_read(mount_t)
+
+#allow graceful shutdown
+access_systemd_units(mount_t)

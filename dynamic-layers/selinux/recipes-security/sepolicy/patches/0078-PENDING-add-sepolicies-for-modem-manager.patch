@@ -27,7 +27,7 @@ diff --git a/policy/modules/services/modemmanager.te b/policy/modules/services/m
 index deadee404..3fe1ec9b2 100644
 --- a/policy/modules/services/modemmanager.te
 +++ b/policy/modules/services/modemmanager.te
-@@ -9,19 +9,43 @@ type modemmanager_t;
+@@ -9,19 +9,45 @@ type modemmanager_t;
  type modemmanager_exec_t;
  init_daemon_domain(modemmanager_t, modemmanager_exec_t)
 
@@ -50,6 +50,7 @@ index deadee404..3fe1ec9b2 100644
  allow modemmanager_t self:fifo_file rw_fifo_file_perms;
 -allow modemmanager_t self:unix_stream_socket create_stream_socket_perms;
 +allow modemmanager_t self:unix_stream_socket { connectto create_stream_socket_perms };
++allow modemmanager_t self:netlink_route_socket  { create_netlink_socket_perms };
  allow modemmanager_t self:netlink_kobject_uevent_socket create_socket_perms;
 +allow modemmanager_t self:qipcrtr_socket { create getattr getopt read write };
 +allow modemmanager_t modemmanager_etc_t:dir manage_dir_perms;
@@ -57,6 +58,7 @@ index deadee404..3fe1ec9b2 100644
 +allow modemmanager_t modemmanager_var_log_t:file manage_file_perms;
 
  kernel_read_system_state(modemmanager_t)
++kernel_dontaudit_request_load_module(modemmanager_t)
 
 +fs_search_tmpfs(modemmanager_t)
 +

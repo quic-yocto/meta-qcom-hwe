@@ -15,3 +15,6 @@ dev_read_system_dmabuf(qcom_cdsprpcd_t)
 
 init_search_runtime(qcom_cdsprpcd_t)
 logging_send_syslog_msg(qcom_cdsprpcd_t)
+
+dev_watch_dev_dirs(qcom_cdsprpcd_t)
+libs_watch_shared_libs_dirs(qcom_cdsprpcd_t)

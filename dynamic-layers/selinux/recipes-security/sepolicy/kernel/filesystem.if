@@ -1,6 +1,42 @@
 # Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
+########################################
+## <summary>
+##      Search functionfs directories
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`fs_list_functionfs_dirs',`
+        gen_require(`
+                type functionfs_t;
+        ')
+
+        allow $1 functionfs_t:dir list_dir_perms;
+')
+
+########################################
+## <summary>
+##      Read and write functionfs files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`fs_rw_functionfs_files',`
+        gen_require(`
+                type functionfs_t;
+        ')
+
+        rw_files_pattern($1, functionfs_t, functionfs_t)
+')
+
 #######################################
 ## <summary>
 ##	Create, read, write, and unlink symbolic links
@@ -36,5 +72,23 @@ interface(`fs_mount_functionfs',`
 	')
 
 	allow $1 functionfs_t:filesystem {mount};
+')
+
+########################################
+## <summary>
+##      Map tmpfs files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`fs_map_tmpfs_file',`
+        gen_require(`
+                type tmpfs_t;
+        ')
+
+        allow $1 tmpfs_t:file map;
 ')
 

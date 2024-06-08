@@ -46,3 +46,5 @@ qcom_dev_gpu_rw_device(qcom_cam_server_t)
 
 fs_dontaudit_getattr_xattr_fs(qcom_cam_server_t)
 qcom_connect_perf_hal_socket(qcom_cam_server_t)
+
+unconfined_stream_connect(qcom_cam_server_t)

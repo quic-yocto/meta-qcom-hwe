@@ -1,0 +1,25 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>diag-router daemon</summary>
+
+####################################
+## <summary>
+##  Connect with networkmanager over
+##  a unix domain datagram socket.
+## </summary>
+## <param name="domain">
+##    <summary>
+##    Domain allowed access.
+##    </summary>
+## </param>
+#
+interface(`qcom_diag_stream_connect', `
+    gen_require(`
+        type qcom_diag-router_t;
+    ')
+
+    allow $1 qcom_diag-router_t:unix_stream_socket connectto;
+
+')
+

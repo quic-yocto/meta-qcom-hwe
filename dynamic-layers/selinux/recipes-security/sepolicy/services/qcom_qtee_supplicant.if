@@ -51,3 +51,45 @@ interface(`qcom_allow_ops_qtee_supplicant_data',`
        allow $1 qcom_qtee_supplicant_data_t:dir manage_dir_perms;
        allow $1 qcom_qtee_supplicant_data_t:file manage_file_perms;
 ')
+
+#####################
+## <summary>
+## Transition SFS sub dir in persist
+## labels
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Transition SFS sub dirs in persist
+##  created by domain to new labels
+##  </summary>
+## </param>
+#
+
+interface(`qcom_sfs_config_trans_qtee_supplicant_persist',`
+       gen_require(`
+               type qcom_qtee_supplicant_persist_t;
+       ')
+
+      qcom_persist_filetrans($1, qcom_qtee_supplicant_persist_t)
+')
+
+#####################
+## <summary>
+## Transition FS sub dir
+## labels
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Transition FS sub dirs
+##  created by domain to new labels
+##  </summary>
+## </param>
+#
+
+interface(`qcom_sfs_config_trans_qtee_supplicant_data',`
+       gen_require(`
+               type tmp_t, qcom_qtee_supplicant_data_t;
+       ')
+
+       filetrans_pattern($1, tmp_t, qcom_qtee_supplicant_data_t, { file dir })
+')

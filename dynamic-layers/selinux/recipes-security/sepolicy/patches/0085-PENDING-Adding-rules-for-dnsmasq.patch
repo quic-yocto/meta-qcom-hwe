@@ -1,0 +1,30 @@
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From 5629b730874d11261e4367e845bec944b2b8980f Mon Sep 17 00:00:00 2001
+From: Gargi Misra <quic_gmisra@quicinc.com>
+Date: Tue, 7 May 2024 10:12:41 +0530
+Subject: [PATCH] PENDING: Adding rules for dnsmasq
+
+Signed-off-by: Gargi Misra <quic_gmisra@quicinc.com>
+---
+ policy/modules/services/dnsmasq.te | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/policy/modules/services/dnsmasq.te b/policy/modules/services/dnsmasq.te
+index 0fdaaf6c6..2fe3c5cad 100644
+--- a/policy/modules/services/dnsmasq.te
++++ b/policy/modules/services/dnsmasq.te
+@@ -93,6 +93,8 @@ auth_use_nsswitch(dnsmasq_t)
+
+ logging_send_syslog_msg(dnsmasq_t)
+
++systemd_read_resolved_runtime(dnsmasq_t)
++
+ miscfiles_read_localization(dnsmasq_t)
+
+ userdom_dontaudit_use_unpriv_user_fds(dnsmasq_t)
+--
+2.17.1

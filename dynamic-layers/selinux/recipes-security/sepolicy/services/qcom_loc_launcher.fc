@@ -8,6 +8,7 @@
 /usr/bin/xtra-daemon       -- gen_context(system_u:object_r:qcom_xtra_daemon_exec_t,s0)
 /usr/bin/edgnss-daemon     -- gen_context(system_u:object_r:qcom_edgnss_daemon_exec_t,s0)
 /usr/bin/lowi-server       -- gen_context(system_u:object_r:qcom_lowi_server_exec_t,s0)
+/usr/bin/blpsvc            -- gen_context(system_u:object_r:qcom_blpsvc_exec_t,s0)
 
 ## location data files
 /var/lib/location(/.*)?             gen_context(system_u:object_r:qcom_loc_data_t,s0)
@@ -25,3 +26,6 @@
 /etc/lowi.conf      -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
 /etc/qapi.conf      -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
 /etc/xtwifi.conf    -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
+/etc/cacert_location.pem  -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
+/etc/skyhook-blp.conf -- gen_context(system_u:object_r:qcom_loc_etc_t,s0)
+

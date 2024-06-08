@@ -1,0 +1,36 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_diag, 1.0)
+
+########################################
+#
+# Declarations
+#
+
+type qcom_diag_t;
+type qcom_diag_exec_t;
+type qcom_diag_logs_t;
+
+init_system_domain(qcom_diag_t, qcom_diag_exec_t)
+files_type(qcom_diag_logs_t)
+init_read_write_getattr_chr_file(qcom_diag_t)
+allow qcom_diag_t self:capability { setuid setgid };
+allow qcom_diag_t self:capability2 block_suspend;
+allow qcom_diag_t self:process signal;
+allow qcom_diag_t self:tcp_socket { create setopt connect };
+allow qcom_diag_t self:unix_dgram_socket { create setopt connect };
+init_search_runtime(qcom_diag_t);
+init_read_write_getattr_chr_file(qcom_diag_t)
+logging_send_syslog_msg(qcom_diag_t);
+qcom_sfs_config_exec_bin_files(qcom_diag_t);
+files_read_etc_files(qcom_diag_t)
+dev_read_sysfs(qcom_diag_t);
+qcom_dev_coresight_rw_device(qcom_diag_t);
+dev_rw_qcom_coresight(qcom_diag_t);
+corenet_tcp_connect_all_unreserved_ports(qcom_diag_t)
+qcom_diag_logs_manage(qcom_diag_t);
+core_cmd_allow_mmap_exec_shell(qcom_diag_t);
+corecmd_exec_all_executables(qcom_diag_t);
+kernel_read_system_state(qcom_diag_t)
+init_ioctl_file(qcom_diag_t)

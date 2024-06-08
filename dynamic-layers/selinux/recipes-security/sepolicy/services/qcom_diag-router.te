@@ -1,0 +1,34 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_diag-router, 1.0)
+
+########################################
+#
+# Declarations
+#
+
+type qcom_diag-router_t;
+type qcom_diag-router_exec_t;
+
+init_daemon_domain(qcom_diag-router_t, qcom_diag-router_exec_t)
+
+allow qcom_diag-router_t self:qipcrtr_socket create_socket_perms;
+allow qcom_diag-router_t self:unix_stream_socket { create_stream_socket_perms sendto accept listen };
+allow qcom_diag-router_t self:netlink_kobject_uevent_socket { read bind create setopt };
+fs_manage_configfs_files(qcom_diag-router_t)
+fs_list_functionfs_dirs(qcom_diag-router_t)
+fs_rw_functionfs_files(qcom_diag-router_t)
+
+allow qcom_diag-router_t self:socket create_socket_perms;
+allow qcom_diag-router_t self:capability kill;
+allow qcom_diag-router_t self:process { signal sigkill };
+
+allow qcom_diag-router_t self:unix_dgram_socket { create connect write sendto };
+qcom_diag_stream_connect(domain)
+dev_read_sysfs(qcom_diag-router_t)
+dev_rw_qcom_coresight(qcom_diag-router_t)
+qcom_dev_coresight_rw_device(qcom_diag-router_t)
+init_search_runtime(qcom_diag-router_t)
+logging_send_syslog_msg(qcom_diag-router_t)
+

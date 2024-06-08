@@ -363,6 +363,27 @@ interface(`qcom_dev_gpu_rw_device',`
 
 ########################################
 ## <summary>
+##      Add rule for display service to connect to socket
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_weston_dev_socket_connect',`
+        gen_require(`
+                type qcom_weston_socket_dev_t;
+        ')
+        rw_chr_files_pattern($1, device_t, qcom_weston_socket_dev_t)
+        allow $1 qcom_weston_socket_dev_t:chr_file map;
+        allow $1 qcom_weston_socket_dev_t:dir manage_dir_perms;
+        allow $1 qcom_weston_socket_dev_t:file { manage_file_perms map };
+        allow $1 qcom_weston_socket_dev_t:sock_file manage_sock_file_perms;
+')
+
+########################################
+## <summary>
 ##      Read the system device.
 ## </summary>
 ## <param name="domain">
@@ -396,3 +417,95 @@ interface(`qcom_cdsp_rw', `
      allow $1 qcom_cdsp_secure_device_t:chr_file { rw_chr_file_perms };
 ')
 
+########################################
+## <summary>
+##	Allow caller to modify coresight nodes.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_rw_qcom_coresight',`
+	gen_require(`
+		type qcom_coresight_t;
+	')
+
+	rw_files_pattern($1, qcom_coresight_t, qcom_coresight_t)
+	read_lnk_files_pattern($1, qcom_coresight_t, qcom_coresight_t)
+
+	list_dirs_pattern($1, qcom_coresight_t, qcom_coresight_t)
+')
+
+########################################
+## <summary>
+##      Add rule to relabel /dev/socket/weston
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+
+interface(`qcom_weston_dev_socket_relabel',`
+        gen_require(`
+                type qcom_weston_socket_dev_t;
+        ')
+        allow $1 qcom_weston_socket_dev_t:dir relabelto;
+')
+
+########################################
+## <summary>
+##      Add allow rule for display service to create /dev/socket/weston
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+
+interface(`qcom_weston_dev_socket_create_dir',`
+        gen_require(`
+                type qcom_weston_socket_dev_t;
+        ')
+        allow $1 qcom_weston_socket_dev_t:dir manage_dir_perms;
+')
+
+########################################
+## <summary>
+##      Add allow rule for display service to read and getattr /dev/dri dir
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+
+interface(`qcom_dev_display_getattr_device',`
+        gen_require(`
+                type device_t;
+        ')
+        allow $1 device_t:dir { getattr search read };
+')
+
+########################################
+## <summary>
+##      Allow write on weston socket files
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+
+interface(`qcom_weston_dev_write',`
+        gen_require(`
+                type qcom_weston_socket_dev_t;
+        ')
+        allow $1 qcom_weston_socket_dev_t:sock_file write;
+')

@@ -1,0 +1,81 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+##########################
+## <summary>
+## policy module for weston service
+## </summary>
+
+## <summary>
+##       Add rules to allow weston service to create file in /tmp
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_weston_tmp_write',`
+    gen_require(`
+         type qcom_weston_tmp_t ;
+    ')
+
+    allow $1 qcom_weston_tmp_t:file { manage_file_perms };
+    allow $1 qcom_weston_tmp_t:dir { manage_dir_perms };
+')
+
+########################################
+## <summary>
+##       Add rules to execute weston script present in /etc.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_weston_etc_execute',`
+    gen_require(`
+         type qcom_weston_etc_t ;
+    ')
+
+    allow $1 qcom_weston_etc_t:file { getattr open read execute execute_no_trans ioctl };
+')
+
+########################################
+## <summary>
+##       Add rules to execute weston service.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_weston_exec_service_admin',`
+    gen_require(`
+         type qcom_weston_exec_t ;
+	 class service { start status stop };
+    ')
+
+	allow $1 qcom_weston_exec_t:service { start status stop };
+')
+
+########################################
+## <summary>
+##       Add rules to execute weston script present in /etc.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_weston_script_execute',`
+     gen_require(`
+           type qcom_weston_exec_t ;
+     ')
+
+     allow $1 qcom_weston_exec_t:file { getattr open read execute execute_no_trans ioctl };
+')
+

@@ -1,0 +1,9 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#allow graceful shutdown
+qcom_graceful_shutdown_dbus_send_msg(udev_t)
+
+# Allow udev_t to access configfs files and directories
+fs_manage_configfs_dirs(udev_t);
+fs_manage_configfs_files(udev_t);

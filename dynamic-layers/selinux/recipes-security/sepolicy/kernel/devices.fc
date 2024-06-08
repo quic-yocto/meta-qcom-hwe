@@ -20,8 +20,10 @@
 
 /dev/fastrpc-adsp-secure  -c    gen_context(system_u:object_r:qcom_adsp_secure_device_t,s0)
 /dev/fastrpc-cdsp-secure  -c    gen_context(system_u:object_r:qcom_cdsp_secure_device_t,s0)
+/dev/fastrpc-cdsp1-secure  -c    gen_context(system_u:object_r:qcom_cdsp_secure_device_t,s0)
 /dev/fastrpc-adsp  -c           gen_context(system_u:object_r:qcom_adsp_device_t,s0)
 /dev/fastrpc-cdsp  -c           gen_context(system_u:object_r:qcom_cdsp_device_t,s0)
+/dev/fastrpc-cdsp1  -c           gen_context(system_u:object_r:qcom_cdsp_device_t,s0)
 
 /dev/byte-cntr    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
 
@@ -51,3 +53,6 @@
 
 #gpu dev node
 /dev/kgsl-3d0   -c gen_context(system_u:object_r:qcom_gpu_device_t,s0)
+
+/dev/socket/weston      -d gen_context(system_u:object_r:qcom_weston_socket_dev_t,s0)
+

@@ -22,4 +22,5 @@ qcom_loc_create_loc_sock_dirs(systemd_tmpfiles_t)
 qcom_loc_create_loc_data_dirs(systemd_tmpfiles_t)
 
 allow systemd_modules_load_t  self:key manage_key_perms;
+kernel_read_kernel_sysctls(systemd_backlight_t)
 

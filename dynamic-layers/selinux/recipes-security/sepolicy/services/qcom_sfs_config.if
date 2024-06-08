@@ -33,31 +33,6 @@
 
 #####################
 ## <summary>
-## Transition SFS and FS sub dir
-## labels
-## </summary>
-## <param name="domain">
-##  <summary>
-##  Transition SFS and FS sub dirs
-##  created by domain to new labels
-##  </summary>
-## </param>
-#
-
-interface(`qcom_sfs_config_trans_qtee_supplicant_dirs',`
-       gen_require(`
-               type var_t;
-               type qcom_qtee_supplicant_data_t;
-               type qcom_persist_t;
-               type qcom_qtee_supplicant_persist_t;
-       ')
-
-      filetrans_pattern($1, var_t, qcom_qtee_supplicant_data_t, { file dir })
-      filetrans_pattern($1, qcom_persist_t, qcom_qtee_supplicant_persist_t, { file dir })
-')
-
-#####################
-## <summary>
 ## Allow executing bins
 ## </summary>
 ## <param name="domain">
