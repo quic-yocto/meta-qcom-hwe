@@ -1,18 +1,23 @@
-inherit qprebuilt pkgconfig
+inherit autotools-brokensep pkgconfig
 
-LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
-LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
+LICENSE = "BSD-3-Clause-Clear"
+LIC_FILES_CHKSUM = "file://ar/src/ftm_audio_main.c;beginline=12;endline=14;md5=87eab16c9af6e8f52a3a933a7537d5d9"
 
 DESCRIPTION = "Audio FTM"
 
-DEPENDS += "tinyalsa glib-2.0 agm mm-audio-headers args"
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/audio_ftm.git;protocol=https;rev=57b6741dd7987dbba5f7e078bee4b335dd70a478;branch=audio-core.lnx.1.0.r1-rel;destsuffix=audio/opensource/audio_ftm"
 
-PBT_ARCH = "armv8-2a"
+S = "${WORKDIR}/audio/opensource/audio_ftm"
 
-SRC_URI[sha256sum] = "085cd276cc6d2de30435eb61486bf427ab09f9d774ea2e3d334c56f3f9c04f72"
+DEPENDS = "tinyalsa glib-2.0 agm kvh2xml args"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+EXTRA_OECONF += " --with-glib"
 
-FILES:${PN}-dbg  = "${libdir}/.debug/* ${bindir}/.debug/*"
-FILES:${PN}      = "${libdir}/*.so ${libdir}/*.so.* ${sysconfdir}/* ${bindir}/* ${libdir}/pkgconfig/*"
-FILES:${PN}-dev  = "${libdir}/*.la ${includedir}"
+do_install:append:qcm6490() {
+    mkdir -p -m 0755 ${D}${sysconfdir}/
+    install -m 0644 ${S}/ar/config/qcm6490/* ${D}${sysconfdir}/
+}
+
+FILES:${PN}-dbg = "${libdir}/.debug/* ${bindir}/.debug/*"
+FILES:${PN} = "${libdir}/*.so ${libdir}/*.so.* ${sysconfdir}/* ${bindir}/* ${libdir}/pkgconfig/*"
+FILES:${PN}-dev = "${libdir}/*.la ${includedir}"

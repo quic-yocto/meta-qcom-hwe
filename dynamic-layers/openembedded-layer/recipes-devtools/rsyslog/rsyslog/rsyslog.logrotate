@@ -5,7 +5,8 @@
         rotate 4
         size 1G
         missingok
-        nodateext
+        dateext
+        dateformat -%Y%m%d-%H%M%S
         copytruncate
         compress
         delaycompress

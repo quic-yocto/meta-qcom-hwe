@@ -8,10 +8,10 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/ISC;md5=f3b90e78ea0cffb20bf5cca
 DEPENDS += "wlan-platform"
 
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https;rev=2039d83f2e864e82699712ae37d2a1dfc747910b;branch=wlan-cld3.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qcacld-3.0"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https;rev=b8ef8856e5a0482f87c46acaabd6cda307dacea2;branch=wlan-cmn.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qca-wifi-host-cmn"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/fw-api.git;protocol=https;rev=fef529c133b76d92e24f560c7184421453795dc6;branch=wlan-api.lnx.1.0.r230-rel;destsuffix=wlan/fw-api"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=ac8d6a2ef817dac15df6c408b2513ab4920bb4e3;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/platform"
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https;rev=42f9754f01428c46d915ce237c8425f9631cc24c;branch=wlan-cld3.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qcacld-3.0"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https;rev=a3ef326dd0bb88fbd55dac9fad7937705f66ea05;branch=wlan-cmn.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qca-wifi-host-cmn"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/fw-api.git;protocol=https;rev=3b3803f24af689d00ac6899c1eb19678e327c709;branch=wlan-api.lnx.1.0.r230-rel;destsuffix=wlan/fw-api"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=18c957733a7dfbb419c9bbf91870197997336ce1;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/platform"
 SRC_URI += "file://qcacld-kbuild.patch"
 
 S = "${WORKDIR}/wlan/qcacld-3.0"
@@ -50,6 +50,13 @@ do_patch() {
      cd ${S}
      patch -p1 < ${WORKDIR}/qcacld-kbuild.patch
 }
+
+do_install:append() {
+     mkdir -p ${D}/unstripped
+     cp ${S}/wlan.ko ${D}/unstripped/wlan.ko
+}
+
+FILES:${PN}-dbg  = "/unstripped/*"
 
 MAKE_TARGETS = "all"
 MODULES_INSTALL_TARGET = "modules_install"

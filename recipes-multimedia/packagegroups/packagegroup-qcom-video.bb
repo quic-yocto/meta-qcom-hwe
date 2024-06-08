@@ -11,4 +11,5 @@ PACKAGES = "${PN}"
 
 RDEPENDS:${PN} = " \
     qcom-video-firmware \
+    videodlkm \
 "

@@ -1,17 +1,18 @@
-inherit qprebuilt pkgconfig
+inherit autotools pkgconfig
 
-LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
-LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
+LICENSE = "BSD-3-Clause-Clear"
+LIC_FILES_CHKSUM = "file://src/VoiceUIInterface.cpp;beginline=2;endline=4;md5=18c068bf29acd853c35b2114ff818b13\
+                    file://inc/SVAExtension.h;beginline=2;endline=4;md5=5c4a16422d3dd48ea3e869f02b4e4668"
 
-DESCRIPTION = "Edglite Config XML parser"
+DESCRIPTION = "VUI Interface plugin"
 
-DEPENDS += "pal-headers mm-audio-headers args"
+SRC_URI    =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/arpal-lx.git;protocol=https;rev=b747b9fd0881fd9cb3d7a6efd6f33bb667466870;branch=audio-core.lnx.1.0.r1-rel;destsuffix=audio/opensource/arpal-lx"
 
-PBT_ARCH = "armv8-2a"
+S = "${WORKDIR}/audio/opensource/arpal-lx/plugins/vui_interface"
 
-SRC_URI[sha256sum] = "0c654556c9e760ce7c013b9eab6379796a6c9134e6b61723cd3d215ab071e9c3"
+DEPENDS = "pal-headers kvh2xml vui-interface-header audiolisten args"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+EXTRA_OECONF += "--with-glib"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

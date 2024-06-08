@@ -5,10 +5,10 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "sva-uv"
 
-DEPENDS += "sva-common sva-eai-utils sva-eai mm-audio-headers"
+DEPENDS += "sva-common sva-eai-utils sva-eai vui-interface-header"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[sha256sum] = "a68af8560bc97dd025df0a3c1ceef29f44110e8b6dfbb4347357dfab32f80acd"
+SRC_URI[sha256sum] = "444a1553f342d52627ffeda8b67b410a712f2d26ce6163d7d01284a741542cd4"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"

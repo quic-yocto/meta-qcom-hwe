@@ -7,9 +7,9 @@ DESCRIPTION = "Library and routing applications for diagnostic traffic"
 
 DEPENDS += "glib-2.0 time-genoff"
 
-SRC_URI[sha256sum] = "0c45c363acbf9fa32b54ec85c1975c1a6e9dbf96de4ecd0d5a567ded2f884445"
+SRC_URI[sha256sum] = "9bc53966ccbdd4bf3617cfed5b5fc150716a1bb7efa063831f63f85a8373b475"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

@@ -9,9 +9,9 @@ DEPENDS += "glib-2.0 virtual/kernel qmi-framework property-vault libcap"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[sha256sum] = "d5c0cbf756e58dc484d2092b9d99c5b3c244ac7bf108e8f73319a1c8753ec11c"
+SRC_URI[sha256sum] = "9cede9718e065537b46906c795512ee8afd08af8e1a6551dcb5d331e47cc7ae9"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 FILES:${PN} += "/system /data"
 FILES:${PN} += "/lib/systemd/*"

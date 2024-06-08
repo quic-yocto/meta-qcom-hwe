@@ -1,0 +1,30 @@
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From 1a9d2a7ade9b11dbf16cc3a7438226f455a6e810 Mon Sep 17 00:00:00 2001
+From: Rohit kumar <quic_rohkumar@quicinc.com>
+Date: Wed, 19 Oct 2022 17:11:24 +0530
+Subject: [PATCH] utils: tinywavinfo: Fix datatype of variable
+
+Signed-off-by: Rohit Kumar <quic_rohkumar@quicinc.com>
+---
+ utils/tinywavinfo.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/utils/tinywavinfo.c b/utils/tinywavinfo.c
+index 301f8dc..601f443 100644
+--- a/utils/tinywavinfo.c
++++ b/utils/tinywavinfo.c
+@@ -149,7 +149,7 @@ void analyse_sample(FILE *file, unsigned int channels, unsigned int bits,
+     void *buffer;
+     int size;
+     int num_read;
+-    int i;
++    unsigned int i;
+     unsigned int ch;
+     int frame_size = 1024;
+     unsigned int bytes_per_sample = 0;
+-- 
+2.25.1
+

@@ -7,9 +7,9 @@ DESCRIPTION = "securemsm-features with QseecomAPI user space library to interact
 
 DEPENDS += "libxml2 libtinyxml2 linux-kernel-qcom-headers glib-2.0 glibc libdmabufheap securemsm-headers minkipc property-vault jsoncpp qmi-framework curl"
 
-SRC_URI[sha256sum] = "2f9558b5d2046ab28764ec33ca4d90566dee6e83f972f73f2a9bed69ad63ec9e"
+SRC_URI[sha256sum] = "0f85e6106af38f6e8f6394e897672345b90f2a5d5aa912e5f6b61841a9ccb276"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

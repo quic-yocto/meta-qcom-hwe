@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 
 inherit module deploy
 
-SRC_URI   =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=fb53a9d3dac81e1a28a5022cc90e059967b57f8e;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/wlan-devicetree \
+SRC_URI   =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=059c89cde6c2cbdfc14dbc6118bbd6f85a177d9a;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/wlan-devicetree \
 	      ${@bb.utils.contains('PREFERRED_PROVIDER_virtual/kernel', 'linux-kernel-qcom-rt', 'file://0001-wlan-devicetree-disable-icnss-driver.patch', '', d)}"
 
 S = "${WORKDIR}/wlan/wlan-devicetree"
@@ -13,7 +13,7 @@ DTC := "${KBUILD_OUTPUT}/scripts/dtc/dtc"
 KERNEL_INCLUDE := "${STAGING_KERNEL_DIR}/include/"
 EXTRA_OEMAKE += "DTC='${DTC}' KERNEL_INCLUDE='${KERNEL_INCLUDE}'"
 
-COMPATIBLE_MACHINE = "qcm6490|qcs8550"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100"
 
 # The DTSO file names must start with '${COMPATIBLE_MACHINE}-'
 DTBO_TARGETS = ""

@@ -6,7 +6,7 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 FILESEXTRAPATHS:prepend := " ${THISDIR}/files:"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wpa_supplicant_8.git;protocol=https;rev=df7bfa9ffc9c9444452423ba20601cf821e8e7f1;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=wlan/wpa_supplicant_8"
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wpa_supplicant_8.git;protocol=https;rev=56a926a45edad8e7c6ee628f0aeee5876b9d50d4;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=wlan/wpa_supplicant_8"
 SRC_URI += "file://misc/"
 
 DEPENDS += "glib-2.0 dbus"

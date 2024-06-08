@@ -5,14 +5,14 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "Camx"
 
-DEPENDS += "syslog-plumber property-vault glib-2.0 gbm fastrpc"
+DEPENDS += "syslog-plumber property-vault glib-2.0 gbm fastrpc adreno"
 
 RDEPENDS:${PN} += "cameradlkm"
 
 
-SRC_URI[sha256sum] = "a4f98ea0e46d32bb5c2f092284eb8c08eb044dae53131ece13cd600be8a268b0"
+SRC_URI[sha256sum] = "6a4802bb65e8fe145e7792ab935c8a058ef402813dfe382bce76ed2dde988d4f"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

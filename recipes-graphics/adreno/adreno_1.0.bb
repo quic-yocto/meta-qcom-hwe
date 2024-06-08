@@ -9,9 +9,9 @@ DEPENDS += "wayland glib-2.0 linux-kernel-qcom-headers property-vault libdmabufh
 
 PROVIDES = "  virtual/libgles1 virtual/libgles2 virtual/egl"
 
-SRC_URI[sha256sum] = "bc60fc3de3797734638055d14c397392369d8d4d890c1b0df2988328bb04cb28"
+SRC_URI[sha256sum] = "ae3fe58fc72562da05a848d456140361482e1f49fc147400e94528145a9a3181"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

@@ -7,9 +7,9 @@ DESCRIPTION = "Securemsm library with sampleclient used to test sampleapp with q
 
 DEPENDS += "minkipc securemsm-features glib-2.0 glibc linux-kernel-qcom-headers libdmabufheap"
 
-SRC_URI[sha256sum] = "7d0935bffff0ddea95105ba30cefb32478f75c53fd854d7e6501c490d4a19a6a"
+SRC_URI[sha256sum] = "3889a165609dceba4e71a1b790783896ba9a5075a3f4dbae5e33607294750712"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

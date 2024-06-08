@@ -22,6 +22,7 @@ PULSEAUDIO_PKGS = " \
     pulseaudio-module-role-ignore \
     pulseaudio-module-pal-card \
     pulseaudio-module-pal-voiceui-card \
+    pulseaudio-module-dbus-protocol \
 "
 
 RDEPENDS:${PN}:append = ' \
@@ -32,9 +33,9 @@ RDEPENDS:${PN}:append = ' \
     pal \
     audio-ftm \
     audioroute \
-    mm-audio-headers \
     acdbdata \
     audio-node \
+    kvh2xml \
     pa-bt-audio \
     sva-capi-uv-wrapper \
     sva-cnn \

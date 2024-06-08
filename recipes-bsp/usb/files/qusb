@@ -634,8 +634,10 @@ usb_init() {
 		if [ ! -d /etc/usb/usb_pid ]; then
 			mkdir /etc/usb/
 		fi
-		echo 901D > /etc/usb/usb_pid
-		init_run_pid 901D &
+
+		# Set 9135 as the default composition
+		echo 9135 > /etc/usb/usb_pid
+		init_run_pid 9135 &
 	fi
 }
 
@@ -667,6 +669,11 @@ case "$1" in
 
     unbind )
 	usb_unbind
+	;;
+
+    rebind )
+	usb_unbind
+	usb_bind
 	;;
 
     setpid )

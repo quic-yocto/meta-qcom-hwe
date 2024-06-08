@@ -1,0 +1,190 @@
+From 7f1b9b37881e48c0807f6bec8dfd725e3f8e4118 Mon Sep 17 00:00:00 2001
+From: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
+Date: Fri, 5 Apr 2024 14:49:44 +0530
+Subject: [PATCH] Use system bus instead of session for obexd
+
+Signed-off-by: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
+Upstream-Status: Inappropriate [target specific change]
+
+---
+ obexd/client/ftp.c        |  3 ++-
+ obexd/client/map.c        |  2 +-
+ obexd/client/opp.c        |  2 +-
+ obexd/client/pbap.c       |  2 +-
+ obexd/client/session.c    |  2 +-
+ obexd/client/sync.c       |  2 +-
+ obexd/plugins/pcsuite.c   |  2 +-
+ obexd/src/manager.c       |  2 +-
+ obexd/src/obex.service.in |  6 +++++-
+ src/bluetooth.conf        | 12 ++++++++++++
+ tools/obexctl.c           |  2 +-
+ 11 files changed, 27 insertions(+), 10 deletions(-)
+
+diff --git a/obexd/client/ftp.c b/obexd/client/ftp.c
+index 160e063..f492965 100644
+--- a/obexd/client/ftp.c
++++ b/obexd/client/ftp.c
+@@ -463,7 +463,8 @@ int ftp_init(void)
+ 
+ 	DBG("");
+ 
+-	conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
++	conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
++
+ 	if (!conn)
+ 		return -EIO;
+ 
+diff --git a/obexd/client/map.c b/obexd/client/map.c
+index 74828cd..ea3d256 100644
+--- a/obexd/client/map.c
++++ b/obexd/client/map.c
+@@ -2063,7 +2063,7 @@ int map_init(void)
+ 
+ 	DBG("");
+ 
+-	conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
++	conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+ 	if (!conn)
+ 		return -EIO;
+ 
+diff --git a/obexd/client/opp.c b/obexd/client/opp.c
+index 90d0c0c..369e9e9 100644
+--- a/obexd/client/opp.c
++++ b/obexd/client/opp.c
+@@ -178,7 +178,7 @@ int opp_init(void)
+ 
+ 	DBG("");
+ 
+-	conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
++	conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+ 	if (!conn)
+ 		return -EIO;
+ 
+diff --git a/obexd/client/pbap.c b/obexd/client/pbap.c
+index 1ed8c68..3af5544 100644
+--- a/obexd/client/pbap.c
++++ b/obexd/client/pbap.c
+@@ -1302,7 +1302,7 @@ int pbap_init(void)
+ 
+ 	DBG("");
+ 
+-	conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
++	conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+ 	if (!conn)
+ 		return -EIO;
+ 
+diff --git a/obexd/client/session.c b/obexd/client/session.c
+index 7d8ebb0..884013b 100644
+--- a/obexd/client/session.c
++++ b/obexd/client/session.c
+@@ -583,7 +583,7 @@ struct obc_session *obc_session_create(const char *source,
+ 	if (driver == NULL)
+ 		return NULL;
+ 
+-	conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
++	conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+ 	if (conn == NULL)
+ 		return NULL;
+ 
+diff --git a/obexd/client/sync.c b/obexd/client/sync.c
+index 92faf44..c114789 100644
+--- a/obexd/client/sync.c
++++ b/obexd/client/sync.c
+@@ -224,7 +224,7 @@ int sync_init(void)
+ 
+ 	DBG("");
+ 
+-	conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
++	conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+ 	if (!conn)
+ 		return -EIO;
+ 
+diff --git a/obexd/plugins/pcsuite.c b/obexd/plugins/pcsuite.c
+index f5a9d9a..88f412a 100644
+--- a/obexd/plugins/pcsuite.c
++++ b/obexd/plugins/pcsuite.c
+@@ -322,7 +322,7 @@ static gboolean send_backup_dbus_message(const char *oper,
+ 
+ 	file_size = size ? *size : 0;
+ 
+-	conn = g_dbus_setup_bus(DBUS_BUS_SESSION, NULL, NULL);
++	conn = g_dbus_setup_bus(DBUS_BUS_SYSTEM, NULL, NULL);
+ 
+ 	if (conn == NULL)
+ 		return FALSE;
+diff --git a/obexd/src/manager.c b/obexd/src/manager.c
+index 01741fe..f1fa9fa 100644
+--- a/obexd/src/manager.c
++++ b/obexd/src/manager.c
+@@ -486,7 +486,7 @@ gboolean manager_init(void)
+ 
+ 	dbus_error_init(&err);
+ 
+-	connection = g_dbus_setup_bus(DBUS_BUS_SESSION, OBEXD_SERVICE, &err);
++	connection = g_dbus_setup_bus(DBUS_BUS_SYSTEM, OBEXD_SERVICE, &err);
+ 	if (connection == NULL) {
+ 		if (dbus_error_is_set(&err) == TRUE) {
+ 			fprintf(stderr, "%s\n", err.message);
+diff --git a/obexd/src/obex.service.in b/obexd/src/obex.service.in
+index fc0dce9..f691b05 100644
+--- a/obexd/src/obex.service.in
++++ b/obexd/src/obex.service.in
+@@ -1,10 +1,14 @@
+ [Unit]
+ Description=Bluetooth OBEX service
++Requires=bluetooth.service
++After=bluetooth.service
+ 
+ [Service]
+ Type=dbus
+ BusName=org.bluez.obex
+-ExecStart=@pkglibexecdir@/obexd
++ExecStart=@pkglibexecdir@/obexd -a -r /var/bluetooth
++Restart=on-failure
+ 
+ [Install]
++WantedBy=bluetooth.target
+ Alias=dbus-org.bluez.obex.service
+diff --git a/src/bluetooth.conf b/src/bluetooth.conf
+index b6c6149..f8879c8 100644
+--- a/src/bluetooth.conf
++++ b/src/bluetooth.conf
+@@ -21,10 +21,22 @@
+     <allow send_interface="org.freedesktop.DBus.ObjectManager"/>
+     <allow send_interface="org.freedesktop.DBus.Properties"/>
+     <allow send_interface="org.mpris.MediaPlayer2.Player"/>
++    <allow own="org.bluez.obex"/>
++    <allow send_destination="org.bluez.obex"/>
++    <allow send_interface="org.bluez.obex.Agent1"/>
++    <allow send_interface="org.bluez.obex.Client1"/>
++    <allow send_interface="org.bluez.obex.Session1"/>
++    <allow send_interface="org.bluez.obex.Transfer1"/>
++    <allow send_interface="org.bluez.obex.ObjectPush1"/>
++    <allow send_interface="org.bluez.obex.PhonebookAccess1"/>
++    <allow send_interface="org.bluez.obex.Synchronization1"/>
++    <allow send_interface="org.bluez.obex.MessageAccess1"/>
++    <allow send_interface="org.bluez.obex.Message1"/>
+   </policy>
+ 
+   <policy context="default">
+     <allow send_destination="org.bluez"/>
++    <allow send_destination="org.bluez.obex"/>
+   </policy>
+ 
+ </busconfig>
+diff --git a/tools/obexctl.c b/tools/obexctl.c
+index 56a7691..8678b86 100644
+--- a/tools/obexctl.c
++++ b/tools/obexctl.c
+@@ -2154,7 +2154,7 @@ int main(int argc, char *argv[])
+ 	bt_shell_set_menu(&main_menu);
+ 	bt_shell_set_prompt(PROMPT_OFF);
+ 
+-	dbus_conn = g_dbus_setup_bus(DBUS_BUS_SESSION, NULL, NULL);
++	dbus_conn = g_dbus_setup_bus(DBUS_BUS_SYSTEM, NULL, NULL);
+ 
+ 	client = g_dbus_client_new(dbus_conn, "org.bluez.obex",
+ 							"/org/bluez/obex");
+-- 
+
+

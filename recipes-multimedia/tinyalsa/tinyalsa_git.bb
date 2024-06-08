@@ -1,20 +1,19 @@
-inherit autotools pkgconfig
+inherit autotools pkgconfig cmake
 
 DESCRIPTION = "Tinyalsa Library"
 LICENSE = "BSD-3-Clause"
-LIC_FILES_CHKSUM += "file://pcm_plugin.c;beginline=3;endline=4;md5=5b09b9f05328bd4b96f81d687f178fb3 \
-                     file://include/tinyalsa/pcm_plugin.h;beginline=2;endline=3;md5=f72acfa19e2065b81d8ab6146ce138d7"
+LIC_FILES_CHKSUM = "file://NOTICE;md5=d2918795d9185efcbf430b9ad5cda46d"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/tinyalsa.git;protocol=https;rev=e64ee67638c48c268e2c35de0775cc687bc6575d;branch=audio-tinylibs.lnx.1.0.r63-rel;destsuffix=audio/opensource/tinyalsa"
+SRCREV = "f78ed25aced2dfea743867b8205a787bfb091340"
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/external/tinyalsa.git;protocol=git;branch=github/master \
+           file://0001-utils-tinywavinfo-Fix-datatype-of-variable.patch \
+           file://0001-pcm-Fix-for-mmap-usecases.patch \
+           file://0002-pcm-Add-plugin-support-for-pcm_ioctl.patch"
 
-S = "${WORKDIR}/audio/opensource/tinyalsa"
+S = "${WORKDIR}/git"
 
-PV = "1.0"
+PV = "1.1.1+git${SRCPV}"
 
 DEPENDS = "glib-2.0"
-
 EXTRA_OECONF += "--with-glib"
-
-SOLIBS = ".so"
-
-FILES_SOLIBSDEV = ""
+CFLAGS += " -fPIC -DPIC -DTINYALSA_USES_PLUGINS"

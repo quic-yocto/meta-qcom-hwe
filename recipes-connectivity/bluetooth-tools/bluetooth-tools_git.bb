@@ -1,15 +1,17 @@
-inherit qprebuilt
+inherit qprebuilt pkgconfig
 
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
 DESCRIPTION = "Bluetooth tools layer"
 
+DEPENDS += "dbus glib-2.0"
+
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[sha256sum] = "ff53329499d83746e62bcfd627b1e42f3ea1b66a4cf3aa523483fcf8e7255f29"
+SRC_URI[sha256sum] = "8f0aef751e91bc0d046e3889b99b41faa2f1b3c9947582a32e9e616b0dd5d210"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 INSANE_SKIP:${PN} += "file-rdeps"
 

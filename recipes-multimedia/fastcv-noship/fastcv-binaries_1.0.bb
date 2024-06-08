@@ -9,13 +9,9 @@ DEPENDS += "libdmabufheap syslog-plumber property-vault glib-2.0 fastrpc"
 
 RDEPENDS:${PN} += "${PN}-cpu ${PN}-dsp"
 
-SRC_URI[sha256sum] = "37523ceded3266c5c884633b3e5d1015d32b87202cbe8093b8fc819407f17361"
+SRC_URI[sha256sum] = "f8b9d696a58902ed2eef0d3f1a61bc604be929e81191139fd7311f5e43a63a1a"
 
-
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
-
-
-
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

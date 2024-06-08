@@ -9,6 +9,6 @@ DEPENDS += "sva-common sva-ml-commondwarf2"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[sha256sum] = "54ee261082f921a108ea621f201a53c737214f73ee344ed579a55d1e377ff3a4"
+SRC_URI[sha256sum] = "c50dcbac6277e5675425d5b4ce6ce4e35c2fd264fabe0c32081aa083ee83b953"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"

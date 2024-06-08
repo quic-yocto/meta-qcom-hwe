@@ -4,9 +4,11 @@ DESCRIPTION = "Build Android libdmabufheap for LE"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/system/memory/libdmabufheap.git;protocol=https;rev=37bf33001a41b66676d6d1883982f0b14583fc02;branch=memory-le-apps.lnx.1.0.r35-rel;destsuffix=system/memory/libdmabufheap"
-S = "${WORKDIR}/system/memory/libdmabufheap"
 DEPENDS += "linux-kernel-qcom-headers"
+
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/system/memory/libdmabufheap.git;protocol=https;rev=37bf33001a41b66676d6d1883982f0b14583fc02;branch=memory-le-apps.lnx.1.0.r35-rel;destsuffix=system/memory/libdmabufheap"
+
+S = "${WORKDIR}/system/memory/libdmabufheap"
 
 EXTRA_OECONF:append = " \
     --disable-static \

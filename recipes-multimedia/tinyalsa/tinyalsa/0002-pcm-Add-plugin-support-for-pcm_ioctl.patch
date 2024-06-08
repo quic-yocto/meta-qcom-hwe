@@ -1,0 +1,29 @@
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From 9ad4bdeea16455fb4cf6b949ba1b4d60d156ad91 Mon Sep 17 00:00:00 2001
+From: Rohit kumar <quic_rohkumar@quicinc.com>
+Date: Wed, 22 Nov 2023 00:17:08 +0530
+Subject: [PATCH 2/3] pcm: Add plugin support for pcm_ioctl
+
+Change-Id: Icd4a36dd89d94abd8ae172c015cbf35642e5fcbd
+Signed-off-by: Rohit Kumar <quic_rohkumar@quicinc.com>
+---
+ src/pcm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pcm.c b/src/pcm.c
+index 5a0fa08..1fe8a56 100644
+--- a/src/pcm.c
++++ b/src/pcm.c
+@@ -1808,5 +1808,5 @@ int pcm_ioctl(struct pcm *pcm, int request, ...)
+     va_end(ap);
+ 
+     // FIXME Does not handle plugins
+-    return ioctl(pcm->fd, request, arg);
++    return pcm->ops->ioctl(pcm->data, request, arg);
+ }
+-- 
+2.25.1
+

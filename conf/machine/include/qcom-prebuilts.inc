@@ -1,3 +1,3 @@
-PBT_ARTIFACTORY = "codelinaro.jfrog.io/artifactory/qli-ci/qualcomm_linux-spf-1-0-le-qclinux-1-0-r1_api-linux_history_prebuilts"
-PBT_BUILD_ID    = "r1.0_00026.0"
-PBT_BIN_PATH    = "apps_proc/prebuilt_HY22"
+PBT_ARTIFACTORY = "artifacts.codelinaro.org/artifactory/qli-ci/software/chip/qualcomm_linux-spf-1-0/qualcomm-linux-spf-1-0_test_device_public"
+PBT_BUILD_ID    = "r1.0_00035.0"
+PBT_BIN_PATH    = "le-qclinux-1-0-r1/apps_proc/prebuilt_HY22"

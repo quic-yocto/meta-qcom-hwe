@@ -1,0 +1,32 @@
+From b2a1ad72bdc9b8bace413207bc442ef832609678 Mon Sep 17 00:00:00 2001
+From: Naga Bhavani Akella <quic_nakella@quicinc.com>
+Date: Mon, 26 Feb 2024 18:29:07 +0530
+Subject: [PATCH] Bluez: unregister-includes option not working
+
+unregister includes option takes two parameters service uuid and
+included service uuid, since the space between them is missing
+the menu option is not working as intended.
+
+Signed-off-by: Naga Bhavani Akella <quic_nakella@quicinc.com>
+Upstream-Status: PENDING
+---
+ client/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/client/main.c b/client/main.c
+index 51d08a67a..c8b0f7f1c 100644
+--- a/client/main.c
++++ b/client/main.c
+@@ -3060,7 +3060,7 @@ static const struct bt_shell_menu gatt_menu = {
+ 					"Unregister application service" },
+ 	{ "register-includes", "<UUID> [handle]", cmd_register_includes,
+ 					"Register as Included service in." },
+-	{ "unregister-includes", "<Service-UUID><Inc-UUID>",
++	{ "unregister-includes", "<Service-UUID> <Inc-UUID>",
+ 			cmd_unregister_includes,
+ 				 "Unregister Included service." },
+ 	{ "register-characteristic",
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
+

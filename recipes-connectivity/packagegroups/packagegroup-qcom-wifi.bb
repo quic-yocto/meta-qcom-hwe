@@ -11,7 +11,7 @@ inherit packagegroup
 
 PACKAGES = "${PN}"
 
-RDEPENDS:${PN}:append = "tcpdump rfkill dnsmasq dhcpcd iperf2 iperf3 nftables"
+RDEPENDS:${PN}:append = "tcpdump rfkill dnsmasq dhcpcd iperf2 iperf3 nftables iputils"
 
 RDEPENDS:${PN} = " \
     wlan-conf \
@@ -22,10 +22,9 @@ RDEPENDS:${PN} = " \
     wlan-devicetree \
     kernel-module-wlan-platform \
     kernel-module-qcacld-wlan \
+    common-tools \
+    ath6kl-utils \
+    ftm \
 "
-
-RDEPENDS:${PN}:append = "\
-	common-tools \
-	ath6kl-utils \
-	ftm \
-	"
+# qcs9100 support is not available.
+RDEPENDS:${PN}:remove:qcs9100 = "wlan-devicetree"

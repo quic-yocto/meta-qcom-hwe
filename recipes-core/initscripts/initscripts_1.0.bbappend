@@ -13,7 +13,7 @@ SRC_URI:append = " \
     file://debug-config.service \
 "
 
-do_install:append() {
+do_install:append:qcom() {
     install -d ${D}${systemd_unitdir}/system/
     install -d ${D}${systemd_unitdir}/system/multi-user.target.wants/
     install -d ${D}${systemd_unitdir}/system/ffbm.target.wants/

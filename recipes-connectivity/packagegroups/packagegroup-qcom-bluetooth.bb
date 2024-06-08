@@ -26,3 +26,13 @@ RDEPENDS:${PN} = "\
     btftm \
     btdevicetree \
     bluetooth-tools "
+
+##### bbappended from meta-qti-bt-prop #####
+LICENSE = "Qualcomm-Technologies-Inc.-Proprietary"
+
+BTVENDORPROP ?= 'False'
+
+RDEPENDS:${PN} += " \
+    ${@oe.utils.conditional('BTVENDORPROP', 'True', 'qesl-ap', '', d)} \
+    ${@oe.utils.conditional('BTVENDORPROP', 'True', 'qesl-me', '', d)} \
+"

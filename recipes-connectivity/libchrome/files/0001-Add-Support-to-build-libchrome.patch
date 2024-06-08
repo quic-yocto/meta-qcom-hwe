@@ -1,4 +1,4 @@
-From a53483bf9b003db5a3357a3c9079f14f71f8912b Mon Sep 17 00:00:00 2001
+From 125e2f6b4d9dff7f70101e5e28c9642996b9f536 Mon Sep 17 00:00:00 2001
 From: Lakshmi Pola <ppriyank@codeaurora.org>
 Date: Thu, 27 Jun 2019 11:25:36 +0530
 Subject: [PATCH] meta-qti-bt
@@ -24,7 +24,7 @@ Change-Id: Icd8e74ad5848d05e772d0e232f66fffcf9caa7f0
 
 diff --git a/Makefile.am b/Makefile.am
 new file mode 100644
-index 000000000..bcbb6d59f
+index 0000000000..b253331653
 --- /dev/null
 +++ b/Makefile.am
 @@ -0,0 +1,372 @@
@@ -235,8 +235,8 @@ index 000000000..bcbb6d59f
 +libchrome_la_CPPFLAGS += -std=c++11
 +libchrome_la_CPPFLAGS += -Ibase -I.. -I../libevent -Iinclude
 +libchrome_la_CPPFLAGS += -I../googletest -I../googletest/googletest
-+libchrome_la_CPPFLAGS += -I${WORKSPACE}/external/modp_b64 -I${WORKSPACE}/external/libevent/include
-+libchrome_la_CPPFLAGS += -I${WORKSPACE}/external/googletest/googletest/include -I${WORKSPACE}/external/libevent
++libchrome_la_CPPFLAGS += -I${S}/../external/modp_b64 -I${S}/../external/libevent/include
++libchrome_la_CPPFLAGS += -I${S}/../external/googletest/googletest/include -I${W}/../external/libevent
 +libchrome_la_LDFLAGS  := -lpthread -levent -lmodpb64
 +
 +# Export headers
@@ -400,9 +400,8 @@ index 000000000..bcbb6d59f
 +base_include_HEADERS += base/sequence_checker_impl.h
 +base_include_HEADERS += base/single_thread_task_runner.h
 +base_include_HEADERS += base/tracking_info.h
-\ No newline at end of file
 diff --git a/base/allocator/allocator_shim.cc b/base/allocator/allocator_shim.cc
-index 09ed45fde..bbe817090 100644
+index 09ed45fde3..bbe8170909 100644
 --- a/base/allocator/allocator_shim.cc
 +++ b/base/allocator/allocator_shim.cc
 @@ -244,9 +244,9 @@ void ShimFree(void* address) {
@@ -431,7 +430,7 @@ index 09ed45fde..bbe817090 100644
 +//#error This code cannot be used when exceptions are turned on.
 +//#endif
 diff --git a/base/cancelable_callback.h b/base/cancelable_callback.h
-index 0034fddcc..f2e14146c 100644
+index 0034fddccd..f2e14146cd 100644
 --- a/base/cancelable_callback.h
 +++ b/base/cancelable_callback.h
 @@ -74,7 +74,6 @@ class CancelableCallback<void(A...)> {
@@ -443,7 +442,7 @@ index 0034fddcc..f2e14146c 100644
      callback_.Reset();
    }
 diff --git a/base/files/file_util_posix.cc b/base/files/file_util_posix.cc
-index 85a1b41d4..fa02f5523 100644
+index 85a1b41d46..fa02f55232 100644
 --- a/base/files/file_util_posix.cc
 +++ b/base/files/file_util_posix.cc
 @@ -498,7 +498,7 @@ bool GetTempDir(FilePath* path) {
@@ -456,7 +455,7 @@ index 85a1b41d4..fa02f5523 100644
      // homedir once it becomes available. Return / as the safe option.
      return FilePath("/");
 diff --git a/base/logging.cc b/base/logging.cc
-index 381e9eea0..21cb0b96d 100644
+index 381e9eea0f..21cb0b96d1 100644
 --- a/base/logging.cc
 +++ b/base/logging.cc
 @@ -75,7 +75,7 @@ typedef pthread_mutex_t* MutexHandle;
@@ -489,7 +488,7 @@ index 381e9eea0..21cb0b96d 100644
      // When we're only outputting to a log file, above a certain log level, we
      // should still output to stderr so that we can better detect and diagnose
 diff --git a/base/message_loop/message_loop.cc b/base/message_loop/message_loop.cc
-index 54369a9b2..00bf7a8a3 100644
+index 54369a9b27..00bf7a8a3f 100644
 --- a/base/message_loop/message_loop.cc
 +++ b/base/message_loop/message_loop.cc
 @@ -35,9 +35,9 @@
@@ -522,7 +521,7 @@ index 54369a9b2..00bf7a8a3 100644
  #if defined(OS_IOS) || defined(OS_MACOSX)
  #define MESSAGE_PUMP_UI std::unique_ptr<MessagePump>(MessagePumpMac::Create())
 diff --git a/base/third_party/libevent/event.h b/base/third_party/libevent/event.h
-index d47d7973d..529cfdb59 100644
+index d47d7973dd..529cfdb59b 100644
 --- a/base/third_party/libevent/event.h
 +++ b/base/third_party/libevent/event.h
 @@ -1,10 +1,6 @@
@@ -537,7 +536,7 @@ index d47d7973d..529cfdb59 100644
 -#include <event.h>
 -#endif
 diff --git a/build/build_config.h b/build/build_config.h
-index 80a93d3d4..9ef8b1342 100644
+index 80a93d3d43..9ef8b13429 100644
 --- a/build/build_config.h
 +++ b/build/build_config.h
 @@ -27,12 +27,12 @@
@@ -568,7 +567,7 @@ index 80a93d3d4..9ef8b1342 100644
  
 diff --git a/configure.ac b/configure.ac
 new file mode 100644
-index 000000000..0fc1c8739
+index 0000000000..0fc1c87392
 --- /dev/null
 +++ b/configure.ac
 @@ -0,0 +1,45 @@
@@ -619,7 +618,7 @@ index 000000000..0fc1c8739
 +
 diff --git a/libchrome.pc.in b/libchrome.pc.in
 new file mode 100644
-index 000000000..1b0527408
+index 0000000000..1b05274088
 --- /dev/null
 +++ b/libchrome.pc.in
 @@ -0,0 +1,15 @@
@@ -639,5 +638,6 @@ index 000000000..1b0527408
 +Libs.private: @LIBS@:
 +Cflags: -I${includedir}/chrome/
 -- 
-2.17.1
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
 

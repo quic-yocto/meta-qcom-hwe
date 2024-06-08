@@ -7,8 +7,8 @@
 Description=QTEE Supplicant Service
 SourcePath=/usr/bin/qtee_supplicant
 BindsTo=dev-smcinvoke.device
-After=dev-smcinvoke.device property-vault.service
-Wants=property-vault.service
+After=dev-smcinvoke.device property-vault.service sfsconfig.service
+Wants=property-vault.service sfsconfig.service
 
 [Service]
 Restart=always

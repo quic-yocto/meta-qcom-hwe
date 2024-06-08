@@ -1,0 +1,43 @@
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From ec568f2faf85580b322bef32af5ad1dd1be0cfbc Mon Sep 17 00:00:00 2001
+From: Manikantan R <quic_manrav@quicinc.com>
+Date: Wed, 10 Apr 2024 23:53:39 +0530
+Subject: [PATCH] tinycompress: update Makerules
+
+Makefile update to export headers and update lib path.
+
+Change-Id: Ic73b08541334a8c2cf9c58b3f7863ae0448ebf16
+Signed-off-by: Manikantan R <quic_manrav@quicinc.com>
+---
+ include/Makefile.am | 3 ++-
+ src/lib/Makefile.am | 2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/include/Makefile.am b/include/Makefile.am
+index b12c2c5..93e557e 100644
+--- a/include/Makefile.am
++++ b/include/Makefile.am
+@@ -1,4 +1,5 @@
+-nobase_include_HEADERS = tinycompress/tinycompress.h
++nobase_include_HEADERS = tinycompress/tinycompress.h \
++			tinycompress/compress_ops.h
+ 
+ noinst_HEADERS = sound/compress_offload.h \
+ 		 sound/compress_params.h \
+diff --git a/src/lib/Makefile.am b/src/lib/Makefile.am
+index 0df177f..b483bc6 100644
+--- a/src/lib/Makefile.am
++++ b/src/lib/Makefile.am
+@@ -2,5 +2,5 @@ tinycompressdir = $(libdir)
+ 
+ tinycompress_LTLIBRARIES = libtinycompress.la
+ libtinycompress_la_SOURCES = compress.c compress_hw.c
+-libtinycompress_la_CFLAGS = -I$(top_srcdir)/include
++libtinycompress_la_CFLAGS = -I$(top_srcdir)/include -DTINYCOMPRESS_PLUGIN_DIR=\"/usr/lib/\"
+ libtinycompress_la_LIBADD = -ldl
+-- 
+2.17.1
+

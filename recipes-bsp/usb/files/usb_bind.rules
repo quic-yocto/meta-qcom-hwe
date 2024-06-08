@@ -1,1 +1,1 @@
-SUBSYSTEM=="udc", ACTION=="add", RUN+="/usr/bin/qusb bind"
+SUBSYSTEM=="udc", ACTION=="add", RUN+="/usr/bin/qusb rebind"

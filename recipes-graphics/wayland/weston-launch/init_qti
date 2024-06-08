@@ -99,9 +99,7 @@ case "$1" in
 
         # This is all a nasty hack
         if test -z "$XDG_RUNTIME_DIR"; then
-            export XDG_RUNTIME_DIR=/run/user/root
-            mkdir -p $XDG_RUNTIME_DIR
-            chmod 0700 $XDG_RUNTIME_DIR
+            export XDG_RUNTIME_DIR=/dev/socket/weston
         fi
 
         if test -z "$XDG_PICTURES_DIR"; then
@@ -110,6 +108,13 @@ case "$1" in
 
         if [[ -z "$SHELL" && -x "/bin/sh" ]]; then
             export SHELL=/bin/sh
+        fi
+
+        if [ -f /sys/devices/soc0/soc_id ]; then
+            soc_id=`cat /sys/devices/soc0/soc_id`
+            if [ "$soc_id" == 497 ] || [ "$soc_id" == 498 ]; then
+                `setprop sdm.max_pipe_config 2`
+            fi
         fi
 
         export PATH_DRM_NODE=/dev/dri
@@ -131,12 +136,11 @@ case "$1" in
         done
 
         chown -hR system:video $XDG_RUNTIME_DIR
-        chmod 756 /run/user/root/wayland-1
+        chmod 756 /dev/socket/weston/wayland-1
   ;;
 
   stop)
         echo "Stopping Weston"
-        killproc weston
   ;;
 
   restart)

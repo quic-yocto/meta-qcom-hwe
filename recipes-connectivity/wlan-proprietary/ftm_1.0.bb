@@ -9,8 +9,9 @@ DEPENDS += "libnl diag glib-2.0 property-vault ath6kl-utils"
 
 RDEPENDS:${PN} = "property-vault"
 
+PV = "1.0"
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[sha256sum] = "9e6ca6958e5cb5a56daf8c395aa01037210a4adc84ca8a10f7542a8b282d6e02"
+SRC_URI[sha256sum] = "b3338f62377062fc9220d09bf4354304761e53b1f5efffa4ef83edda28b2346d"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"

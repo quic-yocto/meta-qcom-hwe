@@ -5,17 +5,21 @@ LIC_FILES_CHKSUM = "file://generic-ufs-partitions.conf;beginline=2;endline=3;md5
 
 DEPENDS += "gen-partitions-tool-native"
 
-FILESEXTRAPATHS:prepend := "${THISDIR}:"
+PROVIDES += "virtual/partconf"
 
-S = "${WORKDIR}"
+FILESEXTRAPATHS:prepend := "${THISDIR}:"
 
 SRC_URI = " \
     file://generic-ufs-partitions.conf \
+    file://qcs9100-partitions.conf \
 "
+
+S = "${WORKDIR}"
 
 do_configure[noexec] = "1"
 
 PARTCONF ?= "generic-ufs-partitions.conf"
+PARTCONF:qcs9100 = "qcs9100-partitions.conf"
 
 do_compile() {
     # Generate partition.xml using gen_partition utility

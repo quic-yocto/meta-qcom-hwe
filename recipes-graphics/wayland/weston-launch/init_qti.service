@@ -42,6 +42,12 @@ Group=root
 Restart=no
 Type=simple
 RemainAfterExit=yes
+ExecStartPre=/bin/mkdir -p /dev/socket/weston
+ExecStartPre=+/sbin/restorecon -F /dev/socket/weston
+ExecStartPre=+/bin/chmod 0700 /dev/socket/weston
+# Create /dev/dri only if not present
+ExecStartPre=+/bin/mkdir -p /dev/dri
+ExecStartPre=+/bin/chmod 0755 /dev/dri
 ExecStart=/etc/initscripts/init_qti_display start
 ExecStop=/etc/initscripts/init_qti_display stop
 

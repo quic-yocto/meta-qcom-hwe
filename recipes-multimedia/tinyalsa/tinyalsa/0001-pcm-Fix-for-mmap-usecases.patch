@@ -1,0 +1,85 @@
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From a102aa8852dd176750c373b03951d8a333954b05 Mon Sep 17 00:00:00 2001
+From: Rohit kumar <quic_rohkumar@quicinc.com>
+Date: Wed, 16 Aug 2023 12:18:07 +0530
+Subject: [PATCH 1/3] pcm: Fix for mmap usecases
+
+Reference change - https://github.com/tinyalsa/tinyalsa/commit/73b9c679a656c7b0f5e265dae5a76664c7d03031
+
+Change-Id: I9e6a3c5aa93f6a324d67ee184f97f79662c5c211
+Signed-off-by: Rohit Kumar <quic_rohkumar@quicinc.com>
+---
+ src/pcm.c | 25 ++++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
+
+diff --git a/src/pcm.c b/src/pcm.c
+index d460593..5a0fa08 100644
+--- a/src/pcm.c
++++ b/src/pcm.c
+@@ -501,7 +501,13 @@ int pcm_set_config(struct pcm *pcm, const struct pcm_config *config)
+     memset(&sparams, 0, sizeof(sparams));
+     sparams.tstamp_mode = SNDRV_PCM_TSTAMP_ENABLE;
+     sparams.period_step = 1;
+-    sparams.avail_min = config->period_size;
++    if (!pcm->config.avail_min) {
++        if (pcm->flags & PCM_MMAP)
++            pcm->config.avail_min = sparams.avail_min = pcm->config.period_size;
++        else
++            pcm->config.avail_min = sparams.avail_min = 1;
++    } else
++        sparams.avail_min = config->avail_min;
+ 
+     if (!config->start_threshold) {
+         if (pcm->flags & PCM_IN)
+@@ -649,6 +655,10 @@ static int pcm_hw_mmap_status(struct pcm *pcm)
+         pcm->mmap_status = NULL;
+         goto mmap_error;
+     }
++    if (pcm->flags & PCM_MMAP)
++        pcm->mmap_control->avail_min = pcm->config.avail_min;
++    else
++        pcm->mmap_control->avail_min = 1;
+ 
+     return 0;
+ 
+@@ -659,6 +669,10 @@ mmap_error:
+         return -ENOMEM;
+     pcm->mmap_status = &pcm->sync_ptr->s.status;
+     pcm->mmap_control = &pcm->sync_ptr->c.control;
++    if (pcm->flags & PCM_MMAP)
++        pcm->mmap_control->avail_min = pcm->config.avail_min;
++    else
++        pcm->mmap_control->avail_min = 1;
+ 
+     return 0;
+ }
+@@ -1513,16 +1527,21 @@ static int pcm_mmap_transfer(struct pcm *pcm, void *buffer, unsigned int frames)
+     }
+ 
+     while (frames) {
++        pcm_sync_ptr(pcm, 0);
+         avail = pcm_mmap_avail(pcm);
+ 
+-        if (!avail) {
++        if (avail < pcm->config.avail_min) {
++            int time = -1;
++
+             if (pcm->flags & PCM_NONBLOCK) {
+                 errno = EAGAIN;
+                 break;
+             }
++            if (pcm->flags & PCM_NOIRQ)
++                time = (pcm->config.avail_min - avail) / pcm->noirq_frames_per_msec;
+ 
+             /* wait for interrupt */
+-            err = pcm_wait(pcm, -1);
++            err = pcm_wait(pcm, time);
+             if (err < 0) {
+                 errno = -err;
+                 break;
+-- 
+2.25.1
+

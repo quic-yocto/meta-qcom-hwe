@@ -7,9 +7,9 @@ DESCRIPTION = "adsprpc daemon."
 
 DEPENDS += "dspservices-headers libdmabufheap"
 
-SRC_URI[sha256sum] = "a8c489edbb3bd55378048e136286070f46cadb758cf8f907a1682817e62166a3"
+SRC_URI[sha256sum] = "1e86f54568a7af79725c22b1bba92a0364f8275bb0ae8e8213f3597d0cdb30a7"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

@@ -5,7 +5,7 @@
 [Unit]
 Description=sfs configuration Service
 SourcePath=/etc/initscripts/sfs_config
-After=qteesupplicant.service
+After=local-fs.target remove-var-tmp-symlink.service
 
 [Service]
 Restart=no

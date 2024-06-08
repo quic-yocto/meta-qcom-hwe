@@ -7,9 +7,9 @@ DESCRIPTION = "Libraries enabling MinkIPC"
 
 DEPENDS += "glib-2.0 glibc linux-kernel-qcom-headers libdmabufheap securemsm-headers"
 
-SRC_URI[sha256sum] = "4ff4be536314431bf1f44b7c05ad29e78930d968d907745dfcd3c967bea93557"
+SRC_URI[sha256sum] = "2a954e90a98d490b6ffc54705126fea718ec3ee12c889b1cbce0f20dfa779c5c"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

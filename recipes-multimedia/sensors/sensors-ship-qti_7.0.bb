@@ -7,9 +7,9 @@ DESCRIPTION = "Sensors-ship Library"
 
 DEPENDS += "glib-2.0 property-vault syslog-plumber qmi-framework diag protobuf fastrpc libdmabufheap"
 
-SRC_URI[sha256sum] = "2d51b468ddfe5ef2b4e266c10a95563091b85f5b5f685899198af4783ae90494"
+SRC_URI[sha256sum] = "bc19b9634a7626a52c7baefa8e4dc6d909365346c01d2fd61c1b806053b218a2"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

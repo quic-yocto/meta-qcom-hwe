@@ -16,7 +16,7 @@ DEPENDS = "glib-2.0 libgudev libxslt-native dbus json-glib  gtk+3"
 FILESEXTRAPATHS:append := "${THISDIR}:"
 FILESEXTRAPATHS:append := "${THISDIR}/patches:"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/mobile-broadband/ModemManager.git;protocol=https;rev=2408a81beec13fadff04dff717bf04647bfe6a7a;branch=telephony.qclinux.0.0.r1-rel;destsuffix=mobile-broadband/ModemManager"
+SRC_URI = "git://git.codelinaro.org/clo/le/mobile-broadband/ModemManager.git;protocol=https;rev=7049bc0d57fd966c98f236d51d7b516a94b2643a;branch=telephony.qclinux.0.0.r1-rel;destsuffix=mobile-broadband/ModemManager"
 SRC_URI += "file://0001-Increase-delay-for-probing.patch"
 S = "${WORKDIR}/mobile-broadband/ModemManager"
 

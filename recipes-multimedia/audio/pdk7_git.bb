@@ -9,9 +9,9 @@ DEPENDS += "sva-common capiv2-headers sva-ml-commondwarf sva-ml-commondwarf2 sva
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[sha256sum] = "12d7094b3c8e8a027a1927bbf605931e5f7a4d4d3209e671fd5b7eb35de5d65d"
+SRC_URI[sha256sum] = "7a4007dff8dde50d43d9f5a68bf4d2b741f5fca78329bcdb8f29c76a4bdcdfc3"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

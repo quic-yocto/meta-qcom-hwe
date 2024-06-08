@@ -6,14 +6,16 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=801f80980d171dd6
 
 DEPENDS += "linux-kernel-headers-install-native"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=64f2a2e9fd0ec71abae773fbdf308b4038c19452;branch=camera-kernel.qclinux.1.0.r1-rel;destsuffix=vendor/qcom/opensource/camera-kernel"
+SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=aefae9a7897a2ca713b60472920a6c647a8962be;branch=camera-kernel.qclinux.1.0.r1-rel;destsuffix=vendor/qcom/opensource/camera-kernel"
 
 S = "${WORKDIR}/vendor/qcom/opensource/camera-kernel"
 
 MODULES_INSTALL_TARGET = "modules_install headers_install"
 CAMERA_ARCH ?= "all"
 CAMERA_ARCH:qcm6490 ?= "qcm6490"
-EXTRA_OEMAKE += "CAMERA_ARCH='${CAMERA_ARCH}' MACHINE='${MACHINE}'"
+HEADERS_DIR ?= "camera"
+HEADERS_DIR:qcm6490 ?= "camera_kt"
+EXTRA_OEMAKE += "CAMERA_ARCH='${CAMERA_ARCH}' MACHINE='${MACHINE}' HEADERS_DIR='${HEADERS_DIR}'"
 
 do_install:append() {
 	install -d ${D}${includedir}/media

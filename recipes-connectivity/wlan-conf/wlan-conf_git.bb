@@ -5,7 +5,7 @@ LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
 
-SRC_URI = "git://git.codelinaro.org/clo/le/qcom-opensource/mdm-init.git;protocol=https;rev=ab9af101cfe6685095fbfe79a4641603bdfef95c;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=mdm-init"
+SRC_URI = "git://git.codelinaro.org/clo/le/qcom-opensource/mdm-init.git;protocol=https;rev=fe4ec3b9a69b0eaae41cd08016593de473e2c7b4;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=mdm-init"
 SRC_URI += "file://wlan_daemon.service"
 
 S = "${WORKDIR}/mdm-init"

@@ -1,6 +1,8 @@
 SOC_FAMILY = "qcm6490"
 require conf/machine/include/qcom-common.inc
 
+# Set prebuilt pkgs default arch
+PBT_ARCH ?= "qcm6490"
 require conf/machine/include/qcom-prebuilts.inc
 
 DEFAULTTUNE = "armv8-2a-crypto"
@@ -18,11 +20,17 @@ PREFERRED_PROVIDER_virtual/libgles2-native = "mesa-native"
 PREFERRED_PROVIDER_virtual/kernel ?= "linux-kernel-qcom"
 
 # Recipe provider for boot critical nhlos bins
-PREFERRED_PROVIDER_virtual/bootbins ?= "firmware-qcm6490-boot"
+PREFERRED_PROVIDER_virtual/bootbins ?= "firmware-qcom-bootbins"
+
+# Recipe provider for disk partition configuration
+PREFERRED_PROVIDER_virtual/partconf ?= "firmware-qcom-partconf"
 
 # Fastboot expects an ext4 image, which needs to be 4096 aligned
 IMAGE_FSTYPES = "ext4"
 IMAGE_ROOTFS_ALIGNMENT = "4096"
+
+# For module signing
+INHERIT += " qmodule"
 
 EXTRA_IMAGECMD:ext4 = "-i 4096 -b 4096"
 
@@ -37,6 +45,3 @@ MACHINE_EXTRA_RRECOMMENDS += " \
     subsystem-ramdump \
     securedsp-example \
 "
-
-# Set prebuilt pkgs default arch
-PBT_ARCH ?= "qcm6490"

@@ -5,9 +5,9 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "Recipe to install video firmware files on rootfs"
 
-SRC_URI[sha256sum] = "9d67d147bda646ad87b4bd9a4f617588c501e17aa7acb7537074b4b0a2a9d7f1"
+SRC_URI[sha256sum] = "b7640d56190d779dd00bfc2f61eec639f1dcf1467829d0737fb46e05f4d069a7"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz"
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

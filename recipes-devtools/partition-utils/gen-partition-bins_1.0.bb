@@ -3,12 +3,12 @@ SUMMARY = "Generate and place partition artifacts in DEPLOYDIR"
 LICENSE = "BSD-3-Clause-Clear"
 LIC_FILES_CHKSUM = " file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
-DEPENDS += "ptool-native partition-confs"
+DEPENDS += "ptool-native"
 
 do_configure[noexec] = "1"
 
 do_compile[depends] += " \
-    partition-confs:do_deploy \
+    virtual/partconf:do_deploy \
    "
 do_compile() {
     # ptool to generate partition bins
