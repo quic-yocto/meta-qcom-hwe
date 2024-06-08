@@ -7,7 +7,8 @@ DESCRIPTION = "Camx"
 
 DEPENDS += "syslog-plumber property-vault glib-2.0 gbm camx-kt camxapi-kt adreno"
 
-SRC_URI[sha256sum] = "758a3f05bbd9ea6a78fb020ac7705c740390b5a972be805f8eb47228073a85f2"
+SRC_URI[qcm6490.sha256sum] = "758a3f05bbd9ea6a78fb020ac7705c740390b5a972be805f8eb47228073a85f2"
+SRC_URI[qcs9100.sha256sum] = "ff95e1242eda23ad9e189ddf39175ff3f1ef051625d23fcfd6a9be154e01722e"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

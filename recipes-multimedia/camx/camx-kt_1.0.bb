@@ -7,7 +7,8 @@ DESCRIPTION = "Camx"
 
 DEPENDS += "syslog-plumber property-vault glib-2.0 gbm camxlib-kt cameradlkm fastrpc sensors-ship-qti qmi-framework"
 
-SRC_URI[sha256sum] = "58fc0b29d4923c7b375c9bbb6df9aee2afe75e8181bd665cf4e04037b1fed63e"
+SRC_URI[qcm6490.sha256sum] = "58fc0b29d4923c7b375c9bbb6df9aee2afe75e8181bd665cf4e04037b1fed63e"
+SRC_URI[qcs9100.sha256sum] = "0770d8084df221e931d60f23346bc0f4d997d185b492fe62a5387618287548fb"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

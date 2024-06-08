@@ -7,6 +7,6 @@ DESCRIPTION = "audio-listen header"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[sha256sum] = "b6216c846aab132dcd4cb4f8525cb86d6871fb6eb19e3a232c1c5eab49634cca"
+SRC_URI[armv8-2a.sha256sum] = "b6216c846aab132dcd4cb4f8525cb86d6871fb6eb19e3a232c1c5eab49634cca"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
