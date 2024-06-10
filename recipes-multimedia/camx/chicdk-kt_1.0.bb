@@ -24,6 +24,10 @@ FILES:${PN} = "\
     /var/cache/camera "
 FILES:${PN}-dev = ""
 
+pkg_postinst:${PN} () {
+    chmod 777 -R $D/var/cache/camera
+}
+
 
 INSANE_SKIP = "1"
 INSANE_SKIP:${PN} = "already-stripped"

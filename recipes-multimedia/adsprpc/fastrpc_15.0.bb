@@ -22,3 +22,4 @@ INSANE_SKIP:${PN} += "already-stripped"
 INSANE_SKIP:${PN} += "installed-vs-shipped"
 
 SYSTEMD_SERVICE:${PN} = " adsprpcd.service cdsprpcd.service"
+SYSTEMD_SERVICE:${PN}:append:qcs9100 = " cdsp1rpcd.service"
