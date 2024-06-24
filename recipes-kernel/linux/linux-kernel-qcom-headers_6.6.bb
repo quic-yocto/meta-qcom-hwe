@@ -11,7 +11,7 @@ inherit kernel-arch
 
 COMPATIBLE_MACHINE = "(qcom)"
 
-SRC_URI += "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=7fbc1a30b3456be4b48589cfd2f9d15bc8f75d8a;branch=kernel.qclinux.1.0.r1-rel"
+SRC_URI += "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=350dfd604d2ffbe0cac99bf3459b49114aad11f4;branch=kernel.qclinux.1.0.r1-rel"
 S = "${WORKDIR}/git"
 
 DEPENDS += "flex-native bison-native rsync-native"

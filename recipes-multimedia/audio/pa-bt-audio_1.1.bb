@@ -9,7 +9,7 @@ DEPENDS += "pulseaudio"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "165f885f6c17717fdd74cdc0cd7c4ff240b0b0a8ba65f82a4b55221075d78bc1"
+SRC_URI[armv8-2a.sha256sum] = "e5672e94e48a265fc08ae3d566a1082fca8f231bd07f5196615bfc83ae876393"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

@@ -7,7 +7,7 @@ DESCRIPTION = "pdk wrapper"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "3f8f823a3ff2ff34231f0ddc47d23edd2e32a8fc0c83e4d52d0fad7872ae61c9"
+SRC_URI[armv8-2a.sha256sum] = "981d48cd5da53ad3b8b3a520df07eb05a3af7a7aeb6dde9f4c060440a579ba65"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

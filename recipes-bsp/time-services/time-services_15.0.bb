@@ -10,8 +10,8 @@ DEPENDS += "virtual/kernel glib-2.0 diag qmi-framework"
 RDEPENDS:${PN} += "qmi-framework"
 
 
-SRC_URI[qcm6490.sha256sum] = "8116382605b257432e3d390d113cc7ed5f1933c690998a606b5def36a838cc2a"
-SRC_URI[qcs9100.sha256sum] = "be1320704bc69b3dd0755cc12ac03b7898dc4a07c3c1fe41188b77584b3ffb83"
+SRC_URI[qcm6490.sha256sum] = "b7a1889f7c42918a5b52053cc9ed8822a6d34ee0d9237bf3f4b85fad4eeeabd0"
+SRC_URI[qcs9100.sha256sum] = "486a61794028314cf689270b8bb6aef3b5521e7fb09f4ec38ed5070f450094c9"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

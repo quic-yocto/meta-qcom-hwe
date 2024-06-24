@@ -12,7 +12,7 @@ S = "${WORKDIR}/audio/opensource/arpal-lx/plugins/vui_interface"
 
 DEPENDS = "pal-headers kvh2xml vui-interface-header audiolisten args"
 
-EXTRA_OECONF += "--with-glib"
+EXTRA_OECONF += " --with-glib"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

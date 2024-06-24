@@ -12,7 +12,7 @@ SRC_URI = "git://git.codelinaro.org/clo/le/platform/external/tinyalsa.git;protoc
 
 S = "${WORKDIR}/git"
 
-PV = "1.1.1+git${SRCPV}"
+PV = "1.1.1.qcom+git${SRCPV}"
 
 DEPENDS = "glib-2.0"
 EXTRA_OECONF += "--with-glib"

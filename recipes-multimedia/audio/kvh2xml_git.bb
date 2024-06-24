@@ -12,4 +12,3 @@ S = "${WORKDIR}/audio/opensource/audioreach-conf/acdbdata"
 do_compile[noexec] = "1"
 
 ALLOW_EMPTY:${PN} = "1"
-

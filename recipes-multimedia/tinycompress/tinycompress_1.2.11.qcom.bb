@@ -10,7 +10,7 @@ SRC_URI += "git://github.com/alsa-project/tinycompress.git;protocol=https;branch
             file://0001-tinycompress-update-Makerules.patch"
 
 S = "${WORKDIR}/git"
-PV = "1.0"
+PV = "1.2.11.qcom"
 
 DEPENDS = "virtual/kernel glib-2.0"
 

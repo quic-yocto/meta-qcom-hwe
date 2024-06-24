@@ -18,6 +18,6 @@ do_install:append:qcm6490() {
     install -m 0644 ${S}/ar/config/qcm6490/* ${D}${sysconfdir}/
 }
 
-FILES:${PN}-dbg = "${libdir}/.debug/* ${bindir}/.debug/*"
-FILES:${PN} = "${libdir}/*.so ${libdir}/*.so.* ${sysconfdir}/* ${bindir}/* ${libdir}/pkgconfig/*"
-FILES:${PN}-dev = "${libdir}/*.la ${includedir}"
+FILES:${PN}-dbg  = "${libdir}/.debug/* ${bindir}/.debug/*"
+FILES:${PN}      = "${libdir}/*.so ${libdir}/*.so.* ${sysconfdir}/* ${bindir}/* ${libdir}/pkgconfig/*"
+FILES:${PN}-dev  = "${libdir}/*.la ${includedir}"

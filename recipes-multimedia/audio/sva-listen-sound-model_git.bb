@@ -9,7 +9,7 @@ DEPENDS += "sva-statereorder sva-listen-sound-model-headers sva-common sva-liste
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "80bd161fc98fb048c92a0dd076991c718ff941672af7cd96573058a74c54ed7c"
+SRC_URI[armv8-2a.sha256sum] = "d3b96da135aee128ec46face21b78093583771d5ff7908a5d00fe0cad4341e14"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

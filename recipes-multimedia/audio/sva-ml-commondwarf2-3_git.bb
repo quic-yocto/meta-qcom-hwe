@@ -9,6 +9,6 @@ DEPENDS += "sva-common"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "49f993e689a18dc6607128583f6e83064e679116fd53ad6448e0871b543373f4"
+SRC_URI[armv8-2a.sha256sum] = "26ee2da35637481ec4b7cb21ea7b2bfd6b4997bfc2d3431fe24317ce988fd04b"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"

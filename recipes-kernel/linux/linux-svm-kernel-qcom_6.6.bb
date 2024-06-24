@@ -7,7 +7,7 @@ inherit kernel
 PROVIDES:remove = "virtual/kernel"
 KERNEL_PACKAGE_NAME = "linux-svm-kernel-qcom-package"
 FILESEXTRAPATHS:prepend = "${WORKSPACE}:"
-SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=7fbc1a30b3456be4b48589cfd2f9d15bc8f75d8a;branch=kernel.qclinux.1.0.r1-rel;destsuffix=kernel/kernel_platform/kernel"
+SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=350dfd604d2ffbe0cac99bf3459b49114aad11f4;branch=kernel.qclinux.1.0.r1-rel;destsuffix=kernel/kernel_platform/kernel"
 
 KERNEL_DEFCONFIG = "${S}/arch/arm64/configs/qcom_vm_defconfig"
 KERNEL_CONFIG_FRAGMENTS:append = " ${@oe.utils.vartrue('DEBUG_BUILD', '${S}/arch/arm64/configs/qcom_vm_debug.config', '', d)}"

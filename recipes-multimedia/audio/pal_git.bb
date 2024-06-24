@@ -2,6 +2,7 @@ inherit autotools pkgconfig systemd
 
 DESCRIPTION = "pal"
 SECTION = "multimedia"
+
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM += "file://Pal.cpp;beginline=31;endline=32;md5=e733afaf233fbcbc22769d0a9bda0b3e \
                      file://inc/PalDefs.h;beginline=30;endline=31;md5=e733afaf233fbcbc22769d0a9bda0b3e"
@@ -13,7 +14,7 @@ S = "${WORKDIR}/audio/opensource/arpal-lx"
 
 DEPENDS = "tinyalsa tinycompress agm kvh2xml capiv2-headers audioroute dspservices-headers vui-interface pal-headers"
 
-EXTRA_OECONF += "--with-glib --with-syslog"
+EXTRA_OECONF += " --with-glib --with-syslog"
 
 SYSTEMD_SERVICE:${PN} += "adsprpcd_audiopd.service"
 

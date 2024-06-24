@@ -6,7 +6,7 @@ COMPATIBLE_MACHINE = "qcm6490"
 
 SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${DSPSO}.zip;name=${PBT_ARCH}"
 
-SRC_URI[qcm6490.sha256sum] = "8cf953b6bc268cf5be0e93a8a2712208d60268f4996c130bbc3667e5da7ffb35"
+SRC_URI[qcm6490.sha256sum] = "56d719772c60ceb237b0d46cf2cb1fafd35c2fd25a8f816e4426665876ad5934"
 
 include firmware-common.inc
 

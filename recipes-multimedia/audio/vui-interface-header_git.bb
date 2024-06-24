@@ -12,4 +12,3 @@ S = "${WORKDIR}/audio/opensource/arpal-lx/api/vui-interface"
 do_compile[noexec] = "1"
 
 ALLOW_EMPTY:${PN} = "1"
-
