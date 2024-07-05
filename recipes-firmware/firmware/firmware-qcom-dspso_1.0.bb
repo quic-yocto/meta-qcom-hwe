@@ -17,7 +17,7 @@ include firmware-${MATCHED_MACHINE}.inc
 DSPSO:qcm6490 = "QCM6490_dspso"
 DSPSO:qcs9100 = "QCS9100_dspso"
 
-DSPSO_PATH = "${WORKDIR}/${BIN_PATH}"
+DSPSO_PATH = "${WORKDIR}/git/${BUILD_ID}/${BIN_PATH}"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

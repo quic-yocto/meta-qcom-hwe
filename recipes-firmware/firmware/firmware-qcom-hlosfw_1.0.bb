@@ -14,10 +14,10 @@ include firmware-common.inc
 MATCHED_MACHINE = "${@get_matching_machine(d)}"
 include firmware-${MATCHED_MACHINE}.inc
 
-HLOSFIRMWARE:qcm6490 = "QCM6490_fw"
-HLOSFIRMWARE:qcs9100 = "QCS9100_fw"
+HLOSFIRMWARE:qcm6490 = "QCM6490_MSL"
+HLOSFIRMWARE:qcs9100 = "QCS9100_HSP"
 
-HLOSFIRMWARE_PATH = "${S}/${HLOSFIRMWARE}"
+HLOSFIRMWARE_PATH = "${WORKDIR}/git/${BUILD_ID}/${BIN_PATH}"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

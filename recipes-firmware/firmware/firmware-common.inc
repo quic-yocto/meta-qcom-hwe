@@ -2,11 +2,10 @@
 def get_matching_machine(d) :
     cmpt_machine = d.getVar('COMPATIBLE_MACHINE')
     if cmpt_machine:
+        import re
         available_archs = (d.getVar('MACHINEOVERRIDES') or "").split(":")
-        compatible_machines = cmpt_machine.split("|")
         for selected_arch in reversed(available_archs):
-          for machine in compatible_machines:
-            if (machine == selected_arch):
+            if re.fullmatch(cmpt_machine, selected_arch):
                 return selected_arch
     return None
 
@@ -15,7 +14,20 @@ def firmware_install(d, firmware, fw_path) :
     import os
     import shutil
 
-    dstdir = d.getVar('WORKDIR')
+    dstdir = d.getVar('S')
+
+    def find_file(root_folder, file_name):
+        for root, dir, files in os.walk(root_folder):
+            if file_name in files:
+                return os.path.join(root, file_name)
+        return None
+
+    filename = f'{firmware}.zip'
+    zipfile = find_file(fw_path, filename)
+
+    if zipfile:
+        if os.path.exists(zipfile):
+            shutil.unpack_archive(zipfile, dstdir)
 
     # Move content into ${D}
     root = os.path.join(dstdir, firmware)
