@@ -21,6 +21,8 @@ SRCREV     = "5764548062cc98934c1f08ddae3927bb3633fcd4"
 SRC_URI =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=display/vendor/qcom/opensource/display/libgbm \
             file://pkgconfig/gbm.pc"
 
+SRC_URI:append:qcs9100 = " file://files/0001-gbm-decouple-gbm-with-downstream-display-driver.patch"
+
 S = "${WORKDIR}/display/vendor/qcom/opensource/display/libgbm"
 
 inherit autotools-brokensep pkgconfig
