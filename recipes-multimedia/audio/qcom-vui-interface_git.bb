@@ -1,8 +1,7 @@
 inherit autotools pkgconfig
 
 LICENSE = "BSD-3-Clause-Clear"
-LIC_FILES_CHKSUM = "file://src/VoiceUIInterface.cpp;beginline=2;endline=4;md5=18c068bf29acd853c35b2114ff818b13\
-                    file://inc/SVAExtension.h;beginline=2;endline=4;md5=5c4a16422d3dd48ea3e869f02b4e4668"
+LIC_FILES_CHKSUM = "file://sva_intf/src/SVAInterface.cpp;beginline=31;endline=32;md5=e733afaf233fbcbc22769d0a9bda0b3e"
 
 DESCRIPTION = "VUI Interface plugin"
 
@@ -14,7 +13,7 @@ SRC_URI    =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/arp
 
 S = "${WORKDIR}/audio/opensource/arpal-lx/plugins/vui_interface"
 
-DEPENDS = "qcom-pal-headers qcom-kvh2xml qcom-vui-interface-header qcom-audiolisten qcom-args"
+DEPENDS = "qcom-pal-headers qcom-kvh2xml qcom-vui-interface-header qcom-args"
 
 EXTRA_OECONF += " --with-glib"
 

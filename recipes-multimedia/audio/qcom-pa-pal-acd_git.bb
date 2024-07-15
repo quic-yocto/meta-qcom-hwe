@@ -13,7 +13,7 @@ SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/pulseau
 
 S = "${WORKDIR}/audio/opensource/pulseaudio-plugins/test/acd"
 
-DEPENDS = "pulseaudio glib-2.0 qcom-pal qcom-vui-interface-header"
+DEPENDS = "pulseaudio glib-2.0 qcom-pal qcom-vui-interface-header qcom-pal-headers"
 EXTRA_OECONF = "--with-glib"
 
 do_install:append:qcm6490() {

@@ -16,7 +16,7 @@ SRC_URI  = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/arpal-
 
 S = "${WORKDIR}/audio/opensource/arpal-lx"
 
-DEPENDS = "tinyalsa tinycompress qcom-agm qcom-kvh2xml qcom-capiv2-headers qcom-audioroute dspservices-headers qcom-vui-interface qcom-pal-headers"
+DEPENDS = "tinyalsa tinycompress qcom-agm qcom-kvh2xml qcom-audioroute dspservices-headers qcom-pal-headers"
 
 EXTRA_OECONF += " --with-glib --with-syslog"
 
