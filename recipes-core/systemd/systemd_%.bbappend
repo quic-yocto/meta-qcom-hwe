@@ -9,6 +9,11 @@ SRC_URI:append:qcom = " \
    file://0003-units-Add-CAP_NET_ADMIN-condition-to-systemd-network.patch \
 "
 
+PACKAGECONFIG:append:qcom = " efi"
+PACKAGECONFIG:append:qcom = " gnu-efi"
+
+TARGET_CC_ARCH += "${LDFLAGS}"
+
 # Mask debugfs mount when DEBUG_BUILD is not set
 MASK_KERNEL_DEBUG_MOUNT ?= "${@oe.utils.vartrue('DEBUG_BUILD', '0', '', d)}"
 
