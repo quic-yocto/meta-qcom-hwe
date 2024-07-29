@@ -1,0 +1,8 @@
+[Unit]
+Before=local-fs.target
+
+[Mount]
+What=/dev/disk/by-partlabel/efi
+Where=/boot
+Type=vfat
+Options=noatime,sync

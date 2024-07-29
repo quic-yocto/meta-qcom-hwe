@@ -107,3 +107,5 @@ EFI_LINUX_IMG ?= "linux-${MACHINE}.efi"
 
 # Place dtb at EFIDTDIR to seamlessly package
 KERNEL_DTBDEST = "${EFI_DTB_DIR}"
+
+CORE_IMAGE_EXTRA_INSTALL:sota += "efimount"
