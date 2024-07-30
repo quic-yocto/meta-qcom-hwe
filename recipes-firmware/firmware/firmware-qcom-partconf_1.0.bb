@@ -2,7 +2,7 @@ DESCRIPTION = "Recipe to install partition.xml in DEPLOY_DIR"
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
-COMPATIBLE_MACHINE = "qcm6490|qcs9100"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs8300|qcs615"
 
 PROVIDES += "virtual/partconf"
 
@@ -18,6 +18,8 @@ include firmware-${MATCHED_MACHINE}.inc
 
 BOOTBINARIES:qcm6490 = "QCM6490_bootbinaries"
 BOOTBINARIES:qcs9100 = "QCS9100_bootbinaries"
+BOOTBINARIES:qcs8300 = "QCS8300_bootbinaries"
+BOOTBINARIES:qcs615  = "QCS615_bootbinaries"
 
 BOOTBINARIES_PATH = "${WORKDIR}/git/${BUILD_ID}/${BIN_PATH}"
 
