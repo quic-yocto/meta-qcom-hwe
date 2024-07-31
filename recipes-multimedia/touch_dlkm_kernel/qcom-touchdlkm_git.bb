@@ -12,7 +12,7 @@ SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=touch/vendor/qcom/openso
 
 S = "${WORKDIR}/touch/vendor/qcom/opensource/touch-drivers"
 
-RPROVIDES:${PN} += "kernel-module-touchdlkm"
+RPROVIDES:${PN} += "kernel-module-qcom-touchdlkm"
 MAKE_TARGETS = "modules"
 MODULES_INSTALL_TARGET = "modules_install"
 KERNEL_MODULE_AUTOLOAD += "nt36xxx-i2c"
