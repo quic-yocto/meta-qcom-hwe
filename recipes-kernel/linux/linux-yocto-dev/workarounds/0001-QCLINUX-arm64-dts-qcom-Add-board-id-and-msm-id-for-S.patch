@@ -1,0 +1,33 @@
+From 1685b9d5af7fd05ba635b9edd664d050d381aeef Mon Sep 17 00:00:00 2001
+From: Atul Dhudase <quic_adhudase@quicinc.com>
+Date: Fri, 26 Jul 2024 12:47:46 +0530
+Subject: [PATCH] QCLINUX: arm64: dts: qcom: Add board-id and msm-id for
+ SA8775p ride board
+
+Add board-id and msm-id for sa8775p-ride board for now. This is
+only a workaround, that shall be replaced by the compatible string
+check approach to pick the correct DTB.
+
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index 26ad05bd3b3f..f630ddbf58a8 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -15,6 +15,10 @@ / {
+ 	model = "Qualcomm SA8775P Ride";
+ 	compatible = "qcom,sa8775p-ride", "qcom,sa8775p";
+ 
++	qcom,msm-id = <533 0x10000>, <534 0x10000>, <534 0x20000>,
++		      <667 0x10000>, <667 0x20000>;
++	qcom,board-id = <0x19 0>, <0x25 1>;
++
+ 	aliases {
+ 		ethernet0 = &ethernet0;
+ 		ethernet1 = &ethernet1;
+-- 
+2.25.1
+
