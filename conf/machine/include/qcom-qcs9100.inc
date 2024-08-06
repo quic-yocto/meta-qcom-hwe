@@ -24,4 +24,5 @@ MACHINE_EXTRA_RDEPENDS += " \
 MACHINE_EXTRA_RRECOMMENDS:append:qcom-custom-bsp = " \
     qcom-subsystem-ramdump \
     trace-cmd \
+    remote-debug-agent \
 "
