@@ -25,6 +25,10 @@ do_compile:qcs9100() {
     oe_runmake ${EXTRA_OEMAKE} sa8775p-video
 }
 
+do_compile:qcs8300() {
+    oe_runmake ${EXTRA_OEMAKE} qcs8300-video
+}
+
 do_install() {
     :
 }
