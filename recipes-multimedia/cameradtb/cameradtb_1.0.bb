@@ -55,6 +55,8 @@ do_compile() {
             oe_runmake ${EXTRA_OEMAKE} qcm6490-camera-rb3
             oe_runmake ${EXTRA_OEMAKE} qcm5430-camera-rb3
         fi
+    elif [ "${SOC_FAM}" = "qcs9100" ]; then
+            oe_runmake ${EXTRA_OEMAKE} qcs9100-camera
     else
         echo "Unknown SOC_FAM -> " ${SOC_FAM}
     fi
