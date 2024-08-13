@@ -40,7 +40,7 @@ python get_soc_family() {
 do_compile[prefuncs] += "get_soc_family"
 do_install[prefuncs] += "get_soc_family"
 
-EXTRA_OEMAKE += "CAMERA_ARCH='${CAMERA_ARCH}' MACHINE='${SOC_FAM}' HEADERS_DIR='${HEADERS_DIR}'"
+EXTRA_OEMAKE += "CAMERA_ARCH='${CAMERA_ARCH}' SOC_FAM='${SOC_FAM}' HEADERS_DIR='${HEADERS_DIR}'"
 
 do_install:append() {
 	install -d ${D}${includedir}/media
