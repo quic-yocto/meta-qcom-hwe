@@ -10,7 +10,7 @@ This layer depends on:
 | https://git.yoctoproject.org/meta-qcom | master |
 | https://github.com/openembedded/meta-openembedded | master |
 | https://git.yoctoproject.org/poky | master |
-| https://github.com/quic-yocto/meta-qcom-distro | master |
+| https://github.com/quic-yocto/meta-qcom-distro | main |
 
 ## Machine Support
 Supported devices are QCS6490-RB3Gen2 core-kit, QCM6490 idp and sa8775p ride-sx.
@@ -21,9 +21,9 @@ To add a new machine, introduce a new machine configuration file at `layers/meta
 
 Clone this layer and it's dependent layers:
 ```
-git clone https://github.com/quic-yocto/meta-qcom-hwe.git -b master
+git clone https://github.com/quic-yocto/meta-qcom-hwe.git -b main
 git clone git://git.yoctoproject.org/meta-qcom -b master
-git clone https://github.com/quic-yocto/meta-qcom-distro.git -b master
+git clone https://github.com/quic-yocto/meta-qcom-distro.git -b main
 git clone https://github.com/openembedded/meta-openembedded.git -b master
 git clone git://git.yoctoproject.org/poky -b master
 ```
@@ -37,9 +37,9 @@ The script will cd into the newly created ```build/``` folder.
 Update ```BBLAYERS``` in ```conf/bblayers.conf``` as shown below::
 ```
 BBLAYERS ?= " \
+  <WORKSPACE>/meta-qcom \
   <WORKSPACE>/meta-qcom-distro \
   <WORKSPACE>/meta-qcom-hwe \
-  <WORKSPACE>/meta-qcom \
   <WORKSPACE>/meta-openembedded/meta-python \
   <WORKSPACE>/meta-openembedded/meta-oe \
   <WORKSPACE>/poky/meta \
