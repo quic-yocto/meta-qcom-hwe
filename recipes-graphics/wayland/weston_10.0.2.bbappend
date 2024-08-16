@@ -23,6 +23,8 @@ SRC_URI:append:qcm6490 = "  file://weston.ini \
 SRC_URI:append:qcs9100 = "  file://0001-drm-backend-power-off-during-hotplug-disconnect.patch \
                             file://0001-weston-add-sdm-option.patch"
 
+SRC_URI:append:qcs8300 = "  file://0001-drm-backend-power-off-during-hotplug-disconnect.patch \
+                            file://0001-weston-add-sdm-option.patch"
 
 DEPENDS:append:qcom-custom-bsp = " property-vault gbm libdmabufheap"
 DEPENDS:append:qcm6490 = " qcom-display-hal-linux"
@@ -47,6 +49,7 @@ PACKAGECONFIG:qcom = " \
 
 PACKAGECONFIG:append:qcm6490 = "sdm disablepowerkey"
 PACKAGECONFIG:append:qcs9100 = "kms"
+PACKAGECONFIG:append:qcs8300 = "kms"
 
 # Weston on SDM
 PACKAGECONFIG[sdm] = "-Dbackend-sdm=true,-Dbackend-sdm=false"
