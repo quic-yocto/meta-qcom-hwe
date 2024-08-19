@@ -12,6 +12,7 @@ COMPATIBLE_MACHINE = "(qcom)"
 
 
 SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=350dfd604d2ffbe0cac99bf3459b49114aad11f4;branch=kernel.qclinux.1.0.r1-rel \
+           file://QCLINUX-arm64-dts-qcom-sa8775p-ride-add-board-id-and.patch \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux.cfg', '', d)} \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux_debug.cfg', '', d)} \
            "
