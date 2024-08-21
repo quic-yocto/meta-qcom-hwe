@@ -32,6 +32,12 @@ do_install:append:qcm6490() {
     install -m 0644 ${S}/qcm6490/qcm6490_rb3_ia/workspaceFileXml.qwsp ${D}${sysconfdir}/acdbdata/qcm6490_rb3_ia/workspaceFileXml.qwsp
 }
 
+do_install:append:qcs8300() {
+    mkdir -p -m 0755 ${D}${sysconfdir}/acdbdata/qcs8300_ridesx
+    install -m 0644 ${S}/qcs8300/qcs8300_ridesx/acdb_cal.acdb ${D}${sysconfdir}/acdbdata/qcs8300_ridesx/acdb_cal.acdb
+    install -m 0644 ${S}/qcs8300/qcs8300_ridesx/workspaceFileXml.qwsp ${D}${sysconfdir}/acdbdata/qcs8300_ridesx/workspaceFileXml.qwsp
+}
+
 do_install:append:qcs9100() {
     mkdir -p -m 0755 ${D}${sysconfdir}/acdbdata/qcs9100_ridesx
     install -m 0644 ${S}/qcs9100/qcs9100_ridesx/acdb_cal.acdb ${D}${sysconfdir}/acdbdata/qcs9100_ridesx/acdb_cal.acdb
