@@ -4,13 +4,10 @@ COMPATIBLE_MACHINE:qcom = "(qcom)"
 FILESEXTRAPATHS:prepend:qcom := "${THISDIR}/${PN}:"
 
 SRC_URI:append:qcom = " \
-    file://generic-drivers/0001-UPSTREAM-power-supply-qcom_battmgr-return-EAGAIN-when.patch \
     file://qcm6490-board-dts/0001-FROMLIST-arm64-dts-qcom-qcm6490-idp-Update-protected.patch \
     file://qcm6490-board-dts/0001-PENDING-arm64-dts-qcom-qcm6490-Add-UFS-nodes-for-IDP.patch \
     file://workarounds/0001-QCLINUX-arm64-dts-qcom-qcm6490-disable-sdhc1-for-ufs.patch \
     file://workarounds/0001-PENDING-arm64-dts-qcom-Remove-voltage-vote-support-f.patch \
-    file://workarounds/0001-QCLINUX-arm64-dts-qcom-Add-board-id-and-msm-id-for-Q.patch \
-    file://workarounds/0001-QCLINUX-arm64-dts-qcom-Add-board-id-and-msm-id-for-S.patch \
 "
 
 # Include additional kernel configs.
