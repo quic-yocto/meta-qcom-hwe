@@ -19,8 +19,8 @@ FILES:${PN} = "\
     /usr/lib/rfsa/adsp/* \
     /usr/include/* \
     /lib/firmware/* \
-    /system/etc/camera/* \
-    /var/cache/camera "
+    /system/etc/camera/* "
+
 FILES:${PN}-dev = ""
 
 INSANE_SKIP = "1"
