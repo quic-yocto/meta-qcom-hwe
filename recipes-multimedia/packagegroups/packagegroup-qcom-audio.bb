@@ -41,10 +41,8 @@ RDEPENDS:${PN}:append:qcom-custom-bsp = ' \
     qcom-audio-node \
     qcom-kvh2xml \
     qcom-pa-bt-audio \
+    qcom-audio-systems \
     qcom-vui-interface \
-    qcom-sva-capi-uv-wrapper \
-    qcom-sva-cnn \
-    qcom-sva-listen-sound-model \
     qcom-sva-eai \
     qcom-pa-pal-voiceui \
     qcom-pa-pal-acd \
