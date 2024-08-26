@@ -32,8 +32,9 @@ PACKAGECONFIG[drm] = "--enable-sdmhaldrm, --disable-sdmhaldrm, libdrm, libdrm"
 DEPENDS += "libdrm \
             gbm \
             linux-kernel-qcom-headers \
-            displaydlkm \
             "
+
+DEPENDS:append:qcm6490 = " qcom-displaydlkm"
 
 QDCM_JSON = "qdcm_calib_data_nt36672e_lcd_video_mode_dsi_novatek_panel_with_DSC.json"
 

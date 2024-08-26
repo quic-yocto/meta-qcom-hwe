@@ -24,7 +24,7 @@ SRC_URI:append:qcs9100 = "  file://0001-drm-backend-power-off-during-hotplug-dis
 
 
 DEPENDS:append:qcom-custom-bsp = " property-vault gbm libdmabufheap"
-DEPENDS:append:qcm6490 = " display-hal-linux"
+DEPENDS:append:qcm6490 = " qcom-display-hal-linux"
 
 EXTRA_OEMESON += "-Ddeprecated-wl-shell=true"
 EXTRA_OEMESON += "-Dbackend-default=auto -Dbackend-rdp=false"

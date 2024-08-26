@@ -12,7 +12,6 @@ PROVIDES = "${PACKAGES}"
 PACKAGES = "${PN}"
 
 RDEPENDS:${PN} = " \
-    kernel-module-displaydlkm \
     kernel-module-touchdlkm \
     libcec \
     libdrm \
@@ -24,7 +23,8 @@ RDEPENDS:${PN} = " \
     "
 
 RDEPENDS:${PN}:append:qcm6490 = " \
-    display-hal-linux \
-    display-extn-linux \
-    display-color-linux \
+    qcom-display-hal-linux \
+    kernel-module-displaydlkm \
+    qcom-display-extn-linux \
+    qcom-display-color-linux \
     "
