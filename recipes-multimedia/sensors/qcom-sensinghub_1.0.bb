@@ -30,5 +30,6 @@ FILES:${PN} += "/usr/lib/*"
 FILES:${PN} += "/usr/bin/*"
 FILES:${PN}-dev  = "${libdir}/*.la ${includedir}"
 FILES:${PN} += "${systemd_unitdir}/system/"
+FILES:${PN} += "/etc/sensors/*"
 
 PACKAGE_ARCH    ?= "${MACHINE_ARCH}"
