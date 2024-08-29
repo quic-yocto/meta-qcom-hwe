@@ -27,6 +27,7 @@ do_compile() {
     oe_runmake ${EXTRA_OEMAKE} qcs5430-graphics
     oe_runmake ${EXTRA_OEMAKE} qcs5430-fp2p5-graphics
     oe_runmake ${EXTRA_OEMAKE} qcm6490-graphics
+    oe_runmake ${EXTRA_OEMAKE} qcs8300-graphics
     oe_runmake ${EXTRA_OEMAKE} qcs8550-graphics
     oe_runmake ${EXTRA_OEMAKE} qcs9100-graphics
 }
