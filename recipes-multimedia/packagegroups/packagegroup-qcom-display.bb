@@ -15,16 +15,22 @@ RDEPENDS:${PN} = " \
     libcec \
     libdrm \
     libdrm-tests \
-    gbm \
     wayland \
     wayland-protocols \
     weston \
     "
 
-RDEPENDS:${PN}:append:qcm6490 = " \
+RDEPENDS:${PN}:append:qcm6490:qcom-custom-bsp = " \
     kernel-module-displaydlkm \
     qcom-display-hal-linux \
     qcom-displaydevicetree \
+"
+
+RDEPENDS:${PN}:append:qcom-custom-bsp = "\
+    gbm \
+    "
+
+RDEPENDS:${PN}:append:qcm6490 = " \
     qcom-display-extn-linux \
     qcom-display-color-linux \
     "
