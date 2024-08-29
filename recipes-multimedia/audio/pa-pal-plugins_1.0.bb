@@ -1,8 +1,8 @@
 inherit autotools pkgconfig
 SUMMARY = "Pulseaudio pal plugins"
 
-LICENSE = "LGPL-2.1-only"
-LIC_FILES_CHKSUM += "file://module-pal-card/inc/pal-card.h;beginline=3;endline=4;md5=e382f520a6e20234a07a086090ad76df"
+LICENSE = "BSD-3-Clause-Clear"
+LIC_FILES_CHKSUM += "file://module-pal-card/inc/pal-card.h;beginline=3;endline=4;md5=1dd4ca71ef61f580a6a5f3d113727dd9"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/pulseaudio-plugin.git;protocol=https"
 SRCBRANCH  = "audio-algos.lnx.1.0.r1-rel"
