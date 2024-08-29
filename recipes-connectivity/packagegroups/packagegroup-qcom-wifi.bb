@@ -3,7 +3,7 @@ SUMMARY = "QCOM WIFI opensource package groups"
 LICENSE = "BSD-3-Clause \
            & Qualcomm-Technologies-Inc.-Proprietary"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 inherit packagegroup
 

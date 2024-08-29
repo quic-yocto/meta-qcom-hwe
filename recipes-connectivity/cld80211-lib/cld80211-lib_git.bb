@@ -10,7 +10,7 @@ PV = "7.0"
 
 DEPENDS += "libnl"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/hardware/qcom/wlan.git;protocol=https"
 SRCBRANCH  = "wlan-os-service.qclinux.1.1.r1-rel"

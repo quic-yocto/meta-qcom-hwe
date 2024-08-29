@@ -5,7 +5,7 @@ include hostap-daemon.inc
 LICENSE = "BSD-3-Clause"
 
 PV = "6.0.qcom"
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 FILESEXTRAPATHS:prepend := " ${THISDIR}/files:"
 
