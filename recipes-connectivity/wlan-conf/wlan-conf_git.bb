@@ -37,6 +37,7 @@ FILES:${PN} += "${base_libdir}/firmware/updates/ "
 
 EXTRA_OECONF:append:qcm6490 = " --enable-qcm6490=yes "
 EXTRA_OECONF:append:qcs9100 = " --enable-upstream=yes "
+EXTRA_OECONF:append:qcs8300 = " --enable-upstream=yes "
 
 SYSTEMD_AUTO_ENABLE = "enable"
 SYSTEMD_SERVICE:${PN}  = "wlan_daemon.service"
