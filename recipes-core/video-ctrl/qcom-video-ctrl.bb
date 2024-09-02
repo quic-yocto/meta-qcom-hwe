@@ -15,9 +15,8 @@ SRC_URI[armv8-2a.sha256sum] = "${ARMV8_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
-FILES:${PN} += "${INSTALL_BINDIR}"
-FILES:${PN} += "${INSTALL_LIBDIR}"
-
+FILES:${PN} += "${bindir}"
+FILES:${PN} += "${libdir}"
 
 SOLIBS = ".so*"
 FILES_SOLIBSDEV = ""
