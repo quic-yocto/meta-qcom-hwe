@@ -42,6 +42,8 @@ do_install[prefuncs] += "get_soc_family"
 
 EXTRA_OEMAKE += "CAMERA_ARCH='${CAMERA_ARCH}' SOC_FAM='${SOC_FAM}' HEADERS_DIR='${HEADERS_DIR}'"
 
+do_install[prefuncs] += "do_module_signing"
+
 do_install:append() {
 	install -d ${D}${includedir}/media
 	install -m 0755 ${B}/sanitized_headers/camera/media/*.h -D ${D}${includedir}/media/
