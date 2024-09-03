@@ -1,4 +1,6 @@
 ## Introduction
+Testing GitHub App installation
+
 OpenEmbedded/Yocto Project layer for Qualcomm based platforms.
 
 This layers provides aditional recipes and machine configuration files for Qualcomm platform.
