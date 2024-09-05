@@ -13,7 +13,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Compile
+      - name: Compile RB3Gen2
         run: |
           export DL_DIR=/srv/gh-runners/quic-yocto/downloads
           export SSTATE_DIR=/srv/gh-runners/quic-yocto/sstate-cache
@@ -21,4 +21,4 @@ jobs:
           mkdir -p $SSTATE_DIR
           mkdir build
           cd build
-          kas build ../kas/qcs6490-rb3gen2-core-kit.yml
+          kas build ../ci/qcs6490-rb3gen2-core-kit.yml
