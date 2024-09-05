@@ -1,0 +1,24 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  kas:
+    runs-on: [self-hosted, x86]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compile
+        run: |
+          export DL_DIR=/srv/gh-runners/quic-yocto/downloads
+          export SSTATE_DIR=/srv/gh-runners/quic-yocto/sstate-cache
+          mkdir -p $DL_DIR
+          mkdir -p $SSTATE_DIR
+          mkdir build
+          cd build
+          kas build ../kas/qcs6490-rb3gen2-core-kit.yml
