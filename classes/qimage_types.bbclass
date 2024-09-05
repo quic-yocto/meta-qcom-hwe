@@ -6,8 +6,9 @@ inherit image_types
 # Note that vfat can't handle all types of files that a real linux file system
 # can (e.g. device files, symlinks, etc.) and therefore it not suitable for all
 # use cases
+
 oe_mkvfatfs () {
-    mkfs.vfat $@ -C ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.vfat ${ROOTFS_SIZE}
+    mkfs.vfat $@ -s 16 -S 4096 -C ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.vfat ${ROOTFS_SIZE}
     mcopy -i "${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.vfat" -vsmpQ ${IMAGE_ROOTFS}/* ::/
 }
 
