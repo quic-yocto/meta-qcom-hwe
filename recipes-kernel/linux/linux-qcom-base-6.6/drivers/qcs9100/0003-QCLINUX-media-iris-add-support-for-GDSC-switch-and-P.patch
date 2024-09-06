@@ -1,0 +1,472 @@
+From 20d84caf9af311dea638674b7af7215d6a14e88f Mon Sep 17 00:00:00 2001
+From: Satyam Gupta <quic_satygupt@quicinc.com>
+Date: Tue, 22 Oct 2024 20:00:19 +0530
+Subject: [PATCH] QCLINUX: media: iris: add support for GDSC switch and PM APIs
+
+This patch modifies video driver to use older APIs for
+switching GDSC mode and handling runtime PM.
+
+Ref links which updated the API in mainline kernel:
+https://patchwork.linuxtv.org/project/linux-media/list/?series=13132
+https://patchwork.kernel.org/project/linux-media/list/?series=821301&state=%2A&archive=both
+
+Change-Id: Ic8848a9a64d09f97ba1c931ebe4fb6c43905627d
+Signed-off-by: Satyam Gupta <quic_satygupt@quicinc.com>
+Upstream-Status: Pending
+---
+ drivers/media/platform/qcom/iris/iris_core.h  |   5 +-
+ .../platform/qcom/iris/iris_platform_common.h |   4 +-
+ .../platform/qcom/iris/iris_platform_sm8250.c |   8 +-
+ .../platform/qcom/iris/iris_platform_sm8550.c |  10 +-
+ drivers/media/platform/qcom/iris/iris_probe.c | 115 ++++++++++++++----
+ .../media/platform/qcom/iris/iris_resources.c |  34 +++++-
+ .../media/platform/qcom/iris/iris_resources.h |   9 +-
+ .../platform/qcom/iris/iris_vpu_common.c      |  48 ++++++--
+ .../qcom/iris/iris_vpu_register_defines.h     |   1 +
+ 9 files changed, 179 insertions(+), 55 deletions(-)
+
+diff --git a/drivers/media/platform/qcom/iris/iris_core.h b/drivers/media/platform/qcom/iris/iris_core.h
+index 48a0c5c25bc1..202cdaab9f97 100644
+--- a/drivers/media/platform/qcom/iris/iris_core.h
++++ b/drivers/media/platform/qcom/iris/iris_core.h
+@@ -38,7 +38,8 @@ struct icc_info {
+  * @vb2_ops: iris vb2 ops
+  * @icc_tbl: table of iris interconnects
+  * @icc_count: count of iris interconnects
+- * @pmdomain_tbl: table of iris power domains
++ * @power_domain_tbl: table of vidc power domains
++ * @pd_count: count of vidc power domains
+  * @opp_pmdomain_tbl: table of opp power domains
+  * @clock_tbl: table of iris clocks
+  * @clk_count: count of iris clocks
+@@ -79,6 +80,8 @@ struct iris_core {
+ 	u32					icc_count;
+ 	struct dev_pm_domain_list		*pmdomain_tbl;
+ 	struct dev_pm_domain_list		*opp_pmdomain_tbl;
++	struct power_domain_info		*power_domain_tbl;
++	u32					pd_count;
+ 	struct clk_bulk_data			*clock_tbl;
+ 	u32					clk_count;
+ 	struct reset_control_bulk_data		*resets;
+diff --git a/drivers/media/platform/qcom/iris/iris_platform_common.h b/drivers/media/platform/qcom/iris/iris_platform_common.h
+index 2a1b46b69efa..354bfae17521 100644
+--- a/drivers/media/platform/qcom/iris/iris_platform_common.h
++++ b/drivers/media/platform/qcom/iris/iris_platform_common.h
+@@ -148,8 +148,8 @@ struct iris_platform_data {
+ 	unsigned int icc_tbl_size;
+ 	const struct bw_info *bw_tbl_dec;
+ 	unsigned int bw_tbl_dec_size;
+-	const char * const *pmdomain_tbl;
+-	unsigned int pmdomain_tbl_size;
++	const char * const *pd_tbl;
++	unsigned int pd_tbl_size;
+ 	const char * const *opp_pd_tbl;
+ 	unsigned int opp_pd_tbl_size;
+ 	const struct platform_clk_data *clk_tbl;
+diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8250.c b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
+index 9ef2fcc1a0fd..389d5b16512a 100644
+--- a/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
++++ b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
+@@ -70,9 +70,9 @@ static const struct bw_info sm8250_bw_table_dec[] = {
+ 	{ ((1920 * 1080) / 256) * 30,  416000 },
+ };
+ 
+-static const char * const sm8250_pmdomain_table[] = { "venus", "vcodec0" };
++static const char * const sm8250_pd_table[] = { "venus", "vcodec0", NULL };
+ 
+-static const char * const sm8250_opp_pd_table[] = { "mx" };
++static const char * const sm8250_opp_pd_table[] = { "mx", NULL };
+ 
+ static const struct platform_clk_data sm8250_clk_table[] = {
+ 	{IRIS_AXI_CLK,  "iface"        },
+@@ -119,8 +119,8 @@ struct iris_platform_data sm8250_data = {
+ 	.clk_rst_tbl_size = ARRAY_SIZE(sm8250_clk_reset_table),
+ 	.bw_tbl_dec = sm8250_bw_table_dec,
+ 	.bw_tbl_dec_size = ARRAY_SIZE(sm8250_bw_table_dec),
+-	.pmdomain_tbl = sm8250_pmdomain_table,
+-	.pmdomain_tbl_size = ARRAY_SIZE(sm8250_pmdomain_table),
++	.pd_tbl = sm8250_pd_table,
++	.pd_tbl_size = ARRAY_SIZE(sm8250_pd_table),
+ 	.opp_pd_tbl = sm8250_opp_pd_table,
+ 	.opp_pd_tbl_size = ARRAY_SIZE(sm8250_opp_pd_table),
+ 	.clk_tbl = sm8250_clk_table,
+diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
+index d0891d89d8d8..583f7c3a9085 100644
+--- a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
++++ b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
+@@ -151,9 +151,9 @@ static const struct bw_info sm8550_bw_table_dec[] = {
+ 	{ ((1920 * 1080) / 256) * 30,  294000 },
+ };
+ 
+-static const char * const sm8550_pmdomain_table[] = { "venus", "vcodec0" };
++static const char * const sm8550_pd_table[] = { "venus", "vcodec0", NULL };
+ 
+-static const char * const sm8550_opp_pd_table[] = { "mxc", "mmcx" };
++static const char * const sm8550_opp_pd_table[] = { "mxc", "mmcx", NULL };
+ 
+ static const struct platform_clk_data sm8550_clk_table[] = {
+ 	{IRIS_AXI_CLK,  "iface"        },
+@@ -226,14 +226,14 @@ struct iris_platform_data sm8550_data = {
+ 	.clk_rst_tbl_size = ARRAY_SIZE(sm8550_clk_reset_table),
+ 	.bw_tbl_dec = sm8550_bw_table_dec,
+ 	.bw_tbl_dec_size = ARRAY_SIZE(sm8550_bw_table_dec),
+-	.pmdomain_tbl = sm8550_pmdomain_table,
+-	.pmdomain_tbl_size = ARRAY_SIZE(sm8550_pmdomain_table),
++	.pd_tbl = sm8550_pd_table,
++	.pd_tbl_size = ARRAY_SIZE(sm8550_pd_table),
+ 	.opp_pd_tbl = sm8550_opp_pd_table,
+ 	.opp_pd_tbl_size = ARRAY_SIZE(sm8550_opp_pd_table),
+ 	.clk_tbl = sm8550_clk_table,
+ 	.clk_tbl_size = ARRAY_SIZE(sm8550_clk_table),
+ 	.dma_mask = GENMASK(31, 29) - 1,
+-	.fwname = "qcom/vpu/vpu30_p4.mbn",
++	.fwname = "qcom/vpu/vpu30_p4_s6.mbn",
+ 	.pas_id = IRIS_PAS_ID,
+ 	.inst_caps = &platform_inst_cap_sm8550,
+ 	.inst_fw_caps = inst_fw_cap_sm8550,
+diff --git a/drivers/media/platform/qcom/iris/iris_probe.c b/drivers/media/platform/qcom/iris/iris_probe.c
+index e7e087168d71..bd22635006db 100644
+--- a/drivers/media/platform/qcom/iris/iris_probe.c
++++ b/drivers/media/platform/qcom/iris/iris_probe.c
+@@ -38,46 +38,109 @@ static int iris_init_icc(struct iris_core *core)
+ 	return devm_of_icc_bulk_get(core->dev, core->icc_count, core->icc_tbl);
+ }
+ 
++static void iris_pd_release(void *res)
++{
++	struct device *pd = (struct device *)res;
++
++	dev_pm_domain_detach(pd, true);
++}
++
++static int iris_pd_get(struct iris_core *core, struct power_domain_info *pdinfo)
++{
++	int ret;
++
++	pdinfo->genpd_dev = dev_pm_domain_attach_by_name(core->dev, pdinfo->name);
++	if (IS_ERR_OR_NULL(pdinfo->genpd_dev))
++		ret = PTR_ERR(pdinfo->genpd_dev) ? : -ENODATA; if (ret) return ret;
++
++	ret = devm_add_action_or_reset(core->dev, iris_pd_release, (void *)pdinfo->genpd_dev);
++	if (ret)
++		return ret;
++
++	return ret;
++}
++
++static void iris_opp_dl_release(void *res)
++{
++	struct device_link *link = (struct device_link *)res;
++
++	device_link_del(link);
++}
++
++static int iris_opp_dl_get(struct device *dev, struct device *supplier)
++{
++	u32 flag = DL_FLAG_RPM_ACTIVE | DL_FLAG_PM_RUNTIME | DL_FLAG_STATELESS;
++	struct device_link *link = NULL;
++	int ret;
++
++	link = device_link_add(dev, supplier, flag);
++	if (!link)
++		return -EINVAL;
++
++	ret = devm_add_action_or_reset(dev, iris_opp_dl_release, (void *)link);
++
++	return ret;
++}
++
+ static int iris_init_power_domains(struct iris_core *core)
+ {
+-	const struct platform_clk_data *clk_tbl;
+-	u32 clk_cnt, i;
++	struct power_domain_info *pdinfo = NULL;
++	struct device **opp_vdevs = NULL;
++	const char * const *opp_pd_tbl;
++	const char * const *pd_tbl;
++	u32 opp_pd_cnt, i;
+ 	int ret;
+ 
+-	struct dev_pm_domain_attach_data iris_pd_data = {
+-		.pd_names = core->iris_platform_data->pmdomain_tbl,
+-		.num_pd_names = core->iris_platform_data->pmdomain_tbl_size,
+-		.pd_flags = PD_FLAG_NO_DEV_LINK,
+-	};
++	pd_tbl = core->iris_platform_data->pd_tbl;
+ 
+-	struct dev_pm_domain_attach_data iris_opp_pd_data = {
+-		.pd_names = core->iris_platform_data->opp_pd_tbl,
+-		.num_pd_names = core->iris_platform_data->opp_pd_tbl_size,
+-		.pd_flags = PD_FLAG_DEV_LINK_ON,
+-	};
++	core->pd_count = core->iris_platform_data->pd_tbl_size;
++	core->power_domain_tbl = devm_kzalloc(
++			core->dev,
++			sizeof(struct power_domain_info) * core->pd_count, GFP_KERNEL);
++	if (!core->power_domain_tbl)
++		return -ENOMEM;
+ 
+-	ret = devm_pm_domain_attach_list(core->dev, &iris_pd_data, &core->pmdomain_tbl);
+-	if (ret < 0)
+-		return ret;
++	for (i = 0; i < (core->pd_count - 1); i++) {
++		pdinfo = &core->power_domain_tbl[i];
++		pdinfo->name = pd_tbl[i];
++		ret = iris_pd_get(core, pdinfo);
++		if (ret) {
++			dev_err(core->dev,
++					"%s: failed to get pd: %s\n", __func__, pdinfo->name);
++			return ret;
++		}
++	}
+ 
+-	ret =  devm_pm_domain_attach_list(core->dev, &iris_opp_pd_data, &core->opp_pmdomain_tbl);
+-	if (ret < 0)
+-		return ret;
++	opp_pd_tbl = core->iris_platform_data->opp_pd_tbl;
++	opp_pd_cnt = core->iris_platform_data->opp_pd_tbl_size;
+ 
+-	clk_tbl = core->iris_platform_data->clk_tbl;
+-	clk_cnt = core->iris_platform_data->clk_tbl_size;
++	ret = devm_pm_opp_attach_genpd(core->dev, opp_pd_tbl, &opp_vdevs);
++	if (ret)
++		return ret;
+ 
+-	for (i = 0; i < clk_cnt; i++) {
+-		if (clk_tbl[i].clk_type == IRIS_HW_CLK) {
+-			ret = devm_pm_opp_set_clkname(core->dev, clk_tbl[i].clk_name);
+-			if (ret)
+-				return ret;
++	for (i = 0; i < (opp_pd_cnt - 1) ; i++) {
++		ret = iris_opp_dl_get(core->dev, opp_vdevs[i]);
++		if (ret) {
++			dev_err(core->dev, "%s: failed to create dl: %s\n",
++					__func__, dev_name(opp_vdevs[i]));
++			return ret;
+ 		}
+ 	}
+ 
+-	return devm_pm_opp_of_add_table(core->dev);
++	ret = devm_pm_opp_set_clkname(core->dev, "vcodec0_core");
++	if (ret)
++		return ret;
++
++	ret = devm_pm_opp_of_add_table(core->dev);
++	if (ret) {
++		dev_err(core->dev, "%s: failed to add opp table\n", __func__);
++		return ret;
++	}
++
++	return ret;
+ }
+ 
++
+ static int iris_init_clocks(struct iris_core *core)
+ {
+ 	int ret;
+diff --git a/drivers/media/platform/qcom/iris/iris_resources.c b/drivers/media/platform/qcom/iris/iris_resources.c
+index cf32f268b703..44c1303d298d 100644
+--- a/drivers/media/platform/qcom/iris/iris_resources.c
++++ b/drivers/media/platform/qcom/iris/iris_resources.c
+@@ -58,32 +58,54 @@ int iris_unset_icc_bw(struct iris_core *core)
+ 	return icc_bulk_set_bw(core->icc_count, core->icc_tbl);
+ }
+ 
+-int iris_enable_power_domains(struct iris_core *core, struct device *pd_dev)
++int iris_enable_power_domains(struct iris_core *core, const char *name)
+ {
++	struct power_domain_info *pdinfo = NULL;
+ 	int ret;
++	u32 i;
+ 
+ 	ret = dev_pm_opp_set_rate(core->dev, ULONG_MAX);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = pm_runtime_get_sync(pd_dev);
+-	if (ret < 0)
++	core->pd_count = core->iris_platform_data->pd_tbl_size;
++	for (i = 0; i < (core->pd_count - 1); i++) {
++		pdinfo = &core->power_domain_tbl[i];
++		if (strcmp(pdinfo->name, name))
++				continue;
++		ret = pm_runtime_get_sync(pdinfo->genpd_dev);
++	  if (ret < 0)
++		return ret;
++	}
++
++	ret = dev_pm_opp_set_rate(core->dev, ULONG_MAX);
++	if (ret)
+ 		return ret;
+ 
+ 	return ret;
+ }
+ 
+-int iris_disable_power_domains(struct iris_core *core, struct device *pd_dev)
++int iris_disable_power_domains(struct iris_core *core, const char *name)
+ {
++	struct power_domain_info *pdinfo = NULL;
+ 	int ret;
++	u32 i;
+ 
+ 	ret = dev_pm_opp_set_rate(core->dev, 0);
+ 	if (ret)
+ 		return ret;
+ 
+-	pm_runtime_put_sync(pd_dev);
++	core->pd_count = core->iris_platform_data->pd_tbl_size;
++	for (i = 0; i < (core->pd_count - 1); i++) {
++		pdinfo = &core->power_domain_tbl[i];
++		if (strcmp(pdinfo->name, name))
++				continue;
++		ret = pm_runtime_put_sync(pdinfo->genpd_dev);
++		if (ret)
++				return ret;
++	}
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static struct clk *iris_get_clk_by_type(struct iris_core *core, enum platform_clk_type clk_type)
+diff --git a/drivers/media/platform/qcom/iris/iris_resources.h b/drivers/media/platform/qcom/iris/iris_resources.h
+index af32b310a0aa..365346c695f3 100644
+--- a/drivers/media/platform/qcom/iris/iris_resources.h
++++ b/drivers/media/platform/qcom/iris/iris_resources.h
+@@ -8,8 +8,13 @@
+ 
+ struct iris_core;
+ 
+-int iris_enable_power_domains(struct iris_core *core, struct device *pd_dev);
+-int iris_disable_power_domains(struct iris_core *core, struct device *pd_dev);
++struct power_domain_info {
++	struct device	*genpd_dev;
++	const char	*name;
++};
++
++int iris_enable_power_domains(struct iris_core *core, const char *name);
++int iris_disable_power_domains(struct iris_core *core, const char *name);
+ int iris_unset_icc_bw(struct iris_core *core);
+ int iris_set_icc_bw(struct iris_core *core, unsigned long icc_bw);
+ int iris_disable_unprepare_clock(struct iris_core *core, enum platform_clk_type clk_type);
+diff --git a/drivers/media/platform/qcom/iris/iris_vpu_common.c b/drivers/media/platform/qcom/iris/iris_vpu_common.c
+index fe9896d66848..263e1f17add9 100644
+--- a/drivers/media/platform/qcom/iris/iris_vpu_common.c
++++ b/drivers/media/platform/qcom/iris/iris_vpu_common.c
+@@ -71,6 +71,31 @@
+ 
+ #define AON_WRAPPER_MVP_NOC_LPI_STATUS		(AON_BASE_OFFS + 0x4)
+ 
++static int iris_vpu_switch_vcodec_gdsc_mode(struct iris_core *core, bool sw_mode)
++{
++	void __iomem *base_addr;
++	u32 val = 0;
++	int ret;
++
++	base_addr = core->reg_base;
++
++	if (sw_mode) {
++		writel_relaxed(0, base_addr + WRAPPER_CORE_POWER_CONTROL);
++		ret = readl_relaxed_poll_timeout(base_addr + WRAPPER_CORE_POWER_STATUS, val,
++				val & BIT(1), 1, 200);
++		if (ret)
++			return ret;
++	} else {
++		writel_relaxed(1, base_addr + WRAPPER_CORE_POWER_CONTROL);
++		ret = readl_relaxed_poll_timeout(base_addr + WRAPPER_CORE_POWER_STATUS, val,
++				!(val & BIT(1)), 1, 200);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
+ static void iris_vpu_interrupt_init(struct iris_core *core)
+ {
+ 	u32 mask_val;
+@@ -248,15 +273,14 @@ static int iris_vpu_power_off_controller(struct iris_core *core)
+ disable_power:
+ 	iris_disable_unprepare_clock(core, IRIS_CTRL_CLK);
+ 	iris_disable_unprepare_clock(core, IRIS_AXI_CLK);
+-	iris_disable_power_domains(core, core->pmdomain_tbl->pd_devs[IRIS_CTRL_POWER_DOMAIN]);
++	iris_disable_power_domains(core, core->power_domain_tbl[0].name);
+ 
+ 	return 0;
+ }
+ 
+ void iris_vpu_power_off_hw(struct iris_core *core)
+ {
+-	dev_pm_genpd_set_hwmode(core->pmdomain_tbl->pd_devs[IRIS_HW_POWER_DOMAIN], false);
+-	iris_disable_power_domains(core, core->pmdomain_tbl->pd_devs[IRIS_HW_POWER_DOMAIN]);
++	iris_disable_power_domains(core, core->power_domain_tbl[1].name);
+ 	iris_disable_unprepare_clock(core, IRIS_HW_CLK);
+ }
+ 
+@@ -276,7 +300,7 @@ static int iris_vpu_power_on_controller(struct iris_core *core)
+ 	u32 rst_tbl_size = core->iris_platform_data->clk_rst_tbl_size;
+ 	int ret;
+ 
+-	ret = iris_enable_power_domains(core, core->pmdomain_tbl->pd_devs[IRIS_CTRL_POWER_DOMAIN]);
++	ret = iris_enable_power_domains(core, core->power_domain_tbl[0].name);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -297,7 +321,7 @@ static int iris_vpu_power_on_controller(struct iris_core *core)
+ err_disable_clock:
+ 	iris_disable_unprepare_clock(core, IRIS_AXI_CLK);
+ err_disable_power:
+-	iris_disable_power_domains(core, core->pmdomain_tbl->pd_devs[IRIS_CTRL_POWER_DOMAIN]);
++	iris_disable_power_domains(core, core->power_domain_tbl[0].name);
+ 
+ 	return ret;
+ }
+@@ -306,15 +330,19 @@ static int iris_vpu_power_on_hw(struct iris_core *core)
+ {
+ 	int ret;
+ 
+-	ret = iris_enable_power_domains(core, core->pmdomain_tbl->pd_devs[IRIS_HW_POWER_DOMAIN]);
++	ret = iris_enable_power_domains(core, core->power_domain_tbl[1].name);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = iris_prepare_enable_clock(core, IRIS_HW_CLK);
++	ret = iris_vpu_switch_vcodec_gdsc_mode(core, true);
+ 	if (ret)
+ 		goto err_disable_power;
+ 
+-	ret = dev_pm_genpd_set_hwmode(core->pmdomain_tbl->pd_devs[IRIS_HW_POWER_DOMAIN], true);
++	ret = iris_prepare_enable_clock(core, IRIS_HW_CLK);
++	if (ret)
++		goto err_gdsc_switch;
++
++	ret = iris_vpu_switch_vcodec_gdsc_mode(core, false);
+ 	if (ret)
+ 		goto err_disable_clock;
+ 
+@@ -322,8 +350,10 @@ static int iris_vpu_power_on_hw(struct iris_core *core)
+ 
+ err_disable_clock:
+ 	iris_disable_unprepare_clock(core, IRIS_HW_CLK);
++err_gdsc_switch:
++	iris_vpu_switch_vcodec_gdsc_mode(core, false);
+ err_disable_power:
+-	iris_disable_power_domains(core, core->pmdomain_tbl->pd_devs[IRIS_HW_POWER_DOMAIN]);
++	iris_disable_power_domains(core, core->power_domain_tbl[1].name);
+ 
+ 	return ret;
+ }
+diff --git a/drivers/media/platform/qcom/iris/iris_vpu_register_defines.h b/drivers/media/platform/qcom/iris/iris_vpu_register_defines.h
+index 818c81048fe5..086e03c9d0d8 100644
+--- a/drivers/media/platform/qcom/iris/iris_vpu_register_defines.h
++++ b/drivers/media/platform/qcom/iris/iris_vpu_register_defines.h
+@@ -13,5 +13,6 @@
+ #define CPU_CS_BASE_OFFS			(CPU_BASE_OFFS)
+ 
+ #define WRAPPER_CORE_POWER_STATUS		(WRAPPER_BASE_OFFS + 0x80)
++#define WRAPPER_CORE_POWER_CONTROL		(WRAPPER_BASE_OFFS + 0x84)
+ 
+ #endif
+-- 
+2.34.1
+

@@ -43,6 +43,7 @@ SRC_URI:append = " \
     file://qcs9100/0001-arm64-dts-qcom-sa8775p-Add-new-memory-map-updates-to.patch \
     file://qcs9100/0007-FROMLIST-arm64-dts-qcom-sa8775p-add-display-dt-nodes.patch \
     file://qcs9100/0006-FROMLIST-arm64-dts-qcom-sa8775p-add-DisplayPort-devi.patch \
+    file://qcs9100/0002-PENDING-arm64-dts-qcom-iris-video-driver-for-sa8775p.patch \
     "
 # qcs9100 board dts patches
 SRC_URI:append = " \

@@ -159,4 +159,6 @@ SRC_URI:append = " \
     file://common/0003-FROMGIT-soc-qcom-llcc-add-support-for-SAR2130P-and-S.patch \
     file://qcs8300/0004-BACKPORT-soc-qcom-llcc-Add-LLCC-configuration-for-th.patch \
     file://qcs9100/0001-FROMLIST-wifi-ath11k-Fix-unexpected-return-buffer-ma.patch \
+    file://qcs9100/0001-PENDING-media-iris-add-compatible-string-for-sa8775p.patch \
+    file://qcs9100/0003-QCLINUX-media-iris-add-support-for-GDSC-switch-and-P.patch \
     "

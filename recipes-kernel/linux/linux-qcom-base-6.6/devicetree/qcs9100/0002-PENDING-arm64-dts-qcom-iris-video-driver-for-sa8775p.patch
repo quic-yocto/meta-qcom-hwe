@@ -1,0 +1,101 @@
+From e65a15adc79779b60425be632074b672006b95ba Mon Sep 17 00:00:00 2001
+From: Satyam Gupta <quic_satygupt@quicinc.com>
+Date: Fri, 6 Sep 2024 17:26:15 +0530
+Subject: [PATCH 2/3] PENDING: arm64: dts: qcom: iris video driver for sa8775p
+
+Add support for enabling iris driver in sa8775p
+
+Change-Id: I4b9e2791c30cd26ebef59d098ad4947963895e26
+Signed-off-by: Satyam Gupta <quic_satygupt@quicinc.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 66 +++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index f1535e18442a..3a2d53af918f 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -14,6 +14,7 @@
+ #include <dt-bindings/power/qcom,rpmhpd.h>
+ #include <dt-bindings/power/qcom-rpmpd.h>
+ #include <dt-bindings/soc/qcom,rpmh-rsc.h>
++#include <dt-bindings/clock/qcom,sa8775p-videocc.h>
+ 
+ / {
+ 	interrupt-parent = <&intc>;
+@@ -3048,6 +3049,71 @@ llcc: system-cache-controller@9200000 {
+ 			interrupts = <GIC_SPI 580 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+ 
++		iris: video-codec@aa00000 {
++			compatible = "qcom,sa8775p-iris";
++			status = "okay";
++
++			reg = <0 0x0aa00000 0 0xf0000>;
++			interrupts = <GIC_SPI 174 IRQ_TYPE_LEVEL_HIGH>;
++
++			power-domains = <&videocc VIDEO_CC_MVS0C_GDSC>,
++				<&videocc VIDEO_CC_MVS0_GDSC>,
++				<&rpmhpd SA8775P_MXC>,
++				<&rpmhpd SA8775P_MMCX>;
++			power-domain-names = "venus", "vcodec0", "mxc", "mmcx";
++			operating-points-v2 = <&iris_opp_table>;
++
++			clocks = <&gcc GCC_VIDEO_AXI0_CLK>,
++				<&videocc VIDEO_CC_MVS0C_CLK>,
++			<&videocc VIDEO_CC_MVS0_CLK>;
++			clock-names = "iface", "core", "vcodec0_core";
++
++			interconnects =
++				<&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ALWAYS
++					&config_noc SLAVE_VENUS_CFG QCOM_ICC_TAG_ALWAYS>,
++				<&mmss_noc MASTER_VIDEO_P0 QCOM_ICC_TAG_ALWAYS
++					&mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ALWAYS>;
++			interconnect-names = "cpu-cfg", "video-mem";
++
++			/* FW load region */
++			memory-region = <&pil_video_mem>;
++
++			resets = <&gcc GCC_VIDEO_AXI0_CLK_ARES>;
++			reset-names = "bus";
++
++			iommus = <&apps_smmu 0x0880 0x0400>,
++						<&apps_smmu 0x0887 0x0400>;
++			dma-coherent;
++
++			iris_opp_table: opp-table {
++				compatible = "operating-points-v2";
++
++				opp-366000000 {
++					opp-hz = /bits/ 64 <366000000>;
++					required-opps = <&rpmhpd_opp_svs_l1>,
++						<&rpmhpd_opp_svs_l1>;
++				};
++
++				opp-444000000 {
++					opp-hz = /bits/ 64 <444000000>;
++					required-opps = <&rpmhpd_opp_nom>,
++						<&rpmhpd_opp_nom>;
++				};
++
++				opp-533333334 {
++					opp-hz = /bits/ 64 <533333334>;
++					required-opps = <&rpmhpd_opp_turbo>,
++						<&rpmhpd_opp_turbo>;
++				};
++
++				opp-560000000 {
++					opp-hz = /bits/ 64 <560000000>;
++					required-opps = <&rpmhpd_opp_turbo_l1>,
++						<&rpmhpd_opp_turbo_l1>;
++				};
++			};
++		};
++
+ 		videocc: clock-controller@abf0000 {
+ 			compatible = "qcom,sa8775p-videocc";
+ 			reg = <0x0 0x0abf0000 0x0 0x10000>;
+-- 
+2.34.1
+
