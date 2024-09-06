@@ -1,4 +1,4 @@
-inherit module
+inherit module systemd
 
 DESCRIPTION = "TOSHIBA QPS615 driver"
 LICENSE = "GPL-2.0-only"
@@ -19,4 +19,14 @@ RPROVIDES:${PN} += "kernel-module-qps615"
 
 RRECOMMENDS:${PN} += "qps615-firmware"
 
-KERNEL_MODULE_AUTOLOAD += "${MODULE_NAME}"
+do_install:append () {
+	install -d ${D}${systemd_unitdir}/system/
+	install -d ${D}${systemd_unitdir}/system/multi-user.target.wants/
+
+	install -m 0644 ${WORKDIR}/qps615.service -D ${D}${systemd_unitdir}/system/qps615.service
+	ln -sf -r ${D}${systemd_unitdir}/system/qps615.service \
+		${D}${systemd_unitdir}/system/multi-user.target.wants/qps615.service
+}
+
+FILES:${PN}+="${systemd_unitdir}/system/qps615.service"
+FILES:${PN}+="${systemd_unitdir}/system/multi-user.target.wants/qps615.service"
