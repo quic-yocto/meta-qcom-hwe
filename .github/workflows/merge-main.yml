@@ -7,13 +7,21 @@ on:
 
 jobs:
   kas:
+    strategy:
+      fail-fast: true
+      matrix:
+        machine:
+          - qcm6490-idp
+          - qcs6490-rb3gen2-core-kit
+          - sa8775p-ride-sx
     runs-on: [self-hosted, x86]
+    name: ${{ matrix.machine }}/poky/systemd
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Compile RB3Gen2
+      - name: kas build
         run: |
           export DL_DIR=/srv/gh-runners/quic-yocto/downloads
           export SSTATE_DIR=/srv/gh-runners/quic-yocto/sstate-cache
@@ -21,4 +29,4 @@ jobs:
           mkdir -p $SSTATE_DIR
           mkdir build
           cd build
-          kas build ../ci/qcs6490-rb3gen2-core-kit.yml
+          kas build ../ci/${{ matrix.machine }}.yml
