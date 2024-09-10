@@ -1,0 +1,39 @@
+From 77a28a753db898d8af78fc2d4d9b67781a3c6ff4 Mon Sep 17 00:00:00 2001
+From: Nitin Rawat <quic_nitirawa@quicinc.com>
+Date: Tue, 19 Sep 2023 02:20:36 +0530
+Subject: [PATCH] dt-bindings: phy: Add QMP UFS PHY comptible for SC7280
+
+Document the QMP UFS PHY compatible for SC7280.
+
+Signed-off-by: Nitin Rawat <quic_nitirawa@quicinc.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Link: https://lore.kernel.org/r/20230918205037.25658-2-quic_nitirawa@quicinc.com
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 79eeac2e262545077be482b1a1700669e0c7d90c]
+---
+ .../devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml      | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml
+index a6244c33faf6..f82a3804c87f 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml
+@@ -19,6 +19,7 @@ properties:
+       - qcom,msm8996-qmp-ufs-phy
+       - qcom,msm8998-qmp-ufs-phy
+       - qcom,sa8775p-qmp-ufs-phy
++      - qcom,sc7280-qmp-ufs-phy
+       - qcom,sc8180x-qmp-ufs-phy
+       - qcom,sc8280xp-qmp-ufs-phy
+       - qcom,sdm845-qmp-ufs-phy
+@@ -84,6 +85,7 @@ allOf:
+           contains:
+             enum:
+               - qcom,sa8775p-qmp-ufs-phy
++              - qcom,sc7280-qmp-ufs-phy
+               - qcom,sm8450-qmp-ufs-phy
+     then:
+       properties:
+-- 
+2.25.1
+

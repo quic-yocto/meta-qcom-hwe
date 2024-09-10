@@ -11,15 +11,14 @@ inherit kernel
 COMPATIBLE_MACHINE = "(qcom)"
 
 
-SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=350dfd604d2ffbe0cac99bf3459b49114aad11f4;branch=kernel.qclinux.1.0.r1-rel \
-           file://QCLINUX-arm64-dts-qcom-sa8775p-ride-add-board-id-and.patch \
+SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=9d53679ea3d39978f5107f11dd2c24c285eb191c;branch=kernel.qclinux.1.0.r1-rel;destsuffix=kernel \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux.cfg', '', d)} \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux_debug.cfg', '', d)} \
            "
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/kernel"
 
-KERNEL_DEFCONFIG = "${S}/arch/arm64/configs/qcom_defconfig"
+KERNEL_CONFIG ??= "qcom_defconfig"
 
 KERNEL_CONFIG_FRAGMENTS:append = " ${S}/arch/arm64/configs/qcom_addons.config"
 KERNEL_CONFIG_FRAGMENTS:append = " ${@oe.utils.vartrue('DEBUG_BUILD', '${S}/arch/arm64/configs/qcom_debug.config', '', d)}"
@@ -58,14 +57,11 @@ kernel_conf_variable() {
 }
 
 do_configure:prepend() {
-    if [ -f '${WORKDIR}/defconfig' ]; then
-        cp '${WORKDIR}/defconfig' '${B}/.config'
+    if [ ! -f "${S}/arch/${ARCH}/configs/${KERNEL_CONFIG}" ]; then
+        bbfatal "KERNEL_CONFIG '${KERNEL_CONFIG}' was specified, but not present in the source tree"
     else
-        cp '${KERNEL_DEFCONFIG}' '${B}/.config'
+        cp '${S}/arch/${ARCH}/configs/${KERNEL_CONFIG}' '${B}/.config'
     fi
-
-    kernel_conf_variable LOCALVERSION "\"${LOCALVERSION}\""
-    kernel_conf_variable LOCALVERSION_AUTO y
 
     if [ "${SCMVERSION}" = "y" ]; then
         # Add GIT revision to the local version
@@ -100,6 +96,9 @@ do_configure:prepend() {
         # Now that all the fragments are located merge them.
         ( cd ${WORKDIR} && ${S}/scripts/kconfig/merge_config.sh -m -r -O ${B} ${B}/.config ${KERNEL_CONFIG_FRAGMENTS} 1>&2 )
     fi
+
+    kernel_conf_variable LOCALVERSION "\"${LOCALVERSION}\""
+    kernel_conf_variable LOCALVERSION_AUTO y
 }
 
 do_configure:append() {
@@ -115,6 +114,4 @@ do_install:prepend() {
     ln -rs ${STAGING_KERNEL_DIR} ${D}${nonarch_base_libdir}/modules/${KERNEL_VERSION}/source
 }
 
-do_deploy:append() {
-    install -m 0644 ${D}/boot/vmlinux-${KERNEL_VERSION_NAME} -D ${DEPLOYDIR}/vmlinux
-}
+do_package[nostamp] = "1"

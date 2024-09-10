@@ -1,0 +1,47 @@
+From 7c14accb14fa6d251ed82d335beee045e163cfc0 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org> 
+Date: Wed, 21 Aug 2024 17:14:28 +0530
+Subject: [PATCH] UPSTREAM: arm64: dts: qcom: sa8775p: enable the inline crypto
+ engine
+
+Add an ICE node to sa8775p SoC description and enable it by adding a
+phandle to the UFS node.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Link: https://lore.kernel.org/r/20230913153529.32777-2-bartosz.golaszewski@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 96272ba7103d4518e2d0f17daf6fe0008fc6e12c]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index d4ca92b98c7d..1d06d29ed922 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -1525,6 +1525,7 @@ ufs_mem_hc: ufs@1d84000 {
+ 					<0 0>,
+ 					<0 0>,
+ 					<0 0>;
++			qcom,ice = <&ice>;
+ 			status = "disabled";
+ 		};
+ 
+@@ -1546,6 +1547,13 @@ ufs_mem_phy: phy@1d87000 {
+ 			status = "disabled";
+ 		};
+ 
++		ice: crypto@1d88000 {
++			compatible = "qcom,sa8775p-inline-crypto-engine",
++			             "qcom,inline-crypto-engine";
++			reg = <0x0 0x01d88000 0x0 0x8000>;
++			clocks = <&gcc GCC_UFS_PHY_ICE_CORE_CLK>;
++		};
++
+ 		usb_0_hsphy: phy@88e4000 {
+ 			compatible = "qcom,sa8775p-usb-hs-phy",
+ 				     "qcom,usb-snps-hs-5nm-phy";
+-- 
+2.25.1
+

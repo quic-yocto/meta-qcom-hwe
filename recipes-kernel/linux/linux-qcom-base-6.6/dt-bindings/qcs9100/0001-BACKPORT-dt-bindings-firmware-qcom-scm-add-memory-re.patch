@@ -1,0 +1,55 @@
+From 44335d04714ddc80f221d913cd2502ddb0dab766 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 23 Aug 2024 12:50:10 +0530
+Subject: [PATCH] BACKPORT: dt-bindings: firmware: qcom,scm: add memory-region
+ for sa8775p
+
+Document a new property (currently only for sa8775p) that describes the
+memory region reserved for communicating with the TrustZone.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/r/20240527-shm-bridge-v10-1-ce7afaa58d3a@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 9164d2be21d42a0263b80af709fa40879c7f52be]
+---
+ .../devicetree/bindings/firmware/qcom,scm.yaml   | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/firmware/qcom,scm.yaml b/Documentation/devicetree/bindings/firmware/qcom,scm.yaml
+index 4233ea839bfc..9a0b5360b811 100644
+--- a/Documentation/devicetree/bindings/firmware/qcom,scm.yaml
++++ b/Documentation/devicetree/bindings/firmware/qcom,scm.yaml
+@@ -89,6 +89,11 @@ properties:
+       protocol to handle sleeping SCM calls.
+     maxItems: 1
+ 
++  memory-region:
++    description:
++      Phandle to the memory region reserved for the shared memory bridge to TZ.
++    maxItems: 1
++
+   qcom,dload-mode:
+     $ref: /schemas/types.yaml#/definitions/phandle-array
+     items:
+@@ -196,6 +201,17 @@ allOf:
+       properties:
+         interrupts: false
+ 
++  - if:
++      not:
++        properties:
++          compatible:
++            contains:
++              enum:
++                - qcom,scm-sa8775p
++    then:
++      properties:
++        memory-region: false
++
+ required:
+   - compatible
+ 
+-- 
+2.25.1
+

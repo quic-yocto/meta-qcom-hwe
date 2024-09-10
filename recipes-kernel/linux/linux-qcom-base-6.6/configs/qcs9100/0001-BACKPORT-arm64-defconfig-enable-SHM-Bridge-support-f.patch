@@ -1,0 +1,36 @@
+From e14e81191a680ea22b29b5ae5f1145823ba58c58 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 23 Aug 2024 17:37:49 +0530
+Subject: [PATCH] BACKPORT: arm64: defconfig: enable SHM Bridge support for the
+ TZ memory allocator
+
+Enable SHM Bridge support in the Qualcomm TrustZone allocator by default
+as even on architectures that don't support it, we automatically fall
+back to the generic allocator.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Tested-by: Andrew Halaney <ahalaney@redhat.com> # sc8280xp-lenovo-thinkpad-x13s
+Tested-by: Deepti Jaggi <quic_djaggi@quicinc.com> #sa8775p-ride
+Reviewed-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/r/20240527-shm-bridge-v10-14-ce7afaa58d3a@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git f5a27053293fa027349f8fdfe81b314cc709158a]
+---
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 60af93c04b45..19f27ebda396 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -255,6 +255,7 @@ CONFIG_INTEL_STRATIX10_RSU=m
+ CONFIG_EFI_CAPSULE_LOADER=y
+ CONFIG_IMX_SCU=y
+ CONFIG_IMX_SCU_PD=y
++CONFIG_QCOM_TZMEM_MODE_SHMBRIDGE=y
+ CONFIG_GNSS=m
+ CONFIG_GNSS_MTK_SERIAL=m
+ CONFIG_MTD=y
+-- 
+2.25.1
+

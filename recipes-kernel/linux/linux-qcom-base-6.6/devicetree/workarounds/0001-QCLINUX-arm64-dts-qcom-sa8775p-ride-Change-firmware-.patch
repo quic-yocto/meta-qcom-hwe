@@ -1,0 +1,31 @@
+From 20831f7986a6742b6c97232ac4538ff1d38597c5 Mon Sep 17 00:00:00 2001
+From: Komal Bajaj <quic_kbajaj@quicinc.com>
+Date: Fri, 26 Jul 2024 13:56:58 +0530
+Subject: [PATCH] QCLINUX: arm64: dts: qcom: sa8775p-ride: Change firmware
+ format for GPDSP1
+
+Change the firmware format for GPDSP1 from MBN to MDT.
+
+Signed-off-by: Komal Bajaj <quic_kbajaj@quicinc.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index 223b5ea15aaa..92f55b1d3212 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -744,7 +744,7 @@ &remoteproc_gpdsp0 {
+ };
+ 
+ &remoteproc_gpdsp1 {
+-	firmware-name = "qcom/sa8775p/gpdsp1.mbn";
++	firmware-name = "qcom/sa8775p/gpdsp1.mdt";
+ 	status = "okay";
+ };
+ 
+-- 
+2.34.1
+
+

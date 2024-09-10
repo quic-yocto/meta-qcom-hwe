@@ -1,0 +1,44 @@
+From 9ab5c0b134a819152030b48a22c443d596f46571 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org> 
+Date: Fri, 23 Aug 2024 17:41:30 +0530
+Subject: [PATCH] BACKPORT: arm64: dts: qcom: sa8775p: add a dedicated memory
+ carveout for TZ
+
+Add a 20MB reserved memory region for use by SCM calls.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Link: https://lore.kernel.org/r/20240527-shm-bridge-v10-15-ce7afaa58d3a@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git d7aeff30093888649789dcad070fe954745adf53]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index d4ca92b98c7d..f4e779ced3cb 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -208,6 +208,7 @@ core3 {
+ 	firmware {
+ 		scm {
+ 			compatible = "qcom,scm-sa8775p", "qcom,scm";
++			memory-region = <&tz_ffi_mem>;
+ 		};
+ 	};
+ 
+@@ -378,6 +379,12 @@ cpucp_fw_mem: cpucp-fw@90b00000 {
+ 			no-map;
+ 		};
+ 
++		tz_ffi_mem: tz-ffi@91c00000 {
++			compatible = "shared-dma-pool";
++			reg = <0x0 0x91c00000 0x0 0x1400000>;
++			no-map;
++		};
++
+ 		lpass_machine_learning_mem: lpass-machine-learning@93b00000 {
+ 			reg = <0x0 0x93b00000 0x0 0xf00000>;
+ 			no-map;
+-- 
+2.25.1
+

@@ -1,0 +1,30 @@
+From cb243b72f59ba4282dae2b5422c632b7aa18490a Mon Sep 17 00:00:00 2001
+From: Tengfei Fan <quic_tengfan@quicinc.com>
+Date: Tue, 6 Aug 2024 12:19:27 +0800
+Subject: [PATCH 1/4] FROMLIST: dt-bindings: arm: qcom,ids: add SoC ID for
+ QCS9100
+
+Add the ID for the Qualcomm QCS9100 SoC.
+
+Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20240806-add_qcs9100_soc_id-v1-1-04d14081f304@quicinc.com/]
+---
+ include/dt-bindings/arm/qcom,ids.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/dt-bindings/arm/qcom,ids.h b/include/dt-bindings/arm/qcom,ids.h
+index be12e1dd1f38..c57eba0d5649 100644
+--- a/include/dt-bindings/arm/qcom,ids.h
++++ b/include/dt-bindings/arm/qcom,ids.h
+@@ -260,7 +260,7 @@
+ #define QCOM_ID_IPQ5312			594
+ #define QCOM_ID_IPQ5302			595
+ #define QCOM_ID_IPQ5300			624
+-
++#define QCOM_ID_QCS9100			667
+ /*
+  * The board type and revision information, used by Qualcomm bootloaders and
+  * DTS for older chipsets (qcom,board-id):
+-- 
+2.34.1

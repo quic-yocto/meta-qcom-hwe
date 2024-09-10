@@ -1,0 +1,144 @@
+From e45727a0899fe28a0734431560a0cc0cd4fbfe98 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 23 Aug 2024 16:00:56 +0530
+Subject: [PATCH] BACKPORT: firmware: qcom: scm: smc: switch to using the SCM
+ allocator
+
+We need to allocate, map and pass a buffer to the trustzone if we have
+more than 4 arguments for a given SCM call. Let's use the new TrustZone
+allocator for that memory and shrink the code in process.
+
+As this code lives in a different compilation unit than the rest of the
+SCM code, we need to provide a helper in the form of
+qcom_scm_get_tzmem_pool() that allows the SMC low-level routines to
+access the SCM memory pool.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Reviewed-by: Andrew Halaney <ahalaney@redhat.com>
+Tested-by: Andrew Halaney <ahalaney@redhat.com> # sc8280xp-lenovo-thinkpad-x13s
+Tested-by: Deepti Jaggi <quic_djaggi@quicinc.com> #sa8775p-ride
+Reviewed-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/r/20240527-shm-bridge-v10-4-ce7afaa58d3a@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 449d0d84bcd8246b508d07995326d13c54488b8c]
+---
+ drivers/firmware/qcom_scm-smc.c | 29 ++++++++---------------------
+ drivers/firmware/qcom_scm.c     |  5 +++++
+ drivers/firmware/qcom_scm.h     |  4 ++++
+ 3 files changed, 17 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/firmware/qcom_scm-smc.c b/drivers/firmware/qcom_scm-smc.c
+index 16cf88acfa8e..f24b7af8b4f7 100644
+--- a/drivers/firmware/qcom_scm-smc.c
++++ b/drivers/firmware/qcom_scm-smc.c
+@@ -2,6 +2,7 @@
+ /* Copyright (c) 2015,2019 The Linux Foundation. All rights reserved.
+  */
+ 
++#include <linux/cleanup.h>
+ #include <linux/io.h>
+ #include <linux/errno.h>
+ #include <linux/delay.h>
+@@ -9,6 +10,7 @@
+ #include <linux/slab.h>
+ #include <linux/types.h>
+ #include <linux/firmware/qcom/qcom_scm.h>
++#include <linux/firmware/qcom/qcom_tzmem.h>
+ #include <linux/arm-smccc.h>
+ #include <linux/dma-mapping.h>
+ 
+@@ -150,11 +152,10 @@ int __scm_smc_call(struct device *dev, const struct qcom_scm_desc *desc,
+ 		   enum qcom_scm_convention qcom_convention,
+ 		   struct qcom_scm_res *res, bool atomic)
+ {
++	struct qcom_tzmem_pool *mempool = qcom_scm_get_tzmem_pool();
+ 	int arglen = desc->arginfo & 0xf;
+ 	int i, ret;
+-	dma_addr_t args_phys = 0;
+-	void *args_virt = NULL;
+-	size_t alloc_len;
++	void *args_virt __free(qcom_tzmem) = NULL;
+ 	gfp_t flag = atomic ? GFP_ATOMIC : GFP_KERNEL;
+ 	u32 smccc_call_type = atomic ? ARM_SMCCC_FAST_CALL : ARM_SMCCC_STD_CALL;
+ 	u32 qcom_smccc_convention = (qcom_convention == SMC_CONVENTION_ARM_32) ?
+@@ -172,9 +173,9 @@ int __scm_smc_call(struct device *dev, const struct qcom_scm_desc *desc,
+ 		smc.args[i + SCM_SMC_FIRST_REG_IDX] = desc->args[i];
+ 
+ 	if (unlikely(arglen > SCM_SMC_N_REG_ARGS)) {
+-		alloc_len = SCM_SMC_N_EXT_ARGS * sizeof(u64);
+-		args_virt = kzalloc(PAGE_ALIGN(alloc_len), flag);
+-
++		args_virt = qcom_tzmem_alloc(mempool,
++					     SCM_SMC_N_EXT_ARGS * sizeof(u64),
++					     flag);
+ 		if (!args_virt)
+ 			return -ENOMEM;
+ 
+@@ -192,25 +193,11 @@ int __scm_smc_call(struct device *dev, const struct qcom_scm_desc *desc,
+ 						      SCM_SMC_FIRST_EXT_IDX]);
+ 		}
+ 
+-		args_phys = dma_map_single(dev, args_virt, alloc_len,
+-					   DMA_TO_DEVICE);
+-
+-		if (dma_mapping_error(dev, args_phys)) {
+-			kfree(args_virt);
+-			return -ENOMEM;
+-		}
+-
+-		smc.args[SCM_SMC_LAST_REG_IDX] = args_phys;
++		smc.args[SCM_SMC_LAST_REG_IDX] = qcom_tzmem_to_phys(args_virt);
+ 	}
+ 
+-	/* ret error check follows after args_virt cleanup*/
+ 	ret = __scm_smc_do(dev, &smc, &smc_res, atomic);
+ 
+-	if (args_virt) {
+-		dma_unmap_single(dev, args_phys, alloc_len, DMA_TO_DEVICE);
+-		kfree(args_virt);
+-	}
+-
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
+index 00a0b30e641d..d00af63fc407 100644
+--- a/drivers/firmware/qcom_scm.c
++++ b/drivers/firmware/qcom_scm.c
+@@ -153,6 +153,11 @@ static void qcom_scm_bw_disable(void)
+ enum qcom_scm_convention qcom_scm_convention = SMC_CONVENTION_UNKNOWN;
+ static DEFINE_SPINLOCK(scm_query_lock);
+ 
++struct qcom_tzmem_pool *qcom_scm_get_tzmem_pool(void)
++{
++	return __scm->mempool;
++}
++
+ static enum qcom_scm_convention __get_convention(void)
+ {
+ 	unsigned long flags;
+diff --git a/drivers/firmware/qcom_scm.h b/drivers/firmware/qcom_scm.h
+index e6e512bd57d1..90f46e687710 100644
+--- a/drivers/firmware/qcom_scm.h
++++ b/drivers/firmware/qcom_scm.h
+@@ -4,6 +4,8 @@
+ #ifndef __QCOM_SCM_INT_H
+ #define __QCOM_SCM_INT_H
+ 
++struct qcom_tzmem_pool;
++
+ enum qcom_scm_convention {
+ 	SMC_CONVENTION_UNKNOWN,
+ 	SMC_CONVENTION_LEGACY,
+@@ -77,6 +79,8 @@ extern int scm_legacy_call_atomic(struct device *dev,
+ extern int scm_legacy_call(struct device *dev, const struct qcom_scm_desc *desc,
+ 			   struct qcom_scm_res *res);
+ 
++struct qcom_tzmem_pool *qcom_scm_get_tzmem_pool(void);
++
+ #define QCOM_SCM_SVC_BOOT		0x01
+ #define QCOM_SCM_BOOT_SET_ADDR		0x01
+ #define QCOM_SCM_BOOT_TERMINATE_PC	0x02
+-- 
+2.25.1
+

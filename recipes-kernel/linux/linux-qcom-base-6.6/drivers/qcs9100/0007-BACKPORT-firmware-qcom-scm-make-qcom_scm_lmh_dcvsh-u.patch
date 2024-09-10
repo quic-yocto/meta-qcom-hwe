@@ -1,0 +1,61 @@
+From b87cbca4a688c82152858cb32b5aaece60c3d987 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 23 Aug 2024 16:52:57 +0530
+Subject: [PATCH] BACKPORT: firmware: qcom: scm: make qcom_scm_lmh_dcvsh() use
+ the TZ allocator
+
+Let's use the new TZ memory allocator to obtain a buffer for this call
+instead of using dma_alloc_coherent().
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Reviewed-by: Andrew Halaney <ahalaney@redhat.com>
+Tested-by: Andrew Halaney <ahalaney@redhat.com> # sc8280xp-lenovo-thinkpad-x13s
+Tested-by: Deepti Jaggi <quic_djaggi@quicinc.com> #sa8775p-ride
+Reviewed-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/r/20240527-shm-bridge-v10-7-ce7afaa58d3a@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git d7e23490bc2e3c449e75a40e6bda2b4e77a777f6]
+---
+ drivers/firmware/qcom_scm.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
+index e27334176202..6dbdb33029b8 100644
+--- a/drivers/firmware/qcom_scm.c
++++ b/drivers/firmware/qcom_scm.c
+@@ -1275,8 +1275,6 @@ EXPORT_SYMBOL_GPL(qcom_scm_lmh_profile_change);
+ int qcom_scm_lmh_dcvsh(u32 payload_fn, u32 payload_reg, u32 payload_val,
+ 		       u64 limit_node, u32 node_id, u64 version)
+ {
+-	dma_addr_t payload_phys;
+-	u32 *payload_buf;
+ 	int ret, payload_size = 5 * sizeof(u32);
+ 
+ 	struct qcom_scm_desc desc = {
+@@ -1291,7 +1289,9 @@ int qcom_scm_lmh_dcvsh(u32 payload_fn, u32 payload_reg, u32 payload_val,
+ 		.owner = ARM_SMCCC_OWNER_SIP,
+ 	};
+ 
+-	payload_buf = dma_alloc_coherent(__scm->dev, payload_size, &payload_phys, GFP_KERNEL);
++	u32 *payload_buf __free(qcom_tzmem) = qcom_tzmem_alloc(__scm->mempool,
++							       payload_size,
++							       GFP_KERNEL);
+ 	if (!payload_buf)
+ 		return -ENOMEM;
+ 
+@@ -1301,11 +1301,10 @@ int qcom_scm_lmh_dcvsh(u32 payload_fn, u32 payload_reg, u32 payload_val,
+ 	payload_buf[3] = 1;
+ 	payload_buf[4] = payload_val;
+ 
+-	desc.args[0] = payload_phys;
++	desc.args[0] = qcom_tzmem_to_phys(payload_buf);
+ 
+ 	ret = qcom_scm_call(__scm->dev, &desc, NULL);
+ 
+-	dma_free_coherent(__scm->dev, payload_size, payload_buf, payload_phys);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(qcom_scm_lmh_dcvsh);
+-- 
+2.25.1
+

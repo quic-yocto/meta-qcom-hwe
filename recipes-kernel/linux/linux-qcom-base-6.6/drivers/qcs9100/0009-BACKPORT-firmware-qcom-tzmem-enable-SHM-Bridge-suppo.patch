@@ -1,0 +1,143 @@
+From f6015ab520c61da9adec4d51da4c11298e3ac410 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 23 Aug 2024 17:22:47 +0530
+Subject: [PATCH] BACKPORT: firmware: qcom: tzmem: enable SHM Bridge support
+
+SHM Bridge is a safety mechanism allowing to limit the amount of memory
+shared between the kernel and the TrustZone to regions explicitly marked
+as such.
+
+Add a variant of the tzmem allocator that configures the memory pools as
+SHM bridges. It also enables the SHM bridge globally so non-SHM bridge
+memory will no longer work with SCM calls.
+
+If enabled at build-time, it will still be checked for availability at
+run-time. If the architecture doesn't support SHM Bridge, the allocator
+will fall back to the generic mode.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Tested-by: Andrew Halaney <ahalaney@redhat.com> # sc8280xp-lenovo-thinkpad-x13s
+Tested-by: Deepti Jaggi <quic_djaggi@quicinc.com> #sa8775p-ride
+Reviewed-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/r/20240527-shm-bridge-v10-11-ce7afaa58d3a@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git f86c61498a573a19b19b0ba2784dc1bd4dcfc170]
+---
+ drivers/firmware/qcom/Kconfig      | 10 ++++
+ drivers/firmware/qcom/qcom_tzmem.c | 79 +++++++++++++++++++++++++++++-
+ 2 files changed, 88 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/firmware/qcom/Kconfig b/drivers/firmware/qcom/Kconfig
+index a0386be8c7bc..423e632bb75e 100644
+--- a/drivers/firmware/qcom/Kconfig
++++ b/drivers/firmware/qcom/Kconfig
+@@ -24,6 +24,16 @@ config QCOM_TZMEM_MODE_GENERIC
+ 	  Use the generic allocator mode. The memory is page-aligned, non-cachable
+ 	  and physically contiguous.
+ 
++config QCOM_TZMEM_MODE_SHMBRIDGE
++	bool "SHM Bridge"
++	help
++	  Use Qualcomm Shared Memory Bridge. The memory has the same alignment as
++	  in the 'Generic' allocator but is also explicitly marked as an SHM Bridge
++	  buffer.
++
++	  With this selected, all buffers passed to the TrustZone must be allocated
++	  using the TZMem allocator or else the TrustZone will refuse to use them.
++
+ endchoice
+ 
+ endmenu
+diff --git a/drivers/firmware/qcom/qcom_tzmem.c b/drivers/firmware/qcom/qcom_tzmem.c
+index 3853385bf215..aab6376cade5 100644
+--- a/drivers/firmware/qcom/qcom_tzmem.c
++++ b/drivers/firmware/qcom/qcom_tzmem.c
+@@ -66,7 +66,84 @@ static void qcom_tzmem_cleanup_area(struct qcom_tzmem_area *area)
+ 
+ }
+ 
+-#endif /* CONFIG_QCOM_TZMEM_MODE_GENERIC */
++#elif IS_ENABLED(CONFIG_QCOM_TZMEM_MODE_SHMBRIDGE)
++
++#include <linux/firmware/qcom/qcom_scm.h>
++#include <linux/of.h>
++
++#define QCOM_SHM_BRIDGE_NUM_VM_SHIFT 9
++
++static bool qcom_tzmem_using_shm_bridge;
++
++/* List of machines that are known to not support SHM bridge correctly. */
++static const char *const qcom_tzmem_blacklist[] = {
++	"qcom,sc8180x",
++	NULL
++};
++
++static int qcom_tzmem_init(void)
++{
++	const char *const *platform;
++	int ret;
++
++	for (platform = qcom_tzmem_blacklist; *platform; platform++) {
++		if (of_machine_is_compatible(*platform))
++			goto notsupp;
++	}
++
++	ret = qcom_scm_shm_bridge_enable();
++	if (ret == -EOPNOTSUPP)
++		goto notsupp;
++
++	if (!ret)
++		qcom_tzmem_using_shm_bridge = true;
++
++	return ret;
++
++notsupp:
++	dev_info(qcom_tzmem_dev, "SHM Bridge not supported\n");
++	return 0;
++}
++
++static int qcom_tzmem_init_area(struct qcom_tzmem_area *area)
++{
++	u64 pfn_and_ns_perm, ipfn_and_s_perm, size_and_flags;
++	int ret;
++
++	if (!qcom_tzmem_using_shm_bridge)
++		return 0;
++
++	pfn_and_ns_perm = (u64)area->paddr | QCOM_SCM_PERM_RW;
++	ipfn_and_s_perm = (u64)area->paddr | QCOM_SCM_PERM_RW;
++	size_and_flags = area->size | (1 << QCOM_SHM_BRIDGE_NUM_VM_SHIFT);
++
++	u64 *handle __free(kfree) = kzalloc(sizeof(*handle), GFP_KERNEL);
++	if (!handle)
++		return -ENOMEM;
++
++	ret = qcom_scm_shm_bridge_create(qcom_tzmem_dev, pfn_and_ns_perm,
++					 ipfn_and_s_perm, size_and_flags,
++					 QCOM_SCM_VMID_HLOS, handle);
++	if (ret)
++		return ret;
++
++	area->priv = no_free_ptr(handle);
++
++	return 0;
++}
++
++static void qcom_tzmem_cleanup_area(struct qcom_tzmem_area *area)
++{
++	u64 *handle = area->priv;
++
++	if (!qcom_tzmem_using_shm_bridge)
++		return;
++
++	qcom_scm_shm_bridge_delete(qcom_tzmem_dev, *handle);
++	kfree(handle);
++}
++
++#endif /* CONFIG_QCOM_TZMEM_MODE_SHMBRIDGE */
+ 
+ static int qcom_tzmem_pool_add_memory(struct qcom_tzmem_pool *pool,
+ 				      size_t size, gfp_t gfp)
+-- 
+2.25.1
+

@@ -1,0 +1,33 @@
+From 8bc867e2a5f18f364c090fb5c8cb6cc427a83f34 Mon Sep 17 00:00:00 2001
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 27 Aug 2024 22:09:06 +0530
+Subject: [PATCH] UPSTREAM: firmware: qcom: tzmem: don't ask about allocator
+ mode when not enabled
+
+The Qualcomm firmware code shouldn't ask about what memory allocator
+mode should be used when the code isn't even enabled.
+
+Get rid of pointless config-time question.
+
+Link: https://lore.kernel.org/all/CAHk-=wg+38EHPKGou1MqXwAAXC30cM8sMgZAGnZ7TcFO4L9J2w@mail.gmail.com/
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 9de4ad3bde144b55b8451fc280c18107c139481c]
+---
+ drivers/firmware/qcom/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/firmware/qcom/Kconfig b/drivers/firmware/qcom/Kconfig
+index 423e632bb75e..f9b75054b7c8 100644
+--- a/drivers/firmware/qcom/Kconfig
++++ b/drivers/firmware/qcom/Kconfig
+@@ -12,6 +12,7 @@ config QCOM_TZMEM
+ 
+ choice
+ 	prompt "TrustZone interface memory allocator mode"
++	depends on QCOM_TZMEM
+ 	default QCOM_TZMEM_MODE_GENERIC
+ 	help
+ 	  Selects the mode of the memory allocator providing memory buffers of
+-- 
+2.34.1
+

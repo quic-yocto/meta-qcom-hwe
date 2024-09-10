@@ -1,0 +1,42 @@
+From f9a9633598502bceca86380f6d8d78ddadf638b4 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 23 Aug 2024 17:30:27 +0530
+Subject: [PATCH] BACKPORT: firmware: qcom: scm: clarify the comment in
+ qcom_scm_pas_init_image()
+
+The "memory protection" mechanism mentioned in the comment is the SHM
+Bridge. This is also the reason why we do not convert this call to using
+the TZ memory allocator.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Tested-by: Andrew Halaney <ahalaney@redhat.com> # sc8280xp-lenovo-thinkpad-x13s
+Tested-by: Deepti Jaggi <quic_djaggi@quicinc.com> #sa8775p-ride
+Reviewed-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/r/20240527-shm-bridge-v10-13-ce7afaa58d3a@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git dcf5bd889a7ce3d9e53bd8075fbade59ebae9104]
+---
+ drivers/firmware/qcom_scm.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
+index 4dbed0063d73..2834cc448b2b 100644
+--- a/drivers/firmware/qcom_scm.c
++++ b/drivers/firmware/qcom_scm.c
+@@ -496,6 +496,13 @@ int qcom_scm_pas_init_image(u32 peripheral, const void *metadata, size_t size,
+ 	 * During the scm call memory protection will be enabled for the meta
+ 	 * data blob, so make sure it's physically contiguous, 4K aligned and
+ 	 * non-cachable to avoid XPU violations.
++	 *
++	 * For PIL calls the hypervisor creates SHM Bridges for the blob
++	 * buffers on behalf of Linus so we must not do it ourselves hence
++	 * not using the TZMem allocator here.
++	 *
++	 * If we pass a buffer that is already part of an SHM Bridge to this
++	 * call, it will fail.
+ 	 */
+ 	mdata_buf = dma_alloc_coherent(__scm->dev, size, &mdata_phys,
+ 				       GFP_KERNEL);
+-- 
+2.25.1
+

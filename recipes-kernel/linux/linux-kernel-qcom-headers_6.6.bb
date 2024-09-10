@@ -11,8 +11,8 @@ inherit kernel-arch
 
 COMPATIBLE_MACHINE = "(qcom)"
 
-SRC_URI += "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=350dfd604d2ffbe0cac99bf3459b49114aad11f4;branch=kernel.qclinux.1.0.r1-rel"
-S = "${WORKDIR}/git"
+SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=9d53679ea3d39978f5107f11dd2c24c285eb191c;branch=kernel.qclinux.1.0.r1-rel;destsuffix=kernel"
+S = "${WORKDIR}/kernel"
 
 DEPENDS += "flex-native bison-native rsync-native"
 
@@ -57,3 +57,9 @@ ALLOW_EMPTY_${PN} = "1"
 FILES_${PN}-dev += "linux-kernel-qcom/*"
 
 INHIBIT_DEFAULT_DEPS = "1"
+
+python () {
+    mach_overrides = d.getVar('MACHINEOVERRIDES').split(":")
+    if ('qcom-base-bsp' in mach_overrides):
+        raise bb.parse.SkipRecipe("linux-kernel-qcom-headers not compatible with qcom-base-bsp")
+}

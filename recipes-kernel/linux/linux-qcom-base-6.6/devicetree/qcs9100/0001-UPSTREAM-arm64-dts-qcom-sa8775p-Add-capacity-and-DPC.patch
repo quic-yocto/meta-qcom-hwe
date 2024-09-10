@@ -1,0 +1,98 @@
+From 76985b9ff20256798b8e3629c836c2bf3f73d288 Mon Sep 17 00:00:00 2001
+From: Ankit Sharma <quic_anshar@quicinc.com>
+Date: Wed, 31 Jul 2024 16:49:51 +0530
+Subject: [PATCH] UPSTREAM: arm64: dts: qcom: sa8775p: Add capacity and DPC
+ properties
+
+The "capacity-dmips-mhz" and "dynamic-power-coefficient" are
+used to build Energy Model which in turn is used by EAS to take
+placement decisions.
+
+Change-Id: I3662e806e8da30845c6ac4d788b32bb9eeb16a14
+Signed-off-by: Ankit Sharma <quic_anshar@quicinc.com>
+Link: https://lore.kernel.org/r/20240731111951.6999-1-quic_anshar@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 717ca334afd7ceb8170aa1bdad736f6a712c9220]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index 33cff59aca81..e42141a71651 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -43,6 +43,8 @@
+ 			enable-method = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			next-level-cache = <&L2_0>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			L2_0: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -63,6 +65,8 @@
+ 			enable-method = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			next-level-cache = <&L2_1>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			L2_1: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -78,6 +82,8 @@
+ 			enable-method = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			next-level-cache = <&L2_2>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			L2_2: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -93,6 +99,8 @@
+ 			enable-method = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			next-level-cache = <&L2_3>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			L2_3: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -108,6 +116,8 @@
+ 			enable-method = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			next-level-cache = <&L2_4>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			L2_4: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -129,6 +139,8 @@
+ 			enable-method = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			next-level-cache = <&L2_5>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			L2_5: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -144,6 +156,8 @@
+ 			enable-method = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			next-level-cache = <&L2_6>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			L2_6: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+@@ -159,6 +173,8 @@
+ 			enable-method = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			next-level-cache = <&L2_7>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			L2_7: l2-cache {
+ 				compatible = "cache";
+ 				cache-level = <2>;
+-- 
+2.17.1
+

@@ -1,0 +1,31 @@
+From 56fa4e6f939c4f73623981a0e92e2e35ba4d31b9 Mon Sep 17 00:00:00 2001
+From: Tengfei Fan <quic_tengfan@quicinc.com>
+Date: Tue, 6 Aug 2024 12:19:30 +0800
+Subject: [PATCH 4/4] FROMLIST: arm64: dts: qcom: sa8775p-ride: Add QCS9100
+ compatible
+
+Add QCS9100 compatible in sa8775p ride and sa8775p ride r3 board DTS.
+QCS9100 references SA8775p, they share the same SoC DTSI and board DTS.
+
+Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20240806-add_qcs9100_soc_id-v1-4-04d14081f304@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index c1b33fb00c4e..32f9c6484bcc 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -13,7 +13,7 @@
+ 
+ / {
+ 	model = "Qualcomm SA8775P Ride";
+-	compatible = "qcom,sa8775p-ride", "qcom,sa8775p";
++	compatible = "qcom,sa8775p-ride", "qcom,sa8775p", "qcom,qcs9100";
+ 	qcom,msm-id = <533 0x10000>, <534 0x10000>, <534 0x20000>;
+ 	qcom,board-id = <0x19 0>, <0x25 1>;
+ 
+-- 
+2.34.1
+

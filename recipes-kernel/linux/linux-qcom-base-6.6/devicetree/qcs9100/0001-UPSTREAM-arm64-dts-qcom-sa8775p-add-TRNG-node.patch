@@ -1,0 +1,36 @@
+From 008f7c6c8d3d232b7c99fc87b2de266481d396f9 Mon Sep 17 00:00:00 2001
+From: Om Prakash Singh <quic_omprsing@quicinc.com> 
+Date: Wed, 14 Aug 2024 14:00:15 +0530
+Subject: [PATCH] UPSTREAM: arm64: dts: qcom: sa8775p: add TRNG node
+
+The sa8775p SoC has a True Random Number Generator, add the node with
+the correct compatible set.
+
+Signed-off-by: Om Prakash Singh <quic_omprsing@quicinc.com>
+Link: https://lore.kernel.org/r/20231015193901.2344590-4-quic_omprsing@quicinc.com
+[bjorn: Padded address to 8 digits, moved hunk to maintain sort order]
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 2d04f31103921b8c21756ff9eeba32e3ece1a276]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index d4ca92b98c7d..3ab094cbb2f4 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -1487,6 +1487,11 @@ &config_noc SLAVE_QUP_3 QCOM_ICC_TAG_ALWAYS>,
+ 			};
+ 		};
+ 
++		rng: rng@10d2000 {
++			compatible = "qcom,trng";
++			reg = <0 0x010d2000 0 0x1000>;
++		};
++
+ 		ufs_mem_hc: ufs@1d84000 {
+ 			compatible = "qcom,sa8775p-ufshc", "qcom,ufshc", "jedec,ufs-2.0";
+ 			reg = <0x0 0x01d84000 0x0 0x3000>;
+-- 
+2.25.1
+

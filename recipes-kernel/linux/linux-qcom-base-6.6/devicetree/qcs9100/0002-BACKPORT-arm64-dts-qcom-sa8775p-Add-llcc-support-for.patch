@@ -1,0 +1,49 @@
+From 3d53cd2ad0b501825fc5b1a64808576e20bff274 Mon Sep 17 00:00:00 2001
+From: Tengfei Fan <quic_tengfan@quicinc.com>
+Date: Wed, 29 May 2024 18:15:34 +0800
+Subject: [PATCH 3/3] BACKPORT: arm64: dts: qcom: sa8775p: Add llcc support for
+ the SA8775p platform
+
+Add llcc support for the SA8775p platform.
+
+Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
+Link: https://lore.kernel.org/r/20240529101534.3166507-4-quic_tengfan@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+pstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 809c20b1ffc80200bfcbbeceb0d946a3e0eed3a4]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index 987cc8463586..03bc2be55392 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -2625,6 +2625,25 @@ serdes1: phy@8902000 {
+ 			status = "disabled";
+ 		};
+ 
++		llcc: system-cache-controller@9200000 {
++			compatible = "qcom,sa8775p-llcc";
++			reg = <0x0 0x09200000 0x0 0x80000>,
++			      <0x0 0x09300000 0x0 0x80000>,
++			      <0x0 0x09400000 0x0 0x80000>,
++			      <0x0 0x09500000 0x0 0x80000>,
++			      <0x0 0x09600000 0x0 0x80000>,
++			      <0x0 0x09700000 0x0 0x80000>,
++			      <0x0 0x09a00000 0x0 0x80000>;
++			reg-names = "llcc0_base",
++				    "llcc1_base",
++				    "llcc2_base",
++				    "llcc3_base",
++				    "llcc4_base",
++				    "llcc5_base",
++				    "llcc_broadcast_base";
++			interrupts = <GIC_SPI 580 IRQ_TYPE_LEVEL_HIGH>;
++		};
++
+ 		pdc: interrupt-controller@b220000 {
+ 			compatible = "qcom,sa8775p-pdc", "qcom,pdc";
+ 			reg = <0x0 0x0b220000 0x0 0x30000>,
+-- 
+2.34.1
+

@@ -1,0 +1,67 @@
+From 5dbaa9d2536b2539a3059590eb38f078b023605b Mon Sep 17 00:00:00 2001
+From: Tengfei Fan <quic_tengfan@quicinc.com>
+Date: Wed, 29 May 2024 18:15:32 +0800
+Subject: [PATCH] BACKPORT: dt-bindings: cache: qcom,llcc: Add SA8775p
+ description
+
+Add the cache controller compatible and register region descriptions for
+SA8775p platform.
+
+Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/r/20240529101534.3166507-2-quic_tengfan@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git f5dbad394335d738ad73bcc17232e89c11bfc4e9]
+---
+ .../devicetree/bindings/cache/qcom,llcc.yaml  | 28 +++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/cache/qcom,llcc.yaml b/Documentation/devicetree/bindings/cache/qcom,llcc.yaml
+index 44892aa589fd..a9b61da5e9ba 100644
+--- a/Documentation/devicetree/bindings/cache/qcom,llcc.yaml
++++ b/Documentation/devicetree/bindings/cache/qcom,llcc.yaml
+@@ -20,6 +20,7 @@ description: |
+ properties:
+   compatible:
+     enum:
++      - qcom,sa8775p-llcc
+       - qcom,sc7180-llcc
+       - qcom,sc7280-llcc
+       - qcom,sc8180x-llcc
+@@ -68,6 +69,33 @@ allOf:
+             - const: llcc0_base
+             - const: llcc_broadcast_base
+ 
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,sa8775p-llcc
++    then:
++      properties:
++        reg:
++          items:
++            - description: LLCC0 base register region
++            - description: LLCC1 base register region
++            - description: LLCC2 base register region
++            - description: LLCC3 base register region
++            - description: LLCC4 base register region
++            - description: LLCC5 base register region
++            - description: LLCC broadcast base register region
++        reg-names:
++          items:
++            - const: llcc0_base
++            - const: llcc1_base
++            - const: llcc2_base
++            - const: llcc3_base
++            - const: llcc4_base
++            - const: llcc5_base
++            - const: llcc_broadcast_base
++
+   - if:
+       properties:
+         compatible:
+-- 
+2.34.1
+

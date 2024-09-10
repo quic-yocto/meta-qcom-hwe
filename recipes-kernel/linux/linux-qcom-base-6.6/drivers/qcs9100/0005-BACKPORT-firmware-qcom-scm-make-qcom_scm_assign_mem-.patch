@@ -1,0 +1,126 @@
+From bee664e11a5a72fa86b9a39f8b54a6254fe6ac08 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 23 Aug 2024 16:28:45 +0530
+Subject: [PATCH] BACKPORT: firmware: qcom: scm: make qcom_scm_assign_mem() use
+ the TZ allocator
+
+Let's use the new TZ memory allocator to obtain a buffer for this call
+instead of using dma_alloc_coherent().
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Reviewed-by: Andrew Halaney <ahalaney@redhat.com>
+Tested-by: Andrew Halaney <ahalaney@redhat.com> # sc8280xp-lenovo-thinkpad-x13s
+Tested-by: Deepti Jaggi <quic_djaggi@quicinc.com> #sa8775p-ride
+Reviewed-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/r/20240527-shm-bridge-v10-5-ce7afaa58d3a@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 2dcd12ca6f8595726122bbfc2520a1d3bcfdb110]
+---
+ drivers/firmware/qcom_scm.c | 10 +++++----
+ tmp                         | 43 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 49 insertions(+), 4 deletions(-)
+ create mode 100644 tmp
+
+diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
+index d00af63fc407..08410bc41e38 100644
+--- a/drivers/firmware/qcom_scm.c
++++ b/drivers/firmware/qcom_scm.c
+@@ -5,6 +5,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
++#include <linux/cleanup.h>
+ #include <linux/completion.h>
+ #include <linux/cpumask.h>
+ #include <linux/err.h>
+@@ -933,14 +934,13 @@ int qcom_scm_assign_mem(phys_addr_t mem_addr, size_t mem_sz,
+ 	struct qcom_scm_mem_map_info *mem_to_map;
+ 	phys_addr_t mem_to_map_phys;
+ 	phys_addr_t dest_phys;
+-	dma_addr_t ptr_phys;
++	phys_addr_t ptr_phys;
+ 	size_t mem_to_map_sz;
+ 	size_t dest_sz;
+ 	size_t src_sz;
+ 	size_t ptr_sz;
+ 	int next_vm;
+ 	__le32 *src;
+-	void *ptr;
+ 	int ret, i, b;
+ 	u64 srcvm_bits = *srcvm;
+ 
+@@ -950,10 +950,13 @@ int qcom_scm_assign_mem(phys_addr_t mem_addr, size_t mem_sz,
+ 	ptr_sz = ALIGN(src_sz, SZ_64) + ALIGN(mem_to_map_sz, SZ_64) +
+ 			ALIGN(dest_sz, SZ_64);
+ 
+-	ptr = dma_alloc_coherent(__scm->dev, ptr_sz, &ptr_phys, GFP_KERNEL);
++	void *ptr __free(qcom_tzmem) = qcom_tzmem_alloc(__scm->mempool,
++							ptr_sz, GFP_KERNEL);
+ 	if (!ptr)
+ 		return -ENOMEM;
+ 
++	ptr_phys = qcom_tzmem_to_phys(ptr);
++
+ 	/* Fill source vmid detail */
+ 	src = ptr;
+ 	i = 0;
+@@ -982,7 +985,6 @@ int qcom_scm_assign_mem(phys_addr_t mem_addr, size_t mem_sz,
+ 
+ 	ret = __qcom_scm_assign_mem(__scm->dev, mem_to_map_phys, mem_to_map_sz,
+ 				    ptr_phys, src_sz, dest_phys, dest_sz);
+-	dma_free_coherent(__scm->dev, ptr_sz, ptr, ptr_phys);
+ 	if (ret) {
+ 		dev_err(__scm->dev,
+ 			"Assign memory protection call failed %d\n", ret);
+diff --git a/tmp b/tmp
+new file mode 100644
+index 000000000000..f9485610e1ef
+--- /dev/null
++++ b/tmp
+@@ -0,0 +1,43 @@
++diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
++index 7af59985f1c1..c096fc293dd3 100644
++--- a/drivers/firmware/qcom_scm.c
+++++ b/drivers/firmware/qcom_scm.c
++@@ -922,14 +942,13 @@ int qcom_scm_assign_mem(phys_addr_t mem_addr, size_t mem_sz,
++ 	struct qcom_scm_mem_map_info *mem_to_map;
++ 	phys_addr_t mem_to_map_phys;
++ 	phys_addr_t dest_phys;
++-	dma_addr_t ptr_phys;
+++	phys_addr_t ptr_phys;
++ 	size_t mem_to_map_sz;
++ 	size_t dest_sz;
++ 	size_t src_sz;
++ 	size_t ptr_sz;
++ 	int next_vm;
++ 	__le32 *src;
++-	void *ptr;
++ 	int ret, i, b;
++ 	u64 srcvm_bits = *srcvm;
++ 
++@@ -939,10 +958,13 @@ int qcom_scm_assign_mem(phys_addr_t mem_addr, size_t mem_sz,
++ 	ptr_sz = ALIGN(src_sz, SZ_64) + ALIGN(mem_to_map_sz, SZ_64) +
++ 			ALIGN(dest_sz, SZ_64);
++ 
++-	ptr = dma_alloc_coherent(__scm->dev, ptr_sz, &ptr_phys, GFP_KERNEL);
+++	void *ptr __free(qcom_tzmem) = qcom_tzmem_alloc(__scm->mempool,
+++							ptr_sz, GFP_KERNEL);
++ 	if (!ptr)
++ 		return -ENOMEM;
++ 
+++	ptr_phys = qcom_tzmem_to_phys(ptr);
+++
++ 	/* Fill source vmid detail */
++ 	src = ptr;
++ 	i = 0;
++@@ -971,7 +993,6 @@ int qcom_scm_assign_mem(phys_addr_t mem_addr, size_t mem_sz,
++ 
++ 	ret = __qcom_scm_assign_mem(__scm->dev, mem_to_map_phys, mem_to_map_sz,
++ 				    ptr_phys, src_sz, dest_phys, dest_sz);
++-	dma_free_coherent(__scm->dev, ptr_sz, ptr, ptr_phys);
++ 	if (ret) {
++ 		dev_err(__scm->dev,
++ 			"Assign memory protection call failed %d\n", ret);
+-- 
+2.25.1
+

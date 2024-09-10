@@ -1,0 +1,130 @@
+From b2542ba2637f500756ea225638feb28469220a04 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 23 Aug 2024 17:16:00 +0530
+Subject: [PATCH] BACKPORT: firmware: qcom: scm: add support for SHM bridge
+ operations
+
+SHM Bridge is a safety mechanism allowing to limit the amount of memory
+shared between the kernel and the TrustZone to regions explicitly marked
+as such.
+
+Add low-level primitives for enabling SHM bridge support as well as
+creating and destroying SHM bridges to qcom-scm.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Acked-by: Andrew Halaney <ahalaney@redhat.com>
+Tested-by: Andrew Halaney <ahalaney@redhat.com> # sc8280xp-lenovo-thinkpad-x13s
+Tested-by: Deepti Jaggi <quic_djaggi@quicinc.com> #sa8775p-ride
+Reviewed-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/r/20240527-shm-bridge-v10-10-ce7afaa58d3a@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 178e19c0df1b1b27668fc6ca43b25a03eda01dad]
+---
+ drivers/firmware/qcom_scm.c            | 60 ++++++++++++++++++++++++++
+ drivers/firmware/qcom_scm.h            |  3 ++
+ include/linux/firmware/qcom/qcom_scm.h |  6 +++
+ 3 files changed, 69 insertions(+)
+
+diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
+index 6dbdb33029b8..e9149aa6f93e 100644
+--- a/drivers/firmware/qcom_scm.c
++++ b/drivers/firmware/qcom_scm.c
+@@ -1258,6 +1258,66 @@ bool qcom_scm_lmh_dcvsh_available(void)
+ }
+ EXPORT_SYMBOL_GPL(qcom_scm_lmh_dcvsh_available);
+ 
++int qcom_scm_shm_bridge_enable(void)
++{
++	struct qcom_scm_desc desc = {
++		.svc = QCOM_SCM_SVC_MP,
++		.cmd = QCOM_SCM_MP_SHM_BRIDGE_ENABLE,
++		.owner = ARM_SMCCC_OWNER_SIP
++	};
++
++	struct qcom_scm_res res;
++
++	if (!__qcom_scm_is_call_available(__scm->dev, QCOM_SCM_SVC_MP,
++					  QCOM_SCM_MP_SHM_BRIDGE_ENABLE))
++		return -EOPNOTSUPP;
++
++	return qcom_scm_call(__scm->dev, &desc, &res) ?: res.result[0];
++}
++EXPORT_SYMBOL_GPL(qcom_scm_shm_bridge_enable);
++
++int qcom_scm_shm_bridge_create(struct device *dev, u64 pfn_and_ns_perm_flags,
++			       u64 ipfn_and_s_perm_flags, u64 size_and_flags,
++			       u64 ns_vmids, u64 *handle)
++{
++	struct qcom_scm_desc desc = {
++		.svc = QCOM_SCM_SVC_MP,
++		.cmd = QCOM_SCM_MP_SHM_BRIDGE_CREATE,
++		.owner = ARM_SMCCC_OWNER_SIP,
++		.args[0] = pfn_and_ns_perm_flags,
++		.args[1] = ipfn_and_s_perm_flags,
++		.args[2] = size_and_flags,
++		.args[3] = ns_vmids,
++		.arginfo = QCOM_SCM_ARGS(4, QCOM_SCM_VAL, QCOM_SCM_VAL,
++					 QCOM_SCM_VAL, QCOM_SCM_VAL),
++	};
++
++	struct qcom_scm_res res;
++	int ret;
++
++	ret = qcom_scm_call(__scm->dev, &desc, &res);
++
++	if (handle && !ret)
++		*handle = res.result[1];
++
++	return ret ?: res.result[0];
++}
++EXPORT_SYMBOL_GPL(qcom_scm_shm_bridge_create);
++
++int qcom_scm_shm_bridge_delete(struct device *dev, u64 handle)
++{
++	struct qcom_scm_desc desc = {
++		.svc = QCOM_SCM_SVC_MP,
++		.cmd = QCOM_SCM_MP_SHM_BRIDGE_DELETE,
++		.owner = ARM_SMCCC_OWNER_SIP,
++		.args[0] = handle,
++		.arginfo = QCOM_SCM_ARGS(1, QCOM_SCM_VAL),
++	};
++
++	return qcom_scm_call(__scm->dev, &desc, NULL);
++}
++EXPORT_SYMBOL_GPL(qcom_scm_shm_bridge_delete);
++
+ int qcom_scm_lmh_profile_change(u32 profile_id)
+ {
+ 	struct qcom_scm_desc desc = {
+diff --git a/drivers/firmware/qcom_scm.h b/drivers/firmware/qcom_scm.h
+index 90f46e687710..09facc796547 100644
+--- a/drivers/firmware/qcom_scm.h
++++ b/drivers/firmware/qcom_scm.h
+@@ -115,6 +115,9 @@ struct qcom_tzmem_pool *qcom_scm_get_tzmem_pool(void);
+ #define QCOM_SCM_MP_IOMMU_SET_CP_POOL_SIZE	0x05
+ #define QCOM_SCM_MP_VIDEO_VAR			0x08
+ #define QCOM_SCM_MP_ASSIGN			0x16
++#define QCOM_SCM_MP_SHM_BRIDGE_ENABLE		0x1c
++#define QCOM_SCM_MP_SHM_BRIDGE_DELETE		0x1d
++#define QCOM_SCM_MP_SHM_BRIDGE_CREATE		0x1e
+ 
+ #define QCOM_SCM_SVC_OCMEM		0x0f
+ #define QCOM_SCM_OCMEM_LOCK_CMD		0x01
+diff --git a/include/linux/firmware/qcom/qcom_scm.h b/include/linux/firmware/qcom/qcom_scm.h
+index 0c091a3f6d49..8c6c663dc21b 100644
+--- a/include/linux/firmware/qcom/qcom_scm.h
++++ b/include/linux/firmware/qcom/qcom_scm.h
+@@ -122,4 +122,10 @@ extern int qcom_scm_lmh_dcvsh(u32 payload_fn, u32 payload_reg, u32 payload_val,
+ extern int qcom_scm_lmh_profile_change(u32 profile_id);
+ extern bool qcom_scm_lmh_dcvsh_available(void);
+ 
++int qcom_scm_shm_bridge_enable(void);
++int qcom_scm_shm_bridge_create(struct device *dev, u64 pfn_and_ns_perm_flags,
++			       u64 ipfn_and_s_perm_flags, u64 size_and_flags,
++			       u64 ns_vmids, u64 *handle);
++int qcom_scm_shm_bridge_delete(struct device *dev, u64 handle);
++
+ #endif
+-- 
+2.25.1
+

@@ -1,0 +1,29 @@
+From bb2a0d69f2fc3ae1ca70e32bf50607de491c8734 Mon Sep 17 00:00:00 2001
+From: Tengfei Fan <quic_tengfan@quicinc.com>
+Date: Tue, 6 Aug 2024 12:19:28 +0800
+Subject: [PATCH 2/4] FROMLIST: soc: qcom: socinfo: add QCS9100 ID
+
+Add the ID for the Qualcomm QCS9100 SoC.
+
+Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20240806-add_qcs9100_soc_id-v1-2-04d14081f304@quicinc.com/]
+---
+ drivers/soc/qcom/socinfo.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/soc/qcom/socinfo.c b/drivers/soc/qcom/socinfo.c
+index 880b41a57da0..4444dad03741 100644
+--- a/drivers/soc/qcom/socinfo.c
++++ b/drivers/soc/qcom/socinfo.c
+@@ -416,6 +416,7 @@ static const struct soc_id soc_id[] = {
+ 	{ qcom_board_id(IPQ5312) },
+ 	{ qcom_board_id(IPQ5302) },
+ 	{ qcom_board_id(IPQ5300) },
++	{ qcom_board_id(QCS9100) },
+ };
+ 
+ static const char *socinfo_machine(struct device *dev, unsigned int id)
+-- 
+2.34.1
+

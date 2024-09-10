@@ -1,0 +1,99 @@
+From 3ec15ba221331c68d7e7243218a481ec41694c20 Mon Sep 17 00:00:00 2001
+From: Ankit Sharma <quic_anshar@quicinc.com>
+Date: Fri, 3 Nov 2023 16:24:40 +0530
+Subject: [PATCH] UPSTREAM: arm64: dts: qcom: sc7280: Add capacity and DPC
+ properties
+
+The "capacity-dmips-mhz" and "dynamic-power-coefficient" are
+used to build Energy Model which in turn is used by EAS to take
+placement decisions. So add it to SC7280 soc.
+
+Change-Id: I4a561f23039b40fd4d4173076f313a2e87014d5b
+Signed-off-by: Ankit Sharma <quic_anshar@quicinc.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Link: https://lore.kernel.org/r/20231103105440.23904-1-quic_anshar@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 942bf463dec369172af81ad660d81d11bda88e39]
+---
+ arch/arm64/boot/dts/qcom/sc7280.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sc7280.dtsi b/arch/arm64/boot/dts/qcom/sc7280.dtsi
+index ff0785d959bc..5a515e4b0b59 100644
+--- a/arch/arm64/boot/dts/qcom/sc7280.dtsi
++++ b/arch/arm64/boot/dts/qcom/sc7280.dtsi
+@@ -176,6 +176,8 @@
+ 					   &CLUSTER_SLEEP_0>;
+ 			next-level-cache = <&L2_0>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &mc_virt SLAVE_EBI1 3>,
+ 					<&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+@@ -204,6 +206,8 @@
+ 					   &CLUSTER_SLEEP_0>;
+ 			next-level-cache = <&L2_100>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &mc_virt SLAVE_EBI1 3>,
+ 					<&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+@@ -227,6 +231,8 @@
+ 					   &CLUSTER_SLEEP_0>;
+ 			next-level-cache = <&L2_200>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &mc_virt SLAVE_EBI1 3>,
+ 					<&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+@@ -250,6 +256,8 @@
+ 					   &CLUSTER_SLEEP_0>;
+ 			next-level-cache = <&L2_300>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <100>;
+ 			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &mc_virt SLAVE_EBI1 3>,
+ 					<&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+@@ -273,6 +281,8 @@
+ 					   &CLUSTER_SLEEP_0>;
+ 			next-level-cache = <&L2_400>;
+ 			operating-points-v2 = <&cpu4_opp_table>;
++			capacity-dmips-mhz = <1946>;
++			dynamic-power-coefficient = <520>;
+ 			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &mc_virt SLAVE_EBI1 3>,
+ 					<&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+@@ -296,6 +306,8 @@
+ 					   &CLUSTER_SLEEP_0>;
+ 			next-level-cache = <&L2_500>;
+ 			operating-points-v2 = <&cpu4_opp_table>;
++			capacity-dmips-mhz = <1946>;
++			dynamic-power-coefficient = <520>;
+ 			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &mc_virt SLAVE_EBI1 3>,
+ 					<&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+@@ -319,6 +331,8 @@
+ 					   &CLUSTER_SLEEP_0>;
+ 			next-level-cache = <&L2_600>;
+ 			operating-points-v2 = <&cpu4_opp_table>;
++			capacity-dmips-mhz = <1946>;
++			dynamic-power-coefficient = <520>;
+ 			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &mc_virt SLAVE_EBI1 3>,
+ 					<&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+@@ -342,6 +356,8 @@
+ 					   &CLUSTER_SLEEP_0>;
+ 			next-level-cache = <&L2_700>;
+ 			operating-points-v2 = <&cpu7_opp_table>;
++			capacity-dmips-mhz = <1985>;
++			dynamic-power-coefficient = <552>;
+ 			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &mc_virt SLAVE_EBI1 3>,
+ 					<&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			qcom,freq-domain = <&cpufreq_hw 2>;
+-- 
+2.17.1
+

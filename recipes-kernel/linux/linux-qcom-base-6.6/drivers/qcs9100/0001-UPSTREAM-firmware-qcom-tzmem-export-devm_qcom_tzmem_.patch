@@ -1,0 +1,34 @@
+From b72f9f2312c2840f8b93d9685dd97df2bf5fa00f Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Tue, 27 Aug 2024 22:12:43 +0530
+Subject: [PATCH] UPSTREAM: firmware: qcom: tzmem: export
+ devm_qcom_tzmem_pool_new()
+
+EXPORT_SYMBOL_GPL() is missing for devm_qcom_tzmem_pool_new() which
+causes build failures with randconfig. Add it and fix the issue.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Reviewed-by: Andrew Halaney <ahalaney@redhat.com>
+Reviewed-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/r/20240624190615.36282-1-brgl@bgdev.pl
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git d96377892dd89bd4e7e5ae7293647f6bc7bddf7d]
+---
+ drivers/firmware/qcom/qcom_tzmem.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/firmware/qcom/qcom_tzmem.c b/drivers/firmware/qcom/qcom_tzmem.c
+index aab6376cade5..5d526753183d 100644
+--- a/drivers/firmware/qcom/qcom_tzmem.c
++++ b/drivers/firmware/qcom/qcom_tzmem.c
+@@ -324,6 +324,7 @@ devm_qcom_tzmem_pool_new(struct device *dev,
+ 
+ 	return pool;
+ }
++EXPORT_SYMBOL_GPL(devm_qcom_tzmem_pool_new);
+ 
+ static bool qcom_tzmem_try_grow_pool(struct qcom_tzmem_pool *pool,
+ 				     size_t requested, gfp_t gfp)
+-- 
+2.34.1
+

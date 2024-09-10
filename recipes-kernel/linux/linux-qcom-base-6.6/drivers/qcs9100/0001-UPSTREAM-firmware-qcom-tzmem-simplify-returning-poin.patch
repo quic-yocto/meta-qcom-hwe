@@ -1,0 +1,34 @@
+From d42f51ef8e18a47e978555a9f791e48c4e6cb5f1 Mon Sep 17 00:00:00 2001
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 
+Date: Tue, 27 Aug 2024 22:15:02 +0530
+Subject: [PATCH] UPSTREAM: firmware: qcom: tzmem: simplify returning pointer
+ without cleanup
+
+Use 'return_ptr' helper for returning a pointer without cleanup for
+shorter code.
+
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Acked-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Link: https://lore.kernel.org/r/20240703083046.95811-1-krzysztof.kozlowski@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git d99b680b4a9a33d0c47a68a4c1a45775023426ff]
+---
+ drivers/firmware/qcom/qcom_tzmem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/firmware/qcom/qcom_tzmem.c b/drivers/firmware/qcom/qcom_tzmem.c
+index 5d526753183d..ab156ab3a6b4 100644
+--- a/drivers/firmware/qcom/qcom_tzmem.c
++++ b/drivers/firmware/qcom/qcom_tzmem.c
+@@ -242,7 +242,7 @@ qcom_tzmem_pool_new(const struct qcom_tzmem_pool_config *config)
+ 		}
+ 	}
+ 
+-	return no_free_ptr(pool);
++	return_ptr(pool);
+ }
+ EXPORT_SYMBOL_GPL(qcom_tzmem_pool_new);
+ 
+-- 
+2.34.1
+

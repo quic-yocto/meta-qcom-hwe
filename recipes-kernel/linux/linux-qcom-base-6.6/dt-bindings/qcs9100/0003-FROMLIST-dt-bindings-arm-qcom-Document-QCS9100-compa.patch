@@ -1,0 +1,37 @@
+From d3a656ac939d54515fb7d54592c9f3d7f0d2ff11 Mon Sep 17 00:00:00 2001
+From: Tengfei Fan <quic_tengfan@quicinc.com>
+Date: Tue, 6 Aug 2024 12:19:29 +0800
+Subject: [PATCH 3/4] FROMLIST: dt-bindings: arm: qcom: Document QCS9100
+ compatible
+
+Add the compatible for QCS9100 SoC.
+
+Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20240806-add_qcs9100_soc_id-v1-3-04d14081f304@quicinc.com/]
+---
+ Documentation/devicetree/bindings/arm/qcom.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index e45e293457d3..e4705f264e88 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -49,6 +49,7 @@ description: |
+         msm8996
+         msm8998
+         qcs404
++        qcs9100
+         qcm2290
+         qcm6490
+         qdu1000
+@@ -884,6 +885,7 @@ properties:
+           - enum:
+               - qcom,sa8775p-ride
+           - const: qcom,sa8775p
++          - const: qcom,qcs9100
+ 
+       - items:
+           - enum:
+-- 
+2.34.1
+
