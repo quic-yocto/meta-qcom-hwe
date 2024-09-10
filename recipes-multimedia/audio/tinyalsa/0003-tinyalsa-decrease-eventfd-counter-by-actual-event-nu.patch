@@ -1,0 +1,70 @@
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From 538234ca6a9be472592c8e2b6e825878c491b4d5 Mon Sep 17 00:00:00 2001
+From: Rohit kumar <quic_rohkumar@quicinc.com>
+Date: Fri, 15 Dec 2023 09:31:28 +0530
+Subject: [PATCH 3/3] tinyalsa: decrease eventfd counter by actual event
+ numbers read
+
+When new event is received just before old event read,
+eventfd counter is reset to 0 due to eventfd_read even
+though a new event just increase eventfd counter by 1.
+This will cause loss of event notification.
+
+Use flag EFD_SEMAPHORE when creating eventfd to decrease eventfd
+counter by actual event numbers getting read.
+
+Change-Id: I6aaf44a637b615e1111573c56f6a8f62537689ac
+Signed-off-by: Rohit Kumar <quic_rohkumar@quicinc.com>
+---
+ src/mixer_plugin.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/src/mixer_plugin.c b/src/mixer_plugin.c
+index a07b8f6..e8a13f6 100644
+--- a/src/mixer_plugin.c
++++ b/src/mixer_plugin.c
+@@ -156,7 +156,7 @@ static ssize_t mixer_plug_read_event(void *data, struct snd_ctl_event *ev, size_
+ 
+     if (result > 0) {
+         plugin->event_cnt -=  result / sizeof(struct snd_ctl_event);
+-        if (plugin->event_cnt == 0)
++        for (long unsigned int i = 0; i < result / sizeof(struct snd_ctl_event); i++)
+             eventfd_read(plugin->eventfd, &evfd);
+     }
+ 
+@@ -179,7 +179,7 @@ static int mixer_plug_subscribe_events(struct mixer_plug_data *plug_data,
+     } else if (plugin->subscribed && !*subscribe) {
+         plug_data->ops->subscribe_events(plugin, NULL);
+ 
+-        if (plugin->event_cnt)
++        for (int i = plugin->event_cnt; i > 0; i--)
+             eventfd_read(plugin->eventfd, &evfd);
+ 
+         plugin->event_cnt = 0;
+@@ -342,9 +342,10 @@ static void mixer_plug_close(void *data)
+     struct mixer_plugin *plugin = plug_data->plugin;
+     eventfd_t evfd;
+ 
+-    if (plugin->event_cnt)
++    for (int i = plugin->event_cnt; i > 0; i--)
+         eventfd_read(plugin->eventfd, &evfd);
+ 
++    plugin->event_cnt = 0;
+     plug_data->ops->close(&plugin);
+     dlclose(plug_data->dl_hdl);
+ 
+@@ -459,7 +460,7 @@ int mixer_plugin_open(unsigned int card, void **data,
+     plug_data->plugin = plugin;
+     plug_data->card = card;
+     plug_data->dl_hdl = dl_hdl;
+-    plugin->eventfd = eventfd(0, 0);
++    plugin->eventfd = eventfd(0, EFD_SEMAPHORE);
+ 
+     *data = plug_data;
+     *ops = &mixer_plug_ops;
+-- 
+2.25.1
+

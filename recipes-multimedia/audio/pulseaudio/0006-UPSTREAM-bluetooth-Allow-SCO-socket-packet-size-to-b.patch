@@ -1,0 +1,147 @@
+From ac0ee1c276b6fda41bd556cdceb92b2f13374fb3 Mon Sep 17 00:00:00 2001
+From: Raghavender Reddy Bujala <quic_rbujala@quicinc.com>
+Date: Thu, 16 May 2024 15:21:53 +0530
+Subject: [PATCH 6/6] UPSTREAM: bluetooth: Allow SCO socket packet size to be
+ larger than mSBC frame
+
+With USB Alternate Setting 3 size of HCI payload is 72 bytes which is already
+larger than mSBC frame size. Largest known size of HCI payload is with USB
+Alternate Setting 5 (144 bytes), make it the default SCO socket MTU.
+
+Reserve additional space in bluetooth encoder buffer to cover this case.
+
+Since mSBC encoder and decoder will now work with larger packet sizes, drop
+assertions about MTU larger than mSBC frame size.
+
+Signed-off-by: Igor V. Kovalenko <igor.v.kovalenko@gmail.com>
+Part-of: <https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/merge_requests/617>
+
+Git-commit: d517a204de70432d6783d103ab650d62d8c1b051
+Git-repo: https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git
+Signed-off-by: Raghavender Reddy Bujala <quic_rbujala@quicinc.com>
+---
+ src/modules/bluetooth/backend-native.c       | 19 ++++++++-----
+ src/modules/bluetooth/backend-ofono.c        | 10 ++++---
+ src/modules/bluetooth/module-bluez5-device.c | 29 ++++++++++++++++++--
+ 3 files changed, 44 insertions(+), 14 deletions(-)
+
+diff --git a/src/modules/bluetooth/backend-native.c b/src/modules/bluetooth/backend-native.c
+index 79ab4db..9290677 100644
+--- a/src/modules/bluetooth/backend-native.c
++++ b/src/modules/bluetooth/backend-native.c
+@@ -325,8 +325,18 @@ static int sco_acquire_cb(pa_bluetooth_transport *t, bool optional, size_t *imtu
+     if (sock < 0)
+         goto fail;
+ 
+-    if (imtu) *imtu = 60;
+-    if (omtu) *omtu = 60;
++    /* The correct block size should take into account the SCO MTU from
++     * the Bluetooth adapter and (for adapters in the USB bus) the MxPS
++     * value from the Isoc USB endpoint in use by btusb and should be
++     * made available to userspace by the Bluetooth kernel subsystem.
++     *
++     * Set initial MTU to max known payload length of HCI packet
++     * in USB Alternate Setting 5 (144 bytes)
++     * See also pa_bluetooth_transport::last_read_size handling
++     * and comment about MTU size in bt_prepare_encoder_buffer()
++     */
++    if (imtu) *imtu = 144;
++    if (omtu) *omtu = 144;
+ 
+     if (t->device->autodetect_mtu) {
+         struct sco_options sco_opt;
+@@ -343,11 +353,6 @@ static int sco_acquire_cb(pa_bluetooth_transport *t, bool optional, size_t *imtu
+         }
+     }
+ 
+-    /* read/decode machinery only works if we get at most one MSBC encoded packet at a time
+-     * when it is fixed to process stream of packets, lift this assertion */
+-    pa_assert(*imtu <= MSBC_PACKET_SIZE);
+-    pa_assert(*omtu <= MSBC_PACKET_SIZE);
+-
+     return sock;
+ 
+ fail:
+diff --git a/src/modules/bluetooth/backend-ofono.c b/src/modules/bluetooth/backend-ofono.c
+index 643e35f..36fe787 100644
+--- a/src/modules/bluetooth/backend-ofono.c
++++ b/src/modules/bluetooth/backend-ofono.c
+@@ -333,13 +333,15 @@ static int hf_audio_agent_transport_acquire(pa_bluetooth_transport *t, bool opti
+      * value from the Isoc USB endpoint in use by btusb and should be
+      * made available to userspace by the Bluetooth kernel subsystem.
+      *
+-     * Set initial MTU to max size which is reported to be working (60 bytes)
+-     * See also pa_bluetooth_transport::last_read_size handling.
++     * Set initial MTU to max known payload length of HCI packet
++     * in USB Alternate Setting 5 (144 bytes)
++     * See also pa_bluetooth_transport::last_read_size handling
++     * and comment about MTU size in bt_prepare_encoder_buffer()
+      */
+     if (imtu)
+-        *imtu = 60;
++        *imtu = 144;
+     if (omtu)
+-        *omtu = 60;
++        *omtu = 144;
+ 
+     err = socket_accept(card->fd);
+     if (err < 0) {
+diff --git a/src/modules/bluetooth/module-bluez5-device.c b/src/modules/bluetooth/module-bluez5-device.c
+index 49f318d..57b0d27 100644
+--- a/src/modules/bluetooth/module-bluez5-device.c
++++ b/src/modules/bluetooth/module-bluez5-device.c
+@@ -259,25 +259,48 @@ static void connect_ports(struct userdata *u, void *new_data, pa_direction_t dir
+ 
+ static bool bt_prepare_encoder_buffer(struct userdata *u)
+ {
+-    size_t encoded_size, reserved_size;
++    size_t encoded_size, reserved_size, encoded_frames;
+     pa_assert(u);
+     pa_assert(u->bt_codec);
+ 
+     /* If socket write MTU is less than encoded frame size, there could be
+      * up to one write MTU of data left in encoder buffer from previous round.
+      *
+-     * Reserve space for 2 encoded frames to cover that.
++     * Reserve space for at least 2 encoded frames to cover that.
+      *
+      * Note for A2DP codecs it is expected that size of encoded frame is less
+      * than write link MTU. Therefore each encoded frame is sent out completely
+      * and there is no used space in encoder buffer before next encoder call.
++     *
++     * For SCO socket all writes will be of MTU size to match payload length
++     * of HCI packet. Depending on selected USB Alternate Setting the payload
++     * length of HCI packet may exceed encoded frame size. For mSBC frame size
++     * is 60 bytes, payload length of HCI packet in USB Alts 3 is 72 byte,
++     * in USB Alts 5 it is 144 bytes.
++     *
++     * Reserve space for up to 1 + MTU / (encoded frame size) encoded frames
++     * to cover that.
++     *
++     * Note for current linux kernel (up to 5.13.x at least) there is no way to
++     * reliably detect socket MTU size. For now we just set SCO socket MTU to be
++     * large enough to cover all known sizes (largest is USB ALts 5 with 144 bytes)
++     * and adjust SCO write size to be equal to last SCO read size. This makes
++     * write size less or equal to MTU size. Reserving the same number of encoded
++     * frames to cover full MTU is still enough.
++     * See also https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/merge_requests/254#note_779802
+      */
++
+     if (u->bt_codec->get_encoded_block_size)
+         encoded_size = u->bt_codec->get_encoded_block_size(u->encoder_info, u->write_block_size);
+     else
+         encoded_size = u->write_block_size;
+ 
+-    reserved_size = 2 * encoded_size;
++    encoded_frames = u->write_link_mtu / u->write_block_size + 1;
++
++    if (encoded_frames < 2)
++        encoded_frames = 2;
++
++    reserved_size = encoded_frames * encoded_size;
+ 
+     if (u->encoder_buffer_size < reserved_size) {
+         u->encoder_buffer = pa_xrealloc(u->encoder_buffer, reserved_size);
+-- 
+2.17.1
+

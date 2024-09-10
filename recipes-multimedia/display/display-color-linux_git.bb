@@ -10,8 +10,6 @@ SRC_URI[qcs9100.sha256sum] = "41340d215cd10f1d00252f2d577c92aa00dc8bf958fc79da41
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
-
 INSANE_SKIP:${PN} = "dev-so"
 
 

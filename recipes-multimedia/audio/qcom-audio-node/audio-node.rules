@@ -1,0 +1,7 @@
+#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+SUBSYSTEM=="msm_audio_mem", KERNEL=="msm_audio_mem", OWNER="system", GROUP="audio", MODE="0666", TAG+="systemd", ENV{SYSTEMD_WANTS}+="pulseaudio.service"
+SUBSYSTEM=="aud_pasthru_adsp", KERNEL=="aud_pasthru_adsp", OWNER="system", GROUP="audio", MODE="0666"
+SUBSYSTEM=="dma_heap", KERNEL=="qcom,audio-ml", OWNER="system", GROUP="audio", MODE="0640"
+SUBSYSTEM=="msm_audio_mem_cma", KERNEL=="msm_audio_mem_cma", OWNER="system", GROUP="audio", MODE="0666"

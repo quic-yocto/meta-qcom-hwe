@@ -1,0 +1,218 @@
+From 23ddf222e9ca579f78d3233d1729f892e79af04b Mon Sep 17 00:00:00 2001
+From: Puneeth Prabhu <quic_pprabh@quicinc.com>
+Date: Mon, 8 Jul 2019 16:16:09 +0530
+Subject: [PATCH 2/6] Propagate port change events to all devices
+
+* Existing implementation only propagates port change to either
+  the default sink/source or the first available sink/source.
+* This is not sufficient and it needs to be propagated to all
+  the available sinks/sources on which the port is defined.
+  Ports are defined on a card, and the devices(sinks/sources)
+  created for that card. Lower layers send port change event
+  for a card and it should be propagated to all devices.
+* Call PA_CORE_HOOK_PORT_AVAILABLE_CHANGED callback to switch
+  port before update default sink/source, only  when sink/source
+  not have available port should update default sink/source.
+* Poll through the sink/source list, identify and propagate the
+  port change to all the required sink/source.
+
+Change-Id: Id9ef8318dc8c432d1e6f750c072c090ef306f208
+Signed-off-by: Raveendranath Kondrakunta <quic_rkondrak@quicinc.com>
+Signed-off-by: Puneeth Prabhu <quic_pprabh@quicinc.com>
+---
+ src/modules/module-switch-on-port-available.c | 101 +++++++++++++++---
+ src/pulsecore/device-port.c                   |  10 +-
+ 2 files changed, 92 insertions(+), 19 deletions(-)
+
+diff --git a/src/modules/module-switch-on-port-available.c b/src/modules/module-switch-on-port-available.c
+index de9c870..005f83e 100644
+--- a/src/modules/module-switch-on-port-available.c
++++ b/src/modules/module-switch-on-port-available.c
+@@ -192,8 +192,8 @@ static int try_to_switch_profile(pa_device_port *port) {
+ 
+ struct port_pointers {
+     pa_device_port *port;
+-    pa_sink *sink;
+-    pa_source *source;
++    pa_idxset *sinks;
++    pa_idxset *sources;
+     bool is_possible_profile_active;
+     bool is_preferred_profile_active;
+     bool is_port_active;
+@@ -210,22 +210,33 @@ static const char* profile_name_for_dir(pa_card_profile *cp, pa_direction_t dir)
+ static struct port_pointers find_port_pointers(pa_device_port *port) {
+     struct port_pointers pp = { .port = port };
+     uint32_t state;
++    bool is_port_active_all = true;
++    pa_sink *sink = NULL;
++    pa_source *source = NULL;
+     pa_card *card;
+ 
+     pa_assert(port);
+     pa_assert_se(card = port->card);
++    pp.sinks = pa_idxset_new(NULL, NULL);
++    pp.sources = pa_idxset_new(NULL, NULL);
+ 
+     switch (port->direction) {
+         case PA_DIRECTION_OUTPUT:
+-            PA_IDXSET_FOREACH(pp.sink, card->sinks, state)
+-                if (port == pa_hashmap_get(pp.sink->ports, port->name))
+-                    break;
++            PA_IDXSET_FOREACH(sink, card->sinks, state) {
++                if (port == pa_hashmap_get(sink->ports, port->name)) {
++                    is_port_active_all &= (sink && sink->active_port == port);
++                    pa_assert_se(pa_idxset_put(pp.sinks, sink, NULL) >= 0);
++                }
++            }
+             break;
+ 
+         case PA_DIRECTION_INPUT:
+-            PA_IDXSET_FOREACH(pp.source, card->sources, state)
+-                if (port == pa_hashmap_get(pp.source->ports, port->name))
+-                    break;
++            PA_IDXSET_FOREACH(source, card->sources, state) {
++                if (port == pa_hashmap_get(source->ports, port->name)) {
++                    is_port_active_all &= (source && source->active_port == port);
++                    pa_assert_se(pa_idxset_put(pp.sources, source, NULL) >= 0);
++                }
++            }
+             break;
+     }
+ 
+@@ -233,11 +244,69 @@ static struct port_pointers find_port_pointers(pa_device_port *port) {
+         card->active_profile == pa_hashmap_get(port->profiles, card->active_profile->name);
+     pp.is_preferred_profile_active = pp.is_possible_profile_active && (!port->preferred_profile ||
+         pa_safe_streq(port->preferred_profile, profile_name_for_dir(card->active_profile, port->direction)));
+-    pp.is_port_active = (pp.sink && pp.sink->active_port == port) || (pp.source && pp.source->active_port == port);
++    pp.is_port_active = ((pa_idxset_isempty(pp.sinks) || pa_idxset_isempty(pp.sources)) == 0) ? false : is_port_active_all;
+ 
+     return pp;
+ }
+ 
++static void propagate_source_port_changes(pa_idxset *sources, pa_device_port *selected_port) {
++    uint32_t idx = 0;
++    pa_source *source = NULL;
++    pa_device_port *port = NULL;
++    void *state;
++    bool exists = false;
++
++    pa_log_debug("propagate_source_port_changes selected_port %s", selected_port->name);
++
++    // Update the port on the available sources that belong
++    // to a particular card
++    PA_IDXSET_FOREACH(source, sources, idx) {
++        pa_log_debug("propagate_source_port_changes source %s", source->name);
++        exists = false;
++        PA_HASHMAP_FOREACH(port, source->ports, state) {
++            // Check if the selected port exists on the source
++            pa_log_debug("propagate_source_port_changes source %s port %s", source->name, port->name);
++            if (port->name == selected_port->name &&
++                port->direction == selected_port->direction) {
++                    exists = true;
++                    break;
++                }
++        }
++        if (exists) {
++            pa_source_set_port(source, selected_port->name, false);
++        }
++    }
++}
++
++static void propagate_sink_port_changes(pa_idxset *sinks, pa_device_port *selected_port) {
++    uint32_t idx = 0;
++    pa_sink *sink = NULL;
++    pa_device_port *port = NULL;
++    void *state;
++    bool exists = false;
++
++    pa_log_debug("propagate_sink_port_changes selected_port %s", selected_port->name);
++
++    // Update the port on the available sinks that belong
++    // to a particular card
++    PA_IDXSET_FOREACH(sink, sinks, idx) {
++        pa_log_debug("propagate_sink_port_changes sink %s", sink->name);
++        exists = false;
++        PA_HASHMAP_FOREACH(port, sink->ports, state) {
++            // Check if the selected port exists on the sink
++            pa_log_debug("propagate_sink_port_changes sink %s port %s", sink->name, port->name);
++            if (port->name == selected_port->name &&
++                port->direction == selected_port->direction) {
++                    exists = true;
++                    break;
++                }
++        }
++        if (exists) {
++            pa_sink_set_port(sink, selected_port->name, false);
++        }
++    }
++}
++
+ /* Switches to a port, switching profiles if necessary or preferred */
+ static void switch_to_port(pa_device_port *port, struct port_pointers pp) {
+     if (pp.is_port_active)
+@@ -254,10 +323,12 @@ static void switch_to_port(pa_device_port *port, struct port_pointers pp) {
+             pp = find_port_pointers(port);
+     }
+ 
+-    if (pp.source)
+-        pa_source_set_port(pp.source, port->name, false);
+-    if (pp.sink)
+-        pa_sink_set_port(pp.sink, port->name, false);
++    if (pp.sources) {
++        propagate_source_port_changes(pp.sources, port);
++    }
++    if (pp.sinks) {
++        propagate_sink_port_changes(pp.sinks, port);
++    }
+ }
+ 
+ /* Switches away from a port, switching profiles if necessary or preferred */
+@@ -298,6 +369,7 @@ static void switch_from_port(pa_device_port *port, struct port_pointers pp) {
+ 
+ static pa_hook_result_t port_available_hook_callback(pa_core *c, pa_device_port *port, void* userdata) {
+     struct port_pointers pp = find_port_pointers(port);
++    pa_source *source = NULL;
+ 
+     if (!port->card) {
+         pa_log_warn("Port %s does not have a card", port->name);
+@@ -345,7 +417,8 @@ static pa_hook_result_t port_available_hook_callback(pa_core *c, pa_device_port
+         /* Switch the headphone port, the input ports without source and the
+          * input ports their source->active_port is part of a group of ports.
+          */
+-        if (port->direction == PA_DIRECTION_INPUT && pp.source && !pp.source->active_port->availability_group) {
++        source = pa_idxset_first(pp.sources, NULL);
++        if (port->direction == PA_DIRECTION_INPUT &&  source && !source->active_port->availability_group) {
+             pa_log_debug("Not switching to input port %s, its availability is unknown.", port->name);
+             break;
+         }
+diff --git a/src/pulsecore/device-port.c b/src/pulsecore/device-port.c
+index 4f9235e..3a4c906 100644
+--- a/src/pulsecore/device-port.c
++++ b/src/pulsecore/device-port.c
+@@ -112,6 +112,11 @@ void pa_device_port_set_available(pa_device_port *p, pa_available_t status) {
+ 
+         pa_subscription_post(p->core, PA_SUBSCRIPTION_EVENT_CARD|PA_SUBSCRIPTION_EVENT_CHANGE, p->card->index);
+ 
++        /* This may cause the sink and source pointers to become invalid, if
++         * the availability change causes the card profile to get switched. If
++         * you add code after this line, remember to take that into account. */
++        pa_hook_fire(&p->core->hooks[PA_CORE_HOOK_PORT_AVAILABLE_CHANGED], p);
++
+         sink = pa_device_port_get_sink(p);
+         source = pa_device_port_get_source(p);
+         if (sink)
+@@ -144,11 +149,6 @@ void pa_device_port_set_available(pa_device_port *p, pa_available_t status) {
+                     pa_core_move_streams_to_newly_available_preferred_source(p->core, source);
+             }
+         }
+-
+-        /* This may cause the sink and source pointers to become invalid, if
+-         * the availability change causes the card profile to get switched. If
+-         * you add code after this line, remember to take that into account. */
+-        pa_hook_fire(&p->core->hooks[PA_CORE_HOOK_PORT_AVAILABLE_CHANGED], p);
+     }
+ }
+ 
+-- 
+2.17.1
+

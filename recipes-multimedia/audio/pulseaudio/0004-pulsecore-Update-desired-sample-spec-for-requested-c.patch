@@ -1,0 +1,53 @@
+From d89e9a1ccb88cb7c0e80b7eb1bd0cfc8699a9736 Mon Sep 17 00:00:00 2001
+From: Puneeth Prabhu <quic_pprabh@quicinc.com>
+Date: Mon, 4 Mar 2024 13:08:36 +0530
+Subject: [PATCH 4/6] pulsecore: Update desired sample spec for requested
+ channel & rate
+
+- Let the sink/source reconfigure for the requested sample rates which
+  are not same as default sample rate coming from daemon conf.
+- Update requested channel to desired sample spec when avoid resampling
+  is enabled.
+
+Change-Id: I976fd6a3332e1cc5bb974016556075ab7747aa51
+Signed-off-by: Puneeth Prabhu <quic_pprabh@quicinc.com>
+---
+ src/pulsecore/sink.c   | 3 ++-
+ src/pulsecore/source.c | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/pulsecore/sink.c b/src/pulsecore/sink.c
+index 9971665..76c733b 100644
+--- a/src/pulsecore/sink.c
++++ b/src/pulsecore/sink.c
+@@ -1514,9 +1514,10 @@ void pa_sink_reconfigure(pa_sink *s, pa_sample_spec *spec, bool passthrough) {
+ 
+     } else if (avoid_resampling) {
+         /* We just try to set the sink input's sample rate if it's not too low */
+-        if (spec->rate >= default_rate || spec->rate >= alternate_rate)
++        if (spec->rate != default_rate || spec->rate >= alternate_rate)
+             desired_spec.rate = spec->rate;
+         desired_spec.format = spec->format;
++        desired_spec.channels = spec->channels;
+ 
+     } else if (default_rate == spec->rate || alternate_rate == spec->rate) {
+         /* We can directly try to use this rate */
+diff --git a/src/pulsecore/source.c b/src/pulsecore/source.c
+index ac48302..24e5486 100644
+--- a/src/pulsecore/source.c
++++ b/src/pulsecore/source.c
+@@ -1091,9 +1091,10 @@ void pa_source_reconfigure(pa_source *s, pa_sample_spec *spec, bool passthrough)
+ 
+     } else if (avoid_resampling) {
+         /* We just try to set the source output's sample rate if it's not too low */
+-        if (spec->rate >= default_rate || spec->rate >= alternate_rate)
++        if (spec->rate != default_rate || spec->rate >= alternate_rate)
+             desired_spec.rate = spec->rate;
+         desired_spec.format = spec->format;
++        desired_spec.channels = spec->channels;
+ 
+     } else if (default_rate == spec->rate || alternate_rate == spec->rate) {
+         /* We can directly try to use this rate */
+-- 
+2.17.1
+

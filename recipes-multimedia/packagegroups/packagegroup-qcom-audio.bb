@@ -2,7 +2,7 @@ SUMMARY = "QCOM Audio Package Group"
 
 LICENSE = "BSD-3-Clause"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 inherit packagegroup
 
@@ -17,30 +17,35 @@ PULSEAUDIO_PKGS = " \
     pulseaudio-module-combine-sink \
     pulseaudio-module-switch-on-port-available \
     pulseaudio-misc \
-    pulseaudio-module-role-cork \
-    pulseaudio-module-role-exclusive \
-    pulseaudio-module-role-ignore \
-    pulseaudio-module-pal-card \
-    pulseaudio-module-pal-voiceui-card \
     pulseaudio-module-dbus-protocol \
+    pulseaudio-module-bluetooth-discover \
+    pulseaudio-module-bluetooth-policy \
+    pulseaudio-module-bluez5-discover \
+    pulseaudio-module-bluez5-device \
 "
 
-RDEPENDS:${PN}:append = ' \
+PULSEAUDIO_PKGS:append:qcom-custom-bsp = " \
+    pulseaudio-module-pal-card \
+    pulseaudio-module-pal-voiceui-card \
+"
+
+RDEPENDS:${PN}:append:qcom-custom-bsp = ' \
     tinyalsa \
     tinycompress \
-    agm \
-    args \
-    pal \
-    audio-ftm \
-    audioroute \
-    acdbdata \
-    audio-node \
-    kvh2xml \
-    pa-bt-audio \
-    sva-capi-uv-wrapper \
-    sva-cnn \
-    sva-listen-sound-model \
-    sva-eai \
-    pa-pal-voiceui \
+    qcom-agm \
+    qcom-args \
+    qcom-pal \
+    qcom-audio-ftm \
+    qcom-audioroute \
+    qcom-acdbdata \
+    qcom-audio-node \
+    qcom-kvh2xml \
+    qcom-pa-bt-audio \
+    qcom-sva-capi-uv-wrapper \
+    qcom-sva-cnn \
+    qcom-sva-listen-sound-model \
+    qcom-sva-eai \
+    qcom-pa-pal-voiceui \
+    qcom-pa-pal-acd \
     ${PULSEAUDIO_PKGS}  \
 '

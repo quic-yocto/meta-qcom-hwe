@@ -1,0 +1,1249 @@
+From 5781b8d65f8eeb0a4668bae12b854060b8b55d09 Mon Sep 17 00:00:00 2001
+From: Puneeth Prabhu <quic_pprabh@quicinc.com>
+Date: Mon, 8 May 2023 11:07:17 +0800
+Subject: [PATCH 1/6] Support for compress offload playback usecase
+
+* Infrastructure to add support for playing back compressed data.
+* A new set_format() method on sinks to configure for a specific
+  compressed format
+* Helper functions to distinguish between PCM/passthrough/compressed
+  use-cases
+* Moving to calling passthrough/compressed mode as "exclusive" mode to
+  represent the idea that the sink is exclusive to the single
+  sink-input connected to it
+* An implicit assumption that sinks can skip rendering data in IDLE
+  for compressed mode
+* Adds IEC61937 format definition in PA core
+* Expose a flush method for compressed streams. For compressed streams,
+  it is not expected that sinks will be able to
+  rewind. Instead, when a stream is being flushed, the expectation is that
+  the sink should also do the same (discarding any buffered compressed
+  data as well as decoded data that has not yet been rendered).
+* Add a drain method for compressed streams. We cannot simple complete a
+  drain as we do with PCM streams for compressed streams as there might be
+  a fair amount of data buffered in the compressed sink. To account for this,
+  we add an *asynchronous* drain method on the sink. This should trigger a drain,
+  and on completion, the sink should call pa_sink_drain_complete() which in turn
+  will notify the stream that the drain was actually completed.
+* format: Add a format for MPEG and AAC data
+* format: Add new API to check if a format is passthrough. This will be needed when
+  adding non-passthrough compressed format, at which point !pa_format_info_pcm() may not
+  necessarily signify a passthrough format.
+* Support raw MP3 data (MPEG-1 or MPEG-2, layer 3).
+* the assumption is that most decoders don't really care * support
+  between MPEG-2 and MPEG-4 AAC data. Clients will likely need to
+  add some things to the pa_format_info proplist to make this usable:
+  * MPEG-2 vs. MPEG-4 AAC (for decoders that care)
+  * Stream format (raw vs. ADTS vs. LOAS)
+  * AudioSpecificConfig to signal AudioObjectType and any other params
+* Support get time for compressed stream. Cannot use bytes-to-time conversion
+  for compressed streams. so return the pal sess_time to provide client sink's
+  time. the sink_sess_usec is 0 by default.
+* pacat: Allow specifying non-PCM encoding. Add --encoding argument to allow
+  specifying a non-PCM format. This is expected to be useful for testing support
+  for compressed formats.
+* pacat: allow specifying stream format. Add --stream-format argument to allow
+  specifying a stream format. This is expected to be useful for testing support
+  for compressed formats, like AAC.
+* pacat: Enable the function of cache trailing partial frames for paplay compress
+  offload playabck. Need cache any trailing partial frames if the STDIN read system call
+  return a length that isn't in multiples of the stream's sample-spec frame size to
+  avoid invalid writes of the PA stream.
+* Changes to enable compress volume change support via pulseaudio.
+
+Change-Id: Ia8eb80b9f5b3cba47150689260e42183b664fbc0
+Signed-off-by: Raveendranath Kondrakunta <quic_rkondrak@quicinc.com>
+Signed-off-by: Yuchao Pan <quic_yuchpan@quicinc.com>
+Signed-off-by: Pratyush Meduri <quic_mpratyus@quicinc.com>
+---
+ src/modules/alsa/alsa-sink.c    |  2 +-
+ src/pulse/def.h                 |  3 +
+ src/pulse/format.c              | 48 ++++++++++++++++
+ src/pulse/format.h              | 42 ++++++++++++++
+ src/pulse/map-file              |  2 +
+ src/pulse/meson.build           |  2 +-
+ src/pulse/stream.c              |  9 +++
+ src/pulsecore/core-format.c     | 23 +++++++-
+ src/pulsecore/memchunk.h        |  1 +
+ src/pulsecore/meson.build       | 47 ++++------------
+ src/pulsecore/protocol-native.c | 76 +++++++++++++++++++++++--
+ src/pulsecore/sink-input.c      | 98 ++++++++++++++++++++++++++++-----
+ src/pulsecore/sink-input.h      | 12 ++++
+ src/pulsecore/sink.c            | 98 +++++++++++++++++++++++++++++----
+ src/pulsecore/sink.h            | 35 ++++++++++--
+ src/pulsecore/source-output.c   |  4 +-
+ src/pulsecore/source.c          |  4 +-
+ src/utils/pacat.c               | 87 +++++++++++++++++++++++++----
+ 18 files changed, 503 insertions(+), 90 deletions(-)
+
+diff --git a/src/modules/alsa/alsa-sink.c b/src/modules/alsa/alsa-sink.c
+index 76a710e..0d23722 100644
+--- a/src/modules/alsa/alsa-sink.c
++++ b/src/modules/alsa/alsa-sink.c
+@@ -1164,7 +1164,7 @@ static int unsuspend(struct userdata *u, bool recovering) {
+ 
+     pa_log_info("Trying resume...");
+ 
+-    if ((is_iec958(u) || is_hdmi(u)) && pa_sink_is_passthrough(u->sink)) {
++    if ((is_iec958(u) || is_hdmi(u)) && pa_sink_is_exclusive(u->sink)) {
+         /* Need to open device in NONAUDIO mode */
+         int len = strlen(u->device_name) + 8;
+ 
+diff --git a/src/pulse/def.h b/src/pulse/def.h
+index 4097bd8..a400ffc 100644
+--- a/src/pulse/def.h
++++ b/src/pulse/def.h
+@@ -694,6 +694,9 @@ typedef struct pa_timing_info {
+      * playback streams and record streams connected to a monitor
+      * source. */
+ 
++    pa_usec_t sink_sess_usec;
++    /** Value of the current sink session time. */
++
+     pa_usec_t source_usec;
+     /**< Time in usecs a sample takes from being recorded to being
+      * delivered to the application. Only for record streams. */
+diff --git a/src/pulse/format.c b/src/pulse/format.c
+index 00bae2d..39180b8 100644
+--- a/src/pulse/format.c
++++ b/src/pulse/format.c
+@@ -49,6 +49,13 @@ static const char* const _encoding_str_table[]= {
+     [PA_ENCODING_MPEG2_AAC_IEC61937] = "mpeg2-aac-iec61937",
+     [PA_ENCODING_TRUEHD_IEC61937] = "truehd-iec61937",
+     [PA_ENCODING_DTSHD_IEC61937] = "dtshd-iec61937",
++    [PA_ENCODING_UNKNOWN_IEC61937] = "unknown-iec61937",
++    [PA_ENCODING_UNKNOWN_4X_IEC61937] = "unknown-4x-iec61937",
++    [PA_ENCODING_UNKNOWN_HBR_IEC61937] = "unknown-hbr-iec61937",
++    [PA_ENCODING_MAT_IEC61937] = "mat-iec61937",
++    [PA_ENCODING_MPEG] = "mpeg",
++    [PA_ENCODING_AAC] = "aac",
++    [PA_ENCODING_DSD] = "dsd",
+     [PA_ENCODING_ANY] = "any",
+ };
+ 
+@@ -110,6 +117,47 @@ int pa_format_info_is_pcm(const pa_format_info *f) {
+     return f->encoding == PA_ENCODING_PCM;
+ }
+ 
++int pa_format_info_is_passthrough(const pa_format_info *f) {
++    switch (f->encoding) {
++        case PA_ENCODING_AC3_IEC61937:
++        case PA_ENCODING_EAC3_IEC61937:
++        case PA_ENCODING_MPEG_IEC61937:
++        case PA_ENCODING_DTS_IEC61937:
++        case PA_ENCODING_MPEG2_AAC_IEC61937:
++        case PA_ENCODING_TRUEHD_IEC61937:
++        case PA_ENCODING_UNKNOWN_IEC61937:
++        case PA_ENCODING_UNKNOWN_4X_IEC61937:
++        case PA_ENCODING_UNKNOWN_HBR_IEC61937:
++        case PA_ENCODING_MAT_IEC61937:
++            return true;
++
++        default:
++            return false;
++    }
++}
++
++int pa_format_info_is_compressed(const pa_format_info *f) {
++    switch (f->encoding) {
++        case PA_ENCODING_MPEG:
++        case PA_ENCODING_AAC:
++        case PA_ENCODING_DSD:
++            return true;
++
++        default:
++            return false;
++    }
++}
++
++int pa_format_info_is_compressed_capture(const pa_format_info *f) {
++        switch (f->encoding) {
++        case PA_ENCODING_DSD:
++            return true;
++
++        default:
++            return false;
++    }
++}
++
+ char *pa_format_info_snprint(char *s, size_t l, const pa_format_info *f) {
+     char *tmp;
+ 
+diff --git a/src/pulse/format.h b/src/pulse/format.h
+index 5f97929..bc97c6a 100644
+--- a/src/pulse/format.h
++++ b/src/pulse/format.h
+@@ -62,10 +62,33 @@ typedef enum pa_encoding {
+     PA_ENCODING_DTSHD_IEC61937,
+     /**< DTS-HD Master Audio encapsulated in IEC 61937 header/padding. \since 13.0 */
+ 
++    PA_ENCODING_UNKNOWN_IEC61937,
++    /**< Data with an unknown encoding in IEC 61937 header/padding. Required device rate is assumed to be same as the media
++     * sample rate. \since 13.0 */
++
++    PA_ENCODING_UNKNOWN_4X_IEC61937,
++    /**< Data with an unknown encoding in IEC 61937 header/padding. Required device rate is assumed to be four times the media
++     * sample rate. \since 13.0 */
++
++    PA_ENCODING_UNKNOWN_HBR_IEC61937,
++    /**< High bitrate data with an unknown encoding in IEC 61937 header/padding. \since 13.0 */
++
++    PA_ENCODING_MAT_IEC61937,
++    /**< Dolby MAT data encapsulated in IEC 61937 header/padding. */
++
+     /* Remeber to update
+      * https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/SupportedAudioFormats/
+      * when adding new encodings! */
+ 
++    PA_ENCODING_MPEG,
++    /**< MPEG-1 or MPEG-2 (Part 3, not AAC) data. \since: FIXME */
++
++    PA_ENCODING_AAC,
++    /**< MPEG-2 or MPEG-4 AAC data. \since: FIXME */
++
++    PA_ENCODING_DSD,
++    /**< DSD data. \since: FIXME */
++
+     PA_ENCODING_MAX,
+     /**< Valid encoding types must be less than this value */
+ 
+@@ -83,6 +106,8 @@ typedef enum pa_encoding {
+ #define PA_ENCODING_MPEG2_AAC_IEC61937 PA_ENCODING_MPEG2_AAC_IEC61937
+ #define PA_ENCODING_TRUEHD_IEC61937 PA_ENCODING_TRUEHD_IEC61937
+ #define PA_ENCODING_DTSHD_IEC61937 PA_ENCODING_DTSHD_IEC61937
++#define PA_ENCODING_MPEG PA_ENCODING_MPEG
++#define PA_ENCODING_AAC PA_ENCODING_AAC
+ #define PA_ENCODING_MAX PA_ENCODING_MAX
+ #define PA_ENCODING_INVALID PA_ENCODING_INVALID
+ /** \endcond */
+@@ -120,6 +145,23 @@ int pa_format_info_valid(const pa_format_info *f);
+  * (i.e.\ uncompressed data) format. \since 1.0 */
+ int pa_format_info_is_pcm(const pa_format_info *f);
+ 
++/** Returns non-zero when the format info structure represents a compressed
++ * format which can be transmitted as a PCM-equivalent format. This primarily
++ * applies to IEC61937-encapsulated formats. \since FIXME */
++int pa_format_info_is_passthrough(const pa_format_info *f);
++
++/** Returns non-zero when the format info structure represents a compressed
++ * format which cannot be transmitted as a PCM-equivalent format. This applies
++ * to most compressed data except when encapsulated in the IEC61937 format.
++ * \since FIXME. */
++int pa_format_info_is_compressed(const pa_format_info *f);
++
++/** Returns non-zero when the format info structure represents a compressed
++ * format which cannot be transmitted as a PCM-equivalent format. This applies
++ * to most compressed data except when encapsulated in the IEC61937 format.
++ * \since FIXME. */
++int pa_format_info_is_compressed_capture(const pa_format_info *f);
++
+ /** Returns non-zero if the format represented by \a first is a subset of
+  * the format represented by \a second. This means that \a second must
+  * have all the fields that \a first does, but the reverse need not
+diff --git a/src/pulse/map-file b/src/pulse/map-file
+index 3df03cd..99eb1f1 100644
+--- a/src/pulse/map-file
++++ b/src/pulse/map-file
+@@ -190,6 +190,8 @@ pa_format_info_get_prop_type;
+ pa_format_info_get_rate;
+ pa_format_info_get_sample_format;
+ pa_format_info_is_compatible;
++pa_format_info_is_passthrough;
++pa_format_info_is_compressed;
+ pa_format_info_is_pcm;
+ pa_format_info_new;
+ pa_format_info_set_channel_map;
+diff --git a/src/pulse/meson.build b/src/pulse/meson.build
+index c2128e0..941f8c3 100644
+--- a/src/pulse/meson.build
++++ b/src/pulse/meson.build
+@@ -92,7 +92,7 @@ libpulse_dep = declare_dependency(link_with: libpulse)
+ 
+ install_headers(
+   libpulse_headers, 'simple.h',
+-  subdir : 'pulse'
++  install_dir : join_paths(includedir, 'pulse')
+ )
+ 
+ libpulse_simple = shared_library('pulse-simple',
+diff --git a/src/pulse/stream.c b/src/pulse/stream.c
+index f0c8034..ff58029 100644
+--- a/src/pulse/stream.c
++++ b/src/pulse/stream.c
+@@ -1742,6 +1742,13 @@ static pa_usec_t calc_time(const pa_stream *s, bool ignore_transport) {
+     pa_assert(s->direction != PA_STREAM_PLAYBACK || !s->timing_info.read_index_corrupt);
+     pa_assert(s->direction != PA_STREAM_RECORD || !s->timing_info.write_index_corrupt);
+ 
++    /* Get a time value (rather than bytes) for compressed streams */
++    if (s->format && pa_format_info_is_compressed(s->format)) {
++        if ((usec = s->timing_info.sink_sess_usec) > 0) {
++            goto finish;
++        }
++    }
++
+     if (s->direction == PA_STREAM_PLAYBACK) {
+         /* The last byte that was written into the output device
+          * had this time value associated */
+@@ -1789,6 +1796,7 @@ static pa_usec_t calc_time(const pa_stream *s, bool ignore_transport) {
+         }
+     }
+ 
++finish:
+     return usec;
+ }
+ 
+@@ -1819,6 +1827,7 @@ static void stream_get_timing_info_callback(pa_pdispatch *pd, uint32_t command,
+     } else {
+ 
+         if (pa_tagstruct_get_usec(t, &i->sink_usec) < 0 ||
++            pa_tagstruct_get_usec(t, &i->sink_sess_usec) < 0 ||
+             pa_tagstruct_get_usec(t, &i->source_usec) < 0 ||
+             pa_tagstruct_get_boolean(t, &playing) < 0 ||
+             pa_tagstruct_get_timeval(t, &local) < 0 ||
+diff --git a/src/pulsecore/core-format.c b/src/pulsecore/core-format.c
+index 1a21864..5accde0 100644
+--- a/src/pulsecore/core-format.c
++++ b/src/pulsecore/core-format.c
+@@ -136,7 +136,22 @@ int pa_format_info_to_sample_spec_fake(const pa_format_info *f, pa_sample_spec *
+     /* Note: When we add support for non-IEC61937 encapsulated compressed
+      * formats, this function should return a non-zero values for these. */
+ 
+-    ss->format = PA_SAMPLE_S16LE;
++    switch (f->encoding) {
++        case PA_ENCODING_PCM:
++            return -PA_ERR_INVALID;
++
++        case PA_ENCODING_MPEG:
++        case PA_ENCODING_AAC:
++            /* Fake a frame size of 1 byte for compressed data */
++            ss->format = PA_SAMPLE_U8;
++            break;
++
++        default:
++            /* Passthrough format */
++            ss->format = PA_SAMPLE_S16LE;
++            break;
++    }
++
+     if ((f->encoding == PA_ENCODING_TRUEHD_IEC61937) ||
+         (f->encoding == PA_ENCODING_DTSHD_IEC61937)) {
+         ss->channels = 8;
+@@ -148,6 +163,12 @@ int pa_format_info_to_sample_spec_fake(const pa_format_info *f, pa_sample_spec *
+              * sample spec's channel count. */
+             pa_channel_map_init_auto(map, 8, PA_CHANNEL_MAP_ALSA);
+         }
++    } else if (f->encoding == PA_ENCODING_MPEG ||
++               f->encoding == PA_ENCODING_AAC) {
++        /* Fake a frame size of 1 byte for compressed data */
++        ss->channels = 1;
++        if (map)
++            pa_channel_map_init_mono(map);
+     } else {
+         ss->channels = 2;
+         if (map)
+diff --git a/src/pulsecore/memchunk.h b/src/pulsecore/memchunk.h
+index 2b19712..92cc885 100644
+--- a/src/pulsecore/memchunk.h
++++ b/src/pulsecore/memchunk.h
+@@ -31,6 +31,7 @@ typedef struct pa_memchunk pa_memchunk;
+ struct pa_memchunk {
+     pa_memblock *memblock;
+     size_t index, length;
++    uint64_t timestamp, duration;
+ };
+ 
+ /* Make a memchunk writable, i.e. make sure that the caller may have
+diff --git a/src/pulsecore/meson.build b/src/pulsecore/meson.build
+index d7f9ef2..984725d 100644
+--- a/src/pulsecore/meson.build
++++ b/src/pulsecore/meson.build
+@@ -172,45 +172,18 @@ endif
+ 
+ # FIXME: SIMD support (ORC)
+ simd = import('unstable-simd')
+-simd_variants = [
+-  { 'mmx' : ['remap_mmx.c', 'svolume_mmx.c'] },
+-  { 'sse' : ['remap_sse.c', 'sconv_sse.c', 'svolume_sse.c'] },
+-  { 'neon' : ['remap_neon.c', 'sconv_neon.c', 'mix_neon.c'] },
+-]
+-
+-libpulsecore_simd_lib = []
+-
+-foreach simd_kwargs : simd_variants
+-
+-  if host_machine.cpu_family() == 'arm' and 'neon' in simd_kwargs
+-    if not cc.compiles('''
+-        #include <arm_neon.h>
+-        int main() {
+-            return sizeof(uint8x8_t) + sizeof(int32x4_t) + sizeof(float32x4_t);
+-        }
+-        ''', name : 'neon code')
+-      continue
+-    endif
+-  endif
+-
+-  libpulsecore_simd = simd.check('libpulsecore_simd',
+-    kwargs : simd_kwargs,
+-    c_args : [pa_c_args],
+-    include_directories : [configinc, topinc],
+-    implicit_include_directories : false,
+-    compiler : cc)
++libpulsecore_simd = simd.check('libpulsecore_simd',
++  mmx : ['remap_mmx.c', 'svolume_mmx.c'],
++  sse : ['remap_sse.c', 'sconv_sse.c', 'svolume_sse.c'],
++  neon : ['remap_neon.c', 'sconv_neon.c', 'mix_neon.c'],
++  c_args : [pa_c_args],
++  include_directories : [configinc, topinc],
++  implicit_include_directories : false,
++  compiler : cc)
++libpulsecore_simd_lib = libpulsecore_simd[0]
++cdata.merge_from(libpulsecore_simd[1])
+ 
+-  libpulsecore_simd_lib += libpulsecore_simd[0]
+-  cdata.merge_from(libpulsecore_simd[1])
+-endforeach
+ 
+-if host_machine.system() == 'windows'
+-  libpulsecore_sources += ['mutex-win32.c',
+-    'poll-win32.c',
+-    'semaphore-win32.c',
+-    'thread-win32.c',
+-  ]
+-endif
+ 
+ libpulsecore = shared_library('pulsecore-' + pa_version_major_minor,
+   libpulsecore_sources, libpulsecore_headers,
+diff --git a/src/pulsecore/protocol-native.c b/src/pulsecore/protocol-native.c
+index f8dad57..e3f2106 100644
+--- a/src/pulsecore/protocol-native.c
++++ b/src/pulsecore/protocol-native.c
+@@ -145,6 +145,7 @@ typedef struct playback_stream {
+     int64_t read_index, write_index;
+     size_t render_memblockq_length;
+     pa_usec_t current_sink_latency;
++    uint64_t current_sink_sess_time;
+     uint64_t playing_for, underrun_for;
+ } playback_stream;
+ 
+@@ -248,6 +249,7 @@ static void sink_input_process_rewind_cb(pa_sink_input *i, size_t nbytes);
+ static void sink_input_update_max_rewind_cb(pa_sink_input *i, size_t nbytes);
+ static void sink_input_update_max_request_cb(pa_sink_input *i, size_t nbytes);
+ static void sink_input_send_event_cb(pa_sink_input *i, const char *event, pa_proplist *pl);
++static void sink_input_drain_complete_cb(pa_sink_input *i);
+ 
+ static void native_connection_send_memblock(pa_native_connection *c);
+ static void playback_stream_request_bytes(struct playback_stream*s);
+@@ -1064,6 +1066,7 @@ static playback_stream* playback_stream_new(
+     s->sink_input->moving = sink_input_moving_cb;
+     s->sink_input->suspend = sink_input_suspend_cb;
+     s->sink_input->send_event = sink_input_send_event_cb;
++    s->sink_input->drain_complete = sink_input_drain_complete_cb;
+     s->sink_input->userdata = s;
+ 
+     start_index = ssync ? pa_memblockq_get_read_index(ssync->memblockq) : 0;
+@@ -1404,7 +1407,35 @@ static int sink_input_process_msg(pa_msgobject *o, int code, void *userdata, int
+                 handle_seek(ssync, windex);
+             }
+ 
+-            if (code == SINK_INPUT_MESSAGE_DRAIN) {
++            /* For compressed streams, we need to send the flush all the way to
++             * the sink so that it can drop any buffered data if possible. */
++            if (pa_sink_input_is_compressed(i)) {
++                switch (code) {
++                    case SINK_INPUT_MESSAGE_FLUSH:
++                        if (pa_sink_flush(i->sink) < 0)
++                            pa_log_warn("Unable to flush sink");
++                        break;
++
++                    case SINK_INPUT_MESSAGE_DRAIN:
++                        s->drain_tag = PA_PTR_TO_UINT(userdata);
++
++                        if (!pa_memblockq_is_readable(s->memblockq)) {
++                            if (pa_sink_drain(i->sink) < 0) {
++                                pa_log_warn("Unable to drain sink");
++                                /* We're not going to get an ack from the sink,
++                                 * tell the clientto not wait */
++                                pa_asyncmsgq_post(pa_thread_mq_get()->outq, PA_MSGOBJECT(s), PLAYBACK_STREAM_MESSAGE_DRAIN_ACK, userdata, 0, NULL, NULL);
++                            }
++                        } else {
++                            /* Schedule the drain for when the buffer runs empty */
++                            s->drain_request = true;
++                        }
++
++                    default:
++                        break;
++                }
++            } else if (code == SINK_INPUT_MESSAGE_DRAIN) {
++                /* Handle drains for non-compressed streams */
+                 if (!pa_memblockq_is_readable(s->memblockq))
+                     pa_asyncmsgq_post(pa_thread_mq_get()->outq, PA_MSGOBJECT(s), PLAYBACK_STREAM_MESSAGE_DRAIN_ACK, userdata, 0, NULL, NULL);
+                 else {
+@@ -1422,6 +1453,7 @@ static int sink_input_process_msg(pa_msgobject *o, int code, void *userdata, int
+             s->write_index = pa_memblockq_get_write_index(s->memblockq);
+             s->render_memblockq_length = pa_memblockq_get_length(s->sink_input->thread_info.render_memblockq);
+             s->current_sink_latency = pa_sink_get_latency_within_thread(s->sink_input->sink, false);
++            s->current_sink_sess_time = s->sink_input->sink->sess_time;
+             s->underrun_for = s->sink_input->thread_info.underrun_for;
+             s->playing_for = s->sink_input->thread_info.playing_for;
+ 
+@@ -1476,12 +1508,26 @@ static bool handle_input_underrun(playback_stream *s, bool force) {
+         pa_log_debug("%s %s of '%s'", force ? "Actual" : "Implicit",
+             s->drain_request ? "drain" : "underrun", pa_strnull(pa_proplist_gets(s->sink_input->proplist, PA_PROP_MEDIA_NAME)));
+ 
+-    send_drain = s->drain_request && (force || pa_sink_input_safe_to_remove(s->sink_input));
++    send_drain = s->drain_request && (force || pa_sink_input_safe_to_remove(s->sink_input) || pa_sink_input_is_compressed(s->sink_input));
+ 
+     if (send_drain) {
+-         s->drain_request = false;
+-         pa_asyncmsgq_post(pa_thread_mq_get()->outq, PA_MSGOBJECT(s), PLAYBACK_STREAM_MESSAGE_DRAIN_ACK, PA_UINT_TO_PTR(s->drain_tag), 0, NULL, NULL);
+-         pa_log_debug("Drain acknowledged of '%s'", pa_strnull(pa_proplist_gets(s->sink_input->proplist, PA_PROP_MEDIA_NAME)));
++         if (!pa_sink_input_is_compressed(s->sink_input)) {
++             s->drain_request = false;
++             pa_asyncmsgq_post(pa_thread_mq_get()->outq, PA_MSGOBJECT(s), PLAYBACK_STREAM_MESSAGE_DRAIN_ACK, PA_UINT_TO_PTR(s->drain_tag), 0, NULL, NULL);
++             pa_log_debug("Drain acknowledged of '%s'", pa_strnull(pa_proplist_gets(s->sink_input->proplist, PA_PROP_MEDIA_NAME)));
++         } else {
++             /* Now trigger a drain on the (compressed) sink as well */
++             if (pa_sink_drain(s->sink_input->sink) < 0) {
++                 s->drain_request = false;
++                 pa_log_warn("Unable to drain sink");
++                 /* We're not going to get an ack from the sink, tell the
++                  * client to not wait */
++                 pa_asyncmsgq_post(pa_thread_mq_get()->outq, PA_MSGOBJECT(s), PLAYBACK_STREAM_MESSAGE_DRAIN_ACK, PA_UINT_TO_PTR(s->drain_tag), 0, NULL, NULL);
++             } else {
++                 /* s->drain_request is still true, and will get cleared on
++                  * completion of the drain */
++             }
++         }
+     } else if (!s->is_underrun) {
+          pa_asyncmsgq_post(pa_thread_mq_get()->outq, PA_MSGOBJECT(s), PLAYBACK_STREAM_MESSAGE_UNDERFLOW, NULL, pa_memblockq_get_read_index(s->memblockq), NULL, NULL);
+     }
+@@ -1618,6 +1664,24 @@ static void sink_input_send_event_cb(pa_sink_input *i, const char *event, pa_pro
+     pa_pstream_send_tagstruct(s->connection->pstream, t);
+ }
+ 
++/* Called from thread context */
++static void sink_input_drain_complete_cb(pa_sink_input *i)
++{
++    playback_stream *s;
++
++    pa_sink_input_assert_ref(i);
++    s = PLAYBACK_STREAM(i->userdata);
++    playback_stream_assert_ref(s);
++
++    /* This can happen if a sink was in the middle of a drain, a sink-input
++     * went away, and a new one came in */
++    if (!s->drain_request)
++        return;
++
++    pa_asyncmsgq_post(pa_thread_mq_get()->outq, PA_MSGOBJECT(s), PLAYBACK_STREAM_MESSAGE_DRAIN_ACK, PA_UINT_TO_PTR(s->drain_tag), 0, NULL, NULL);
++    pa_log_debug("Drain acknowledged of '%s'", pa_strnull(pa_proplist_gets(s->sink_input->proplist, PA_PROP_MEDIA_NAME)));
++}
++
+ /* Called from main context */
+ static void sink_input_suspend_cb(pa_sink_input *i, pa_sink_state_t old_state, pa_suspend_cause_t old_suspend_cause) {
+     playback_stream *s;
+@@ -2898,6 +2962,7 @@ static void command_get_playback_latency(pa_pdispatch *pd, uint32_t command, uin
+     pa_tagstruct_put_usec(reply,
+                           s->current_sink_latency +
+                           pa_bytes_to_usec(s->render_memblockq_length, &s->sink_input->sink->sample_spec));
++    pa_tagstruct_put_usec(reply, s->current_sink_sess_time);
+     pa_tagstruct_put_usec(reply, 0);
+     pa_tagstruct_put_boolean(reply,
+                              s->playing_for > 0 &&
+@@ -2942,6 +3007,7 @@ static void command_get_record_latency(pa_pdispatch *pd, uint32_t command, uint3
+ 
+     reply = reply_new(tag);
+     pa_tagstruct_put_usec(reply, s->current_monitor_latency);
++    pa_tagstruct_put_usec(reply, 0);
+     pa_tagstruct_put_usec(reply,
+                           s->current_source_latency +
+                           pa_bytes_to_usec(s->on_the_fly_snapshot, &s->source_output->sample_spec));
+diff --git a/src/pulsecore/sink-input.c b/src/pulsecore/sink-input.c
+index 5e7657c..b78bb12 100644
+--- a/src/pulsecore/sink-input.c
++++ b/src/pulsecore/sink-input.c
+@@ -87,7 +87,7 @@ static void sink_input_free(pa_object *o);
+ static void set_real_ratio(pa_sink_input *i, const pa_cvolume *v);
+ 
+ static int check_passthrough_connection(bool passthrough, pa_sink *dest) {
+-    if (pa_sink_is_passthrough(dest)) {
++    if (pa_sink_is_exclusive(dest)) {
+         pa_log_warn("Sink is already connected to PASSTHROUGH input");
+         return -PA_ERR_BUSY;
+     }
+@@ -131,10 +131,22 @@ void pa_sink_input_new_data_set_channel_map(pa_sink_input_new_data *data, const
+         data->channel_map = *map;
+ }
+ 
++bool pa_sink_input_new_data_is_pcm(pa_sink_input_new_data *data) {
++    pa_assert(data);
++
++    if (data->format && pa_format_info_is_pcm(data->format))
++        return true;
++
++    if (!data->format)
++        return true;
++
++    return false;
++}
++
+ bool pa_sink_input_new_data_is_passthrough(pa_sink_input_new_data *data) {
+     pa_assert(data);
+ 
+-    if (PA_LIKELY(data->format) && PA_UNLIKELY(!pa_format_info_is_pcm(data->format)))
++    if (PA_LIKELY(data->format) && PA_UNLIKELY(pa_format_info_is_passthrough(data->format)))
+         return true;
+ 
+     if (PA_UNLIKELY(data->flags & PA_SINK_INPUT_PASSTHROUGH))
+@@ -143,6 +155,15 @@ bool pa_sink_input_new_data_is_passthrough(pa_sink_input_new_data *data) {
+     return false;
+ }
+ 
++bool pa_sink_input_new_data_is_compressed(pa_sink_input_new_data *data) {
++    pa_assert(data);
++
++    if (data->format && pa_format_info_is_compressed(data->format))
++        return true;
++
++    return false;
++}
++
+ void pa_sink_input_new_data_set_volume(pa_sink_input_new_data *data, const pa_cvolume *volume) {
+     pa_assert(data);
+     pa_assert(data->volume_writable);
+@@ -373,7 +394,7 @@ int pa_sink_input_new(
+ 
+     /* Routing is done. We have a sink and a format. */
+ 
+-    if (data->volume_is_set && !pa_sink_input_new_data_is_passthrough(data)) {
++    if (data->volume_is_set && pa_sink_input_new_data_is_pcm(data)) {
+         /* If volume is set, we need to save the original data->channel_map,
+          * so that we can remap the volume from the original channel map to the
+          * final channel map of the stream in case data->channel_map gets
+@@ -400,7 +421,7 @@ int pa_sink_input_new(
+ 
+     /* Don't restore (or save) stream volume for passthrough streams and
+      * prevent attenuation/gain */
+-    if (pa_sink_input_new_data_is_passthrough(data)) {
++    if (!pa_sink_input_new_data_is_pcm(data)) {
+         data->volume_is_set = true;
+         pa_cvolume_reset(&data->volume, data->sample_spec.channels);
+         data->volume_is_absolute = true;
+@@ -424,13 +445,22 @@ int pa_sink_input_new(
+     if (!data->muted_is_set)
+         data->muted = false;
+ 
+-    if (!(data->flags & PA_SINK_INPUT_VARIABLE_RATE) &&
+-        !pa_sample_spec_equal(&data->sample_spec, &data->sink->sample_spec)) {
+-        /* try to change sink format and rate. This is done before the FIXATE hook since
+-           module-suspend-on-idle can resume a sink */
++    if (!pa_sink_input_new_data_is_compressed(data)) {
++        if ((!(data->flags & PA_SINK_INPUT_VARIABLE_RATE) &&
++            !pa_sample_spec_equal(&data->sample_spec, &data->sink->sample_spec)) ||
++            pa_sink_input_new_data_is_passthrough(data)) {
++            /* try to change sink format and rate. This is done before the FIXATE hook since
++            module-suspend-on-idle can resume a sink */
+ 
+-        pa_log_info("Trying to change sample spec");
+-        pa_sink_reconfigure(data->sink, &data->sample_spec, pa_sink_input_new_data_is_passthrough(data));
++            pa_log_info("Trying to change sample spec");
++            pa_sink_reconfigure(data->sink, &data->sample_spec, pa_sink_input_new_data_is_passthrough(data));
++        }
++    } else {
++        /* Set the compressed format on the sink */
++        if (!pa_sink_set_format(data->sink, data->format)) {
++            pa_log_info("Could not configure sink for: %s", pa_format_info_snprint(fmt, sizeof(fmt), data->format));
++            return -PA_ERR_NOTSUPPORTED;
++        }
+     }
+ 
+     if (pa_sink_input_new_data_is_passthrough(data) &&
+@@ -465,7 +495,7 @@ int pa_sink_input_new(
+         !pa_channel_map_equal(&data->channel_map, &data->sink->channel_map)) {
+ 
+         /* Note: for passthrough content we need to adjust the output rate to that of the current sink-input */
+-        if (!pa_sink_input_new_data_is_passthrough(data)) /* no resampler for passthrough content */
++        if (pa_sink_input_new_data_is_pcm(data)) /* no resampler for passthrough/compressed content */
+             if (!(resampler = pa_resampler_new(
+                           core->mempool,
+                           &data->sample_spec, &data->channel_map,
+@@ -623,6 +653,7 @@ static void sink_input_set_state(pa_sink_input *i, pa_sink_input_state_t state)
+ 
+     if (i->sink) {
+         if (i->state == PA_SINK_INPUT_CORKED && state == PA_SINK_INPUT_RUNNING && pa_sink_used_by(i->sink) == 0 &&
++            !pa_sink_input_is_compressed(i) &&
+             !pa_sample_spec_equal(&i->sample_spec, &i->sink->sample_spec)) {
+             /* We were uncorked and the sink was not playing anything -- let's try
+              * to update the sample format and rate to avoid resampling */
+@@ -729,9 +760,15 @@ void pa_sink_input_unlink(pa_sink_input *i) {
+     reset_callbacks(i);
+ 
+     if (i->sink) {
+-        if (PA_SINK_IS_LINKED(i->sink->state))
++        if (PA_SINK_IS_LINKED(i->sink->state)) {
+             pa_sink_update_status(i->sink);
+ 
++            if (pa_sink_input_is_compressed(i)) {
++                if (!pa_sink_set_format(i->sink, NULL))
++                    pa_log_warn("Sink could not exit compressed mode");
++            }
++        }
++
+         i->sink = NULL;
+     }
+ 
+@@ -1391,11 +1428,24 @@ static void set_real_ratio(pa_sink_input *i, const pa_cvolume *v) {
+     /* We don't copy the data to the thread_info data. That's left for someone else to do */
+ }
+ 
++/* Called from main or I/O context */
++bool pa_sink_input_is_pcm(pa_sink_input *i) {
++    pa_sink_input_assert_ref(i);
++
++    if (PA_UNLIKELY(pa_format_info_is_passthrough(i->format) || pa_format_info_is_compressed(i->format)))
++        return false;
++
++    if (PA_UNLIKELY(i->flags & PA_SINK_INPUT_PASSTHROUGH))
++        return false;
++
++    return true;
++}
++
+ /* Called from main or I/O context */
+ bool pa_sink_input_is_passthrough(pa_sink_input *i) {
+     pa_sink_input_assert_ref(i);
+ 
+-    if (PA_UNLIKELY(!pa_format_info_is_pcm(i->format)))
++    if (PA_UNLIKELY(pa_format_info_is_passthrough(i->format)))
+         return true;
+ 
+     if (PA_UNLIKELY(i->flags & PA_SINK_INPUT_PASSTHROUGH))
+@@ -1404,6 +1454,16 @@ bool pa_sink_input_is_passthrough(pa_sink_input *i) {
+     return false;
+ }
+ 
++/* Called from main or I/O context */
++bool pa_sink_input_is_compressed(pa_sink_input *i) {
++    pa_sink_input_assert_ref(i);
++
++    if (PA_UNLIKELY(pa_format_info_is_compressed(i->format)))
++        return true;
++
++    return false;
++}
++
+ /* Called from main context */
+ bool pa_sink_input_is_volume_readable(pa_sink_input *i) {
+     pa_sink_input_assert_ref(i);
+@@ -1929,8 +1989,10 @@ int pa_sink_input_finish_move(pa_sink_input *i, pa_sink *dest, bool save) {
+         return -PA_ERR_NOTSUPPORTED;
+     }
+ 
+-    if (!(i->flags & PA_SINK_INPUT_VARIABLE_RATE) &&
+-        !pa_sample_spec_equal(&i->sample_spec, &dest->sample_spec)) {
++    if ((!(i->flags & PA_SINK_INPUT_VARIABLE_RATE) &&
++         !pa_sink_input_is_compressed(i) &&
++         !pa_sample_spec_equal(&i->sample_spec, &dest->sample_spec)) ||
++         pa_sink_input_is_passthrough(i)) {
+         /* try to change dest sink format and rate if possible without glitches.
+            module-suspend-on-idle resumes destination sink with
+            SINK_INPUT_MOVE_FINISH hook */
+@@ -2475,3 +2537,9 @@ void pa_sink_input_set_preferred_sink(pa_sink_input *i, pa_sink *s) {
+         pa_sink_input_move_to(i, i->core->default_sink, false);
+     }
+ }
++
++/* Called from IO context */
++void pa_sink_input_drain_complete(pa_sink_input *i) {
++    if (i->drain_complete)
++        i->drain_complete(i);
++}
+diff --git a/src/pulsecore/sink-input.h b/src/pulsecore/sink-input.h
+index d3de6e3..bd53fda 100644
+--- a/src/pulsecore/sink-input.h
++++ b/src/pulsecore/sink-input.h
+@@ -231,6 +231,11 @@ struct pa_sink_input {
+      * mute status changes. Called from main context */
+     void (*mute_changed)(pa_sink_input *i); /* may be NULL */
+ 
++    /* If non-NULL this function is called when for a compressed
++     * stream, a drain was called and the sink has completed the
++     * drain request */
++    void (*drain_complete)(pa_sink_input *i); /* may be NULL */
++
+     struct {
+         pa_sink_input_state_t state;
+ 
+@@ -328,7 +333,9 @@ typedef struct pa_sink_input_new_data {
+ pa_sink_input_new_data* pa_sink_input_new_data_init(pa_sink_input_new_data *data);
+ void pa_sink_input_new_data_set_sample_spec(pa_sink_input_new_data *data, const pa_sample_spec *spec);
+ void pa_sink_input_new_data_set_channel_map(pa_sink_input_new_data *data, const pa_channel_map *map);
++bool pa_sink_input_new_data_is_pcm(pa_sink_input_new_data *data);
+ bool pa_sink_input_new_data_is_passthrough(pa_sink_input_new_data *data);
++bool pa_sink_input_new_data_is_compressed(pa_sink_input_new_data *data);
+ void pa_sink_input_new_data_set_volume(pa_sink_input_new_data *data, const pa_cvolume *volume);
+ void pa_sink_input_new_data_add_volume_factor(pa_sink_input_new_data *data, const char *key, const pa_cvolume *volume_factor);
+ void pa_sink_input_new_data_add_volume_factor_sink(pa_sink_input_new_data *data, const char *key, const pa_cvolume *volume_factor);
+@@ -374,7 +381,9 @@ void pa_sink_input_kill(pa_sink_input*i);
+ 
+ pa_usec_t pa_sink_input_get_latency(pa_sink_input *i, pa_usec_t *sink_latency);
+ 
++bool pa_sink_input_is_pcm(pa_sink_input *i);
+ bool pa_sink_input_is_passthrough(pa_sink_input *i);
++bool pa_sink_input_is_compressed(pa_sink_input *i);
+ bool pa_sink_input_is_volume_readable(pa_sink_input *i);
+ void pa_sink_input_set_volume(pa_sink_input *i, const pa_cvolume *volume, bool save, bool absolute);
+ void pa_sink_input_add_volume_factor(pa_sink_input *i, const char *key, const pa_cvolume *volume_factor);
+@@ -421,6 +430,9 @@ pa_usec_t pa_sink_input_set_requested_latency_within_thread(pa_sink_input *i, pa
+ bool pa_sink_input_safe_to_remove(pa_sink_input *i);
+ bool pa_sink_input_process_underrun(pa_sink_input *i);
+ 
++/* Used by compressed sinks to signal end of drain */
++void pa_sink_input_drain_complete(pa_sink_input *i);
++
+ pa_memchunk* pa_sink_input_get_silence(pa_sink_input *i, pa_memchunk *ret);
+ 
+ /* Calls the attach() callback if it's set. The input must be in detached
+diff --git a/src/pulsecore/sink.c b/src/pulsecore/sink.c
+index 905e1db..9971665 100644
+--- a/src/pulsecore/sink.c
++++ b/src/pulsecore/sink.c
+@@ -38,6 +38,7 @@
+ #include <pulsecore/i18n.h>
+ #include <pulsecore/sink-input.h>
+ #include <pulsecore/namereg.h>
++#include <pulsecore/core-format.h>
+ #include <pulsecore/core-util.h>
+ #include <pulsecore/sample-util.h>
+ #include <pulsecore/mix.h>
+@@ -354,6 +355,8 @@ pa_sink* pa_sink_new(
+     s->thread_info.volume_change_extra_delay = core->deferred_volume_extra_delay_usec;
+     s->thread_info.port_latency_offset = s->port_latency_offset;
+ 
++    s->sess_time = 0;
++
+     /* FIXME: This should probably be moved to pa_sink_put() */
+     pa_assert_se(pa_idxset_put(core->sinks, s, &s->index) >= 0);
+ 
+@@ -1538,7 +1541,7 @@ void pa_sink_reconfigure(pa_sink *s, pa_sample_spec *spec, bool passthrough) {
+             desired_spec.rate = default_rate;
+     }
+ 
+-    if (pa_sample_spec_equal(&desired_spec, &s->sample_spec) && passthrough == pa_sink_is_passthrough(s))
++    if (pa_sample_spec_equal(&desired_spec, &s->sample_spec) && passthrough == pa_sink_is_exclusive(s))
+         return;
+ 
+     if (!passthrough && pa_sink_used_by(s) > 0)
+@@ -1662,17 +1665,17 @@ bool pa_sink_is_filter(pa_sink *s) {
+ }
+ 
+ /* Called from main context */
+-bool pa_sink_is_passthrough(pa_sink *s) {
++bool pa_sink_is_exclusive(pa_sink *s) {
+     pa_sink_input *alt_i;
+     uint32_t idx;
+ 
+     pa_sink_assert_ref(s);
+ 
+-    /* one and only one PASSTHROUGH input can possibly be connected */
++    /* one and only one passthrough or compressed input can possibly be connected */
+     if (pa_idxset_size(s->inputs) == 1) {
+         alt_i = pa_idxset_first(s->inputs, &idx);
+ 
+-        if (pa_sink_input_is_passthrough(alt_i))
++        if (!pa_sink_input_is_pcm(alt_i))
+             return true;
+     }
+ 
+@@ -2099,13 +2102,6 @@ void pa_sink_set_volume(
+     pa_assert(volume || pa_sink_flat_volume_enabled(s));
+     pa_assert(!volume || volume->channels == 1 || pa_cvolume_compatible(volume, &s->sample_spec));
+ 
+-    /* make sure we don't change the volume when a PASSTHROUGH input is connected ...
+-     * ... *except* if we're being invoked to reset the volume to ensure 0 dB gain */
+-    if (pa_sink_is_passthrough(s) && (!volume || !pa_cvolume_is_norm(volume))) {
+-        pa_log_warn("Cannot change volume, Sink is connected to PASSTHROUGH input");
+-        return;
+-    }
+-
+     /* In case of volume sharing, the volume is set for the root sink first,
+      * from which it's then propagated to the sharing sinks. */
+     root_sink = pa_sink_get_master(s);
+@@ -3837,6 +3833,44 @@ pa_idxset* pa_sink_get_formats(pa_sink *s) {
+     return ret;
+ }
+ 
++/* Called from the main thread */
++/* Configures the sink for this specific (compressed) format */
++bool pa_sink_set_format(pa_sink *s, pa_format_info *f) {
++    pa_channel_map old_map;
++    bool ret;
++
++    pa_assert(s);
++
++    if (!s->set_format)
++        return false;
++
++    old_map = s->channel_map;
++
++    if (f) {
++        s->saved_spec = s->sample_spec;
++        s->saved_map = s->channel_map;
++
++        pa_format_info_to_sample_spec_fake(f, &s->sample_spec, &s->channel_map);
++    } else {
++        s->sample_spec = s->saved_spec;
++        s->channel_map = s->saved_map;
++
++        /* Invalidate to make sure we don't reuse this unexpectedly */
++        pa_sample_spec_init(&s->saved_spec);
++        pa_channel_map_init(&s->saved_map);
++    }
++
++    /* Fixup volumes to be valid */
++    pa_cvolume_remap(&s->reference_volume, &old_map, &s->channel_map);
++    pa_cvolume_remap(&s->real_volume, &old_map, &s->channel_map);
++    pa_cvolume_remap(&s->soft_volume, &old_map, &s->channel_map);
++
++    /* Set the format on the sink */
++    ret = s->set_format(s, f);
++
++    return ret;
++}
++
+ /* Called from the main thread */
+ /* Allows an external source to set what formats a sink supports if the sink
+  * permits this. The function makes a copy of the formats on success. */
+@@ -4015,3 +4049,45 @@ void pa_sink_move_streams_to_default_sink(pa_core *core, pa_sink *old_sink, bool
+         pa_sink_input_move_to(i, core->default_sink, false);
+     }
+ }
++
++/* Called from the IO thread. */
++int pa_sink_flush(pa_sink *s) {
++	pa_assert(s);
++	pa_assert_io_context();
++
++	if (s->flush)
++		return s->flush(s);
++	else
++		return -1;
++}
++
++/* Called from the IO thread. */
++int pa_sink_drain(pa_sink *s) {
++    pa_assert(s);
++    pa_assert_io_context();
++
++    if (s->drain)
++        return s->drain(s);
++    else
++        return -1;
++}
++
++/* Called from the IO thread. */
++void pa_sink_drain_complete(pa_sink *s) {
++    pa_sink_input *i;
++    uint32_t idx;
++
++    pa_assert(s);
++    pa_assert_io_context();
++
++    /* There should be only one stream in compressed mode */
++    i = pa_idxset_first(s->inputs, &idx);
++
++    /* See if the sink input is still there */
++    if (!i)
++        return;
++
++    pa_assert(pa_sink_input_is_compressed(i));
++
++    pa_sink_input_drain_complete(i);
++}
+diff --git a/src/pulsecore/sink.h b/src/pulsecore/sink.h
+index 87bfddd..e87b86a 100644
+--- a/src/pulsecore/sink.h
++++ b/src/pulsecore/sink.h
+@@ -107,7 +107,9 @@ struct pa_sink {
+     bool save_muted:1;
+     bool port_changing:1;
+ 
+-    /* Saved volume state while we're in passthrough mode */
++    /* Saved state while we're in passthrough or compressed mode */
++    pa_sample_spec saved_spec;
++    pa_channel_map saved_map;
+     pa_cvolume saved_volume;
+     bool saved_save_volume:1;
+ 
+@@ -266,10 +268,25 @@ struct pa_sink {
+      * set). Makes a copy of the formats passed in. */
+     bool (*set_formats)(pa_sink *s, pa_idxset *formats); /* may be NULL */
+ 
++    /* Called to inform the sink that a specific compressed stream will
++     * now be providing data to it, or to end such a configured state
++     * if the format is NULL. Must return success or failure value for
++     * whether such a configuration was successful.
++     */
++    bool (*set_format)(pa_sink *s, const pa_format_info *format); /* may be NULL */
++
+     /* Called whenever device parameters need to be changed. Called from
+      * main thread. */
+     void (*reconfigure)(pa_sink *s, pa_sample_spec *spec, bool passthrough);
+ 
++    /* Called in compressed mode to flush any buffered data in the sink */
++    int (*flush)(pa_sink *s);
++
++    /* Called in compressed mode to drain any buffered data in the sink.
++     * The expectation is that this will be completed asynchronously,
++     * and when complete, pa_sink_drain_complete() must be called. */
++    int (*drain)(pa_sink *s);
++
+     /* Contains copies of the above data so that the real-time worker
+      * thread can work without access locking */
+     struct {
+@@ -328,6 +345,8 @@ struct pa_sink {
+         int32_t volume_change_extra_delay;
+     } thread_info;
+ 
++    pa_usec_t sess_time;
++
+     void *userdata;
+ };
+ 
+@@ -470,9 +489,10 @@ pa_sink *pa_sink_get_master(pa_sink *s);
+ 
+ bool pa_sink_is_filter(pa_sink *s);
+ 
+-/* Is the sink in passthrough mode? (that is, is there a passthrough sink input
+- * connected to this sink? */
+-bool pa_sink_is_passthrough(pa_sink *s);
++/* Is the sink in exclusive mode? (that is, is there a passthrough or
++ * compressed sink input connected to this sink?) */
++bool pa_sink_is_exclusive(pa_sink *s);
++
+ /* These should be called when a sink enters/leaves passthrough mode */
+ void pa_sink_enter_passthrough(pa_sink *s);
+ void pa_sink_leave_passthrough(pa_sink *s);
+@@ -511,6 +531,7 @@ void pa_sink_move_all_fail(pa_queue *q);
+  * https://bugs.freedesktop.org/show_bug.cgi?id=71924 */
+ pa_idxset* pa_sink_get_formats(pa_sink *s);
+ 
++bool pa_sink_set_format(pa_sink *s, pa_format_info *format);
+ bool pa_sink_set_formats(pa_sink *s, pa_idxset *formats);
+ bool pa_sink_check_format(pa_sink *s, pa_format_info *f);
+ pa_idxset* pa_sink_check_formats(pa_sink *s, pa_idxset *in_formats);
+@@ -567,6 +588,12 @@ void pa_sink_set_reference_volume_direct(pa_sink *s, const pa_cvolume *volume);
+  * current default_sink conditionally*/
+ void pa_sink_move_streams_to_default_sink(pa_core *core, pa_sink *old_sink, bool default_sink_changed);
+ 
++int pa_sink_flush(pa_sink *s);
++
++int pa_sink_drain(pa_sink *s);
++
++void pa_sink_drain_complete(pa_sink *s);
++
+ /* Verify that we called in IO context (aka 'thread context), or that
+  * the sink is not yet set up, i.e. the thread not set up yet. See
+  * pa_assert_io_context() in thread-mq.h for more information. */
+diff --git a/src/pulsecore/source-output.c b/src/pulsecore/source-output.c
+index bee9241..d7256f4 100644
+--- a/src/pulsecore/source-output.c
++++ b/src/pulsecore/source-output.c
+@@ -75,7 +75,7 @@ void pa_source_output_new_data_set_channel_map(pa_source_output_new_data *data,
+ bool pa_source_output_new_data_is_passthrough(pa_source_output_new_data *data) {
+     pa_assert(data);
+ 
+-    if (PA_LIKELY(data->format) && PA_UNLIKELY(!pa_format_info_is_pcm(data->format)))
++    if (PA_LIKELY(data->format) && PA_UNLIKELY(pa_format_info_is_passthrough(data->format)))
+         return true;
+ 
+     if (PA_UNLIKELY(data->flags & PA_SOURCE_OUTPUT_PASSTHROUGH))
+@@ -1047,7 +1047,7 @@ static void set_real_ratio(pa_source_output *o, const pa_cvolume *v) {
+ bool pa_source_output_is_passthrough(pa_source_output *o) {
+     pa_source_output_assert_ref(o);
+ 
+-    if (PA_UNLIKELY(!pa_format_info_is_pcm(o->format)))
++    if (PA_UNLIKELY(pa_format_info_is_passthrough(o->format)))
+         return true;
+ 
+     if (PA_UNLIKELY(o->flags & PA_SOURCE_OUTPUT_PASSTHROUGH))
+diff --git a/src/pulsecore/source.c b/src/pulsecore/source.c
+index 99d8dde..ac48302 100644
+--- a/src/pulsecore/source.c
++++ b/src/pulsecore/source.c
+@@ -1256,8 +1256,8 @@ bool pa_source_is_passthrough(pa_source *s) {
+ 
+     pa_source_assert_ref(s);
+ 
+-    /* NB Currently only monitor sources support passthrough mode */
+-    return (s->monitor_of && pa_sink_is_passthrough(s->monitor_of));
++    /* Check if we're a monitor source and sink is in exclusive mode */
++    return (s->monitor_of && pa_sink_is_exclusive(s->monitor_of));
+ }
+ 
+ /* Called from main context */
+diff --git a/src/utils/pacat.c b/src/utils/pacat.c
+index 39ccaff..f12067e 100644
+--- a/src/utils/pacat.c
++++ b/src/utils/pacat.c
+@@ -100,6 +100,13 @@ static bool sample_spec_set = false;
+ static pa_channel_map channel_map;
+ static bool channel_map_set = false;
+ 
++/* If the encoding is set, we assume the pa_sample_spec will not be used, and
++ * that the pa_format_info will be. */
++static pa_encoding_t encoding;
++static bool encoding_set = false;
++pa_format_info *formats[1] = { NULL, };
++static char *stream_format = "raw";
++
+ static sf_count_t (*readf_function)(SNDFILE *_sndfile, void *ptr, sf_count_t frames) = NULL;
+ static sf_count_t (*writef_function)(SNDFILE *_sndfile, const void *ptr, sf_count_t frames) = NULL;
+ 
+@@ -319,7 +326,7 @@ static void stream_state_callback(pa_stream *s, void *userdata) {
+ 
+             if (verbose) {
+                 const pa_buffer_attr *a;
+-                char cmt[PA_CHANNEL_MAP_SNPRINT_MAX], sst[PA_SAMPLE_SPEC_SNPRINT_MAX];
++                char cmt[PA_CHANNEL_MAP_SNPRINT_MAX], sst[PA_SAMPLE_SPEC_SNPRINT_MAX], fst[PA_FORMAT_INFO_SNPRINT_MAX];
+ 
+                 pa_log(_("Stream successfully created."));
+ 
+@@ -335,9 +342,14 @@ static void stream_state_callback(pa_stream *s, void *userdata) {
+                     }
+                 }
+ 
+-                pa_log(_("Using sample spec '%s', channel map '%s'."),
+-                        pa_sample_spec_snprint(sst, sizeof(sst), pa_stream_get_sample_spec(s)),
+-                        pa_channel_map_snprint(cmt, sizeof(cmt), pa_stream_get_channel_map(s)));
++                if (!encoding_set) {
++                    pa_log(_("Using sample spec '%s', channel map '%s'."),
++                            pa_sample_spec_snprint(sst, sizeof(sst), pa_stream_get_sample_spec(s)),
++                            pa_channel_map_snprint(cmt, sizeof(cmt), pa_stream_get_channel_map(s)));
++                } else {
++                    pa_log(_("Using format '%s'."),
++                            pa_format_info_snprint(fst, sizeof(fst), pa_stream_get_format_info(s)));
++                }
+ 
+                 pa_log(_("Connected to device %s (index: %u, suspended: %s)."),
+                         pa_stream_get_device_name(s),
+@@ -449,7 +461,12 @@ static void context_state_callback(pa_context *c, void *userdata) {
+             if (verbose)
+                 pa_log(_("Connection established.%s"), CLEAR_LINE);
+ 
+-            if (!(stream = pa_stream_new_with_proplist(c, NULL, &sample_spec, &channel_map, proplist))) {
++            if (!encoding_set)
++                stream = pa_stream_new_with_proplist(c, NULL, &sample_spec, &channel_map, proplist);
++            else
++                stream = pa_stream_new_extended(c, NULL, formats, 1, proplist);
++
++            if (!stream) {
+                 pa_log(_("pa_stream_new() failed: %s"), pa_strerror(pa_context_errno(c)));
+                 goto fail;
+             }
+@@ -692,6 +709,8 @@ static void help(const char *argv0) {
+              "      --channels=CHANNELS               The number of channels, 1 for mono, 2 for stereo\n"
+              "                                        (defaults to 2)\n"
+              "      --channel-map=CHANNELMAP          Channel map to use instead of the default\n"
++             "      --encoding=ENCODING               Encoding to use for non-PCM audio\n"
++             "      --stream-format=FLAG              Stream format flag to use for non-PCM audio\n"
+              "      --fix-format                      Take the sample format from the sink/source the stream is\n"
+              "                                        being connected to.\n"
+              "      --fix-rate                        Take the sampling rate from the sink/source the stream is\n"
+@@ -721,6 +740,8 @@ enum {
+     ARG_SAMPLEFORMAT,
+     ARG_CHANNELS,
+     ARG_CHANNELMAP,
++    ARG_ENCODING,
++    ARG_STREAM_FORMAT,
+     ARG_FIX_FORMAT,
+     ARG_FIX_RATE,
+     ARG_FIX_CHANNELS,
+@@ -762,6 +783,8 @@ int main(int argc, char *argv[]) {
+         {"format",       1, NULL, ARG_SAMPLEFORMAT},
+         {"channels",     1, NULL, ARG_CHANNELS},
+         {"channel-map",  1, NULL, ARG_CHANNELMAP},
++        {"encoding",     1, NULL, ARG_ENCODING},
++        {"stream-format", 1, NULL, ARG_STREAM_FORMAT},
+         {"fix-format",   0, NULL, ARG_FIX_FORMAT},
+         {"fix-rate",     0, NULL, ARG_FIX_RATE},
+         {"fix-channels", 0, NULL, ARG_FIX_CHANNELS},
+@@ -908,6 +931,24 @@ int main(int argc, char *argv[]) {
+                 channel_map_set = true;
+                 break;
+ 
++            case ARG_ENCODING:
++                if ((encoding = pa_encoding_from_string(optarg)) == PA_ENCODING_INVALID) {
++                    pa_log(_("Invalid encoding '%s'"), optarg);
++                    goto quit;
++                }
++
++                if (encoding == PA_ENCODING_PCM) {
++                    pa_log(_("The encoding parameter is only supported with non-PCM formats."));
++                    goto quit;
++                }
++
++                encoding_set = true;
++                break;
++
++            case ARG_STREAM_FORMAT:
++                stream_format = pa_locale_to_utf8(optarg);
++                break;
++
+             case ARG_FIX_CHANNELS:
+                 flags |= PA_STREAM_FIX_CHANNELS;
+                 break;
+@@ -1007,7 +1048,23 @@ int main(int argc, char *argv[]) {
+         }
+     }
+ 
+-    if (!pa_sample_spec_valid(&sample_spec)) {
++    if (encoding_set && !raw) {
++        pa_log(_("Cannot set encoding for non-raw mode"));
++        goto quit;
++    }
++
++    if (encoding_set) {
++        formats[0] = pa_format_info_new();
++
++        formats[0]->encoding = encoding;
++        pa_format_info_set_prop_string(formats[0], "stream-format", stream_format);
++        pa_format_info_set_rate(formats[0], sample_spec.rate);
++        pa_format_info_set_channels(formats[0], sample_spec.channels);
++        if (!pa_format_info_valid(formats[0])) {
++            pa_log(_("Invalid format specification."));
++            goto quit;
++        }
++    } else if (!pa_sample_spec_valid(&sample_spec)) {
+         pa_log(_("Invalid sample specification"));
+         goto quit;
+     }
+@@ -1132,12 +1189,20 @@ int main(int argc, char *argv[]) {
+     }
+ 
+     if (verbose) {
+-        char tss[PA_SAMPLE_SPEC_SNPRINT_MAX], tcm[PA_CHANNEL_MAP_SNPRINT_MAX];
++        if (!encoding_set) {
++            char tss[PA_SAMPLE_SPEC_SNPRINT_MAX], tcm[PA_CHANNEL_MAP_SNPRINT_MAX];
+ 
+-        pa_log(_("Opening a %s stream with sample specification '%s' and channel map '%s'."),
+-                mode == RECORD ? _("recording") : _("playback"),
+-                pa_sample_spec_snprint(tss, sizeof(tss), &sample_spec),
+-                pa_channel_map_snprint(tcm, sizeof(tcm), &channel_map));
++            pa_log(_("Opening a %s stream with sample specification '%s' and channel map '%s'."),
++                    mode == RECORD ? _("recording") : _("playback"),
++                    pa_sample_spec_snprint(tss, sizeof(tss), &sample_spec),
++                    pa_channel_map_snprint(tcm, sizeof(tcm), &channel_map));
++        } else {
++            char tsf[PA_FORMAT_INFO_SNPRINT_MAX];
++
++            pa_log(_("Opening a %s stream with format specification '%s'."),
++                    mode == RECORD ? _("recording") : _("playback"),
++                    pa_format_info_snprint(tsf, sizeof(tsf), formats[0]));
++        }
+     }
+ 
+     /* Fill in client name if none was set */
+-- 
+2.17.1
+

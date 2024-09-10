@@ -1,0 +1,46 @@
+From e6d78facb688d2a81fdf616f2e2346fe04fb1728 Mon Sep 17 00:00:00 2001
+From: Puneeth Prabhu <quic_pprabh@quicinc.com>
+Date: Mon, 4 Mar 2024 11:26:05 +0530
+Subject: [PATCH 3/6] libpulse: Initialize channel map for 7 & 8 channel audio
+
+Change-Id: I784ee909e221874197313ce4873b5c5bcdac31b0
+Signed-off-by: Puneeth Prabhu <quic_pprabh@quicinc.com>
+---
+ src/pulse/channelmap.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/src/pulse/channelmap.c b/src/pulse/channelmap.c
+index 6308ab5..db36746 100644
+--- a/src/pulse/channelmap.c
++++ b/src/pulse/channelmap.c
+@@ -214,6 +214,27 @@ pa_channel_map* pa_channel_map_init_auto(pa_channel_map *m, unsigned channels, p
+                     m->map[0] = PA_CHANNEL_POSITION_MONO;
+                     return m;
+ 
++                case 8:
++                    m->map[0] = PA_CHANNEL_POSITION_FRONT_LEFT;
++                    m->map[1] = PA_CHANNEL_POSITION_FRONT_RIGHT;
++                    m->map[2] = PA_CHANNEL_POSITION_FRONT_CENTER;
++                    m->map[3] = PA_CHANNEL_POSITION_LFE;
++                    m->map[4] = PA_CHANNEL_POSITION_SIDE_LEFT;
++                    m->map[5] = PA_CHANNEL_POSITION_SIDE_RIGHT;
++                    m->map[6] = PA_CHANNEL_POSITION_REAR_LEFT;
++                    m->map[7] = PA_CHANNEL_POSITION_REAR_RIGHT;
++                    return m;
++
++                case 7:
++                    m->map[0] = PA_CHANNEL_POSITION_FRONT_LEFT;
++                    m->map[1] = PA_CHANNEL_POSITION_FRONT_RIGHT;
++                    m->map[2] = PA_CHANNEL_POSITION_FRONT_CENTER;
++                    m->map[3] = PA_CHANNEL_POSITION_SIDE_LEFT;
++                    m->map[4] = PA_CHANNEL_POSITION_SIDE_RIGHT;
++                    m->map[5] = PA_CHANNEL_POSITION_REAR_LEFT;
++                    m->map[6] = PA_CHANNEL_POSITION_REAR_RIGHT;
++                    return m;
++
+                 case 6:
+                     m->map[0] = PA_CHANNEL_POSITION_FRONT_LEFT;
+                     m->map[1] = PA_CHANNEL_POSITION_FRONT_LEFT_OF_CENTER;
+-- 
+2.17.1
+
