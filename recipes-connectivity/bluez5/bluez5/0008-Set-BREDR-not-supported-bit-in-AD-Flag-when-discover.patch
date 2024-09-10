@@ -1,0 +1,41 @@
+From 5518d7e47c4ab86c3687cf676bc9db725ab90fcf Mon Sep 17 00:00:00 2001
+From: Prathibha Madugonde <quic_prathm@quicinc.com>
+Date: Fri, 28 Jun 2024 12:38:19 +0530
+Subject: [PATCH BlueZ] Set BREDR not supported bit in AD Flag when
+ discoverable is off
+
+Fix for GAP/DISC/NONM/BV-02-C
+As per GAP.TS.p44 test spec
+IUT does not contain General Discoverable mode and Limited Discoverable
+mode in the AD Type Flag. IUT shall send AD Type Flag to PASS the test
+case, thus set BR/EDR not supported bit in the AD Type Flag when
+discoverable is off.
+
+Test steps:
+From DUT, bluetoothctl go to menu advertise
+set discoverable to off and then advertise on.
+In AD Flags BR/EDR not supported BIT shall be set.
+
+Upstream-Status: BACKPORT
+
+---
+ src/advertising.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/advertising.c b/src/advertising.c
+index 5d373e088..af3ed2b93 100644
+--- a/src/advertising.c
++++ b/src/advertising.c
+@@ -734,8 +734,7 @@ static bool set_flags(struct btd_adv_client *client, uint8_t flags)
+ 	/* Set BR/EDR Not Supported if adapter is not discoverable but the
+ 	 * instance is.
+ 	 */
+-	if ((flags & (BT_AD_FLAG_GENERAL | BT_AD_FLAG_LIMITED)) &&
+-			!btd_adapter_get_discoverable(client->manager->adapter))
++	if (!btd_adapter_get_discoverable(client->manager->adapter))
+ 		flags |= BT_AD_FLAG_NO_BREDR;
+ 
+ 	if (!bt_ad_add_flags(client->data, &flags, 1))
+-- 
+2.17.1
+

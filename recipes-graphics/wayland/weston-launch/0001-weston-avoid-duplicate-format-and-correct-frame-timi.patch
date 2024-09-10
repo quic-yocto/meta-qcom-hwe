@@ -1,0 +1,127 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From 7d4a6b63ef510f0b1148643657e029839aae21b0 Mon Sep 17 00:00:00 2001
+From: Devanshi Bansal <quic_devanshi@quicinc.com>
+Date: Tue, 23 Jul 2024 13:39:43 +0530
+Subject: [PATCH] weston: avoid duplicate format and correct frame timing
+
+Change-Id: I1e6bef3b07ba07b58fa19c170178f57f5e85f386
+Signed-off-by: Devanshi Bansal <quic_devanshi@quicinc.com>
+---
+ libweston/backend-drm/drm.c |  5 +++++
+ libweston/backend-drm/kms.c | 11 ++++++++++-
+ libweston/drm-formats.c     | 37 ++++++++++++++++++++-----------------
+ 3 files changed, 35 insertions(+), 18 deletions(-)
+
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 42787702..fe89bb5a 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -577,8 +577,13 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
+ 			millihz_to_nsec(output->base.current_mode->refresh);
+ 		if (timespec_to_nsec(&vbl2now) < refresh_nsec) {
+ 			drm_output_update_msc(output, vbl.reply.sequence);
++#ifdef QCOM_BSP
++			weston_output_finish_frame(output_base, &tnow,
++						WP_PRESENTATION_FEEDBACK_INVALID);
++#else
+ 			weston_output_finish_frame(output_base, &ts,
+ 						WP_PRESENTATION_FEEDBACK_INVALID);
++#endif
+ 			return 0;
+ 		}
+ 	}
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+index 780d0070..d672da1f 100644
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -1384,7 +1384,9 @@ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
+ 	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_VSYNC |
+ 			 WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
+ 			 WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
+-
++#ifdef QCOM_BSP
++ 	struct timespec tnow;
++#endif
+ 	crtc = drm_crtc_find(b, crtc_id);
+ 	assert(crtc);
+ 
+@@ -1403,7 +1405,14 @@ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
+ 	assert(output->atomic_complete_pending);
+ 	output->atomic_complete_pending = false;
+ 
++#ifdef QCOM_BSP
++	// kms can't update ts automaticlly, and update here every time.
++	weston_compositor_read_presentation_clock(b->compositor,
++							  &tnow);
++	drm_output_update_complete(output, flags, tnow.tv_sec, tnow.tv_nsec/1000);
++#else
+ 	drm_output_update_complete(output, flags, sec, usec);
++#endif
+ 	drm_debug(b, "[atomic][CRTC:%u] flip processing completed\n", crtc_id);
+ }
+ 
+diff --git a/libweston/drm-formats.c b/libweston/drm-formats.c
+index 6bc08b5d..4de953fc 100644
+--- a/libweston/drm-formats.c
++++ b/libweston/drm-formats.c
+@@ -128,18 +128,22 @@ weston_drm_format_array_add_format(struct weston_drm_format_array *formats,
+ 	struct weston_drm_format *fmt;
+ 
+ 	/* We should not try to add repeated formats to an array. */
+-	assert(!weston_drm_format_array_find_format(formats, format));
+ 
+-	fmt = wl_array_add(&formats->arr, sizeof(*fmt));
+-	if (!fmt) {
+-		weston_log("%s: out of memory\n", __func__);
+-		return NULL;
+-	}
++	/* We should not try to add repeated formats to an array. */
++        if(!weston_drm_format_array_find_format(formats, format)) {
++		fmt = wl_array_add(&formats->arr, sizeof(*fmt));
++		if (!fmt) {
++			weston_log("%s: out of memory\n", __func__);
++			return NULL;
++		}
+ 
+-	fmt->format = format;
+-	wl_array_init(&fmt->modifiers);
++		fmt->format = format;
++		wl_array_init(&fmt->modifiers);
++	} else {
++		fmt = weston_drm_format_array_find_format(formats, format);
++	}
+ 
+-	return fmt;
++        return fmt;
+ }
+ 
+ /**
+@@ -448,15 +452,14 @@ weston_drm_format_add_modifier(struct weston_drm_format *format,
+ 	uint64_t *mod;
+ 
+ 	/* We should not try to add repeated modifiers to a set. */
+-	assert(!weston_drm_format_has_modifier(format, modifier));
+-
+-	mod = wl_array_add(&format->modifiers, sizeof(*mod));
+-	if (!mod) {
+-		weston_log("%s: out of memory\n", __func__);
+-		return -1;
++	if (!weston_drm_format_has_modifier(format, modifier)) {
++  		mod = wl_array_add(&format->modifiers, sizeof(*mod));
++		if (!mod) {
++  			weston_log("%s: out of memory\n", __func__);
++			return -1;
++		}
++		*mod = modifier;
+ 	}
+-	*mod = modifier;
+-
+ 	return 0;
+ }
+ 
+-- 
+2.34.1
+

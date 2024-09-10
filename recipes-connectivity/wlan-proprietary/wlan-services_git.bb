@@ -12,7 +12,7 @@ DEPENDS += "data ${QCACLD}"
 RDEPENDS:${PN} = "data"
 
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 SRC_URI = ""
 

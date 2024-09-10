@@ -13,14 +13,8 @@ PACKAGES = "${PN}"
 
 RDEPENDS:${PN} = " \
     kernel-module-displaydlkm \
-    displaydevicetree \
+    kernel-module-touchdlkm \
     libcec \
-    "
-
-RDEPENDS:${PN}:append:qcm6490 += " \
-display-hal-linux \
-"
-RDEPENDS:${PN}:append = " \
     libdrm \
     libdrm-tests \
     gbm \
@@ -29,12 +23,8 @@ RDEPENDS:${PN}:append = " \
     weston \
     "
 
-
 RDEPENDS:${PN}:append:qcm6490 = " \
+    display-hal-linux \
     display-extn-linux \
     display-color-linux \
-    "
-
-RDEPENDS:${PN}:append = " \
-    kernel-module-touchdlkm \
     "

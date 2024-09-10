@@ -5,26 +5,32 @@ LICENSE = "BSD-3-Clause \
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-PROVIDES = "${PACKAGES}"
-
 inherit packagegroup
+
+PROVIDES = "${PACKAGES}"
 
 PACKAGES = "${PN}"
 
-RDEPENDS:${PN}:append = "tcpdump rfkill dnsmasq dhcpcd iperf2 iperf3 nftables iputils"
-
 RDEPENDS:${PN} = " \
+    wpa-supplicant \
+"
+
+RDEPENDS:${PN}:append:qcom-custom-bsp = " \
     wlan-conf \
     cld80211-lib \
-    wpa-supplicant \
-    hostap-daemon-qcacld \
+    hostap-daemon \
     wlan-sigma-dut \
-    wlan-devicetree \
-    kernel-module-wlan-platform \
-    kernel-module-qcacld-wlan \
-    common-tools \
-    ath6kl-utils \
-    ftm \
 "
-# qcs9100 support is not available.
-RDEPENDS:${PN}:remove:qcs9100 = "wlan-devicetree"
+
+RDEPENDS:${PN}:append:qcom-base-bsp = " \
+    hostapd \
+"
+
+RDEPENDS:${PN}:append = "tcpdump rfkill dnsmasq dhcpcd iperf2 iperf3 nftables iputils trace-cmd"
+
+
+RDEPENDS:${PN}:append:qcom-custsom-bsp = "\
+	qcom-ath6kl-utils \
+	qcom-ftm \
+	qcom-wlan-tools \
+	"

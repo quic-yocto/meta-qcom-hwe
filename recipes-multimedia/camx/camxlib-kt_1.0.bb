@@ -9,8 +9,7 @@ DEPENDS += "syslog-plumber glib-2.0 gbm property-vault fastrpc adreno"
 
 RDEPENDS:${PN} += "cameradlkm"
 
-SRC_URI[qcm6490.sha256sum] = "61a93bec84dde428cff3c734fcdfda9f604215d7f7a8b635a9a0970c4b5b5fce"
-SRC_URI[qcs9100.sha256sum] = "32d2b5c3d8d1f873cb364c67f295acbaf795cb7c83f24ebf88ad9a44ebac3d59"
+SRC_URI[qcm6490.sha256sum] = "025324f6a0f11ea13fe212cc7927972a0958af87121db0a8be40d3c39bf25e6e"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
@@ -20,8 +19,6 @@ FILES:${PN} = "\
     /usr/include/* \
     /lib/firmware/*"
 FILES:${PN}-dev = ""
-
-
 
 INSANE_SKIP:${PN}-dbg = "arch"
 INSANE_SKIP:${PN} = "arch"

@@ -1,0 +1,550 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From 4f2fd3997ee33f3d6e5784d2ef3df356ed5eb418 Mon Sep 17 00:00:00 2001
+From: Devanshi Bansal <quic_devanshi@quicinc.com>
+Date: Wed, 31 Jul 2024 10:06:34 +0530
+Subject: [PATCH] weston: add protocol extension for power and brightness
+ control
+
+Change-Id: I6ec599ce57fb537bd89bfa282cb0a8969774c88f
+Signed-off-by: Devanshi Bansal <quic_devanshi@quicinc.com>
+---
+ clients/meson.build            |   9 ++
+ clients/weston-qti-extn-test.c | 166 +++++++++++++++++++++++++++++++++
+ libweston/meson.build          |   3 +
+ libweston/weston-qti-extn.c    | 130 ++++++++++++++++++++++++++
+ libweston/weston-qti-extn.h    |  71 ++++++++++++++
+ protocol/meson.build           |   2 +
+ protocol/weston-qti-extn.xml   |  69 ++++++++++++++
+ 7 files changed, 450 insertions(+)
+ create mode 100644 clients/weston-qti-extn-test.c
+ create mode 100644 libweston/weston-qti-extn.c
+ create mode 100644 libweston/weston-qti-extn.h
+ create mode 100644 protocol/weston-qti-extn.xml
+
+diff --git a/clients/meson.build b/clients/meson.build
+index 3c3212dd..762b882c 100644
+--- a/clients/meson.build
++++ b/clients/meson.build
+@@ -55,6 +55,15 @@ simple_clients = [
+ 		],
+ 		'dep_objs': [ dep_wayland_client, dep_libshared, dep_gbm ]
+ 	},
++        {
++                'name': 'qti-extn-test',
++                'sources': [
++                        'weston-qti-extn-test.c',
++                        weston_qti_extn_client_protocol_h,
++                        weston_qti_extn_protocol_c,
++                ],
++                'dep_objs': [ dep_wayland_client, dep_libshared ]
++        },
+ 	{
+ 		'name': 'damage',
+ 		'sources': [
+diff --git a/clients/weston-qti-extn-test.c b/clients/weston-qti-extn-test.c
+new file mode 100644
+index 00000000..53d3c5e9
+--- /dev/null
++++ b/clients/weston-qti-extn-test.c
+@@ -0,0 +1,166 @@
++/*
++* Copyright (c) 2021, The Linux Foundation. All rights reserved.
++*
++* Redistribution and use in source and binary forms, with or without
++* modification, are permitted provided that the following conditions are
++* met:
++*  * Redistributions of source code must retain the above copyright
++*    notice, this list of conditions and the following disclaimer.
++*  * Redistributions in binary form must reproduce the above
++*    copyright notice, this list of conditions and the following
++*    disclaimer in the documentation and/or other materials provided
++*    with the distribution.
++*  * Neither the name of The Linux Foundation nor the names of its
++*    contributors may be used to endorse or promote products derived
++*    from this software without specific prior written permission.
++*
++* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*
++* Changes from Qualcomm Innovation Center are provided under the following license:
++*
++* Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
++* SPDX-License-Identifier: BSD-3-Clause-Clear
++*/
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <wayland-client.h>
++#include "weston-qti-extn-client-protocol.h"
++
++#define MAX_DIGITS 5
++
++struct display {
++  struct wl_display *display;
++  struct wl_compositor *compositor;
++  struct weston_qti_extn *qti_extn;
++};
++struct display display;
++
++static void
++global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
++                        const char *interface, uint32_t version) {
++  printf("Got a registry event for %s id %d\n", interface, id);
++  if (strcmp(interface, "wl_compositor") == 0) {
++    display.compositor = wl_registry_bind(registry, id, &wl_compositor_interface, 1);
++  } else if (strcmp(interface, "weston_qti_extn") == 0) {
++    display.qti_extn = wl_registry_bind(registry, id, &weston_qti_extn_interface, 1);
++  }
++}
++
++static void
++global_registry_remover(void *data, struct wl_registry *registry, uint32_t id) {
++  printf("Got a registry losing event for %d\n", id);
++}
++
++static const struct wl_registry_listener registry_listener = {
++  global_registry_handler,
++  global_registry_remover
++};
++
++long int get_integer_input() {
++  long int integerinput = -1;
++  char *buffer = malloc(sizeof(char) * MAX_DIGITS);
++  if (!buffer) {
++    printf("Failed to allocate memory\n");
++    return -1;
++  }
++
++  memset(buffer, 0, MAX_DIGITS);
++  char *bufferptr = fgets(buffer, MAX_DIGITS, stdin);
++  if (bufferptr == NULL) {
++    return integerinput;
++  }
++
++  char *end_ptr = NULL;
++  integerinput = strtol(bufferptr, &end_ptr, 10);
++  if (bufferptr + strlen(buffer) -1 != end_ptr) {
++    printf("Not an Integer\n");
++    return -1;
++  }
++
++  return integerinput;
++}
++
++int main(int argc, char **argv) {
++  display.display = wl_display_connect(NULL);
++  if (display.display == NULL) {
++    fprintf(stderr, "Can't connect to display\n");
++    exit(1);
++  }
++  printf("connected to display\n");
++
++  // get registry handle
++  struct wl_registry *registry = wl_display_get_registry(display.display);
++  wl_registry_add_listener(registry, &registry_listener, NULL);
++
++  wl_display_dispatch(display.display);
++  wl_display_roundtrip(display.display);
++
++  if (display.compositor == NULL) {
++    fprintf(stderr, "Can't find compositor\n");
++    exit(1);
++  }
++
++  if (display.qti_extn == NULL) {
++    fprintf(stderr, "Can't find weston_qti_extn\n");
++    exit(1);
++  }
++
++  printf("Enter the test case no : \n \
++            1. Power On \n \
++            2. Power Off \n \
++            3. set brightness \n \
++            4. Exit \n");
++  printf("enter your choice : ");
++  long int choice = get_integer_input();
++  int loop = 1;
++  while (1) {
++    switch (choice) {
++      case 1:
++        weston_qti_extn_power_on(display.qti_extn);
++      break;
++      case 2:
++        weston_qti_extn_power_off(display.qti_extn);
++      break;
++      case 3:
++        printf("Enter brightness value : ");
++        uint32_t value = (uint32_t) get_integer_input();
++        weston_qti_extn_set_brightness(display.qti_extn, value);
++      break;
++      case 4:
++        loop = 0;
++      break;
++      default :
++        printf("wrong choice Enter again\n");
++      break;
++    }
++    if (loop == 0) {
++      break;
++    }
++
++    wl_display_roundtrip(display.display);
++
++    printf("Enter the test case no : \n \
++              1. Power On \n \
++              2. Power Off \n \
++              3. set brightness \n \
++              4. Exit \n");
++    printf("enter your choice : ");
++    choice = get_integer_input();
++  }
++
++  wl_display_disconnect(display.display);
++  printf("disconnected from display\n");
++
++  exit(0);
++}
+diff --git a/libweston/meson.build b/libweston/meson.build
+index ffdab47a..9494fd8e 100644
+--- a/libweston/meson.build
++++ b/libweston/meson.build
+@@ -38,6 +38,7 @@ srcs_libweston = [
+ 	'weston-direct-display.c',
+ 	'zoom.c',
+ 	'gbm-buffer-backend.c',
++        'weston-qti-extn.c',
+ 	linux_dmabuf_unstable_v1_protocol_c,
+ 	linux_dmabuf_unstable_v1_server_protocol_h,
+ 	linux_explicit_synchronization_unstable_v1_protocol_c,
+@@ -72,6 +73,8 @@ srcs_libweston = [
+ 	weston_direct_display_server_protocol_h,
+ 	gbm_buffer_backend_protocol_c,
+ 	gbm_buffer_backend_server_protocol_h,
++        weston_qti_extn_protocol_c,
++        weston_qti_extn_server_protocol_h,
+ ]
+ 
+ if get_option('renderer-gl')
+diff --git a/libweston/weston-qti-extn.c b/libweston/weston-qti-extn.c
+new file mode 100644
+index 00000000..3ad6addb
+--- /dev/null
++++ b/libweston/weston-qti-extn.c
+@@ -0,0 +1,130 @@
++/*
++* Copyright (c) 2021, The Linux Foundation. All rights reserved.
++*
++* Redistribution and use in source and binary forms, with or without
++* modification, are permitted provided that the following conditions are
++* met:
++*  * Redistributions of source code must retain the above copyright
++*    notice, this list of conditions and the following disclaimer.
++*  * Redistributions in binary form must reproduce the above
++*    copyright notice, this list of conditions and the following
++*    disclaimer in the documentation and/or other materials provided
++*    with the distribution.
++*  * Neither the name of The Linux Foundation nor the names of its
++*    contributors may be used to endorse or promote products derived
++*    from this software without specific prior written permission.
++*
++* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*
++* Changes from Qualcomm Innovation Center are provided under the following license:
++*
++* Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++* SPDX-License-Identifier: BSD-3-Clause-Clear
++*/
++
++#include <assert.h>
++#include <unistd.h>
++#include <sys/types.h>
++#include <libweston/libweston.h>
++
++#include "weston-qti-extn-server-protocol.h"
++#include "libweston-internal.h"
++#include "weston-qti-extn.h"
++
++const struct weston_qti_extn_interface weston_qti_extn_impl = {
++  destroy,
++  power_on,
++  power_off,
++  set_brightness
++};
++
++void power_on(struct wl_client *client, struct wl_resource *resource) {
++  struct weston_compositor *compositor;
++  compositor = wl_resource_get_user_data(resource);
++  if (compositor == NULL) {
++    weston_log("error: compositor not found\n");
++    return;
++  }
++
++  weston_compositor_wake(compositor);
++}
++
++void power_off(struct wl_client *client, struct wl_resource *resource) {
++  struct weston_compositor *compositor;
++  compositor = wl_resource_get_user_data(resource);
++  if (compositor == NULL) {
++    weston_log("error: compositor not found\n");
++    return;
++  }
++
++  weston_compositor_sleep(compositor);
++}
++
++void set_brightness(struct wl_client *client, struct wl_resource *resource,
++                    uint32_t brightness_value) {
++  struct weston_compositor *compositor;
++  compositor = wl_resource_get_user_data(resource);
++  if (compositor == NULL) {
++    weston_log("error: compositor not found\n");
++    return;
++  }
++
++  struct weston_output *output;
++  wl_list_for_each(output, &compositor->output_list, link) {
++    if (output) {
++      output->set_backlight(output, brightness_value);
++    }
++  }
++}
++
++void destroy(struct wl_client *client, struct wl_resource *resource) {
++  wl_resource_destroy(resource);
++}
++
++void
++bind_weston_qti_extn(struct wl_client *client, void *data, uint32_t version, uint32_t id) {
++  struct weston_compositor *compositor = data;
++  struct wl_resource *resource;
++
++  weston_log("bind_weston_qti_extn::Invoked\n");
++  resource = wl_resource_create(client, &weston_qti_extn_interface, version, id);
++  if (resource == NULL) {
++    wl_client_post_no_memory(client);
++    return;
++  }
++
++  wl_resource_set_implementation(resource, &weston_qti_extn_impl, compositor, NULL);
++}
++
++/** Advertise weston_qti_extn_setup support
++ *
++ * Calling this initializes the weston_qti_extn protocol support, so that
++ * the interface will be advertised to clients. Essentially it creates a
++ * global. Do not call this function multiple times in the compositor's
++ * lifetime. There is no way to deinit explicitly, globals will be reaped
++ * when the wl_display gets destroyed.
++ *
++ * \param compositor The compositor to init for.
++ * \return Zero on success, -1 on failure.
++ */
++WL_EXPORT int weston_qti_extn_setup(struct weston_compositor *compositor) {
++  weston_log("weston_qti_extn_setup::Invoked\n");
++  if (!wl_global_create(compositor->wl_display, &weston_qti_extn_interface, 1,
++                        compositor, bind_weston_qti_extn)) {
++    return -1;
++  }
++  return 0;
++}
++
++
++
+diff --git a/libweston/weston-qti-extn.h b/libweston/weston-qti-extn.h
+new file mode 100644
+index 00000000..646331a2
+--- /dev/null
++++ b/libweston/weston-qti-extn.h
+@@ -0,0 +1,71 @@
++/*
++* Copyright (c) 2021, The Linux Foundation. All rights reserved.
++*
++* Redistribution and use in source and binary forms, with or without
++* modification, are permitted provided that the following conditions are
++* met:
++*  * Redistributions of source code must retain the above copyright
++*    notice, this list of conditions and the following disclaimer.
++*  * Redistributions in binary form must reproduce the above
++*    copyright notice, this list of conditions and the following
++*    disclaimer in the documentation and/or other materials provided
++*    with the distribution.
++*  * Neither the name of The Linux Foundation nor the names of its
++*    contributors may be used to endorse or promote products derived
++*    from this software without specific prior written permission.
++*
++* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*
++* Changes from Qualcomm Innovation Center are provided under the following license:
++*
++* Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++* SPDX-License-Identifier: BSD-3-Clause-Clear
++*/
++
++#ifndef WESTON_POWERMODE_BACKLIGHT_BACKEND_H
++#define WESTON_POWERMODE_BACKLIGHT_BACKEND_H
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include <stdlib.h>
++#include <stdio.h>
++
++void destroy(struct wl_client *client, struct wl_resource *resource);
++
++void power_on(struct wl_client *client, struct wl_resource *resource);
++
++void power_off(struct wl_client *client, struct wl_resource *resource);
++
++void set_brightness(struct wl_client *client, struct wl_resource *resource,
++                    uint32_t brightness_value);
++
++/** Advertise weston_qti_extn_setup support
++ *
++ * Calling this initializes the weston_qti_extn protocol support, so that
++ * the interface will be advertised to clients. Essentially it creates a
++ * global. Do not call this function multiple times in the compositor's
++ * lifetime. There is no way to deinit explicitly, globals will be reaped
++ * when the wl_display gets destroyed.
++ *
++ * \param compositor The compositor to init for.
++ * \return Zero on success, -1 on failure.
++ */
++int weston_qti_extn_setup(struct weston_compositor *compositor);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* WESTON_POWERMODE_BACKLIGHT_BACKEND_H */
++
+diff --git a/protocol/meson.build b/protocol/meson.build
+index 46074ba8..4c9cf93b 100644
+--- a/protocol/meson.build
++++ b/protocol/meson.build
+@@ -8,6 +8,7 @@ install_data(
+ 	[
+ 		'weston-debug.xml',
+ 		'weston-direct-display.xml',
++		'weston-qti-extn.xml',
+ 		'gbm-buffer-backend.xml',
+ 	],
+ 	install_dir: join_paths(dir_data, dir_protocol_libweston)
+@@ -36,6 +37,7 @@ generated_protocols = [
+ 	[ 'weston-touch-calibration', 'internal' ],
+ 	[ 'weston-direct-display', 'internal' ],
+ 	[ 'gbm-buffer-backend', 'internal' ],
++	[ 'weston-qti-extn', 'internal' ],
+ 	[ 'xdg-output', 'v1' ],
+ 	[ 'xdg-shell', 'v6' ],
+ 	[ 'xdg-shell', 'stable' ],
+diff --git a/protocol/weston-qti-extn.xml b/protocol/weston-qti-extn.xml
+new file mode 100644
+index 00000000..7377bf8a
+--- /dev/null
++++ b/protocol/weston-qti-extn.xml
+@@ -0,0 +1,69 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<protocol name="weston_qti_extn">
++
++  <copyright>
++    Copyright (c) 2021 The Linux Foundation. All rights reserved.
++
++    Redistribution and use in source and binary forms, with or without
++    modification, are permitted provided that the following conditions are
++    met:
++        * Redistributions of source code must retain the above copyright
++          notice, this list of conditions and the following disclaimer.
++        * Redistributions in binary form must reproduce the above
++          copyright notice, this list of conditions and the following
++          disclaimer in the documentation and/or other materials provided
++          with the distribution.
++        * Neither the name of The Linux Foundation nor the names of its
++          contributors may be used to endorse or promote products derived
++          from this software without specific prior written permission.
++
++    THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++    WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++    ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++    Changes from Qualcomm Innovation Center are provided under the following license:
++    Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++    SPDX-License-Identifier: BSD-3-Clause-Clear
++  </copyright>
++
++  <interface name="weston_qti_extn" version="1">
++    <description summary="Qualcomm Technologies, Inc extension">
++    This interface used to create several customized apis.
++    </description>
++
++    <request name="destroy" type="destructor">
++      <description summary="unbind the factory">
++        Destroy the protocol object created at client.
++      </description>
++    </request>
++
++    <request name="power_on">
++      <description summary="power on display">
++        This will resume/awake the display.
++      </description>
++    </request>
++
++    <request name="power_off">
++      <description summary="power off display">
++        This will suspend the display.
++      </description>
++    </request>
++
++    <request name="set_brightness">
++      <description summary="set display brightness">
++        This will set the display brightness.
++      </description>
++      <arg name="brightness_value" type="uint" summary="sets the brightness value"/>
++    </request>
++
++  </interface>
++
++</protocol>
+-- 
+2.17.1
+

@@ -2,10 +2,11 @@
 def get_matching_machine(d) :
     cmpt_machine = d.getVar('COMPATIBLE_MACHINE')
     if cmpt_machine:
-        import re
         available_archs = (d.getVar('MACHINEOVERRIDES') or "").split(":")
+        compatible_machines = cmpt_machine.split("|")
         for selected_arch in reversed(available_archs):
-            if re.match(cmpt_machine, selected_arch):
+          for machine in compatible_machines:
+            if (machine == selected_arch):
                 return selected_arch
     return None
 

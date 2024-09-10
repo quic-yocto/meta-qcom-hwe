@@ -1,0 +1,59 @@
+From 5d0fe9222b7329f87e7bcb6fd05392f2cbd43532 Mon Sep 17 00:00:00 2001
+From: Cheng Jiang <quic_chejiang@quicinc.com>
+Date: Fri, 16 Aug 2024 10:07:39 +0800
+Subject: [PATCH] adapter: Cancel the service authorization when remote is
+ disconnected
+
+If the remote device drops the connection before DUT confirm the
+service authorization, the DUT still must wait for service
+authorization timeout before processing future request.
+
+Cancel the service authorization request when connection is dropped.
+
+Upstream-Status: Pending
+
+Signed-off-by: Cheng Jiang <quic_chejiang@quicinc.com>
+
+---
+ src/adapter.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/src/adapter.c b/src/adapter.c
+index 77359eb..1da9ee3 100644
+--- a/src/adapter.c
++++ b/src/adapter.c
+@@ -8140,6 +8140,23 @@ static void disconnect_notify(struct btd_device *dev, uint8_t reason)
+ 	}
+ }
+ 
++void adapter_cancel_service_auth(struct btd_adapter *adapter, struct btd_device *device)
++{
++	struct service_auth *auth;
++	GSList *l;
++	auth = NULL;
++	for (l = adapter->auths->head; l != NULL; l = l->next) {
++		auth = l->data;
++		if (auth->device == device)
++			break;
++	}
++	if (auth != NULL) {
++		DBG("Cancel pending auth: %s", auth->uuid);
++		g_queue_remove(auth->adapter->auths, auth);
++		service_auth_cancel(auth);
++	}
++}
++
+ static void dev_disconnected(struct btd_adapter *adapter,
+ 					const struct mgmt_addr_info *addr,
+ 					uint8_t reason)
+@@ -8154,6 +8171,7 @@ static void dev_disconnected(struct btd_adapter *adapter,
+ 	device = btd_adapter_find_device(adapter, &addr->bdaddr, addr->type);
+ 	if (device) {
+ 		adapter_remove_connection(adapter, device, addr->type);
++		adapter_cancel_service_auth(adapter, device);
+ 		disconnect_notify(device, reason);
+ 	}
+ 
+-- 
+2.25.1
+

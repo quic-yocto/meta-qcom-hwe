@@ -1,0 +1,411 @@
+From 18ffb8c73feb79561fa78c39fb824520142d74ee Mon Sep 17 00:00:00 2001
+From: Raghavender Reddy Bujala <quic_rbujala@quicinc.com>
+Date: Tue, 23 Apr 2024 12:14:35 +0530
+Subject: [PATCH] gen_metadata used to test metadata over avrcp
+
+Signed-off-by: Raghavender Reddy Bujala <quic_rbujala@quicinc.com>
+Upstream-Status: Inappropriate [target specific custom tool]
+
+---
+ Makefile.tools       |   6 +-
+ tools/gen_metadata.c | 364 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 369 insertions(+), 1 deletion(-)
+ create mode 100644 tools/gen_metadata.c
+
+diff --git a/Makefile.tools b/Makefile.tools
+index 9412aed..eeff966 100644
+--- a/Makefile.tools
++++ b/Makefile.tools
+@@ -207,7 +207,8 @@ endif
+ 
+ if TOOLS
+ bin_PROGRAMS += tools/rctest tools/l2test tools/l2ping tools/bluemoon \
+-		tools/hex2hcd tools/mpris-proxy tools/btattach tools/isotest
++		tools/hex2hcd tools/mpris-proxy tools/btattach tools/isotest \
++		tools/gen_metadata
+ 
+ noinst_PROGRAMS += tools/bdaddr tools/avinfo tools/avtest \
+ 			tools/scotest tools/amptest tools/hwdb \
+@@ -315,6 +316,9 @@ tools_hex2hcd_SOURCES = tools/hex2hcd.c
+ tools_mpris_proxy_SOURCES = tools/mpris-proxy.c
+ tools_mpris_proxy_LDADD = gdbus/libgdbus-internal.la $(GLIB_LIBS) $(DBUS_LIBS)
+ 
++tools_gen_metadata_SOURCES = tools/gen_metadata.c
++tools_gen_metadata_LDADD = gdbus/libgdbus-internal.la $(GLIB_LIBS) $(DBUS_LIBS)
++
+ tools_gatt_service_SOURCES = tools/gatt-service.c
+ tools_gatt_service_LDADD = gdbus/libgdbus-internal.la \
+ 			   src/libshared-mainloop.la $(GLIB_LIBS) $(DBUS_LIBS)
+diff --git a/tools/gen_metadata.c b/tools/gen_metadata.c
+new file mode 100644
+index 0000000..073d688
+--- /dev/null
++++ b/tools/gen_metadata.c
+@@ -0,0 +1,364 @@
++/******************************************************************************
++ * SPDX-License-Identifier: GPL-2.0-or-later
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ ******************************************************************************/
++#define _GNU_SOURCE
++#include <stdio.h>
++#include <errno.h>
++#include <unistd.h>
++#include <stdlib.h>
++#include <signal.h>
++#include <getopt.h>
++#include <string.h>
++#include <inttypes.h>
++
++#include <dbus/dbus.h>
++#include <glib.h>
++
++#include "gdbus/gdbus.h"
++
++#define BLUEZ_BUS_NAME "org.bluez"
++#define BLUEZ_PATH "/org/bluez"
++#define BLUEZ_ADAPTER_INTERFACE "org.bluez.Adapter1"
++#define BLUEZ_MEDIA_INTERFACE "org.bluez.Media1"
++#define VERSION "1.0"
++#define METADATA_PATH "metadata:path"
++
++static GMainLoop *main_loop;
++static GDBusProxy *adapter = NULL;
++static DBusConnection *sys = NULL;
++static GDBusClient *client = NULL;
++static GSList *players = NULL;
++static GSList *transports = NULL;
++
++static gboolean option_version = FALSE;
++static gboolean option_bulk_metadata = FALSE;
++static gboolean option_export = FALSE;
++
++static void sig_term(int sig)
++{
++    g_main_loop_quit(main_loop);
++}
++
++static char *sender2path(const char *sender)
++{
++    char *path;
++
++    path = g_strconcat("/", sender, NULL);
++    return g_strdelimit(path, ":.", '_');
++}
++
++static const char *signature_from_basic_type(int type) {
++    switch (type) {
++        case DBUS_TYPE_BOOLEAN: return DBUS_TYPE_BOOLEAN_AS_STRING;
++        case DBUS_TYPE_BYTE: return DBUS_TYPE_BYTE_AS_STRING;
++        case DBUS_TYPE_INT16: return DBUS_TYPE_INT16_AS_STRING;
++        case DBUS_TYPE_UINT16: return DBUS_TYPE_UINT16_AS_STRING;
++        case DBUS_TYPE_INT32: return DBUS_TYPE_INT32_AS_STRING;
++        case DBUS_TYPE_UINT32: return DBUS_TYPE_UINT32_AS_STRING;
++        case DBUS_TYPE_INT64: return DBUS_TYPE_INT64_AS_STRING;
++        case DBUS_TYPE_UINT64: return DBUS_TYPE_UINT64_AS_STRING;
++        case DBUS_TYPE_DOUBLE: return DBUS_TYPE_DOUBLE_AS_STRING;
++        case DBUS_TYPE_STRING: return DBUS_TYPE_STRING_AS_STRING;
++        case DBUS_TYPE_OBJECT_PATH: return DBUS_TYPE_OBJECT_PATH_AS_STRING;
++        case DBUS_TYPE_SIGNATURE: return DBUS_TYPE_SIGNATURE_AS_STRING;
++        default: break;
++    }
++}
++
++void append_dbus_append_basic_variant(DBusMessageIter *iter, int type, void *data) {
++    DBusMessageIter variant_iter;
++
++    dbus_message_iter_open_container(iter, DBUS_TYPE_VARIANT, signature_from_basic_type(type), &variant_iter);
++    dbus_message_iter_append_basic(&variant_iter, type, data);
++    dbus_message_iter_close_container(iter, &variant_iter);
++}
++
++void append_dbus_append_basic_variant_dict_entry(DBusMessageIter *dict_iter, const char *key, int type, void *data) {
++    DBusMessageIter dict_entry_iter;
++
++    dbus_message_iter_open_container(dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &dict_entry_iter);
++    dbus_message_iter_append_basic(&dict_entry_iter, DBUS_TYPE_STRING, &key);
++    append_dbus_append_basic_variant(&dict_entry_iter, type, data);
++    dbus_message_iter_close_container(dict_iter, &dict_entry_iter);
++}
++
++void append_dbus_append_array_variant(DBusMessageIter *iter, void *data) {
++    DBusMessageIter variant_iter,arrs;
++
++    dbus_message_iter_open_container(iter, DBUS_TYPE_VARIANT, "as", &variant_iter);
++    dbus_message_iter_open_container(&variant_iter,DBUS_TYPE_ARRAY,"s",&arrs);
++    dbus_message_iter_append_basic(&arrs,DBUS_TYPE_STRING,data);
++    dbus_message_iter_close_container(&variant_iter, &arrs);
++    dbus_message_iter_close_container(iter, &variant_iter);
++}
++
++void append_dbus_append_array_variant_dict_entry(DBusMessageIter *dict_iter, const char *key, void *data) {
++    DBusMessageIter dict_entry_iter;
++
++    dbus_message_iter_open_container(dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &dict_entry_iter);
++    dbus_message_iter_append_basic(&dict_entry_iter, DBUS_TYPE_STRING, &key);
++    append_dbus_append_array_variant(&dict_entry_iter, data);
++    dbus_message_iter_close_container(dict_iter, &dict_entry_iter);
++}
++
++static void register_player(const char *sender)
++{
++    DBusMessage *reply = NULL;
++    DBusMessage *msg;
++    DBusMessageIter iter, args, entry,metadata,iterEntry,variant_iter;
++    DBusError err;
++    char *owner;
++    struct player *player;
++    int64_t len= 279248000;
++    const char *title ="title";
++    const char *album ="album";
++    const char *artist ="artist";
++    const char *genre ="language";
++    int32_t trackNumber =1;
++    if (option_bulk_metadata) {
++	    title = "Here, on the other hand, I've gone crazy \
++		     and really let the literal span several lines, \
++		     without bothering with quoting each line's \
++		     and really let the literal span several lines \
++		     Here, on the other hand, I've gone crazy \
++		     and really let the literal span several lines, \
++		     without bothering with quoting each line's \
++		     and really let the literal span several lines";
++	    artist = "Here, on the other hand, I've gone crazy \
++		     and really let the literal span several lines, \
++		     without bothering with quoting each line's \
++		     and really let the literal span several lines \
++		     Here, on the other hand, I've gone crazy \
++		     and really let the literal span several lines, \
++		     without bothering with quoting each line's \
++		     and really let the literal span several lines";
++    }
++
++    if (!adapter)
++        return;
++
++    msg = dbus_message_new_method_call(BLUEZ_BUS_NAME,
++                         g_dbus_proxy_get_path(adapter),
++                                  BLUEZ_MEDIA_INTERFACE,
++                                       "RegisterPlayer");
++    printf("%s form register player\n",__func__);
++    if (!msg) {
++        fprintf(stderr, "Can't allocate new method call\n");
++        return;
++    }
++
++    char *path = sender2path(sender);
++    char *metad = "Metadata";
++    printf("%s path %s\n",__func__, path);
++
++    if (owner != NULL)
++        goto done;
++
++    dbus_message_iter_init_append(msg, &iter);
++
++    dbus_message_iter_append_basic(&iter, DBUS_TYPE_OBJECT_PATH, &path);
++
++    dbus_message_iter_open_container(&iter,DBUS_TYPE_ARRAY,"{sv}", &iterEntry);
++    dbus_message_iter_open_container(&iterEntry, DBUS_TYPE_DICT_ENTRY, NULL, &entry);
++    dbus_message_iter_append_basic(&entry, DBUS_TYPE_STRING, &metad);
++
++    dbus_message_iter_open_container(&entry,DBUS_TYPE_VARIANT, "a{sv}", &variant_iter);
++    dbus_message_iter_open_container(&variant_iter,DBUS_TYPE_ARRAY,"{sv}",&metadata);
++
++    append_dbus_append_basic_variant_dict_entry(&metadata,"xesam:title" , DBUS_TYPE_STRING, &title); 
++    append_dbus_append_basic_variant_dict_entry(&metadata,"xesam:album" , DBUS_TYPE_STRING, &album); 
++    append_dbus_append_basic_variant_dict_entry(&metadata,"mpris:length" , DBUS_TYPE_INT64, &len); 
++    append_dbus_append_basic_variant_dict_entry(&metadata,"xesam:trackNumber" , DBUS_TYPE_INT32,&trackNumber ); 
++    append_dbus_append_array_variant_dict_entry(&metadata,"xesam:genre" ,  &genre); 
++    append_dbus_append_array_variant_dict_entry(&metadata, "xesam:artist", &artist);
++
++    dbus_message_iter_close_container(&variant_iter, &metadata);
++    dbus_message_iter_close_container(&entry, &variant_iter);
++    dbus_message_iter_close_container(&iterEntry, &entry);
++    dbus_message_iter_close_container(&iter, &iterEntry);
++
++
++    dbus_error_init(&err);
++
++    owner = strdup(sender);
++
++    reply = dbus_connection_send_with_reply_and_block(sys, msg, -1, &err);
++    if (!reply) {
++        fprintf(stderr, "Can't register player\n");
++        if (dbus_error_is_set(&err)) {
++            fprintf(stderr, "%s\n", err.message);
++            dbus_error_free(&err);
++        }
++    }
++
++done:
++     if (reply)
++         dbus_message_unref(reply);
++     dbus_message_unref(msg);
++
++}
++
++
++static void unregister_player(const char *sender)
++{
++    DBusMessage *msg;
++    char *path, *owner;
++
++    if (!adapter)
++        return;
++
++    path = sender2path(sender);
++    dbus_connection_get_object_path_data(sys, path, (void **) &owner);
++
++    if (owner == NULL) {
++        g_free(path);
++        return;
++    }
++
++    msg = dbus_message_new_method_call(BLUEZ_BUS_NAME,
++                         g_dbus_proxy_get_path(adapter),
++                                  BLUEZ_MEDIA_INTERFACE,
++                                      "UnregisterPlayer");
++    if (!msg) {
++        fprintf(stderr, "Can't allocate new method call\n");
++        g_free(path);
++        return;
++    }
++
++    dbus_message_append_args(msg, DBUS_TYPE_OBJECT_PATH, &path,
++                             DBUS_TYPE_INVALID);
++
++    dbus_connection_send(sys, msg, NULL);
++
++    dbus_connection_unregister_object_path(sys, path);
++
++    dbus_message_unref(msg);
++    g_free(path);
++    g_free(owner);
++}
++
++static void usage(void)
++{
++    printf("Bluetooth gen_metadata ver %s\n\n", VERSION);
++
++    printf("Usage: gen_metadata\n");
++}
++
++static GOptionEntry options[] = {
++    { "version", 'v', 0, G_OPTION_ARG_NONE, &option_version,
++          "Show version information and exit" },
++    { "bulk_metadata", 'b', 0, G_OPTION_ARG_NONE, &option_bulk_metadata,
++          "Send bulk metadata" },
++    { NULL },
++};
++
++static void connect_handler(DBusConnection *connection, void *user_data)
++{
++    printf("org.bluez appeared\n");
++}
++
++static void disconnect_handler(DBusConnection *connection, void *user_data)
++{
++    printf("org.bluez disappeared\n");
++}
++
++
++static void proxy_added(GDBusProxy *proxy, void *user_data)
++{
++    const char *interface;
++    const char *path;
++
++    interface = g_dbus_proxy_get_interface(proxy);
++    path = g_dbus_proxy_get_path(proxy);
++
++    if (!strcmp(interface, BLUEZ_ADAPTER_INTERFACE)) {
++        if (adapter != NULL)
++            return;
++
++        printf("Bluetooth Adapter %s found\n", path);
++        adapter = proxy;
++        register_player(METADATA_PATH);
++    } 
++}
++
++static void proxy_removed(GDBusProxy *proxy, void *user_data)
++{
++    const char *interface;
++    const char *path;
++
++    if (adapter == NULL)
++        return;
++
++    interface = g_dbus_proxy_get_interface(proxy);
++    path = g_dbus_proxy_get_path(proxy);
++
++    if (strcmp(interface, BLUEZ_ADAPTER_INTERFACE) == 0) {
++        if (adapter != proxy)
++            return;
++        printf("Bluetooth Adapter %s removed\n", path);
++        adapter = NULL;
++        unregister_player(METADATA_PATH);
++    } 
++}
++
++int main(int argc, char *argv[])
++{
++    GOptionContext *context;
++    GError *error = NULL;
++    struct sigaction sa;
++
++    context = g_option_context_new(NULL);
++    g_option_context_add_main_entries(context, options, NULL);
++
++    if (g_option_context_parse(context, &argc, &argv, &error) == FALSE) {
++        if (error != NULL) {
++            g_printerr("%s\n", error->message);
++            g_error_free(error);
++        } else
++           g_printerr("An unknown error occurred\n");
++         exit(1);
++    }
++
++    g_option_context_free(context);
++
++    if (option_version == TRUE) {
++        usage();
++        exit(0);
++    }
++
++    if (option_bulk_metadata == TRUE) {
++	    printf("Enabled bulk metadata\n");
++    }
++    main_loop = g_main_loop_new(NULL, FALSE);
++
++    sys = g_dbus_setup_bus(DBUS_BUS_SYSTEM, NULL, NULL);
++    if (!sys) {
++        fprintf(stderr, "Can't get on system bus");
++        exit(1);
++    }
++
++    memset(&sa, 0, sizeof(sa));
++    sa.sa_flags   = SA_NOCLDSTOP;
++    sa.sa_handler = sig_term;
++    sigaction(SIGTERM, &sa, NULL);
++    sigaction(SIGINT,  &sa, NULL);
++
++    client = g_dbus_client_new(sys, BLUEZ_BUS_NAME, BLUEZ_PATH);
++
++    g_dbus_client_set_connect_watch(client, connect_handler, NULL);
++    g_dbus_client_set_disconnect_watch(client, disconnect_handler, NULL);
++
++    g_dbus_client_set_proxy_handlers(client, proxy_added, proxy_removed,
++                                     NULL, NULL);
++
++    g_main_loop_run(main_loop);
++
++    g_dbus_client_unref(client);
++
++    dbus_connection_unref(sys);
++
++    g_main_loop_unref(main_loop);
++
++    return 0;
++}
+-- 
+2.17.1
+

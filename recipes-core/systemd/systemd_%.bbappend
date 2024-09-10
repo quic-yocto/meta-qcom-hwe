@@ -3,7 +3,7 @@ PACKAGECONFIG:append:qcom = " coredump"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
-SRC_URI += " \
+SRC_URI:append:qcom = " \
    file://0001-unit-introduce-wait-online-.service-for-specific-int.patch \
    file://0002-units-change-Requires-systemd-networkd.service-Binds.patch \
    file://0003-units-Add-CAP_NET_ADMIN-condition-to-systemd-network.patch \

@@ -1,7 +1,7 @@
 SUMMARY = "QCOM GFX package groups"
 LICENSE  = "Qualcomm-Technologies-Inc.-Proprietary"
 
-PACKAGE_ARCH="${MACHINE_ARCH}"
+PACKAGE_ARCH="${SOC_ARCH}"
 
 inherit packagegroup
 
@@ -14,11 +14,12 @@ VULKAN_LOADER:qcm6490 = "True"
 VULKAN_LOADER:qcs8550 = "True"
 VULKAN_LOADER:qcs8650 = "True"
 VULKAN_LOADER:qcs9100 = "True"
+VULKAN_LOADER:qcs8300 = "True"
 
 RDEPENDS:${PN} = " \
-    adreno \
+    ${GL_PROVIDER} \
     ${@oe.utils.conditional('VULKAN_LOADER', 'True', 'vulkan-loader', '', d)} \
-    graphicsdevicetree \
-    graphicsdlkm \
+    qcom-graphicsdevicetree \
+    qcom-graphicsdlkm \
 "
 

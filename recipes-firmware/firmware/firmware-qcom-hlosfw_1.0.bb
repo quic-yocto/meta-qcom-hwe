@@ -2,11 +2,12 @@ DESCRIPTION = "Recipe to install firmware files at lib/firmware on rootfs"
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
-COMPATIBLE_MACHINE = "qcm6490"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100"
 
 SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${HLOSFIRMWARE}.zip;name=${PBT_ARCH}"
 
-SRC_URI[qcm6490.sha256sum] = "7e5cec86d3222b1d6625d63776f6c278b41c585ace416f7589e3a99d3550c9eb"
+SRC_URI[qcm6490.sha256sum] = "b84431edd9b75a8fa4ca3ec55786c1a12becb0f51d4a7ada14d15c6d8074d2f2"
+SRC_URI[qcs9100.sha256sum] = "ef906eab241e742b8fd8c781f9c9dd8d8cbc0677d52ed880a009c950e7d82f81"
 
 include firmware-common.inc
 
@@ -41,7 +42,7 @@ python do_install() {
 inherit deploy
 
 do_deploy() {
-    install -D -m644 ${D}/lib/firmware/qcom/${MATCHED_MACHINE}/Ver_Info.txt ${DEPLOYDIR}
+    install -D -m644 ${D}${nonarch_base_libdir}/firmware/qcom/${MATCHED_MACHINE}/Ver_Info.txt ${DEPLOYDIR}
 }
 addtask deploy before do_build after do_install
 
@@ -49,11 +50,13 @@ INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_SYSROOT_STRIP = "1"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 PACKAGES += "${PN}-copyright"
 
-FILES:${PN} += "/lib/* /usr/*"
+FILES:${PN} += "${nonarch_base_libdir}/* /usr/*"
 FILES:${PN}-copyright += "/Qualcomm-Technologies-Inc.-Proprietary"
 
-INSANE_SKIP:${PN} += "arch file-rdeps ldflags"
+INSANE_SKIP:${PN} = "file-rdeps"
+INSANE_SKIP:${PN} += "ldflags"
+INSANE_SKIP:${PN} += "arch"

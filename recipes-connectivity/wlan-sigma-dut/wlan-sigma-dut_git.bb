@@ -11,7 +11,9 @@ DEPENDS = "libnl"
 
 PACKAGE_ARCH ?= "${MACHINE_ARCH}"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/sigma-dut.git;protocol=https;rev=54bc0dcb053fb61df8fbf92d9290049ed63472aa;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=wlan/utils/sigma-dut \
+
+
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/sigma-dut.git;protocol=https;rev=951a1dc2f153b00b7c32ee030313621ad62670d7;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=wlan/utils/sigma-dut \
            file://Makefile.patch"
 
 S = "${WORKDIR}/wlan/utils/sigma-dut"

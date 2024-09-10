@@ -7,12 +7,11 @@ DESCRIPTION = "Securemsm library with sampleclient used to test sampleapp with q
 
 DEPENDS += "minkipc securemsm-features glib-2.0 glibc linux-kernel-qcom-headers libdmabufheap"
 
-SRC_URI[qcm6490.sha256sum] = "11f64a0c4e2e43136ce8deeb479d5f5a4cc6d167b8eee096f05771d7072329d7"
-SRC_URI[qcs9100.sha256sum] = "bbf57171b478edb07e6bdd5531efce16caf10b60c0c9035894563dafb056a808"
+SRC_URI[qcm6490.sha256sum] = "9cb3b54c3e0cd69b4e9033b989f80ee1a77eafef5db441a2533930649a0581b4"
+SRC_URI[qcs9100.sha256sum] = "0dcb4ab1a9382238cebaee3346e98112d5a0c8c73ee18fe88507e79b38cc21df"
+SRC_URI[qcs8300.sha256sum] = "eb77d10c8d48ae376da6674a5b32ad4a2c953ef236e30133f49f2f372fd5989e"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
-
-PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 do_install:append() {
     dirname=d.getVar('D') + "/var/cache/qwes"
@@ -25,4 +24,6 @@ do_install:append() {
 FILES:${PN} += "/usr/bin/*"
 FILES:${PN} += "${bindir}/* /var/cache/*"
 
+
 INSANE_SKIP:${PN} += "debug-files"
+

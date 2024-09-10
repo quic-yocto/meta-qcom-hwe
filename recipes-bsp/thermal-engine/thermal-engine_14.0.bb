@@ -7,9 +7,8 @@ DESCRIPTION = "Thermal Engine"
 
 DEPENDS += "qmi-framework glib-2.0 libnl linux-kernel-qcom-headers"
 
-SRC_URI[qcm6490.sha256sum] = "c2f1c926c39274a4b907f679a7d72dd11a2e7878ac8938f299e236f96b1ca7bd"
-SRC_URI[qcs9100.sha256sum] = "4c5f58fc4d76de379be50da53e7b3f35cdabb66fb91dc7ef9c5102ec3657a4d6"
+SRC_URI[qcm6490.sha256sum] = "e0a404dcef2b778e93672142b42c42c57fbd38113eab77e9c35e234c1da7f20c"
+SRC_URI[qcs9100.sha256sum] = "8cc7dff00c3cdaac971a7df4c1a364337c1e009001dfb9b400303ba2eced7ff4"
+SRC_URI[qcs8300.sha256sum] = "4464b106ac0ffabeee3d398c70cafab082d26006312fc6bde33e74b6c0d7eb8c"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
-
-PACKAGE_ARCH = "${MACHINE_ARCH}"

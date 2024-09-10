@@ -7,6 +7,8 @@ RDEPENDS:${PN} = " \
   initscripts-post-boot \
   initscripts-log-restrict \
   initscripts-modem-start-stop \
-  initscripts-debug-config \
 "
 
+RDEPENDS:${PN}:append:qcom-custom-bsp = " \
+  initscripts-debug-config \
+"

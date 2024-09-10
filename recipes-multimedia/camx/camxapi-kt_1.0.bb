@@ -7,7 +7,7 @@ DESCRIPTION = "Camx"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "f32b9ed9fcfde5821cba5cf48dacd7386a5fb4926d00963bd40a2c1c4cbfba48"
+SRC_URI[armv8-2a.sha256sum] = "ca79b0617f59d88e31fa019df8cbbef25803fbc5a2e2e109c039ab77db0156b9"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

@@ -19,5 +19,4 @@ RDEPENDS:${PN} += " \
   install-securemsm-modules \
   start-scripts-ssgtzd-daemon \
   start-scripts-qwesd-daemon \
-  start-scripts-qwes-licence-store \
   "

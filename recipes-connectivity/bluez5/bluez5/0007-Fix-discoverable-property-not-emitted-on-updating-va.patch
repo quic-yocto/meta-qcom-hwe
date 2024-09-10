@@ -1,0 +1,48 @@
+From 11098228df9375c41866824c5f47befe12b860e7 Mon Sep 17 00:00:00 2001
+From: Prathibha Madugonde <quic_prathm@quicinc.com>
+Date: Mon, 8 Jul 2024 12:57:22 +0530
+Subject: [PATCH BlueZ] Fix discoverable property not emitted on updating value
+ to false
+
+client/advertising.c:
+Allowing discoverable property to list in the parsing
+function when discoverable is off.
+
+Test steps:
+From DUT, bluetoothctl go to menu advertise
+set discoverable to off and then advertise on.
+
+Upstream-Status: BACKPORT
+---
+ client/advertising.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/client/advertising.c b/client/advertising.c
+index a9b865a65..4a98121a4 100644
+--- a/client/advertising.c
++++ b/client/advertising.c
+@@ -416,12 +416,6 @@ static gboolean get_data(const GDBusPropertyTable *property,
+ 	return TRUE;
+ }
+ 
+-static gboolean discoverable_exists(const GDBusPropertyTable *property,
+-							void *data)
+-{
+-	return ad.discoverable;
+-}
+-
+ static gboolean get_discoverable(const GDBusPropertyTable *property,
+ 					DBusMessageIter *iter, void *user_data)
+ {
+@@ -498,7 +492,7 @@ static const GDBusPropertyTable ad_props[] = {
+ 	{ "ManufacturerData", "a{qv}", get_manufacturer_data, NULL,
+ 						manufacturer_data_exists },
+ 	{ "Data", "a{yv}", get_data, NULL, data_exists },
+-	{ "Discoverable", "b", get_discoverable, NULL, discoverable_exists },
++	{ "Discoverable", "b", get_discoverable, NULL, NULL },
+ 	{ "DiscoverableTimeout", "q", get_discoverable_timeout, NULL,
+ 						discoverable_timeout_exists },
+ 	{ "Includes", "as", get_includes, NULL, includes_exists },
+-- 
+2.17.1
+

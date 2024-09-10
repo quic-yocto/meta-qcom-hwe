@@ -1,17 +1,31 @@
-LIC_FILES_CHKSUM = "file://COPYING;md5=d79ee9e66bb0f95d3386a7acae780b70"
+LICENSE_FLAGS = ""
+
+LIC_FILES_CHKSUM = "file://COPYING;md5=d79ee9e66bb0f95d3386a7acae780b70 \
+                    file://libweston/compositor.c;endline=27;md5=b22751d2c88735d2dcb492b1c5a47242 \
+                    "
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/weston-launch:"
+FILESPATH =+ "${WORKSPACE}:"
 
-SRC_URI = "   file://weston.ini \
-              file://weston.png \
+SRC_URI:append = "   file://weston.png \
               file://weston.desktop \
               file://xwayland.weston-start \
               file://systemd-notify.weston-start \
-              git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;rev=e00a1983d58f1e7fc3263a510c1133450c56573f;branch=display.qclinux.1.0.r1-rel;destsuffix=display/vendor/qcom/opensource/display/weston"
+              file://0001-weston-Add-stack-protector-flag.patch \
+              file://0001-weston-enable-gbm-buffer-backend-protocol.patch"
 
-S = "${WORKDIR}/display/vendor/qcom/opensource/display/weston"
+SRC_URI:append:qcm6490 = "  file://weston.ini \
+                            file://0001-Add-sdm-backend.patch \
+                            file://0001-weston-export-shared-headers.patch \
+                            file://0001-weston-add-protocol-extension-for-power-and-brightne.patch \
+                            file://0001-weston-add-surface-position-and-power-key.patch"
 
-DEPENDS:append:qcom = " property-vault gbm display-hal-linux libdmabufheap"
+SRC_URI:append:qcs9100 = "  file://0001-drm-backend-power-off-during-hotplug-disconnect.patch \
+                            file://0001-weston-add-sdm-option.patch"
+
+
+DEPENDS:append:qcom-custom-bsp = " property-vault gbm libdmabufheap"
+DEPENDS:append:qcm6490 = " display-hal-linux"
 
 EXTRA_OEMESON += "-Ddeprecated-wl-shell=true"
 EXTRA_OEMESON += "-Dbackend-default=auto -Dbackend-rdp=false"
@@ -22,28 +36,29 @@ REQUIRED_DISTRO_FEATURES:remove:qcom = "opengl"
 
 # select compositor, enable simple and demo clients and enable EGL
 PACKAGECONFIG:qcom = " \
-                 sdm \
                  egl \
                  clients \
                  shell-desktop \
-                 disablepowerkey \
                  screenshare \
                  shell-fullscreen \
                  shell-ivi \
                  image-jpeg \
                  "
 
+PACKAGECONFIG:append:qcm6490 = "sdm disablepowerkey"
+PACKAGECONFIG:append:qcs9100 = "kms"
+
 # Weston on SDM
 PACKAGECONFIG[sdm] = "-Dbackend-sdm=true,-Dbackend-sdm=false"
 # Weston with disabling display power key
 PACKAGECONFIG[disablepowerkey] = "-Ddisable-power-key=true,-Ddisable-power-key=false"
 
-LDFLAGS  += "-ldrmutils -ldisplaydebug -lglib-2.0 -ldmabufheap"
+LDFLAGS:append:qcm6490  = " -ldrmutils -ldisplaydebug -lglib-2.0 -ldmabufheap"
 
 #meson script's CPP flags
-CXXFLAGS += "-I${STAGING_INCDIR}/sdm"
+CXXFLAGS:append:qcm6490  = " -I${STAGING_INCDIR}/sdm"
 
-do_install:append() {
+do_install:append:qcm6490() {
     install -m 0644 ${WORKDIR}/weston.ini -D ${D}${sysconfdir}/xdg/weston/weston.ini
 }
 

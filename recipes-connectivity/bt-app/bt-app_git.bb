@@ -4,10 +4,10 @@ DESCRIPTION = "Bluetooth application layer"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=0b86b60d6735397ecc40b62500bf35432312fe90;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/btapp \
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=cf59992e8164b3e36cba646ac7fdf3f4622757f5;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/btapp \
            git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth.git;protocol=https;rev=feac37f59b09e012753bb7f4f48121619d227f2b;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/bt_audio \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=91f7d13c41bff2f08133e07d10d8e389839ce5fe;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/system/bt \
-           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=0db8b4e550e135b8c714df49389a403142900180;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/bluetooth_ext"
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/system/bt.git;protocol=https;rev=5be31e3233046135a6913b396a21c04f82414680;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/system/bt \
+           git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=339830ec33c244ca1747b1e7dce971f2a5050a4d;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/bluetooth_ext"
 
 S = "${WORKDIR}/bluetooth"
 
@@ -15,7 +15,7 @@ EXTRA_OEMAKE += 'BT_SOURCE=${S}'
 
 AUTOTOOLS_SCRIPT_PATH = "${S}/btapp/bt-app"
 
-DEPENDS += "btvendorhal glib-2.0 property-vault libchrome fluoride audioroute pa-bt-audio libbsd"
+DEPENDS += "btvendorhal glib-2.0 property-vault libchrome fluoride qcom-audioroute qcom-pa-bt-audio libbsd"
 RDEPENDS:${PN} = "property-vault"
 
 CPPFLAGS:append = " -DUSE_LIBHW_AOSP -DUSE_GEN_GATT"

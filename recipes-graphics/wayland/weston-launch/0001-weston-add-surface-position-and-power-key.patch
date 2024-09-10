@@ -1,0 +1,332 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From a870cb649bbd9eb5f5fef34b5611182c4a7a21e4 Mon Sep 17 00:00:00 2001
+From: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
+Date: Wed, 28 Aug 2024 10:44:04 +0530
+Subject: [PATCH] weston: add surface position and power key.
+
+Change-Id: I2e62be89e4883904d8f5237946359a1a9de249b9
+Signed-off-by: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
+---
+ compositor/main.c                 | 36 +++++++++++++++++++++++-
+ libweston-desktop/internal.h      |  6 ++++
+ libweston-desktop/surface.c       | 10 +++++++
+ libweston-desktop/xdg-shell.c     | 24 ++++++++++++++++
+ libweston/backend-drm/drm.c       |  5 ++++
+ libweston/backend-drm/meson.build |  4 +++
+ libweston/input.c                 | 46 ++++++++++++++++++++++++++++---
+ meson_options.txt                 | 23 ++++++++++------
+ 8 files changed, 141 insertions(+), 13 deletions(-)
+
+diff --git a/compositor/main.c b/compositor/main.c
+index cdd69684..17c960e1 100644
+--- a/compositor/main.c
++++ b/compositor/main.c
+@@ -26,6 +26,10 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #include "config.h"
+@@ -45,6 +49,8 @@
+ #include <linux/input.h>
+ #include <sys/time.h>
+ #include <linux/limits.h>
++#include <syslog.h>
++#include <stdarg.h>
+ 
+ #include "weston.h"
+ #include <libweston/libweston.h>
+@@ -66,6 +72,9 @@
+ #include <libweston/remoting-plugin.h>
+ #include <libweston/pipewire-plugin.h>
+ 
++#undef  LOG_TAG
++#define LOG_TAG "weston"
++
+ #define WINDOW_TITLE "Weston Compositor"
+ /* flight recorder size (in bytes) */
+ #define DEFAULT_FLIGHT_REC_SIZE (5 * 1024 * 1024)
+@@ -239,6 +248,15 @@ vlog_continue(const char *fmt, va_list argp)
+ 	return weston_log_scope_vprintf(log_scope, fmt, argp);
+ }
+ 
++/* redirects weston logs to syslog */
++static int
++weston_syslog(const char *fmt, va_list argp)
++{
++	vsyslog(LOG_INFO, fmt, argp);
++
++	return 0;
++}
++
+ static const char *
+ get_next_argument(const char *signature, char* type)
+ {
+@@ -3331,6 +3349,18 @@ weston_log_subscribe_to_scopes(struct weston_log_context *log_ctx,
+ 		weston_log_setup_scopes(log_ctx, flight_rec, flight_rec_scopes);
+ }
+ 
++/* sig_handler funtion prints the PID, UID and fault address and then calls print_backtrace */
++static void sig_handler(int signal_number, siginfo_t *siginfo, void *context)
++{
++        weston_log("caught signal %d\n", signal_number);
++        weston_log("PID: %u UID: %u\n", getpid(), getuid());
++        if(siginfo->si_addr == NULL)
++                weston_log("Fault address: 0x0\n");
++        else
++                weston_log("Fault address: %p\n", siginfo->si_addr);
++        print_backtrace();
++}
++
+ WL_EXPORT int
+ wet_main(int argc, char *argv[], const struct weston_testsuite_data *test_data)
+ {
+@@ -3422,7 +3452,11 @@ wet_main(int argc, char *argv[], const struct weston_testsuite_data *test_data)
+ 	if (!weston_log_file_open(log))
+ 		return EXIT_FAILURE;
+ 
+-	weston_log_set_handler(vlog, vlog_continue);
++	if (log == NULL || strstr(log, "syslog") == NULL) {
++		weston_log_set_handler(vlog, vlog_continue);
++	} else {
++		weston_log_set_handler(weston_syslog, weston_syslog);
++	}
+ 
+ 	logger = weston_log_subscriber_create_log(weston_logfile);
+ 
+diff --git a/libweston-desktop/internal.h b/libweston-desktop/internal.h
+index 2606d279..263ba281 100644
+--- a/libweston-desktop/internal.h
++++ b/libweston-desktop/internal.h
+@@ -203,6 +203,12 @@ weston_desktop_surface_set_relative_to(struct weston_desktop_surface *surface,
+ 				       int32_t x, int32_t y, bool use_geometry);
+ void
+ weston_desktop_surface_unset_relative_to(struct weston_desktop_surface *surface);
++
++void
++weston_desktop_surface_set_position(struct weston_desktop *desktop,
++                                       struct weston_desktop_surface *dsurface,
++                                   uint32_t x, uint32_t y);
++
+ void
+ weston_desktop_surface_popup_grab(struct weston_desktop_surface *popup,
+ 				  struct weston_desktop_seat *seat,
+diff --git a/libweston-desktop/surface.c b/libweston-desktop/surface.c
+index 433f08ae..c49516fa 100644
+--- a/libweston-desktop/surface.c
++++ b/libweston-desktop/surface.c
+@@ -797,6 +797,16 @@ weston_desktop_surface_unset_relative_to(struct weston_desktop_surface *surface)
+ 		weston_desktop_view_destroy(view);
+ }
+ 
++void
++weston_desktop_surface_set_position(struct weston_desktop *desktop,
++                                       struct weston_desktop_surface *dsurface,
++                                   uint32_t x, uint32_t y)
++{
++       struct weston_desktop_view *view;
++       wl_list_for_each(view, &dsurface->view_list, link)
++               weston_view_set_position(view->view, x, y);
++}
++
+ void
+ weston_desktop_surface_popup_grab(struct weston_desktop_surface *surface,
+ 				  struct weston_desktop_seat *seat,
+diff --git a/libweston-desktop/xdg-shell.c b/libweston-desktop/xdg-shell.c
+index 6cbf55e4..c863ccc0 100644
+--- a/libweston-desktop/xdg-shell.c
++++ b/libweston-desktop/xdg-shell.c
+@@ -459,6 +459,29 @@ weston_desktop_xdg_toplevel_protocol_move(struct wl_client *wl_client,
+ 	weston_desktop_api_move(toplevel->base.desktop, dsurface, seat, serial);
+ }
+ 
++static void
++weston_desktop_xdg_toplevel_protocol_set_position(struct wl_client *wl_client,
++						struct wl_resource *resource,
++						uint32_t x,
++						uint32_t y)
++{
++	struct weston_desktop_surface *dsurface =
++	wl_resource_get_user_data(resource);
++	struct weston_desktop_xdg_toplevel *toplevel =
++	weston_desktop_surface_get_implementation_data(dsurface);
++
++	if (!toplevel->base.configured) {
++		wl_resource_post_error(toplevel->resource,
++				XDG_SURFACE_ERROR_NOT_CONSTRUCTED,
++				"Surface has not been configured yet");
++		return;
++	}
++
++	if (toplevel->next.state.maximized || toplevel->next.state.fullscreen)
++		return;
++	weston_desktop_surface_set_position(toplevel->base.desktop, dsurface, x, y);
++}
++
+ static void
+ weston_desktop_xdg_toplevel_protocol_resize(struct wl_client *wl_client,
+ 					    struct wl_resource *resource,
+@@ -815,6 +838,7 @@ static const struct xdg_toplevel_interface weston_desktop_xdg_toplevel_implement
+ 	.set_app_id          = weston_desktop_xdg_toplevel_protocol_set_app_id,
+ 	.show_window_menu    = weston_desktop_xdg_toplevel_protocol_show_window_menu,
+ 	.move                = weston_desktop_xdg_toplevel_protocol_move,
++	.set_position        = weston_desktop_xdg_toplevel_protocol_set_position,
+ 	.resize              = weston_desktop_xdg_toplevel_protocol_resize,
+ 	.set_min_size        = weston_desktop_xdg_toplevel_protocol_set_min_size,
+ 	.set_max_size        = weston_desktop_xdg_toplevel_protocol_set_max_size,
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index be440b84..a45abdf3 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -584,8 +584,13 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
+ 			millihz_to_nsec(output->base.current_mode->refresh);
+ 		if (timespec_to_nsec(&vbl2now) < refresh_nsec) {
+ 			drm_output_update_msc(output, vbl.reply.sequence);
++#ifdef QCOM_BSP
++			weston_output_finish_frame(output_base, &tnow,
++						WP_PRESENTATION_FEEDBACK_INVALID);
++#else
+ 			weston_output_finish_frame(output_base, &ts,
+ 						WP_PRESENTATION_FEEDBACK_INVALID);
++#endif
+ 			return 0;
+ 		}
+ 	}
+diff --git a/libweston/backend-drm/meson.build b/libweston/backend-drm/meson.build
+index 23db9127..7f155e4d 100644
+--- a/libweston/backend-drm/meson.build
++++ b/libweston/backend-drm/meson.build
+@@ -83,6 +83,10 @@ if get_option('remoting') or get_option('pipewire')
+ 	config_h.set('BUILD_DRM_VIRTUAL', '1')
+ endif
+ 
++if get_option('qcom-bsp')
++	config_h.set('QCOM_BSP', '1')
++endif
++
+ plugin_drm = shared_library(
+ 	'drm-backend',
+ 	srcs_drm,
+diff --git a/libweston/input.c b/libweston/input.c
+index 6fb4bed3..b60e15ba 100644
+--- a/libweston/input.c
++++ b/libweston/input.c
+@@ -23,6 +23,11 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ *
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #include "config.h"
+@@ -38,6 +43,7 @@
+ #include <fcntl.h>
+ #include <limits.h>
+ #include <errno.h>
++#include <linux/input.h>
+ 
+ #include "shared/helpers.h"
+ #include "shared/os-compatibility.h"
+@@ -2197,10 +2203,42 @@ notify_key(struct weston_seat *seat, const struct timespec *time, uint32_t key,
+ 	struct weston_keyboard_grab *grab = keyboard->grab;
+ 	uint32_t *k, *end;
+ 
+-	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+-		weston_compositor_idle_inhibit(compositor);
+-	} else {
+-		weston_compositor_idle_release(compositor);
++#ifndef DISABLE_POWER_KEY
++	/* When power button is pressed for one time, weston receives two events
++	for key KEY_POWER as below:-
++	1. WL_KEYBOARD_KEY_STATE_RELEASED
++	2. WL_KEYBOARD_KEY_STATE_PRESSED
++	We are acting only on one event WL_KEYBOARD_KEY_STATE_PRESSED, and changing display
++	state. We are ignoring WL_KEYBOARD_KEY_STATE_RELEASED event.
++	*/
++
++	static bool display_on = true;
++	if (state == WL_KEYBOARD_KEY_STATE_PRESSED && key == KEY_POWER && display_on) {
++		weston_compositor_sleep(compositor);
++		display_on = false;
++		weston_log("Display OFF \n");
++		return;
++	} else if (state == WL_KEYBOARD_KEY_STATE_PRESSED && key == KEY_POWER && !display_on) {
++		weston_compositor_wake(compositor);
++		weston_compositor_schedule_repaint(compositor);
++		display_on = true;
++		weston_log("Display ON \n");
++		return;
++	}
++#endif
++
++	if (key == KEY_POWER) {
++		// ignore WL_KEYBOARD_KEY_STATE_RELEASED event.
++		return;
++	}
++
++	if ((key != KEY_VOLUMEDOWN) && (key != KEY_VOLUMEUP) && (key != KEY_BRIGHTNESSDOWN) &&
++		(key != KEY_BRIGHTNESSUP) ) {
++		if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
++			weston_compositor_idle_inhibit(compositor);
++		} else {
++			weston_compositor_idle_release(compositor);
++		}
+ 	}
+ 
+ 	end = keyboard->keys.data + keyboard->keys.size;
+diff --git a/meson_options.txt b/meson_options.txt
+index c84a1f51..3defec21 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -1,17 +1,18 @@
+ # This option is not implemented:
+ #  --with-cairo=[image|gl|glesv2] Which Cairo renderer to use for the clients
+ # It is hardcoded to cairo-image for now.
++
+ option(
+-       'backend-sdm',
+-       type: 'boolean',
+-       value: true,
+-       description: 'Weston backend with MSM SDM compositor'
++	'backend-sdm',
++	type: 'boolean',
++	value: true,
++	description: 'Weston backend with MSM SDM compositor'
+ )
+ option(
+-       'disable-power-key',
+-       type: 'boolean',
+-       value: false,
+-       description: 'Weston backend: disable power key handling'
++	'disable-power-key',
++	type: 'boolean',
++	value: false,
++	description: 'Weston backend: disable power key handling'
+ )
+ option(
+ 	'backend-drm',
+@@ -253,3 +254,9 @@ option(
+ 	value: false,
+ 	description: 'Generate documentation'
+ )
++option(
++	'qcom-bsp',
++	type: 'boolean',
++	value: true,
++	description: 'DRM: run qcom bsp related flow'
++)
+-- 
+2.17.1
+

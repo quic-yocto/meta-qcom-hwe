@@ -1,0 +1,47 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From 3f9eff1de2974eb6701ae6dcfe8815f46e991ce8 Mon Sep 17 00:00:00 2001
+From: Devanshi Bansal <quic_devanshi@quicinc.com>
+Date: Mon, 29 Jul 2024 10:43:32 +0530
+Subject: [PATCH] weston: Add stack protector flag
+
+Change-Id: If82bae613563893d686c437f42322bac2e6ab48a
+Signed-off-by: Devanshi Bansal <quic_devanshi@quicinc.com>
+---
+ clients/meson.build    | 3 ++-
+ compositor/meson.build | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/clients/meson.build b/clients/meson.build
+index 3cc4080c..3c3212dd 100644
+--- a/clients/meson.build
++++ b/clients/meson.build
+@@ -191,7 +191,8 @@ foreach t : simple_clients
+ 			t_name, t.get('sources'),
+ 			include_directories: common_inc,
+ 			dependencies: t_deps,
+-			install: true
++			install: true,
++			c_args: ['-fstack-protector-all']
+ 		)
+ 	endif
+ endforeach
+diff --git a/compositor/meson.build b/compositor/meson.build
+index 8a54ea99..55bf728a 100644
+--- a/compositor/meson.build
++++ b/compositor/meson.build
+@@ -47,7 +47,8 @@ exe_weston = executable(
+ 	include_directories: common_inc,
+ 	dependencies: dep_libexec_weston,
+ 	install_rpath: dir_module_weston,
+-	install: true
++	install: true,
++	c_args: ['-fstack-protector-all']
+ )
+ install_headers('weston.h', subdir: 'weston')
+ 
+-- 
+2.34.1
+

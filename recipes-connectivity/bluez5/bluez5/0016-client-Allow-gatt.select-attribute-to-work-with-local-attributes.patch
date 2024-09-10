@@ -1,0 +1,473 @@
+From 9a550d43b84ed808ff2a678b0117a8e14355d80c Mon Sep 17 00:00:00 2001
+From: Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
+Date: Mon, 5 Dec 2022 14:26:17 -0800
+Subject: [PATCH] client: Allow gatt.select-attribute to work with local
+ attributes
+
+This allows gatt.select-attribute local to select from the registered
+attributes:
+
+[bluetooth]# gatt.select-attribute local /org/bluez/app/service0/chrc0
+[/org/bluez/app/service0/chrc0]# gatt.write 0x01
+[CHG] Attribute /org/bluez/app/service0/chrc0 (%UUID) written
+[/org/bluez/app/service0/chrc0]# gatt.read
+01                                               .
+[/org/bluez/app/service0/chrc0]# gatt.select-attribute local
+ /org/bluez/app/service0/chrc1
+[/org/bluez/app/service0/chrc1]# gatt.write 0x01
+[CHG] Attribute /org/bluez/app/service0/chrc1 (%UUID) written
+[/org/bluez/app/service0/chrc1]# gatt.read
+01                                               .
+[/org/bluez/app/service0/chrc1]#
+---
+ client/gatt.c | 298 +++++++++++++++++++++++++++++++++++++++-----------
+ client/gatt.h |   4 +
+ client/main.c |  48 +++++++-
+ 3 files changed, 285 insertions(+), 65 deletions(-)
+
+diff --git a/client/gatt.c b/client/gatt.c
+index 8f2920269..f03fc1526 100644
+--- a/client/gatt.c
++++ b/client/gatt.c
+@@ -554,6 +554,241 @@ GDBusProxy *gatt_select_attribute(GDBusProxy *parent, const char *arg)
+ 	return select_attribute_by_uuid(NULL, arg);
+ }
+ 
++static char *find_local_attribute(const char *arg,
++					struct service **service,
++					struct chrc **chrc, struct desc **desc)
++{
++	GList *l;
++
++	for (l = local_services; l; l = g_list_next(l)) {
++		struct service *s = l->data;
++		GList *cl;
++
++		if (!strcmp(arg, s->path)) {
++			if (service)
++				*service = s;
++			return s->path;
++		}
++
++		if (!strcmp(arg, s->uuid)) {
++			if (service)
++				*service = s;
++			return s->path;
++		}
++
++		for (cl = s->chrcs; cl; cl = g_list_next(cl)) {
++			struct chrc *c = cl->data;
++			GList *dl;
++
++			if (!strcmp(arg, c->path)) {
++				if (chrc)
++					*chrc = c;
++				return c->path;
++			}
++
++			if (!strcmp(arg, c->uuid)) {
++				if (chrc)
++					*chrc = c;
++				return c->path;
++			}
++
++			for (dl = c->descs; dl; dl = g_list_next(dl)) {
++				struct desc *d = dl->data;
++
++				if (!strcmp(arg, d->path)) {
++					if (desc)
++						*desc = d;
++					return d->path;
++				}
++
++				if (!strcmp(arg, d->uuid)) {
++					if (desc)
++						*desc = d;
++					return d->path;
++				}
++			}
++		}
++	}
++
++	return NULL;
++}
++
++char *gatt_select_local_attribute(const char *arg)
++{
++	return find_local_attribute(arg, NULL, NULL, NULL);
++}
++
++static int parse_offset(const char *arg)
++{
++	char *endptr = NULL;
++	unsigned long offset;
++
++	offset = strtoul(arg, &endptr, 0);
++	if (!endptr || *endptr != '\0' || offset > UINT16_MAX) {
++		bt_shell_printf("Invalid offload: %s", arg);
++		return -EINVAL;
++	}
++
++	return offset;
++}
++
++void gatt_read_local_attribute(char *data, int argc, char *argv[])
++{
++	int offset = 0;
++	struct service *s = NULL;
++	struct chrc *c = NULL;
++	struct desc *d = NULL;
++
++	if (!find_local_attribute(data, &s, &c, &d)) {
++		bt_shell_printf("Unable to find local attribute %s\n", data);
++		return bt_shell_noninteractive_quit(EXIT_FAILURE);
++	}
++
++	if (argc > 1) {
++		offset = parse_offset(argv[1]);
++		if (offset < 0)
++			return bt_shell_noninteractive_quit(EXIT_FAILURE);
++	}
++
++	if (s) {
++		bt_shell_printf("UUID %s", s->uuid);
++		return bt_shell_noninteractive_quit(EXIT_SUCCESS);
++	}
++
++	if (c) {
++		if ((size_t)offset >= c->value_len) {
++			bt_shell_printf("Invalid offset: %d >= %zd", offset,
++								c->value_len);
++			return bt_shell_noninteractive_quit(EXIT_FAILURE);
++		}
++		bt_shell_hexdump(&c->value[offset], c->value_len - offset);
++		return bt_shell_noninteractive_quit(EXIT_SUCCESS);
++	}
++
++	if (d) {
++		if ((size_t)offset >= d->value_len) {
++			bt_shell_printf("Invalid offset: %d >= %zd", offset,
++								d->value_len);
++			return bt_shell_noninteractive_quit(EXIT_FAILURE);
++		}
++		bt_shell_hexdump(&d->value[offset], d->value_len - offset);
++		return bt_shell_noninteractive_quit(EXIT_SUCCESS);
++	}
++}
++
++static uint8_t *str2bytearray(char *arg, size_t *val_len)
++{
++	uint8_t value[MAX_ATTR_VAL_LEN];
++	char *entry;
++	unsigned int i;
++
++	for (i = 0; (entry = strsep(&arg, " \t")) != NULL; i++) {
++		long val;
++		char *endptr = NULL;
++
++		if (*entry == '\0')
++			continue;
++
++		if (i >= G_N_ELEMENTS(value)) {
++			bt_shell_printf("Too much data\n");
++			return NULL;
++		}
++
++		val = strtol(entry, &endptr, 0);
++		if (!endptr || *endptr != '\0' || val > UINT8_MAX) {
++			bt_shell_printf("Invalid value at index %d\n", i);
++			return NULL;
++		}
++
++		value[i] = val;
++	}
++
++	*val_len = i;
++
++	return util_memdup(value, i);
++}
++
++static int write_value(size_t *dst_len, uint8_t **dst_value, uint8_t *src_val,
++			size_t src_len, uint16_t offset, uint16_t max_len)
++{
++	if ((offset + src_len) > max_len)
++		return -EOVERFLOW;
++
++	if ((offset + src_len) != *dst_len) {
++		*dst_len = offset + src_len;
++		*dst_value = g_realloc(*dst_value, *dst_len);
++	}
++
++	if (src_val && src_len)
++		memcpy(*dst_value + offset, src_val, src_len);
++
++	return 0;
++}
++
++void gatt_write_local_attribute(char *data, int argc, char *argv[])
++{
++	int offset = 0;
++	struct service *s = NULL;
++	struct chrc *c = NULL;
++	struct desc *d = NULL;
++	uint8_t *value;
++	size_t value_len;
++
++	if (!find_local_attribute(data, &s, &c, &d)) {
++		bt_shell_printf("Unable to find local attribute %s\n", data);
++		return bt_shell_noninteractive_quit(EXIT_FAILURE);
++	}
++
++	value = str2bytearray(argv[1], &value_len);
++	if (!value)
++		return bt_shell_noninteractive_quit(EXIT_FAILURE);
++
++	if (argc > 2) {
++		offset = parse_offset(argv[2]);
++		if (offset < 0)
++			return bt_shell_noninteractive_quit(EXIT_FAILURE);
++	}
++
++	if (s) {
++		bt_shell_printf("Unable to overwrite local service %s\n", data);
++		return bt_shell_noninteractive_quit(EXIT_FAILURE);
++	}
++
++	if (c) {
++		if (write_value(&c->value_len, &c->value,
++					value, value_len,
++					offset, c->max_val_len)) {
++			bt_shell_printf("Unable to write local attribute %s\n",
++									data);
++			return bt_shell_noninteractive_quit(EXIT_FAILURE);
++		}
++
++		bt_shell_printf("[" COLORED_CHG "] Attribute %s (%s) written\n",
++				c->path, bt_uuidstr_to_str(c->uuid));
++
++		g_dbus_emit_property_changed(c->service->conn, c->path,
++					     CHRC_INTERFACE, "Value");
++	}
++
++	if (d) {
++		if (write_value(&d->value_len, &d->value,
++					value, value_len,
++					offset, d->max_val_len)) {
++			bt_shell_printf("Unable to write local attribute %s\n",
++									data);
++			return bt_shell_noninteractive_quit(EXIT_FAILURE);
++		}
++
++		bt_shell_printf("[" COLORED_CHG "] Attribute %s (%s) written\n",
++				d->path, bt_uuidstr_to_str(d->uuid));
++
++		g_dbus_emit_property_changed(d->chrc->service->conn, d->path,
++					     DESC_INTERFACE, "Value");
++	}
++
++	free(value);
++}
++
+ static char *attribute_generator(const char *text, int state, GList *source)
+ {
+ 	static int index;
+@@ -650,20 +885,6 @@ static void read_attribute(GDBusProxy *proxy, uint16_t offset)
+ 	bt_shell_printf("Attempting to read %s\n", g_dbus_proxy_get_path(proxy));
+ }
+ 
+-static int parse_offset(const char *arg)
+-{
+-	char *endptr = NULL;
+-	unsigned long offset;
+-
+-	offset = strtoul(arg, &endptr, 0);
+-	if (!endptr || *endptr != '\0' || offset > UINT16_MAX) {
+-		bt_shell_printf("Invalid offload: %s", arg);
+-		return -EINVAL;
+-	}
+-
+-	return offset;
+-}
+-
+ void gatt_read_attribute(GDBusProxy *proxy, int argc, char *argv[])
+ {
+ 	const char *iface;
+@@ -782,38 +1003,6 @@ static void write_attribute(GDBusProxy *proxy,
+ 					g_dbus_proxy_get_path(proxy));
+ }
+ 
+-static uint8_t *str2bytearray(char *arg, size_t *val_len)
+-{
+-	uint8_t value[MAX_ATTR_VAL_LEN];
+-	char *entry;
+-	unsigned int i;
+-
+-	for (i = 0; (entry = strsep(&arg, " \t")) != NULL; i++) {
+-		long int val;
+-		char *endptr = NULL;
+-
+-		if (*entry == '\0')
+-			continue;
+-
+-		if (i >= G_N_ELEMENTS(value)) {
+-			bt_shell_printf("Too much data\n");
+-			return NULL;
+-		}
+-
+-		val = strtol(entry, &endptr, 0);
+-		if (!endptr || *endptr != '\0' || val > UINT8_MAX) {
+-			bt_shell_printf("Invalid value at index %d\n", i);
+-			return NULL;
+-		}
+-
+-		value[i] = val;
+-	}
+-
+-	*val_len = i;
+-
+-	return util_memdup(value, i);
+-}
+-
+ void gatt_write_attribute(GDBusProxy *proxy, int argc, char *argv[])
+ {
+ 	const char *iface;
+@@ -2132,23 +2321,6 @@ static int parse_value_arg(DBusMessageIter *iter, uint8_t **value, int *len)
+ 	return 0;
+ }
+ 
+-static int write_value(size_t *dst_len, uint8_t **dst_value, uint8_t *src_val,
+-			size_t src_len, uint16_t offset, uint16_t max_len)
+-{
+-	if ((offset + src_len) > max_len)
+-		return -EOVERFLOW;
+-
+-	if ((offset + src_len) != *dst_len) {
+-		*dst_len = offset + src_len;
+-		*dst_value = g_realloc(*dst_value, *dst_len);
+-	}
+-
+-	if (src_val && src_len)
+-		memcpy(*dst_value + offset, src_val, src_len);
+-
+-	return 0;
+-}
+-
+ static void authorize_write_response(const char *input, void *user_data)
+ {
+ 	struct authorize_attribute_data *aad = user_data;
+diff --git a/client/gatt.h b/client/gatt.h
+index fc2b8a8a6..bed9d3a68 100644
+--- a/client/gatt.h
++++ b/client/gatt.h
+@@ -32,6 +32,10 @@ void gatt_release_write(GDBusProxy *proxy, const char *arg);
+ void gatt_acquire_notify(GDBusProxy *proxy, const char *arg);
+ void gatt_release_notify(GDBusProxy *proxy, const char *arg);
+ 
++char *gatt_select_local_attribute(const char *arg);
++void gatt_read_local_attribute(char *data, int argc, char *argv[]);
++void gatt_write_local_attribute(char *data, int argc, char *argv[]);
++
+ void gatt_add_manager(GDBusProxy *proxy);
+ void gatt_remove_manager(GDBusProxy *proxy);
+ 
+diff --git a/client/main.c b/client/main.c
+index 763f38ac7..e5cf1e203 100644
+--- a/client/main.c
++++ b/client/main.c
+@@ -55,6 +55,7 @@ struct adapter {
+ 
+ static struct adapter *default_ctrl;
+ static GDBusProxy *default_dev;
++static char *default_local_attr;
+ static GDBusProxy *default_attr;
+ static GList *ctrl_list;
+ static GList *battery_proxies;
+@@ -440,6 +441,7 @@ static void set_default_attribute(GDBusProxy *proxy)
+ {
+ 	const char *path;
+ 
++	default_local_attr = NULL;
+ 	default_attr = proxy;
+ 
+ 	path = g_dbus_proxy_get_path(proxy);
+@@ -1982,10 +1984,41 @@ static void cmd_set_alias(int argc, char *argv[])
+ 	return bt_shell_noninteractive_quit(EXIT_FAILURE);
+ }
+ 
++static void set_default_local_attribute(char *attr)
++{
++	char *desc = NULL;
++
++	default_local_attr = attr;
++	default_attr = NULL;
++
++	desc = g_strdup_printf(COLOR_BLUE "[%s]" COLOR_OFF "# ", attr);
++
++	bt_shell_set_prompt(desc);
++	free(desc);
++}
++
+ static void cmd_select_attribute(int argc, char *argv[])
+ {
+ 	GDBusProxy *proxy;
+ 
++	if (!strcasecmp("local", argv[1])) {
++		char *attr;
++
++		if (argc < 2) {
++			bt_shell_printf("attribute/UUID required\n");
++			return bt_shell_noninteractive_quit(EXIT_FAILURE);
++		}
++
++		attr = gatt_select_local_attribute(argv[2]);
++		if (!attr) {
++			bt_shell_printf("Unable to find %s\n", argv[2]);
++			return bt_shell_noninteractive_quit(EXIT_FAILURE);
++		}
++
++		set_default_local_attribute(attr);
++		return bt_shell_noninteractive_quit(EXIT_SUCCESS);
++	}
++
+ 	if (!default_dev) {
+ 		bt_shell_printf("No device connected\n");
+ 		return bt_shell_noninteractive_quit(EXIT_FAILURE);
+@@ -2070,6 +2103,11 @@ static void cmd_attribute_info(int argc, char *argv[])
+ 
+ static void cmd_read(int argc, char *argv[])
+ {
++	if (default_local_attr) {
++		gatt_read_local_attribute(default_local_attr, argc, argv);
++		return;
++	}
++
+ 	if (!default_attr) {
+ 		bt_shell_printf("No attribute selected\n");
+ 		return bt_shell_noninteractive_quit(EXIT_FAILURE);
+@@ -2080,6 +2118,11 @@ static void cmd_read(int argc, char *argv[])
+ 
+ static void cmd_write(int argc, char *argv[])
+ {
++	if (default_local_attr) {
++		gatt_write_local_attribute(default_local_attr, argc, argv);
++		return;
++	}
++
+ 	if (!default_attr) {
+ 		bt_shell_printf("No attribute selected\n");
+ 		return bt_shell_noninteractive_quit(EXIT_FAILURE);
+@@ -2837,8 +2880,9 @@ static const struct bt_shell_menu gatt_menu = {
+ 	.entries = {
+ 	{ "list-attributes", "[dev/local]", cmd_list_attributes,
+ 				"List attributes", dev_generator },
+-	{ "select-attribute", "<attribute/UUID>",  cmd_select_attribute,
+-				"Select attribute", attribute_generator },
++	{ "select-attribute", "<attribute/UUID/local> [attribute/UUID]",
++				cmd_select_attribute, "Select attribute",
++				attribute_generator },
+ 	{ "attribute-info", "[attribute/UUID]",  cmd_attribute_info,
+ 				"Select attribute", attribute_generator },
+ 	{ "read", "[offset]", cmd_read, "Read attribute value" },
+-- 
+2.34.1
+

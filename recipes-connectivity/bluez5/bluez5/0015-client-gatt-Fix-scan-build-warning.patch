@@ -1,0 +1,32 @@
+From 6c712030567b76e4ea29adbd816c0e5cc994a45c Mon Sep 17 00:00:00 2001
+From: Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
+Date: Fri, 23 Sep 2022 13:47:10 -0700
+Subject: [PATCH] client/gatt: Fix scan-build warning
+
+This fixes the following warning:
+
+client/gatt.c:2146:2: warning: Null pointer passed to 2nd parameter
+expecting 'nonnull' [core.NonNullParamChecker]
+        memcpy(*dst_value + offset, src_val, src_len);
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---
+ client/gatt.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/client/gatt.c b/client/gatt.c
+index 25d593ffe..8f2920269 100644
+--- a/client/gatt.c
++++ b/client/gatt.c
+@@ -2143,7 +2143,8 @@ static int write_value(size_t *dst_len, uint8_t **dst_value, uint8_t *src_val,
+ 		*dst_value = g_realloc(*dst_value, *dst_len);
+ 	}
+ 
+-	memcpy(*dst_value + offset, src_val, src_len);
++	if (src_val && src_len)
++		memcpy(*dst_value + offset, src_val, src_len);
+ 
+ 	return 0;
+ }
+-- 
+2.34.1
+

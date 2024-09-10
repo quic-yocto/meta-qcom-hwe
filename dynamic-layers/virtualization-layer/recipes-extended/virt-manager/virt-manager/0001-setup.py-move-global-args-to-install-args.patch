@@ -1,0 +1,78 @@
+From bcdb3555b924573e85039b54d63d6173ad99b846 Mon Sep 17 00:00:00 2001
+From: Paul Le Guen de Kerneizon <paul.leguendekerneizon@savoirfairelinux.com>
+Date: Wed, 28 Feb 2024 10:24:00 +0100
+Subject: [PATCH] setup.py: move global args to install args
+
+Presently, during the installation process, global arguments such as
+`no-update-icon-cache` and `no-compile-schemas` are utilized to
+prevent the installation of specific graphical components. These
+arguments are essential, for instance, when installing virt-manager
+without any GUI dependencies on the target system. However, these
+global arguments must be set before the install command, yet they only
+take effect during the execution of the command.
+
+Since the Yocto `setuptools3_legacy` class parses arguments after the
+command, this commit aims to make these arguments applicable locally to
+the install command.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Paul Le Guen de Kerneizon <paul.leguendekerneizon@savoirfairelinux.com>
+---
+ setup.py | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/setup.py b/setup.py
+index cd6cd83e..faca546a 100755
+--- a/setup.py
++++ b/setup.py
+@@ -242,6 +242,16 @@ class my_egg_info(setuptools.command.install_egg_info.install_egg_info):
+
+
+ class my_install(setuptools.command.install.install):
++    setuptools.command.install.install.user_options += [
++        ("no-update-icon-cache", None, "Don't run gtk-update-icon-cache"),
++        ("no-compile-schemas", None, "Don't compile gsettings schemas"),
++    ]
++
++    def initialize_options(self):
++        setuptools.command.install.install.initialize_options(self)
++        self.no_update_icon_cache = None
++        self.no_compile_schemas = None
++
+     """
+     Error if we weren't 'configure'd with the correct install prefix
+     """
+@@ -266,12 +276,12 @@ class my_install(setuptools.command.install.install):
+     def run(self):
+         setuptools.command.install.install.run(self)
+
+-        if not self.distribution.no_update_icon_cache:
++        if not self.no_update_icon_cache:
+             print("running gtk-update-icon-cache")
+             icon_path = os.path.join(self.install_data, "share/icons/hicolor")
+             self.spawn(["gtk-update-icon-cache", "-q", "-t", icon_path])
+
+-        if not self.distribution.no_compile_schemas:
++        if not self.no_compile_schemas:
+             print("compiling gsettings schemas")
+             gschema_install = os.path.join(self.install_data,
+                 "share/glib-2.0/schemas")
+@@ -421,14 +431,8 @@ class CheckPylint(setuptools.Command):
+
+
+ class VMMDistribution(setuptools.dist.Distribution):
+-    global_options = setuptools.dist.Distribution.global_options + [
+-        ("no-update-icon-cache", None, "Don't run gtk-update-icon-cache"),
+-        ("no-compile-schemas", None, "Don't compile gsettings schemas"),
+-    ]
+
+     def __init__(self, *args, **kwargs):
+-        self.no_update_icon_cache = False
+-        self.no_compile_schemas = False
+         setuptools.dist.Distribution.__init__(self, *args, **kwargs)
+
+
+--
+2.34.1
+

@@ -1,11 +1,10 @@
-From 7f1b9b37881e48c0807f6bec8dfd725e3f8e4118 Mon Sep 17 00:00:00 2001
+From f102062685671ce360969ead7020e37a89204afe Mon Sep 17 00:00:00 2001
 From: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
 Date: Fri, 5 Apr 2024 14:49:44 +0530
 Subject: [PATCH] Use system bus instead of session for obexd
 
 Signed-off-by: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
 Upstream-Status: Inappropriate [target specific change]
-
 ---
  obexd/client/ftp.c        |  3 ++-
  obexd/client/map.c        |  2 +-
@@ -15,10 +14,10 @@ Upstream-Status: Inappropriate [target specific change]
  obexd/client/sync.c       |  2 +-
  obexd/plugins/pcsuite.c   |  2 +-
  obexd/src/manager.c       |  2 +-
- obexd/src/obex.service.in |  6 +++++-
+ obexd/src/obex.service.in |  7 ++++++-
  src/bluetooth.conf        | 12 ++++++++++++
  tools/obexctl.c           |  2 +-
- 11 files changed, 27 insertions(+), 10 deletions(-)
+ 11 files changed, 28 insertions(+), 10 deletions(-)
 
 diff --git a/obexd/client/ftp.c b/obexd/client/ftp.c
 index 160e063..f492965 100644
@@ -126,10 +125,10 @@ index 01741fe..f1fa9fa 100644
  		if (dbus_error_is_set(&err) == TRUE) {
  			fprintf(stderr, "%s\n", err.message);
 diff --git a/obexd/src/obex.service.in b/obexd/src/obex.service.in
-index fc0dce9..f691b05 100644
+index fc0dce9..d39daee 100644
 --- a/obexd/src/obex.service.in
 +++ b/obexd/src/obex.service.in
-@@ -1,10 +1,14 @@
+@@ -1,10 +1,15 @@
  [Unit]
  Description=Bluetooth OBEX service
 +Requires=bluetooth.service
@@ -139,6 +138,7 @@ index fc0dce9..f691b05 100644
  Type=dbus
  BusName=org.bluez.obex
 -ExecStart=@pkglibexecdir@/obexd
++ExecStartPre=/bin/mkdir -p /var/bluetooth
 +ExecStart=@pkglibexecdir@/obexd -a -r /var/bluetooth
 +Restart=on-failure
  

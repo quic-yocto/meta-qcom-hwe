@@ -9,7 +9,11 @@ LIC_FILES_CHKSUM += "file://vmmem.cpp;beginline=1;endline=4;md5=e19ba7a648e00191
 
 DEPENDS += "linux-kernel-qcom-headers"
 
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/system/memory/libvmmem.git;protocol=https;rev=2b88e9bc6030893b8e9b46ae85999c8de103858d;branch=kernel.apps.lnx.4.0.r1-rel;destsuffix=system/memory/libvmmem"
+
+SRC_URI   = " \
+             git://git.codelinaro.org/clo/le/platform/system/memory/libvmmem.git;protocol=https;rev=2b88e9bc6030893b8e9b46ae85999c8de103858d;branch=kernel.apps.lnx.4.0.r1-rel;destsuffix=system/memory/libvmmem \
+             file://membuf.rules \
+             "
 
 S = "${WORKDIR}/system/memory/libvmmem"
 
@@ -18,9 +22,13 @@ EXTRA_OECONF:append = " \
     --disable-static \
 "
 
+do_install:append() {
+    install -m 0644 ${WORKDIR}/membuf.rules -D ${D}${sysconfdir}/udev/rules.d/membuf.rules
+}
+
 PACKAGES +="${PN}-test-bin"
 
 FILES:${PN}     = "${libdir}/* ${sysconfdir}/*"
 FILES:${PN}-test-bin = "${base_bindir}/*"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"

@@ -17,20 +17,11 @@ enable_tracing_events()
     #enble FTRACE for Workqueue events
     echo 1 > /sys/kernel/debug/tracing/events/workqueue/enable
     # schedular
-    # echo 1 > /sys/kernel/debug/tracing/events/sched/sched_cpu_hotplug/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_migrate_task/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_pi_setprio/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_switch/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_wakeup/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_wakeup_new/enable
-    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_isolate/enable
-    # sound
-    # echo 1 > /sys/kernel/debug/tracing/events/asoc/snd_soc_reg_read/enable
-    # echo 1 > /sys/kernel/debug/tracing/events/asoc/snd_soc_reg_write/enable
-    # mdp
-    # echo 1 > /sys/kernel/debug/tracing/events/mdss/mdp_video_underrun_done/enable
-    # video
-    # echo 1 > /sys/kernel/debug/tracing/events/msm_vidc/enable
     # clock
     echo 1 > /sys/kernel/debug/tracing/events/power/clock_set_rate/enable
     echo 1 > /sys/kernel/debug/tracing/events/power/clock_enable/enable
@@ -38,30 +29,15 @@ enable_tracing_events()
     echo 1 > /sys/kernel/debug/tracing/events/power/cpu_frequency/enable
     # regulator
     echo 1 > /sys/kernel/debug/tracing/events/regulator/enable
-    # power
-    echo 1 > /sys/kernel/debug/tracing/events/msm_low_power/enable
-    # fastrpc
-    echo 1 > /sys/kernel/debug/tracing/events/fastrpc/enable
     #thermal
-    echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_device_update/enable
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_zone_trip/enable
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_temperature/enable
-    echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_query_temp/enable
     echo 1 > /sys/kernel/debug/tracing/events/thermal/cdev_update/enable
-    echo 1 > /sys/kernel/debug/tracing/events/dcvsh/dcvsh_freq/enable
 
     #rmph_send_msg
     echo 1 > /sys/kernel/debug/tracing/events/rpmh/rpmh_send_msg/enable
 
-    #enable aop with timestamps
-
-    #memory pressure events/oom
-    echo 1 > /sys/kernel/debug/tracing/events/psi/psi_event/enable
-    echo 1 > /sys/kernel/debug/tracing/events/psi/psi_window_vmstat/enable
     #Enable irqsoff/preempt tracing
-    echo 1 > /sys/kernel/debug/tracing/events/preemptirq_long/enable
-    echo stacktrace > /d/tracing/events/preemptirq_long/preempt_disable_long/trigger
-    echo stacktrace > /d/tracing/events/preemptirq_long/irq_disable_long/trigger
     echo 1 > /sys/kernel/debug/tracing/tracing_on
 }
 
@@ -217,7 +193,6 @@ config_confignoc()
     echo R 0x01514008 1 > $CONFIG_PATH
     echo L 0x3 1 0x01514010 > $CONFIG_PATH
     echo R 0x1500000 1 > $CONFIG_PATH
-    echo R 0x1510000 1 > $CONFIG_PATH
     echo R 0x1500010 1 > $CONFIG_PATH
     echo R 0x1510010 1 > $CONFIG_PATH
     echo R 0x1500020 8 > $CONFIG_PATH
@@ -1788,7 +1763,7 @@ enable_debug()
     #if [ ${ftrace_disable} != "Yes" ]; then
     enable_ftrace_event_tracing
     #fi
-    #enable_dcc
+    enable_dcc
     config_stm_stp_policy
     config_coresight_permission
 }

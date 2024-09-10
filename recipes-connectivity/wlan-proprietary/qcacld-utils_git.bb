@@ -16,4 +16,4 @@ EXTRA_OECONF = "--with-glib \
                 --enable-target=${BASEMACHINE}"
 
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"

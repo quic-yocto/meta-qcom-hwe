@@ -2,13 +2,14 @@ DESCRIPTION = "Recipe to install partition.xml in DEPLOY_DIR"
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
-COMPATIBLE_MACHINE = "qcm6490"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100"
 
 PROVIDES += "virtual/partconf"
 
 SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${BOOTBINARIES}.zip;name=${PBT_ARCH}"
 
-SRC_URI[qcm6490.sha256sum] = "3e8df1341da126b21d45dca44989ec92e834a4559ab0f839d2508bc9f2d48245"
+SRC_URI[qcm6490.sha256sum] = "278b3060364523a99364a2268a472e30e183f7550d67e54edb76857903e57d16"
+SRC_URI[qcs9100.sha256sum] = "202476ff1c1904e0718274848f052335a6f6d06a0fc7d57c6490b1bb99ebd532"
 
 include firmware-common.inc
 
@@ -46,7 +47,7 @@ do_deploy() {
 }
 addtask deploy before do_build after do_install
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 PACKAGES += "${PN}-copyright"
 

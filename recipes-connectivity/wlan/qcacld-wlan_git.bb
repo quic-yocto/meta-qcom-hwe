@@ -8,10 +8,10 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/ISC;md5=f3b90e78ea0cffb20bf5cca
 DEPENDS += "wlan-platform"
 
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https;rev=42f9754f01428c46d915ce237c8425f9631cc24c;branch=wlan-cld3.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qcacld-3.0"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https;rev=a3ef326dd0bb88fbd55dac9fad7937705f66ea05;branch=wlan-cmn.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qca-wifi-host-cmn"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/fw-api.git;protocol=https;rev=3b3803f24af689d00ac6899c1eb19678e327c709;branch=wlan-api.lnx.1.0.r230-rel;destsuffix=wlan/fw-api"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=18c957733a7dfbb419c9bbf91870197997336ce1;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/platform"
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https;rev=d61eba677e5f5aea6a0dc89b7c0664a63b51f485;branch=wlan-cld3.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qcacld-3.0"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https;rev=69665e0e784076a71e712f6d701cd6e5d6a9220e;branch=wlan-cmn.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qca-wifi-host-cmn"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/fw-api.git;protocol=https;rev=e3a9e8051ec8a0c79fe4a1d932f234cf8dfa9565;branch=wlan-api.lnx.1.0.r230-rel;destsuffix=wlan/fw-api"
+SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=c809145eeb9942e085d997212f8a0240415db5fe;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/platform"
 SRC_URI += "file://qcacld-kbuild.patch"
 
 S = "${WORKDIR}/wlan/qcacld-3.0"

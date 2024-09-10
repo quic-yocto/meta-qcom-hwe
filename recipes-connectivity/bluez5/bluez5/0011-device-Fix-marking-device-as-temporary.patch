@@ -1,0 +1,33 @@
+From 48b7f7e5fe53b434f388a8b85cc0996853b3567c Mon Sep 17 00:00:00 2001
+From: Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
+Date: Thu, 13 Jun 2024 12:59:59 -0400
+Subject: [PATCH] device: Fix marking device as temporary
+
+If bonding has failed but there are other bearers connected don't mark
+the device as temporary.
+
+Fixes: https://github.com/bluez/bluez/issues/856
+
+Signed-off-by: Cheng Jiang <quic_chejiang@quicinc.com>
+Upstream-Status: BACKPORT
+---
+ src/device.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/device.c b/src/device.c
+index 90626204a..097b1fbba 100644
+--- a/src/device.c
++++ b/src/device.c
+@@ -6037,7 +6037,8 @@ void device_bonding_complete(struct btd_device *device, uint8_t bdaddr_type,
+ 		/* Put the device back to the temporary state so that it will be
+ 		 * treated as a newly discovered device.
+ 		 */
+-		if (!device_is_paired(device, bdaddr_type) &&
++		if (!btd_device_bearer_is_connected(device) &&
++				!device_is_paired(device, bdaddr_type) &&
+ 				!device_is_trusted(device))
+ 			btd_device_set_temporary(device, true);
+ 
+-- 
+2.25.1
+

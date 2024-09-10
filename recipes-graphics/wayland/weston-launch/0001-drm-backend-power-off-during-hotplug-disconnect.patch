@@ -1,0 +1,47 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From 0fc100d5bcf16df71a39b8c0d275c9a78d4357ec Mon Sep 17 00:00:00 2001
+From: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
+Date: Thu, 8 Aug 2024 13:13:57 +0530
+Subject: [PATCH] drm-backend: power off during hotplug disconnect.
+
+Signed-off-by: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
+---
+ libweston/backend-drm/drm.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 42787702..14a08d55 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -2052,6 +2052,17 @@ drm_connector_fini(struct drm_connector *connector)
+ 	drm_property_info_free(connector->props, WDRM_CONNECTOR__COUNT);
+ }
+ 
++static void
++drm_head_output_power_off(struct drm_head *head);
++
++static void
++drm_head_output_power_off(struct drm_head *head) {
++       struct weston_output *output_base = weston_head_get_output(&head->base);
++       if (output_base) {
++               drm_set_dpms(output_base, WESTON_DPMS_OFF);
++       }
++}
++
+ static void
+ drm_head_log_info(struct drm_head *head, const char *msg)
+ {
+@@ -2062,6 +2073,7 @@ drm_head_log_info(struct drm_head *head, const char *msg)
+ 			   head->base.make, head->base.model,
+ 			   head->base.serial_number ?: "");
+ 	} else {
++		drm_head_output_power_off(head);
+ 		weston_log("DRM: head '%s' %s, connector %d is disconnected.\n",
+ 			   head->base.name, msg, head->connector.connector_id);
+ 	}
+-- 
+2.17.1
+

@@ -1,6 +1,7 @@
 SUMMARY = "Package group to bring in BT releated packages for LE system"
 
 LICENSE = "BSD-3-Clause"
+LICENSE = "Qualcomm-Technologies-Inc.-Proprietary"
 
 PACKAGE_ARCH = "${TUNE_PKGARCH}"
 inherit packagegroup
@@ -17,8 +18,8 @@ RDEPENDS:${PN} = "\
     fluoride \
     btvendorhal \
     libchrome \
-    audioroute \
-    pa-bt-audio \
+    qcom-audioroute \
+    qcom-pa-bt-audio \
     bt-app \
     bt-cert \
     bt-dlkm-kernel \
@@ -27,8 +28,7 @@ RDEPENDS:${PN} = "\
     btdevicetree \
     bluetooth-tools "
 
-##### bbappended from meta-qti-bt-prop #####
-LICENSE = "Qualcomm-Technologies-Inc.-Proprietary"
+PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 BTVENDORPROP ?= 'False'
 

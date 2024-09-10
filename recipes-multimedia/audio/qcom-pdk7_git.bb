@@ -9,7 +9,7 @@ DEPENDS += "qcom-sva-common qcom-capiv2-headers qcom-sva-ml-commondwarf qcom-sva
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "2f080e0f9cb48eb7fb2cd6fea52374a05368ddd72fd4cb36bb01a6ef85c69fc0"
+SRC_URI[armv8-2a.sha256sum] = "cbcaeb59b6d35e42303f5be1a6953560e4b4825d9cc93dd8ba8312189678f422"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

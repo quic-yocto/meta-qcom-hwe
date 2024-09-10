@@ -12,14 +12,14 @@ ${BSD-3-Clause_LICENSE};md5=966a1bac2e99d152d17ed2b6d7ad8bab"
 DEPENDS = "glib-2.0 wayland displaydlkm"
 PROVIDES += "virtual/libgbm libgbm"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/display/libgbm.git;protocol=https;rev=dfc689964635fa6e0b570c36dc660b0aeb6de4f0;branch=display.qclinux.1.0.r1-rel;destsuffix=display/vendor/qcom/opensource/display/libgbm"
+SRC_URI     =  "git://git.codelinaro.org/clo/le/display/libgbm.git;protocol=https;rev=e750503d36886b1f5e723df3720089b81577ad7c;branch=display.qclinux.1.0.r1-rel;destsuffix=display/vendor/qcom/opensource/display/libgbm"
 S = "${WORKDIR}/display/vendor/qcom/opensource/display/libgbm"
 
 SRC_URI:append = " file://pkgconfig/gbm.pc"
 
 inherit autotools-brokensep pkgconfig
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 PREBUILT = "1"
 

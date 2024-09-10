@@ -10,6 +10,9 @@ case "$soc_id" in
     497|498|475|515)
         /etc/initscripts/debug_config_qcm6490.sh
         ;;
+    534|606|674|675)
+        /etc/initscripts/debug_config_qcs9100.sh
+        ;;
 
     *)
         # Empty default case

@@ -11,7 +11,7 @@ SRC_URI = ""
 
 DEPENDS += "qmi-framework libcutils libnl glib-2.0 cld80211-lib"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 CFLAGS += "-I ${WORKSPACE}/qmi-framework/inc"
 EXTRA_OECONF = "--enable-debug"

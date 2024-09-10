@@ -125,8 +125,22 @@ case "$1" in
         done
 
         echo "WESTON INITIALIZATION STARTUP"
-        weston --tty=2 --idle-time=0 --log=/tmp/weston.log --config=/etc/xdg/weston/weston.ini \
-        --continue-without-input &
+
+        if [ -f /sys/devices/soc0/soc_id ]; then
+            soc_id=`cat /sys/devices/soc0/soc_id`
+            if [ "$soc_id" == 497 ] || [ "$soc_id" == 498 ]; then
+                        weston --tty=2 --idle-time=0 --log=/tmp/weston.log --config=/etc/xdg/weston/weston.ini \
+                        --continue-without-input &
+            fi
+        fi
+
+        if [ -f /sys/devices/soc0/soc_id ]; then
+            soc_id=`cat /sys/devices/soc0/soc_id`
+            if [ "$soc_id" == 534 ] || [ "$soc_id" == 667 ]; then
+                        weston --tty=2 --idle-time=0 --log=/tmp/weston.log --backend=drm-backend.so \
+                        --continue-without-input &
+            fi
+        fi
 
         # Wait wayland socket node create.
         filename=$(find $XDG_RUNTIME_DIR -maxdepth 1 -name 'wayland-*' -print -quit)

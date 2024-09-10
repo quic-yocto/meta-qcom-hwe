@@ -1,0 +1,2795 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From feb048c869a35c41b2a219c5f55a5dc373891e2a Mon Sep 17 00:00:00 2001
+From: Devanshi Bansal <quic_devanshi@quicinc.com>
+Date: Mon, 29 Jul 2024 10:27:57 +0530
+Subject: [PATCH] weston: enable gbm buffer backend protocol
+
+Change-Id: Iee69cbecb5b2cd5a91a8e4670529e796bfcc79a1
+Signed-off-by: Devanshi Bansal <quic_devanshi@quicinc.com>
+---
+ clients/meson.build                          |  15 +
+ clients/simple-gbmbuf.c                      | 764 +++++++++++++++++++
+ include/libweston/libweston.h                |  10 +
+ libweston/backend-drm/drm.c                  |  28 +-
+ libweston/backend-drm/fb.c                   |  38 +-
+ libweston/compositor.c                       |  31 +
+ libweston/drm-formats.c                      |  38 +-
+ libweston/gbm-buffer-backend.c               | 511 +++++++++++++
+ libweston/gbm-buffer-backend.h               | 173 +++++
+ libweston/libweston-internal.h               |   8 +
+ libweston/meson.build                        |  20 +-
+ libweston/pixman-renderer.c                  |  92 ++-
+ libweston/pixman-renderer.h                  |   1 +
+ libweston/renderer-gl/gl-renderer-internal.h |   9 +
+ libweston/renderer-gl/gl-renderer.c          | 334 +++++++-
+ libweston/renderer-gl/meson.build            |   6 +
+ meson.build                                  |   2 +
+ protocol/gbm-buffer-backend.xml              | 168 ++++
+ protocol/meson.build                         |   2 +
+ 19 files changed, 2223 insertions(+), 27 deletions(-)
+ create mode 100644 clients/simple-gbmbuf.c
+ create mode 100644 libweston/gbm-buffer-backend.c
+ create mode 100644 libweston/gbm-buffer-backend.h
+ create mode 100644 protocol/gbm-buffer-backend.xml
+
+diff --git a/clients/meson.build b/clients/meson.build
+index 5f1bc7b7..3c3212dd 100644
+--- a/clients/meson.build
++++ b/clients/meson.build
+@@ -40,6 +40,21 @@ simple_clients_enabled = get_option('simple-clients')
+ simple_build_all = simple_clients_enabled.contains('all')
+ 
+ simple_clients = [
++	{
++		'name': 'gbmbuf',
++		'sources': [
++			'simple-gbmbuf.c',
++			viewporter_client_protocol_h,
++			viewporter_protocol_c,
++			xdg_shell_client_protocol_h,
++			xdg_shell_protocol_c,
++			fullscreen_shell_unstable_v1_client_protocol_h,
++			fullscreen_shell_unstable_v1_protocol_c,
++			gbm_buffer_backend_client_protocol_h,
++			gbm_buffer_backend_protocol_c,
++		],
++		'dep_objs': [ dep_wayland_client, dep_libshared, dep_gbm ]
++	},
+ 	{
+ 		'name': 'damage',
+ 		'sources': [
+diff --git a/clients/simple-gbmbuf.c b/clients/simple-gbmbuf.c
+new file mode 100644
+index 00000000..93f42757
+--- /dev/null
++++ b/clients/simple-gbmbuf.c
+@@ -0,0 +1,764 @@
++/*
++ * Copyright © 2021 The Linux Foundation. All rights reserved.
++ * Copyright © 2011 Benjamin Franzke
++ * Copyright © 2010 Intel Corporation
++ * Copyright © 2014 Collabora Ltd.
++ *
++ * Permission to use, copy, modify, distribute, and sell this software and its
++ * documentation for any purpose is hereby granted without fee, provided that
++ * the above copyright notice appear in all copies and that both that copyright
++ * notice and this permission notice appear in supporting documentation, and
++ * that the name of the copyright holders not be used in advertising or
++ * publicity pertaining to distribution of the software without specific,
++ * written prior permission.  The copyright holders make no representations
++ * about the suitability of this software for any purpose.  It is provided "as
++ * is" without express or implied warranty.
++ *
++ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
++ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
++ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
++ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
++ * OF THIS SOFTWARE.
++ */
++
++/*
++* Changes from Qualcomm Innovation Center are provided under the following license:
++*
++* Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
++*
++* Redistribution and use in source and binary forms, with or without
++* modification, are permitted (subject to the limitations in the
++* disclaimer below) provided that the following conditions are met:
++*
++*    * Redistributions of source code must retain the above copyright
++*      notice, this list of conditions and the following disclaimer.
++*
++*    * Redistributions in binary form must reproduce the above
++*      copyright notice, this list of conditions and the following
++*      disclaimer in the documentation and/or other materials provided
++*      with the distribution.
++*
++*    * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
++*      contributors may be used to endorse or promote products derived
++*      from this software without specific prior written permission.
++*
++* NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
++* GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
++* HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
++* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
++* IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
++* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++* GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++* IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++* OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*/
++
++#include <config.h>
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <stdbool.h>
++#include <assert.h>
++#include <unistd.h>
++#include <sys/mman.h>
++#include <sys/types.h>
++#include <fcntl.h>
++#include <signal.h>
++#include <errno.h>
++
++#include <wayland-client.h>
++#include "xdg-shell-client-protocol.h"
++#include "fullscreen-shell-unstable-v1-client-protocol.h"
++#include "gbm-buffer-backend-client-protocol.h"
++#include "gbm.h"
++#include "gbm_priv.h"
++
++struct display;
++struct window;
++struct buffer;
++
++#define DRV_DRM 1
++#define NUM_GBM_BUFFERS 3
++
++#define COLOR_Y 	(~0x80)
++#define COLOR_CBCR	(~0x7E7E)
++
++struct display {
++	struct wl_display *display;
++	struct window *window;
++	struct wl_registry *registry;
++	struct wl_compositor *compositor;
++	struct xdg_wm_base *wm_base;
++	struct zwp_fullscreen_shell_v1 *fshell;
++	struct gbm_buffer_backend *gbmbuf;
++	int xrgb8888_format_found;
++};
++
++struct buffer {
++	struct wl_buffer *buffer;
++	int busy;
++
++	int drm_fd;
++	int fb_fd;
++
++	struct gbm_device *gbm;
++	struct gbm_bo *bo;
++
++	uint32_t gem_handle;
++	int gbmbuf_fd;
++	int gbmbuf_metafd;
++	uint8_t *mmap;
++
++	int read_done;
++	int width;
++	int height;
++	unsigned int format;
++	unsigned int flags;
++	int bpp;
++	unsigned int stride;
++};
++
++struct window {
++	struct display *display;
++	int width, height;
++	struct wl_surface *surface;
++	struct zxdg_surface_v6 *xdg_surface;
++	struct zxdg_toplevel_v6 *xdg_toplevel;
++	struct buffer buffers[NUM_GBM_BUFFERS];
++	struct buffer *prev_buffer;
++	struct wl_callback *callback;
++	bool wait_for_configure;
++};
++
++static int running = 1;
++
++#ifdef DRV_FB
++#define DRV_NODE "/dev/fb0"
++#elif defined(DRV_DRM)
++#define DRV_NODE "/dev/dri/card0"
++#endif
++
++static void
++memset16(void *p_dst, uint16_t value, int count)
++{
++	uint16_t *ptr = p_dst;
++	while(count--)
++		*ptr++ = value;
++}
++
++static void
++redraw(void *data, struct wl_callback *callback, uint32_t time);
++
++static int
++map_bo(struct buffer *my_buf)
++{
++	int ret = 0;
++	ret = gbm_perform(GBM_PERFORM_CPU_MAP_FOR_BO, my_buf->bo, &my_buf->mmap);
++	if (ret != GBM_ERROR_NONE) {
++		printf("gbm bo map failed with ret = %d\n", ret);
++		return 0;
++	}
++	return 1;
++}
++
++static void
++fill_nv12_content(struct buffer *buf, uint8_t y, uint16_t cbcr)
++{
++	int y_pixels_size = buf->stride * buf->height;
++	memset(buf->mmap, y, y_pixels_size);
++	memset16(buf->mmap + y_pixels_size, cbcr, y_pixels_size/4);
++}
++
++static void
++fill_rgba_content(struct buffer *my_buf, uint8_t a, uint8_t r, uint8_t g, uint8_t b)
++{
++	int x = 0, y = 0;
++	uint32_t *pix;
++
++	assert(my_buf->mmap);
++
++	for (y = 0; y < my_buf->height; y++) {
++		pix = (uint32_t *)(my_buf->mmap + y * my_buf->stride);
++		for (x = 0; x < my_buf->width; x++) {
++			*pix++ = (a << 24) | ((r) << 16) | ((g) << 8) | b;
++		}
++	}
++}
++
++static void
++unmap_bo(struct buffer *my_buf)
++{
++	int ret;
++	ret = gbm_perform(GBM_PERFORM_CPU_UNMAP_FOR_BO, my_buf->bo);
++	if (ret != GBM_ERROR_NONE)
++		printf("bo unmap failed: ret = %d\n", ret);
++}
++
++static int
++fb_connect(struct buffer *my_buf)
++{
++	char fb_dev[64] = DRV_NODE;
++	my_buf->fb_fd = open(fb_dev, O_RDWR | O_CLOEXEC, S_IRWXU);
++	if (my_buf->fb_fd < 0) {
++		printf("opening %s failed\n", fb_dev);
++		return 0;
++	}
++
++	my_buf->gbm = gbm_create_device(my_buf->fb_fd);
++	if (!my_buf->gbm) {
++		printf("opening gbm device with fd = %d failed\n", my_buf->fb_fd);
++		return 0;
++	}
++
++	return 1;
++}
++
++static int
++drm_connect(struct buffer *my_buf)
++{
++	/* This won't work with card0 as we need to be authenticated; instead,
++	 * boot with drm.rnodes=1 and use that. */
++	my_buf->drm_fd = open(DRV_NODE, O_RDWR | O_CLOEXEC, S_IRWXU);
++	if (my_buf->drm_fd < 0)
++		return 0;
++
++	my_buf->gbm = gbm_create_device(my_buf->drm_fd);
++	if (!my_buf->gbm)
++		return 0;
++
++	return 1;
++}
++
++static void
++fb_shutdown(struct buffer *my_buf)
++{
++	gbm_device_destroy(my_buf->gbm);
++	close(my_buf->fb_fd);
++}
++
++static void
++drm_shutdown(struct buffer *my_buf)
++{
++	printf("%s\b", __func__);
++	gbm_device_destroy(my_buf->gbm);
++	close(my_buf->drm_fd);
++}
++
++static int
++driver_connect(struct buffer *my_buf)
++{
++#ifdef DRV_FB
++		return fb_connect(my_buf);
++#elif defined(DRV_DRM)
++		return drm_connect(my_buf);
++#endif
++		return -EINVAL;
++}
++
++static void
++driver_shutdown(struct buffer *buf)
++{
++#ifdef DRV_FB
++		fb_shutdown(buf);
++#elif defined(DRV_DRM)
++		drm_shutdown(buf);
++#endif
++}
++
++static int
++alloc_bo(struct buffer *my_buf)
++{
++	/* XXX: try different tiling modes for testing FB modifiers. */
++	int ret;
++
++	assert(my_buf->gbm);
++
++	my_buf->bo = gbm_bo_create(my_buf->gbm, my_buf->width, my_buf->height, my_buf->format, my_buf->flags);
++
++	if (!my_buf->bo)
++		return 0;
++
++	my_buf->stride = gbm_bo_get_stride(my_buf->bo);
++	my_buf->bpp = gbm_bo_get_bpp(my_buf->bo);
++
++	return 1;
++}
++
++static void
++free_bo(struct buffer *my_buf)
++{
++	gbm_bo_destroy(my_buf->bo);
++}
++
++static void
++buffer_release(void *data, struct wl_buffer *buffer)
++{
++	struct buffer *my_buf = data;
++	my_buf->busy = 0;
++}
++
++static const struct wl_buffer_listener buffer_listener = {
++	buffer_release
++};
++
++static void
++gbmbuf_create_succeeded(void *data,
++		 struct gbm_buffer_params *params,
++		 struct wl_buffer *new_buffer)
++{
++	struct buffer *my_buf = data;
++
++	my_buf->buffer = new_buffer;
++
++	wl_buffer_add_listener(my_buf->buffer, &buffer_listener, my_buf);
++
++	gbm_buffer_params_destroy(params);
++}
++
++static void
++gbmbuf_create_failed(void *data, struct gbm_buffer_params *params)
++{
++	struct buffer *my_buf = data;
++
++	my_buf->buffer = NULL;
++
++	gbm_buffer_params_destroy(params);
++
++	printf("gbm_buffer_params.create failed\n");
++}
++
++static const struct gbm_buffer_params_listener gbmbuf_params_listener = {
++	gbmbuf_create_succeeded,
++	gbmbuf_create_failed
++};
++
++static int
++create_gbmbuf_buffer(struct display *display, struct buffer *buffer,
++		     int width, int height, uint32_t format, uint32_t flags)
++{
++	struct gbm_buffer_params *params;
++	uint64_t modifier;
++	struct window *window;
++
++	window = display->window;
++
++	if (driver_connect(buffer) == 0) {
++		fprintf(stderr, "driver %s connect failed \n",DRV_NODE);
++		goto error;
++	}
++
++	buffer->width = width;
++	buffer->height = height;
++	buffer->format = format;
++	buffer->flags = flags;
++
++	if (!alloc_bo(buffer)) {
++		fprintf(stderr, "alloc_bo failed\n");
++		goto error1;
++	}
++
++	buffer->bpp = gbm_bo_get_bpp(buffer->bo);
++	buffer->gbmbuf_fd = gbm_bo_get_fd(buffer->bo);
++	if (buffer->gbmbuf_fd < 0) {
++		fprintf(stderr, "error: gbmbuf_fd < 0\n");
++		goto error2;
++	}
++
++	if (GBM_ERROR_NONE != gbm_perform(GBM_PERFORM_GET_METADATA_ION_FD, buffer->bo, &buffer->gbmbuf_metafd)) {
++		fprintf(stderr, "error: gbmbuf_metafd < 0\n");
++		goto error2;
++	}
++
++	if (!map_bo(buffer)) {
++		fprintf(stderr, "map_bo failed\n");
++		goto error2;
++	}
++
++	if (format == GBM_FORMAT_NV12)
++		fill_nv12_content(buffer, COLOR_Y, COLOR_CBCR);
++	else if (format == GBM_FORMAT_ABGR8888)
++		fill_rgba_content(buffer, 255, 255, 0, 0); //blue color
++
++	unmap_bo(buffer);
++
++	/* We now have a gbmbuf! It should contain no tiles i.e. linear of misc colours,
++	  and be mappable, either as ARGB8888, or XRGB8888. */
++	modifier = 0;
++
++	params = gbm_buffer_backend_create_params(display->gbmbuf);
++
++	if (!params) {
++		goto error2;
++	}
++
++	gbm_buffer_params_create(params,
++				    buffer->gbmbuf_fd,
++				    buffer->gbmbuf_metafd,
++				    buffer->width,
++				    buffer->height,
++				    buffer->format,
++				    buffer->flags);
++
++	gbm_buffer_params_add_listener(params, &gbmbuf_params_listener, buffer);
++
++	wl_display_roundtrip(display->display);
++
++	if (!buffer->buffer)
++		goto error2;
++
++	/* params is destroyed by the event handlers */
++
++	return 0;
++
++error2:
++	free_bo(buffer);
++error1:
++	driver_shutdown(buffer);
++error:
++	return -1;
++}
++
++static void
++xdg_surface_handle_configure(void *data, struct xdg_surface *surface,
++			     uint32_t serial)
++{
++	struct window *window = data;
++
++	xdg_surface_ack_configure(surface, serial);
++
++	if (window->wait_for_configure) {
++		redraw(window, NULL, 0);
++		window->wait_for_configure = false;
++	}
++}
++
++static const struct xdg_surface_listener xdg_surface_listener = {
++	xdg_surface_handle_configure,
++};
++
++static void
++xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *toplevel,
++			      int32_t width, int32_t height,
++			      struct wl_array *states)
++{
++	printf("handle configure\n");
++}
++
++static void
++xdg_toplevel_handle_close(void *data, struct xdg_toplevel *xdg_toplevel)
++{
++	running = 0;
++}
++
++static const struct xdg_toplevel_listener xdg_toplevel_listener = {
++	xdg_toplevel_handle_configure,
++	xdg_toplevel_handle_close,
++};
++
++static struct window *
++create_window(struct display *display, int width, int height)
++{
++	struct window *window;
++
++	window = calloc(1, sizeof *window);
++	if (!window)
++		return NULL;
++
++	window->callback = NULL;
++	window->display = display;
++	window->width = width;
++	window->height = height;
++	window->surface = wl_compositor_create_surface(display->compositor);
++
++	if (display->wm_base) {
++		window->xdg_surface =
++			 xdg_wm_base_get_xdg_surface(display->wm_base,
++						    window->surface);
++
++		assert(window->xdg_surface);
++
++		xdg_surface_add_listener(window->xdg_surface,
++					 &xdg_surface_listener, window);
++
++		window->xdg_toplevel =
++			xdg_surface_get_toplevel(window->xdg_surface);
++
++		assert(window->xdg_toplevel);
++
++		xdg_toplevel_add_listener(window->xdg_toplevel,
++					  &xdg_toplevel_listener, window);
++
++		xdg_toplevel_set_title(window->xdg_toplevel, "simple-gbmbuf");
++
++		window->wait_for_configure = true;
++		wl_surface_commit(window->surface);
++	} else if (display->fshell) {
++		zwp_fullscreen_shell_v1_present_surface(display->fshell,
++							window->surface,
++							ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_DEFAULT,
++							NULL);
++	} else {
++		assert(0);
++	}
++
++	/* Initialise damage to full surface, so the padding gets painted */
++	wl_surface_damage(window->surface, 0, 0, INT32_MAX, INT32_MAX);
++
++	return window;
++}
++
++static void
++destroy_window(struct window *window)
++{
++	int i;
++
++	if (window->callback)
++		wl_callback_destroy(window->callback);
++
++	for (i = 0; i < NUM_GBM_BUFFERS; i++) {
++		if (!window->buffers[i].buffer)
++			continue;
++
++		wl_buffer_destroy(window->buffers[i].buffer);
++		free_bo(&window->buffers[i]);
++		close(window->buffers[i].gbmbuf_fd);
++		driver_shutdown(&window->buffers[i]);
++	}
++
++	if (window->xdg_toplevel)
++		xdg_toplevel_destroy(window->xdg_toplevel);
++	if (window->xdg_surface)
++		xdg_surface_destroy(window->xdg_surface);
++	wl_surface_destroy(window->surface);
++	free(window);
++}
++
++static struct buffer *
++window_next_buffer(struct window *window, uint32_t format, uint32_t flags)
++{
++	struct buffer *buffer = NULL;
++	struct wl_display *display = window->display;
++	int ret = 0;
++	int i = 0;
++
++	for (i=0; i < NUM_GBM_BUFFERS; i++) {
++		if (window->buffers[i].busy == 0) {
++			buffer = &window->buffers[i];
++			break;
++		}
++	}
++
++	if (buffer == NULL) {
++		return NULL;
++	}
++
++	if (!buffer->buffer) {
++		ret = create_gbmbuf_buffer(window->display, buffer,
++					   window->width, window->height, format, flags);
++
++		if (ret < 0)
++			return NULL;
++	}
++
++	return buffer;
++}
++
++static const struct wl_callback_listener frame_listener;
++
++static void
++redraw(void *data, struct wl_callback *callback, uint32_t time)
++{
++	struct window *window = data;
++	struct buffer *buffer;
++
++	buffer = window_next_buffer(window, GBM_FORMAT_ABGR8888, GBM_BO_USE_RENDERING);
++	if (!buffer) {
++			fprintf(stderr,
++				!callback ? "Failed to create the first buffer.\n" :
++				"All buffers busy at redraw(). Server bug?\n");
++			abort();
++	}
++
++	wl_surface_attach(window->surface, buffer->buffer, 0, 0);
++	wl_surface_damage(window->surface, 0, 0, window->width, window->height);
++
++	if (callback)
++		wl_callback_destroy(callback);
++
++	window->callback = wl_surface_frame(window->surface);
++	wl_callback_add_listener(window->callback, &frame_listener, window);
++	wl_surface_commit(window->surface);
++
++	buffer->busy = 1;
++}
++
++static const struct wl_callback_listener frame_listener = {
++	redraw
++};
++
++static void
++xdg_wm_base_ping(void *data, struct xdg_wm_base *shell, uint32_t serial)
++{
++	xdg_wm_base_pong(shell, serial);
++}
++
++static const struct xdg_wm_base_listener wm_base_listener = {
++	xdg_wm_base_ping,
++};
++
++static void
++registry_handle_global(void *data, struct wl_registry *registry,
++		       uint32_t id, const char *interface, uint32_t version)
++{
++	struct display *d = data;
++
++	if (strcmp(interface, "wl_compositor") == 0) {
++		d->compositor =
++			wl_registry_bind(registry,
++					 id, &wl_compositor_interface, version);
++	} else if (strcmp(interface, "xdg_wm_base") == 0) {
++		d->wm_base = wl_registry_bind(registry,
++					      id, &xdg_wm_base_interface, 1);
++		if (!d->wm_base) {
++			fprintf(stderr, "d->wm_base is NULL\n");
++			return;
++		}
++		xdg_wm_base_add_listener(d->wm_base, &wm_base_listener, d);
++	} else if (strcmp(interface, "zwp_fullscreen_shell_v1") == 0) {
++		d->fshell = wl_registry_bind(registry,
++					     id, &zwp_fullscreen_shell_v1_interface, 1);
++	} else if (strcmp(interface, "gbm_buffer_backend") == 0) {
++		d->gbmbuf = wl_registry_bind(registry,
++					      id, &gbm_buffer_backend_interface, 1);
++	}
++}
++
++static void
++registry_handle_global_remove(void *data, struct wl_registry *registry,
++			      uint32_t name)
++{
++}
++
++static const struct wl_registry_listener registry_listener = {
++	registry_handle_global,
++	registry_handle_global_remove
++};
++
++static struct display *
++create_display(void)
++{
++	struct display *display;
++	int done;
++
++	display = malloc(sizeof *display);
++	if (display == NULL) {
++		fprintf(stderr, "out of memory\n");
++		exit(1);
++	}
++	display->display = wl_display_connect(NULL);
++	assert(display->display);
++
++	/* XXX: fake, because the compositor does not yet advertise anything */
++	display->xrgb8888_format_found = 1;
++
++	display->registry = wl_display_get_registry(display->display);
++
++	wl_registry_add_listener(display->registry,
++				 &registry_listener, display);
++
++	done = 0;
++	while (!done) {
++		if (wl_display_roundtrip(display->display) != -1)
++			done = 1;
++	}
++
++	if (!display->wm_base)
++		printf("can't get xdg_shell\n");
++
++	if (display->gbmbuf == NULL) {
++		fprintf(stderr, "No gbmbuf global\n");
++		exit(1);
++	}
++
++	wl_display_roundtrip(display->display);
++
++	return display;
++}
++
++static void
++destroy_display(struct display *display)
++{
++	if (display->gbmbuf)
++		gbm_buffer_backend_destroy(display->gbmbuf);
++
++	if (display->wm_base)
++		xdg_wm_base_destroy(display->wm_base);
++
++	if (display->fshell)
++		zwp_fullscreen_shell_v1_release(display->fshell);
++
++	if (display->compositor)
++		wl_compositor_destroy(display->compositor);
++
++	wl_registry_destroy(display->registry);
++	wl_display_flush(display->display);
++	wl_display_disconnect(display->display);
++	free(display);
++}
++
++static void
++signal_int(int signum)
++{
++	running = 0;
++}
++
++int
++main(int argc, char **argv)
++{
++	struct sigaction sigint;
++	struct display *display;
++	struct window *window;
++	int width = 256, height = 256;
++
++	int ret = 0;
++	display = create_display();
++	if (!display) {
++		fprintf(stderr, "can't connect weston display\n");
++		return 1;
++	}
++
++	window = create_window(display, width, height);
++	if (!window)
++		return 1;
++
++	display->window = window;
++
++	sigint.sa_handler = signal_int;
++	sigemptyset(&sigint.sa_mask);
++	sigint.sa_flags = SA_RESETHAND;
++	sigaction(SIGINT, &sigint, NULL);
++
++	/* Initialise damage to full surface, so the padding gets painted */
++	wl_surface_damage(window->surface, 0, 0, window->width, window->height);
++
++	if (!window->wait_for_configure)
++		redraw(window, NULL, 0);
++
++	ret = 0;
++	while (running && ret != -1) {
++		ret = wl_display_dispatch(display->display);
++	}
++
++	fprintf(stderr, "simple-gbmbuf exiting\n");
++	destroy_window(window);
++	destroy_display(display);
++
++	return 0;
++}
+diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+index 8bf7d96c..31bfda8f 100644
+--- a/include/libweston/libweston.h
++++ b/include/libweston/libweston.h
+@@ -23,6 +23,11 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ *
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #ifndef _WAYLAND_SYSTEM_COMPOSITOR_H_
+@@ -81,6 +86,7 @@ struct weston_pointer_constraint;
+ struct ro_anonymous_file;
+ struct weston_color_profile;
+ struct weston_color_transform;
++struct gbm_buffer;
+ 
+ enum weston_keyboard_modifier {
+ 	MODIFIER_CTRL = (1 << 0),
+@@ -962,6 +968,10 @@ struct weston_renderer {
+ 				    int src_x, int src_y,
+ 				    int width, int height);
+ 
++	/** See weston_compositor_import_gbm_buffer() */
++	bool (*import_gbm_buffer)(struct weston_compositor *ec,
++			        struct gbm_buffer *buffer);
++
+ 	/** See weston_compositor_import_dmabuf() */
+ 	bool (*import_dmabuf)(struct weston_compositor *ec,
+ 			      struct linux_dmabuf_buffer *buffer);
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 42787702..be440b84 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -25,6 +25,11 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ *
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #include "config.h"
+@@ -66,6 +71,8 @@
+ #include "linux-dmabuf-unstable-v1-server-protocol.h"
+ #include "linux-explicit-synchronization.h"
+ 
++#include "gbm-buffer-backend.h"
++
+ static const char default_seat[] = "seat0";
+ 
+ static void
+@@ -2988,6 +2995,7 @@ drm_backend_create(struct weston_compositor *compositor,
+ 	struct weston_drm_format_array *scanout_formats;
+ 	drmModeRes *res;
+ 	int ret;
++	int default_fmt;
+ 
+ 	session_seat = getenv("XDG_SEAT");
+ 	if (session_seat)
+@@ -3016,8 +3024,19 @@ drm_backend_create(struct weston_compositor *compositor,
+ 
+ 	compositor->backend = &b->base;
+ 
+-	if (parse_gbm_format(config->gbm_format, DRM_FORMAT_XRGB8888, &b->gbm_format) < 0)
++	if (config->use_pixman) {
++		weston_log("[%s] pixman with XRGB8888 (0x%x)\n",
++			__FUNCTION__, DRM_FORMAT_XRGB8888);
++		default_fmt = DRM_FORMAT_XRGB8888;
++	} else {
++		weston_log("[%s] egl with ABGR8888 (0x%x)\n",
++			__FUNCTION__, DRM_FORMAT_ABGR8888);
++		default_fmt = DRM_FORMAT_ABGR8888;
++	}
++
++	if (parse_gbm_format(config->gbm_format, default_fmt, &b->gbm_format) < 0) {
+ 		goto err_compositor;
++	}
+ 
+ 	/* Check if we run drm-backend using weston-launch */
+ 	compositor->launcher = weston_launcher_connect(compositor, config->tty,
+@@ -3172,6 +3191,13 @@ drm_backend_create(struct weston_compositor *compositor,
+ 				   "support failed.\n");
+ 	}
+ 
++	if (compositor->renderer->import_gbm_buffer) {
++
++		if (gbm_buffer_backend_setup(compositor) < 0)
++			weston_log("Error: initializing gbm_buffer_backend_setup"
++				"support failed.\n");
++	}
++
+ 	if (compositor->capabilities & WESTON_CAP_EXPLICIT_SYNC) {
+ 		if (linux_explicit_synchronization_setup(compositor) < 0)
+ 			weston_log("Error: initializing explicit "
+diff --git a/libweston/backend-drm/fb.c b/libweston/backend-drm/fb.c
+index ba0c177e..08144536 100644
+--- a/libweston/backend-drm/fb.c
++++ b/libweston/backend-drm/fb.c
+@@ -25,6 +25,11 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ *
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #include "config.h"
+@@ -43,6 +48,9 @@
+ #include "drm-internal.h"
+ #include "linux-dmabuf.h"
+ 
++#include "gbm_priv.h"
++#include "gbm-buffer-backend.h"
++
+ static void
+ drm_fb_destroy(struct drm_fb *fb)
+ {
+@@ -160,7 +168,7 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
+ 	fb->fd = b->drm.fd;
+ 
+ 	if (drm_fb_addfb(b, fb) != 0) {
+-		weston_log("failed to create kms fb: %s\n", strerror(errno));
++		weston_log("failed to create kms fb with pixman: %s\n", strerror(errno));
+ 		goto err_bo;
+ 	}
+ 
+@@ -399,7 +407,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
+ 
+ 	if (drm_fb_addfb(backend, fb) != 0) {
+ 		if (type == BUFFER_GBM_SURFACE)
+-			weston_log("failed to create kms fb: %s\n",
++			weston_log("failed to create kms fb with gbm: %s\n",
+ 				   strerror(errno));
+ 		goto err_free;
+ 	}
+@@ -529,6 +537,8 @@ drm_fb_get_from_view(struct drm_output_state *state, struct weston_view *ev,
+ 	struct linux_dmabuf_buffer *dmabuf;
+ 	struct drm_fb *fb;
+ 	struct drm_plane *plane;
++	struct gbm_bo *bo;
++	struct gbm_buffer *gbmbuf;
+ 
+ 	if (ev->alpha != 1.0f)
+ 		return NULL;
+@@ -568,10 +578,28 @@ drm_fb_get_from_view(struct drm_output_state *state, struct weston_view *ev,
+ 		if (!fb)
+ 			goto unsuitable;
+ 	} else {
+-		struct gbm_bo *bo;
++		gbmbuf = gbm_buffer_get(buffer->resource);
++		if (gbmbuf) {
++			//gstreamer will use this for buffer sharing
++			struct gbm_buf_info gbmbuf_info = {
++				.fd = gbmbuf->fd,
++				.metadata_fd = gbmbuf->metadata_fd,
++				.width = gbmbuf->width,
++				.height = gbmbuf->height,
++				.format = gbmbuf->format
++			};
++			struct weston_surface *es = ev->surface;
++
++			bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_GBM_BUF_TYPE,
++					&gbmbuf_info, GBM_BO_USE_SCANOUT);
++		}
++
++		if (!gbmbuf && !dmabuf) {
++			//simple-egl will use WL_BUFFER
++			bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
++					buffer->resource, GBM_BO_USE_SCANOUT);
++		}
+ 
+-		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
+-				   buffer->resource, GBM_BO_USE_SCANOUT);
+ 		if (!bo)
+ 			goto unsuitable;
+ 
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index f6914fb9..f705a2f4 100644
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -24,6 +24,11 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ *
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #include "config.h"
+@@ -58,6 +63,7 @@
+ #include <libweston/libweston.h>
+ #include <libweston/weston-log.h>
+ #include "linux-dmabuf.h"
++#include "gbm-buffer-backend.h"
+ #include "viewporter-server-protocol.h"
+ #include "presentation-time-server-protocol.h"
+ #include "xdg-output-unstable-v1-server-protocol.h"
+@@ -8029,6 +8035,31 @@ weston_compositor_dmabuf_can_scanout(struct weston_compositor *compositor,
+ 	return backend->can_scanout_dmabuf(compositor, buffer);
+ }
+ 
++/** Import gbmbuf buffer into current renderer
++ *
++ * \param compositor
++ * \param buffer the gbmbuf buffer to import
++ * \return true on usable buffers, false otherwise
++ *
++ * This function tests that the gbm_buffer is usable
++ * for the current renderer. Returns false on unusable buffers. Usually
++ * usability is tested by importing the gbmbuf for composition.
++ *
++ * This hook is also used for detecting if the renderer supports
++ * gbmbuf at all. If the renderer hook is NULL, dmabufs are not
++ * supported.
++ * */
++WL_EXPORT bool
++weston_compositor_import_gbm_buffer(struct weston_compositor *compositor,
++				struct gbm_buffer *buffer)
++{
++	struct weston_renderer *renderer;
++	renderer = compositor->renderer;
++	if (renderer->import_gbm_buffer == NULL)
++		return false;
++	return renderer->import_gbm_buffer(compositor, buffer);
++}
++
+ WL_EXPORT void
+ weston_version(int *major, int *minor, int *micro)
+ {
+diff --git a/libweston/drm-formats.c b/libweston/drm-formats.c
+index 6bc08b5d..d96c842d 100644
+--- a/libweston/drm-formats.c
++++ b/libweston/drm-formats.c
+@@ -21,6 +21,11 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ *
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #include "config.h"
+@@ -128,17 +133,19 @@ weston_drm_format_array_add_format(struct weston_drm_format_array *formats,
+ 	struct weston_drm_format *fmt;
+ 
+ 	/* We should not try to add repeated formats to an array. */
+-	assert(!weston_drm_format_array_find_format(formats, format));
++	if(!weston_drm_format_array_find_format(formats, format)) {
++		fmt = wl_array_add(&formats->arr, sizeof(*fmt));
++		if (!fmt) {
++			weston_log("%s: out of memory\n", __func__);
++			return NULL;
++		}
+ 
+-	fmt = wl_array_add(&formats->arr, sizeof(*fmt));
+-	if (!fmt) {
+-		weston_log("%s: out of memory\n", __func__);
+-		return NULL;
++		fmt->format = format;
++		wl_array_init(&fmt->modifiers);
++	} else {
++		fmt = weston_drm_format_array_find_format(formats, format);
+ 	}
+ 
+-	fmt->format = format;
+-	wl_array_init(&fmt->modifiers);
+-
+ 	return fmt;
+ }
+ 
+@@ -446,16 +453,17 @@ weston_drm_format_add_modifier(struct weston_drm_format *format,
+ 			       uint64_t modifier)
+ {
+ 	uint64_t *mod;
++	unsigned int num_modifiers;
+ 
+ 	/* We should not try to add repeated modifiers to a set. */
+-	assert(!weston_drm_format_has_modifier(format, modifier));
+-
+-	mod = wl_array_add(&format->modifiers, sizeof(*mod));
+-	if (!mod) {
+-		weston_log("%s: out of memory\n", __func__);
+-		return -1;
++	if (!weston_drm_format_has_modifier(format, modifier)) {
++		mod = wl_array_add(&format->modifiers, sizeof(*mod));
++		if (!mod) {
++			weston_log("%s: out of memory\n", __func__);
++			return -1;
++		}
++		*mod = modifier;
+ 	}
+-	*mod = modifier;
+ 
+ 	return 0;
+ }
+diff --git a/libweston/gbm-buffer-backend.c b/libweston/gbm-buffer-backend.c
+new file mode 100644
+index 00000000..d216d932
+--- /dev/null
++++ b/libweston/gbm-buffer-backend.c
+@@ -0,0 +1,511 @@
++/*
++*    Copyright (c) 2017, The Linux Foundation. All rights reserved.
++*
++*    Redistribution and use in source and binary forms, with or without
++*    modification, are permitted provided that the following conditions are
++*    met:
++*    * Redistributions of source code must retain the above copyright
++*    notice, this list of conditions and the following disclaimer.
++*    * Redistributions in binary form must reproduce the above
++*    copyright notice, this list of conditions and the following
++*    disclaimer in the documentation and/or other materials provided
++*    with the distribution.
++*    * Neither the name of The Linux Foundation nor the names of its
++*    contributors may be used to endorse or promote products derived
++*    from this software without specific prior written permission.
++
++*    THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++*    WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++*    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++*    ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++*    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++*    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++*    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++*    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++*    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++*    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++*    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*
++*
++*    Copyright © 2014, 2015 Collabora, Ltd.
++*
++*    Permission to use, copy, modify, distribute, and sell this
++*    software and its documentation for any purpose is hereby granted
++*    without fee, provided that the above copyright notice appear in
++*    all copies and that both that copyright notice and this permission
++*    notice appear in supporting documentation, and that the name of
++*    the copyright holders not be used in advertising or publicity
++*    pertaining to distribution of the software without specific,
++*    written prior permission.  The copyright holders make no
++*    representations about the suitability of this software for any
++*    purpose.  It is provided "as is" without express or implied
++*    warranty.
++*
++*    THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
++*    SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
++*    FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
++*    SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++*    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
++*    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
++*    ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
++*    THIS SOFTWARE.
++*
++*    Changes from Qualcomm Innovation Center are provided under the following license:
++*    Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++*    SPDX-License-Identifier: BSD-3-Clause-Clear
++*
++*/
++
++#include <assert.h>
++#include <unistd.h>
++#include <sys/types.h>
++
++#include <libweston/libweston.h>
++
++#include "gbm-buffer-backend.h"
++#include "gbm-buffer-backend-server-protocol.h"
++#include "libweston-internal.h"
++
++static void
++gbm_buffer_destroy_params(struct wl_resource *params_resource);
++
++static void
++gbm_buffer_backend_create_params(struct wl_client *client,
++               struct wl_resource *gbmbuf_resource,
++               uint32_t params_id);
++
++static void
++gbm_buffer_backend_create_buffer(struct wl_client *client,
++        struct wl_resource *params_resource,
++        int32_t fd,
++        int32_t metadata_fd,
++        uint32_t width,
++        uint32_t height,
++        uint32_t format,
++        uint32_t flags);
++
++static void
++gbm_buffer_backend_destroy(struct wl_client *client,
++    struct wl_resource *resource);
++
++static const struct gbm_buffer_params_interface gbm_buffer_params_implementation = {
++    gbm_buffer_backend_destroy,
++    gbm_buffer_backend_create_buffer
++};
++
++static void
++gbm_buffer_destroy(struct gbm_buffer *buffer)
++{
++  // Destroy gbm bo if it is still valid
++  if (buffer->bo) {
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_destroy close buffer fd[%d] metadata_fd[%d]\n",
++                                                        buffer->fd, buffer->metadata_fd);
++    /*
++     * 1. data fd is from client through RPC which is new fd for weston process
++     * So these fd should be closed in weston server
++     * 2. If fd is external fd for gbm(not created by gbm) gbm would not close it
++     * So we need to close it here, not only do bo_destroy.
++     */
++    if (buffer->fd > 0)
++      close(buffer->fd);
++
++    gbm_bo_destroy(buffer->bo);
++    buffer->bo = NULL;
++  }
++
++  free(buffer);
++  buffer = NULL;
++}
++
++
++static void
++gbm_wl_buffer_destroy(struct wl_client *client,
++    struct wl_resource *resource)
++{
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_wl_buffer_destroy::Invoked\n");
++
++    wl_resource_destroy(resource);
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_wl_buffer_destroy::Exited\n");
++}
++
++static void
++destroy_params(struct wl_resource *params_resource)
++{
++    struct gbm_buffer *buffer;
++
++    buffer = wl_resource_get_user_data(params_resource);
++
++    if (!buffer)
++        return;
++
++    gbm_buffer_destroy(buffer);
++}
++
++static const struct wl_buffer_interface gbm_buffer_implementation = {
++    gbm_wl_buffer_destroy
++};
++
++static void
++gbm_buffer_destroy_params(struct wl_resource *params_resource)
++{
++    struct gbm_buffer *buffer;
++
++    buffer = wl_resource_get_user_data(params_resource);
++
++    if (!buffer)
++        return;
++
++    gbm_buffer_destroy(buffer);
++}
++
++static void
++gbm_buffer_backend_create_params(struct wl_client *client,
++               struct wl_resource *gbmbuf_resource,
++               uint32_t params_id)
++{
++    struct weston_compositor *compositor;
++    struct gbm_buffer *buffer;
++    uint32_t version;
++    int i;
++
++    version = wl_resource_get_version(gbmbuf_resource);
++    compositor = wl_resource_get_user_data(gbmbuf_resource);
++
++    buffer = zalloc(sizeof *buffer);
++    if (!buffer)
++        goto err_out;
++
++    buffer->fd = -1;
++    buffer->metadata_fd = -1;
++    buffer->compositor = compositor;
++    buffer->params_resource =
++        wl_resource_create(client,
++                   &gbm_buffer_params_interface,
++                   version, params_id);
++    if (!buffer->params_resource)
++        goto err_dealloc;
++
++    wl_resource_set_implementation(buffer->params_resource,
++                       &gbm_buffer_params_implementation,
++                       buffer, gbm_buffer_destroy_params);
++
++    return;
++
++err_dealloc:
++    free(buffer);
++
++err_out:
++    wl_resource_post_no_memory(gbmbuf_resource);
++}
++
++WL_EXPORT struct gbm_buffer *
++gbm_buffer_get(struct wl_resource *resource)
++{
++    struct gbm_buffer *buffer;
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_get::Invoked\n");
++
++    if (!resource)
++        return NULL;
++
++    if (!wl_resource_instance_of(resource, &wl_buffer_interface,
++                     &gbm_buffer_implementation))
++        return NULL;
++
++    buffer = wl_resource_get_user_data(resource);
++    assert(buffer);
++    assert(buffer->buffer_resource == resource);
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_get::Exited\n");
++
++    return buffer;
++}
++
++WL_EXPORT int
++gbm_buf_info_get(struct wl_resource *resource, struct gbm_buf_info *gbo_info)
++{
++    struct gbm_buffer *buffer = gbm_buffer_get(resource);
++
++    if ((NULL != buffer) && (NULL != gbo_info))
++    {
++        gbo_info->fd = buffer->fd;
++        gbo_info->metadata_fd = buffer->metadata_fd;
++        gbo_info->width = buffer->width;
++        gbo_info->height = buffer->height;
++        gbo_info->format = buffer->format;
++    }
++    else
++        return -1;
++
++    return 0;
++}
++
++static void
++destroy_gbm_buffer(struct wl_resource *resource)
++{
++    struct gbm_buffer *buffer;
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"destroy_gbm_buffer::Invoked\n");
++
++    buffer = wl_resource_get_user_data(resource);
++    if (buffer == NULL) {
++        weston_log("[%s] null buffer detected when destroy \n", __FUNCTION__);
++        return;
++    }
++
++    if (buffer->buffer_resource != resource) {
++        weston_log("[%s] resource not detected when destroy \n", __FUNCTION__);
++        return;
++    }
++
++    if (buffer->params_resource) {
++        weston_log("[%s] params resource not released when destroy \n", __FUNCTION__);
++        return;
++    }
++
++    if (buffer->user_data_destroy_func)
++        buffer->user_data_destroy_func(buffer);
++
++    gbm_buffer_destroy(buffer);
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"destroy_gbm_buffer::Exited\n");
++}
++
++static void
++gbm_buffer_backend_create_buffer(struct wl_client *client,
++        struct wl_resource *params_resource,
++        int32_t fd,
++        int32_t metadata_fd,
++        uint32_t width,
++        uint32_t height,
++        uint32_t format,
++        uint32_t flags)
++{
++    struct gbm_buffer *buffer;
++    uint32_t version;
++    int i;
++    bool ret = true;
++
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_backend_create_buffer::Invoked\n");
++
++    buffer = wl_resource_get_user_data(params_resource);
++
++    if (!buffer) {
++        weston_log("gbm_buffer_backend_create_buffer::buffer already used\n");
++        close(fd);
++        close(metadata_fd);
++        return;
++    }
++
++    assert(buffer->params_resource == params_resource);
++    assert(!buffer->buffer_resource);
++
++    wl_resource_set_user_data(buffer->params_resource, NULL);
++    buffer->params_resource = NULL;
++
++    buffer->fd = fd;
++    buffer->metadata_fd = metadata_fd;
++    buffer->width  = width;
++    buffer->height = height;
++    buffer->format = format;
++    buffer->flags  = flags;
++
++    buffer->buffer_resource = wl_resource_create(client,
++                    &wl_buffer_interface,
++                    1, 0);
++    if (!buffer->buffer_resource){
++        wl_resource_post_no_memory(params_resource);
++        goto err_buffer;
++    }
++
++    wl_resource_set_implementation(buffer->buffer_resource,
++                &gbm_buffer_implementation,
++                buffer, destroy_gbm_buffer);
++
++    ret = weston_compositor_import_gbm_buffer(buffer->compositor, buffer);
++
++    // gbm bo is imported to buffer from above function to use in below perform call
++    unsigned int secure_status = 0;
++    gbm_perform(GBM_PERFORM_GET_SECURE_BUFFER_STATUS, buffer->bo, &secure_status);
++    // Override return value if format is part of skip list.
++    if ((format == GBM_FORMAT_P010) ||
++        ((format == GBM_FORMAT_NV12 ||
++          format == GBM_FORMAT_YCbCr_420_TP10_UBWC) && secure_status)) {
++      ret = true;
++    }
++
++    if (ret == false) {
++        weston_log("gbm_buffer_backend_create_buffer:: import_gbm_buffer failed.\n");
++        weston_log("Fail with fd(%d) meta_fd(%d) wxh(%dx%d) fmt(0x%x) flag(0x%x) secure(%d)\n",
++            fd, metadata_fd, width, height, format, flags, secure_status);
++        goto err_failed;
++    }
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_backend_create_buffer::Exited- gracefully\n");
++
++    gbm_buffer_params_send_created(params_resource,
++                      buffer->buffer_resource);
++
++    return;
++
++err_buffer:
++    if (buffer->user_data_destroy_func)
++        buffer->user_data_destroy_func(buffer);
++
++err_failed:
++    gbm_buffer_params_send_failed(params_resource);
++    gbm_buffer_destroy(buffer);
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_backend_create_buffer::Exited with Error\n");
++}
++
++
++static void
++gbm_buffer_backend_destroy(struct wl_client *client,
++    struct wl_resource *resource)
++{
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_backend_destroy::Invoked\n");
++
++
++    wl_resource_destroy(resource);
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_backend_destroy::Invoked\n");
++}
++
++static const struct gbm_buffer_backend_interface gbm_buffer_backend_implementation = {
++    gbm_buffer_backend_destroy,
++    gbm_buffer_backend_create_params
++};
++
++static void
++bind_gbm_buffer_backend(struct wl_client *client,
++          void *data, uint32_t version, uint32_t id)
++{
++    struct weston_compositor *compositor = data;
++    struct wl_resource *resource;
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"bind_gbm_buffer_backend::Invoked\n");
++
++    resource = wl_resource_create(client, &gbm_buffer_backend_interface,
++                    version, id);
++    if (resource == NULL) {
++        wl_client_post_no_memory(client);
++        return;
++    }
++
++    wl_resource_set_implementation(resource,
++            &gbm_buffer_backend_implementation,
++            compositor, NULL);
++
++    GBM_PROTOCOL_LOG(LOG_DBG,"bind_gbm_buffer_backend::Exited\n");
++}
++
++/** Advertise gbm_buffer_backend support
++ *
++ * Calling this initializes the gbm_buffer_backend protocol support, so that
++ * the interface will be advertised to clients. Essentially it creates a
++ * global. Do not call this function multiple times in the compositor's
++ * lifetime. There is no way to deinit explicitly, globals will be reaped
++ * when the wl_display gets destroyed.
++ *
++ * \param compositor The compositor to init for.
++ * \return Zero on success, -1 on failure.
++ */
++WL_EXPORT int
++gbm_buffer_backend_setup(struct weston_compositor *compositor)
++{
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_backend_setup::Invoked\n");
++
++    if (!wl_global_create(compositor->wl_display,
++                &gbm_buffer_backend_interface, 1,
++                compositor, bind_gbm_buffer_backend))
++        return -1;
++    GBM_PROTOCOL_LOG(LOG_DBG,"gbm_buffer_backend_setup::Exited\n");
++
++    return 0;
++}
++
++/** Set renderer-private data
++ *
++ * Set the user data for the linux_dmabuf_buffer. It is invalid to overwrite
++ * a non-NULL user data with a new non-NULL pointer. This is meant to
++ * protect against renderers fighting over gbm_buffer user data
++ * ownership.
++ *
++ * The renderer-private data is usually set from the
++ * weston_renderer::import_gbm_buffer hook.
++ *
++ * \param buffer The gbm_buffer object to set for.
++ * \param data The new renderer-private data pointer.
++ * \param func Destructor function to be called for the renderer-private
++ *             data when the gbm_buffer gets destroyed.
++ *
++ * \sa weston_compositor_import_gbm_buffer
++ */
++WL_EXPORT void
++gbm_buffer_backend_set_user_data(struct gbm_buffer *buffer,
++                  void *data,
++                  gbm_buffer_user_data_destroy_func func)
++{
++    assert(data == NULL || buffer->user_data == NULL);
++
++    buffer->user_data = data;
++    buffer->user_data_destroy_func = func;
++}
++
++/** Get renderer-private data
++ *
++ * Get the user data from the gbm_buffer.
++ *
++ * \param buffer The gbm_buffer to query.
++ * \return Renderer-private data pointer.
++ *
++ * \sa gbm_buffer_backend_get_user_data
++ */
++WL_EXPORT void *
++gbm_buffer_backend_get_user_data(struct gbm_buffer *buffer)
++{
++    return buffer->user_data;
++}
++
++/** Resolve an internal compositor error by disconnecting the client.
++ *
++ * This function is used in cases when the gbmbuf-based wl_buffer
++ * turns out unusable and there is no fallback path. This is used by
++ * renderers which are the fallback path in the first place.
++ *
++ * It is possible the fault is caused by a compositor bug, the underlying
++ * graphics stack bug or normal behaviour, or perhaps a client mistake.
++ * In any case, the options are to either composite garbage or nothing,
++ * or disconnect the client. This is a helper function for the latter.
++ *
++ * The error is sent as a INVALID_OBJECT error on the client's wl_display.
++ *
++ * \param buffer The gbm_buffer that is unusable.
++ * \param msg A custom error message attached to the protocol error.
++ */
++WL_EXPORT void
++gbm_buffer_send_server_error(struct gbm_buffer *buffer,
++                      const char *msg)
++{
++    struct wl_client *client;
++    struct wl_resource *display_resource;
++    uint32_t id;
++
++    assert(buffer->buffer_resource);
++    id = wl_resource_get_id(buffer->buffer_resource);
++    client = wl_resource_get_client(buffer->buffer_resource);
++    display_resource = wl_client_get_object(client, 1);
++
++    assert(display_resource);
++    wl_resource_post_error(display_resource,
++                   WL_DISPLAY_ERROR_INVALID_OBJECT,
++                   "gbmbuf server error with "
++                   "wl_buffer@%u: %s", id, msg);
++}
++
++
++
+diff --git a/libweston/gbm-buffer-backend.h b/libweston/gbm-buffer-backend.h
+new file mode 100644
+index 00000000..a6f64bc2
+--- /dev/null
++++ b/libweston/gbm-buffer-backend.h
+@@ -0,0 +1,173 @@
++/*
++*    Copyright (c) 2017, The Linux Foundation. All rights reserved.
++*
++*    Redistribution and use in source and binary forms, with or without
++*    modification, are permitted provided that the following conditions are
++*    met:
++*    * Redistributions of source code must retain the above copyright
++*    notice, this list of conditions and the following disclaimer.
++*    * Redistributions in binary form must reproduce the above
++*    copyright notice, this list of conditions and the following
++*    disclaimer in the documentation and/or other materials provided
++*    with the distribution.
++*    * Neither the name of The Linux Foundation nor the names of its
++*    contributors may be used to endorse or promote products derived
++*    from this software without specific prior written permission.
++
++*    THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++*    WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++*    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++*    ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++*    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++*    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++*    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++*    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++*    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++*    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++*    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*
++*
++*    Copyright � 2014, 2015 Collabora, Ltd.
++*
++*    Permission to use, copy, modify, distribute, and sell this
++*    software and its documentation for any purpose is hereby granted
++*    without fee, provided that the above copyright notice appear in
++*    all copies and that both that copyright notice and this permission
++*    notice appear in supporting documentation, and that the name of
++*    the copyright holders not be used in advertising or publicity
++*    pertaining to distribution of the software without specific,
++*    written prior permission.  The copyright holders make no
++*    representations about the suitability of this software for any
++*    purpose.  It is provided "as is" without express or implied
++*    warranty.
++*
++*    THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
++*    SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
++*    FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
++*    SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++*    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
++*    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
++*    ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
++*    THIS SOFTWARE.
++*
++*    Changes from Qualcomm Innovation Center are provided under the following license:
++*    Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++*    SPDX-License-Identifier: BSD-3-Clause-Clear
++*
++*/
++
++#ifndef WESTON_GBM_BUFFER_BACKEND_H
++#define WESTON_GBM_BUFFER_BACKEND_H
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include <stdio.h>
++#include <stdlib.h>
++#include "gbm_priv.h"
++#include <stdio.h>
++
++#define GBM_BUFFER_BACKEND_PROTOCOL
++
++#define MAX_NUM_PLANES GBM_MAX_PLANES
++
++#define LOG_FATAL    (0)
++#define LOG_ERR      (1)
++#define LOG_WARN     (2)
++#define LOG_INFO     (3)
++#define LOG_DBG      (4)
++#define MAX_DBG_LEVEL  LOG_INFO
++
++extern int g_prtcl_debug_level;
++
++
++#define GBM_PROTOCOL_LOG(level, ...) do {  \
++                            if (level <= MAX_DBG_LEVEL) { \
++                                if(level==LOG_FATAL) \
++                                  fprintf(stderr,"%s","GBM_FATAL::"); \
++                                if(level==LOG_ERR) \
++                                  fprintf(stderr,"%s", "GBM_ERR::"); \
++                                if(level==LOG_WARN) \
++                                  fprintf(stderr,"%s", "GBM_WARN::"); \
++                                if(level==LOG_INFO) \
++                                  fprintf(stderr,"%s", "GBM_INFO::"); \
++                                if(level==LOG_DBG) \
++                                  fprintf(stderr,"%s", "GBM_DBG::"); \
++                                fprintf(stderr,"%s(%d)::",__func__,__LINE__); \
++                                fprintf(stderr, __VA_ARGS__); \
++                                fprintf(stderr, "\n"); \
++                                fflush(stderr); \
++                            } \
++                        } while (0)
++
++
++struct gbm_buffer;
++typedef void (*gbm_buffer_user_data_destroy_func)(
++                             struct gbm_buffer *buffer);
++struct gbm_buffer {
++    struct wl_resource *buffer_resource;
++    struct wl_resource *params_resource;
++    struct weston_compositor *compositor;
++    int32_t fd;
++    int32_t metadata_fd;
++    uint32_t width;
++    uint32_t height;
++    uint32_t format;
++    uint32_t flags;
++    uint32_t offset[MAX_NUM_PLANES];
++    uint32_t stride[MAX_NUM_PLANES];
++    int32_t  num_planes;
++    void *user_data;
++    struct gbm_bo *bo;
++    gbm_buffer_user_data_destroy_func user_data_destroy_func;
++};
++
++/** Advertise gbm_buffer_backend support
++ *
++ * Calling this initializes the gbm_buffer_backend protocol support, so that
++ * the interface will be advertised to clients. Essentially it creates a
++ * global. Do not call this function multiple times in the compositor's
++ * lifetime. There is no way to deinit explicitly, globals will be reaped
++ * when the wl_display gets destroyed.
++ *
++ * \param compositor The compositor to init for.
++ * \return Zero on success, -1 on failure.
++ */
++int gbm_buffer_backend_setup(struct weston_compositor *compositor);
++
++/** Get the gbm_buffer from a wl_buffer resource
++ *
++ * If the given wl_buffer resource was created through the gdb_buffer_backend
++ * protocol interface, returns the gbm_buffer object. This can be used as a
++ * type check for a wl_buffer.
++ *
++ * \param resource A wl_buffer resource.
++ * \return The gbm_buffer if it exists, or NULL otherwise.
++ */
++struct gbm_buffer *gbm_buffer_get(struct wl_resource *resource);
++
++/** Populate the gbm_buf_info from a wl_buffer resource
++ *
++ * If the given wl_buffer resource was created through the gdb_buffer_backend
++ * protocol interface, populates the gbm_buffer_info.
++ * This wraps the gbm_buffer_get and protects the gbm_buffer object against
++ * unwanted exposure. Also it can be used as a type check for a wl_buffer.
++ *
++ * \param resource A wl_buffer resource.
++ * \param gbo_info The gbm_buf_info to populate.
++ * \return Zero on success, -1 on failure.
++ */
++int gbm_buf_info_get(struct wl_resource *resource, struct gbm_buf_info *gbo_info);
++
++void *gbm_buffer_backend_get_user_data(struct gbm_buffer *buffer);
++
++void gbm_buffer_backend_set_user_data(struct gbm_buffer *buffer,
++                  void *data,
++                  gbm_buffer_user_data_destroy_func func);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* WESTON_GBM_BUFFER_BACKEND_H */
++
+diff --git a/libweston/libweston-internal.h b/libweston/libweston-internal.h
+index 7c30706f..ca5588da 100644
+--- a/libweston/libweston-internal.h
++++ b/libweston/libweston-internal.h
+@@ -23,6 +23,11 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ *
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #ifndef LIBWESTON_INTERNAL_H
+@@ -84,6 +89,9 @@ weston_compositor_import_dmabuf(struct weston_compositor *compositor,
+ bool
+ weston_compositor_dmabuf_can_scanout(struct weston_compositor *compositor,
+ 					struct linux_dmabuf_buffer *buffer);
++bool
++weston_compositor_import_gbm_buffer(struct weston_compositor *compositor,
++				struct gbm_buffer *buffer);
+ void
+ weston_compositor_offscreen(struct weston_compositor *compositor);
+ 
+diff --git a/libweston/meson.build b/libweston/meson.build
+index 8579743a..ffdab47a 100644
+--- a/libweston/meson.build
++++ b/libweston/meson.build
+@@ -5,6 +5,7 @@ deps_libweston = [
+ 	dep_libdl,
+ 	dep_libdrm,
+ 	dep_xkbcommon,
++	dep_gbm,
+ 	dep_matrix_c
+ ]
+ srcs_libweston = [
+@@ -36,6 +37,7 @@ srcs_libweston = [
+ 	'weston-log.c',
+ 	'weston-direct-display.c',
+ 	'zoom.c',
++	'gbm-buffer-backend.c',
+ 	linux_dmabuf_unstable_v1_protocol_c,
+ 	linux_dmabuf_unstable_v1_server_protocol_h,
+ 	linux_explicit_synchronization_unstable_v1_protocol_c,
+@@ -68,6 +70,8 @@ srcs_libweston = [
+ 	weston_debug_server_protocol_h,
+ 	weston_direct_display_protocol_c,
+ 	weston_direct_display_server_protocol_h,
++	gbm_buffer_backend_protocol_c,
++	gbm_buffer_backend_server_protocol_h,
+ ]
+ 
+ if get_option('renderer-gl')
+@@ -148,7 +152,10 @@ srcs_session_helper = [
+ 	'launcher-util.c',
+ 	'launcher-weston-launch.c',
+ ]
+-deps_session_helper = [ dep_libweston_private_h ]
++deps_session_helper = [
++	dep_libweston_private_h,
++	dep_libweston_private,
++]
+ 
+ deps_session_helper = [
+ dep_libweston_private_h,
+@@ -256,6 +263,17 @@ if get_option('deprecated-weston-launch')
+ 	meson.add_install_script('echo', 'REMINDER: You are installing weston-launch, please make it setuid-root.')
+ endif
+ 
++install_headers(
++	'backend.h',
++	'libinput-seat.h',
++	'libweston-internal.h',
++	'linux-dmabuf.h',
++	'color.h',
++	'launcher-util.h',
++	'pixman-renderer.h',
++	subdir: dir_include_libweston_private_install
++)
++
+ subdir('color-lcms')
+ subdir('renderer-gl')
+ subdir('backend-drm')
+diff --git a/libweston/pixman-renderer.c b/libweston/pixman-renderer.c
+index 754adce2..02875ac4 100644
+--- a/libweston/pixman-renderer.c
++++ b/libweston/pixman-renderer.c
+@@ -38,6 +38,7 @@
+ #include "shared/helpers.h"
+ 
+ #include <linux/input.h>
++#include "gbm-buffer-backend.h"
+ 
+ struct pixman_output_state {
+ 	void *shadow_buffer;
+@@ -66,6 +67,7 @@ struct pixman_renderer {
+ 	struct weston_binding *debug_binding;
+ 
+ 	struct wl_signal destroy_signal;
++	struct gbm_device* gbm_device;
+ };
+ 
+ static inline struct pixman_output_state *
+@@ -619,6 +621,15 @@ buffer_state_handle_buffer_destroy(struct wl_listener *listener, void *data)
+ 	ps->buffer_destroy_listener.notify = NULL;
+ }
+ 
++static void
++pixman_renderer_attach_gbm_buffer(struct weston_surface *surface,
++                                   struct weston_buffer *buffer,
++                                   struct gbm_buffer *gbmbuf)
++{
++	buffer->width = gbmbuf->width;
++	buffer->height = gbmbuf->height;
++}
++
+ static void
+ pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
+ {
+@@ -646,10 +657,16 @@ pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
+ 	shm_buffer = wl_shm_buffer_get(buffer->resource);
+ 
+ 	if (! shm_buffer) {
+-		weston_log("Pixman renderer supports only SHM buffers\n");
+-		weston_buffer_reference(&ps->buffer_ref, NULL);
+-		weston_buffer_release_reference(&ps->buffer_release_ref, NULL);
+-		return;
++		struct gbm_buffer *gbmbuf;
++		if (gbmbuf = gbm_buffer_get(buffer->resource)) {
++			pixman_renderer_attach_gbm_buffer(es, buffer, gbmbuf);
++			return;
++		} else {
++			weston_log("Pixman renderer supports only SHM and gbm buffers\n");
++			weston_buffer_reference(&ps->buffer_ref, NULL);
++			weston_buffer_release_reference(&ps->buffer_release_ref, NULL);
++			return;
++		}
+ 	}
+ 
+ 	pixel_info = pixel_format_get_info_shm(wl_shm_buffer_get_format(shm_buffer));
+@@ -850,6 +867,66 @@ debug_binding(struct weston_keyboard *keyboard, const struct timespec *time,
+ 	}
+ }
+ 
++
++static bool
++pixman_renderer_import_gbm_buffer(
++		struct weston_compositor *compositor, struct gbm_buffer *gbm_buf)
++{
++	struct gbm_buf_info  buf_info;
++	generic_buf_layout_t buf_lyt;
++	struct gbm_bo *bo;
++	uint32_t j;
++	struct pixman_renderer *pr = get_renderer(compositor);
++	struct gbm_device *gbm = pr->gbm_device;
++
++	if (gbm == NULL) {
++		weston_log("pixman_renderer_import_gbm_buffer::gbm_device is null!\n");
++		return false;
++	}
++
++	if (gbm_buf == NULL) {
++		return false;
++	}
++
++	buf_info.fd          = gbm_buf->fd;
++	buf_info.metadata_fd = gbm_buf->metadata_fd;
++	buf_info.height      = gbm_buf->height;
++	buf_info.width       = gbm_buf->width;
++	buf_info.format      = gbm_buf->format;
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"pixman_renderer_import_gbm_buffer:Invoked");
++
++	//We will import BO to create an entry into the hash map for this buf_info
++	bo = gbm_bo_import(gbm, GBM_BO_IMPORT_GBM_BUF_TYPE, &buf_info, GBM_BO_USE_RENDERING);
++
++	//save gbm buffer object
++	gbm_buf->bo = bo;
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"pixman_renderer_import_gbm_buffer:bo created= %p",bo);
++
++	int ret = gbm_perform(GBM_PERFORM_GET_PLANE_INFO, bo, &buf_lyt);
++	if (ret == GBM_ERROR_NONE) {
++		gbm_buf->num_planes = buf_lyt.num_planes;
++		for(j = 0;j < buf_lyt.num_planes; j++) {
++			gbm_buf->offset[j] = buf_lyt.planes[j].offset;
++			gbm_buf->stride[j] = buf_lyt.planes[j].v_increment;
++		}
++	}
++	else {
++		GBM_PROTOCOL_LOG(LOG_DBG,"GET PLANE Info failed\n");
++		return false;
++	}
++
++	//Fill up the remaining fields with default values
++	for (;j < MAX_NUM_PLANES; j++) {
++		gbm_buf->offset[j] = 0;
++		gbm_buf->stride[j] = 0;
++	}
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"pixman_renderer_import_gbm_buffer:Exited");
++	return true;
++}
++
+ WL_EXPORT int
+ pixman_renderer_init(struct weston_compositor *ec)
+ {
+@@ -873,6 +950,8 @@ pixman_renderer_init(struct weston_compositor *ec)
+ 		pixman_renderer_surface_get_content_size;
+ 	renderer->base.surface_copy_content =
+ 		pixman_renderer_surface_copy_content;
++	renderer->base.import_gbm_buffer =
++		pixman_renderer_import_gbm_buffer;
+ 	ec->renderer = &renderer->base;
+ 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
+ 	ec->capabilities |= WESTON_CAP_VIEW_CLIP_MASK;
+@@ -938,6 +1017,11 @@ pixman_renderer_output_create(struct weston_output *output,
+ 	if (po == NULL)
+ 		return -1;
+ 
++	if (options->gbm_handle) {
++		struct pixman_renderer *pr = get_renderer(output->compositor);
++		pr->gbm_device = options->gbm_handle;
++	}
++
+ 	if (options->use_shadow) {
+ 		/* set shadow image transformation */
+ 		w = output->current_mode->width;
+diff --git a/libweston/pixman-renderer.h b/libweston/pixman-renderer.h
+index 2b81dde5..4ad4ae75 100644
+--- a/libweston/pixman-renderer.h
++++ b/libweston/pixman-renderer.h
+@@ -35,6 +35,7 @@ pixman_renderer_init(struct weston_compositor *ec);
+ struct pixman_renderer_output_options {
+ 	/** Composite into a shadow buffer, copying to the hardware buffer */
+ 	bool use_shadow;
++	struct gbm_device *gbm_handle;
+ };
+ 
+ int
+diff --git a/libweston/renderer-gl/gl-renderer-internal.h b/libweston/renderer-gl/gl-renderer-internal.h
+index 72101b47..777dc01a 100644
+--- a/libweston/renderer-gl/gl-renderer-internal.h
++++ b/libweston/renderer-gl/gl-renderer-internal.h
+@@ -23,6 +23,11 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ *
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #ifndef GL_RENDERER_INTERNAL_H
+@@ -112,6 +117,8 @@ struct gl_renderer {
+ 	EGLContext egl_context;
+ 	EGLConfig egl_config;
+ 
++	struct gbm_device *gbm_hdle;
++
+ 	EGLSurface dummy_surface;
+ 
+ 	uint32_t gl_version;
+@@ -154,6 +161,8 @@ struct gl_renderer {
+ 	struct wl_list dmabuf_images;
+ 	struct wl_list dmabuf_formats;
+ 
++	struct wl_list gbmbuf_images;
++
+ 	bool has_texture_type_2_10_10_10_rev;
+ 	bool has_gl_texture_rg;
+ 
+diff --git a/libweston/renderer-gl/gl-renderer.c b/libweston/renderer-gl/gl-renderer.c
+index a5f5eae4..0d225dbc 100644
+--- a/libweston/renderer-gl/gl-renderer.c
++++ b/libweston/renderer-gl/gl-renderer.c
+@@ -23,6 +23,11 @@
+  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
++ *
++ * Changes from Qualcomm Innovation Center are provided under the following license:
++ *
++ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
+  */
+ 
+ #include "config.h"
+@@ -61,6 +66,9 @@
+ #include "shared/weston-drm-fourcc.h"
+ #include "shared/weston-egl-ext.h"
+ 
++#include "gbm_priv.h"
++#include "gbm-buffer-backend.h"
++
+ #define BUFFER_DAMAGE_COUNT 2
+ 
+ enum gl_border_status {
+@@ -119,6 +127,10 @@ struct egl_image {
+ 	struct gl_renderer *renderer;
+ 	EGLImageKHR image;
+ 	int refcount;
++
++	/* Only used for gbmbuf imported buffer */
++	struct gbm_buffer *gbmbuf;
++	struct wl_list link;
+ };
+ 
+ enum import_type {
+@@ -371,6 +383,7 @@ egl_image_create(struct gl_renderer *gr, EGLenum target,
+ 				      target, buffer, attribs);
+ 
+ 	if (img->image == EGL_NO_IMAGE_KHR) {
++		gl_renderer_print_egl_error_state();
+ 		free(img);
+ 		return NULL;
+ 	}
+@@ -407,7 +420,17 @@ egl_image_unref(struct egl_image *image)
+ 	if (image->refcount > 0)
+ 		return image->refcount;
+ 
++	if (image->gbmbuf)
++		gbm_buffer_backend_set_user_data(image->gbmbuf, NULL, NULL);
++
+ 	gr->destroy_image(gr->egl_display, image->image);
++
++	if (image->link.next == NULL && image->link.prev == NULL) {
++		weston_log("egl image is NULL\n");
++	} else {
++		wl_list_remove(&image->link);
++	}
++
+ 	free(image);
+ 
+ 	return 0;
+@@ -2604,6 +2627,24 @@ choose_texture_target(struct gl_renderer *gr,
+ 	}
+ }
+ 
++static GLenum
++choose_texture_gbm_buf_target(struct gbm_buffer *gbmbuf)
++{
++	if (gbmbuf->num_planes > 1)
++		return GL_TEXTURE_EXTERNAL_OES;
++
++	switch (gbmbuf->format & ~DRM_FORMAT_BIG_ENDIAN) {
++	case DRM_FORMAT_YUYV:
++	case DRM_FORMAT_YVYU:
++	case DRM_FORMAT_UYVY:
++	case DRM_FORMAT_VYUY:
++	case DRM_FORMAT_AYUV:
++		return GL_TEXTURE_EXTERNAL_OES;
++	default:
++		return GL_TEXTURE_2D;
++	}
++}
++
+ static struct dmabuf_image *
+ import_dmabuf(struct gl_renderer *gr,
+ 	      struct linux_dmabuf_buffer *dmabuf)
+@@ -2923,6 +2964,273 @@ out:
+ 	return ret;
+ }
+ 
++static void
++gl_renderer_destroy_gbm_buffer(struct gbm_buffer *gbm_buf)
++{
++       struct egl_image *image = gbm_buf->user_data;
++       egl_image_unref(image);
++}
++
++static struct egl_image *
++import_gbm_buffer(struct gl_renderer *gr,struct gbm_buffer *gbmbuf)
++{
++	struct egl_image *image;
++	int atti = 0;
++	unsigned int secure_status = 0;
++	EGLint attribs[32] = {
++		EGL_WIDTH, 0,
++		EGL_HEIGHT, 0,
++		EGL_LINUX_DRM_FOURCC_EXT, 0,
++		EGL_DMA_BUF_PLANE0_FD_EXT, 0,
++		EGL_DMA_BUF_PLANE0_PITCH_EXT, 0,
++		EGL_DMA_BUF_PLANE0_OFFSET_EXT, 0,
++		EGL_NONE
++	};
++
++	gbm_perform(GBM_PERFORM_GET_SECURE_BUFFER_STATUS, gbmbuf->bo, &secure_status, NULL);
++	//If format is in skip list, return with out creating egl image.
++	if ((gbmbuf->format == GBM_FORMAT_YCbCr_420_TP10_UBWC) ||
++		(gbmbuf->format == GBM_FORMAT_P010) ||
++		((gbmbuf->format == GBM_FORMAT_NV12) && secure_status)) {
++		weston_log("[%s] skip fmt(0x%x)\n", __FUNCTION__, gbmbuf->format);
++		return image;
++	}
++	memset(attribs,0,sizeof(EGLint));
++
++	image = gbm_buffer_backend_get_user_data(gbmbuf);
++	if (image) {
++		return egl_image_ref(image);
++	}
++
++	/* This requires the Mesa commit in
++	* Mesa 10.3 (08264e5dad4df448e7718e782ad9077902089a07) or
++	* Mesa 10.2.7 (55d28925e6109a4afd61f109e845a8a51bd17652).
++	* Otherwise Mesa closes the fd behind our back and re-importing
++	* will fail.
++	* https://bugs.freedesktop.org/show_bug.cgi?id=76188
++	*/
++	attribs[atti++] = EGL_WIDTH;
++	attribs[atti++] = gbmbuf->width;
++	attribs[atti++] = EGL_HEIGHT;
++	attribs[atti++] = gbmbuf->height;
++	attribs[atti++] = EGL_LINUX_DRM_FOURCC_EXT;
++	attribs[atti++] = gbmbuf->format;
++/* XXX: Add modifier here when supported */
++	if (gbmbuf->num_planes > 0) {
++		attribs[atti++] = EGL_DMA_BUF_PLANE0_FD_EXT;
++		attribs[atti++] = gbmbuf->fd;
++		attribs[atti++] = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
++		attribs[atti++] = gbmbuf->offset[0];
++		attribs[atti++] = EGL_DMA_BUF_PLANE0_PITCH_EXT;
++		attribs[atti++] = gbmbuf->stride[0];
++	}
++	if (gbmbuf->num_planes > 1) {
++		attribs[atti++] = EGL_DMA_BUF_PLANE1_FD_EXT;
++		attribs[atti++] = -1;
++		attribs[atti++] = EGL_DMA_BUF_PLANE1_OFFSET_EXT;
++		attribs[atti++] = gbmbuf->offset[1];
++		attribs[atti++] = EGL_DMA_BUF_PLANE1_PITCH_EXT;
++		attribs[atti++] = gbmbuf->stride[1];
++	}
++
++	// Actually we don't really need to send these two planes info to GFX
++	// GFX would process UBWC internally
++	// But if do send, they should be valid value
++	if (gbmbuf->num_planes > 2) {
++		attribs[atti++] = EGL_DMA_BUF_PLANE2_FD_EXT;
++		attribs[atti++] = -1;
++		attribs[atti++] = EGL_DMA_BUF_PLANE2_OFFSET_EXT;
++		attribs[atti++] = gbmbuf->offset[2];
++		attribs[atti++] = EGL_DMA_BUF_PLANE2_PITCH_EXT;
++		attribs[atti++] = gbmbuf->stride[2];
++	}
++	if (gbmbuf->num_planes > 3) {
++		attribs[atti++] = EGL_DMA_BUF_PLANE3_FD_EXT;
++		attribs[atti++] = -1;
++		attribs[atti++] = EGL_DMA_BUF_PLANE3_OFFSET_EXT;
++		attribs[atti++] = gbmbuf->offset[3];
++		attribs[atti++] = EGL_DMA_BUF_PLANE3_PITCH_EXT;
++		attribs[atti++] = gbmbuf->stride[3];
++	}
++	attribs[atti++] = EGL_NONE;
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->width=%d", gbmbuf->width);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->height=%d", gbmbuf->height);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->format=%d", gbmbuf->format);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->num_planes=%d", gbmbuf->num_planes);
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->fd=%d\n", gbmbuf->fd);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->offset[0]=%d", gbmbuf->offset[0]);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->stride[0]=%d", gbmbuf->stride[0]);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->offset[1]=%d", gbmbuf->offset[1]);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->stride[1]=%d", gbmbuf->stride[1]);
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->offset[2]=%d", gbmbuf->offset[2]);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->stride[2]=%d", gbmbuf->stride[2]);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->offset[3]=%d", gbmbuf->offset[3]);
++	GBM_PROTOCOL_LOG(LOG_DBG,"gbmbuf->stride[3]=%d", gbmbuf->stride[3]);
++
++	image = egl_image_create(gr, EGL_LINUX_DMA_BUF_EXT, NULL,
++									attribs);
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"import_gbm_buffer::Image created =%p\n", image);
++
++	if (!image) {
++		weston_log("%s egl img create failed.", __FUNCTION__);
++		weston_log("WxH(%dx%d) fmt(0x%x) num(%d) fd(%d) str_0(%d) str_1(%d) str_2(%d)\n",
++			gbmbuf->width, gbmbuf->height, gbmbuf->format,
++			gbmbuf->num_planes, gbmbuf->fd, gbmbuf->stride[0],
++			gbmbuf->stride[1], gbmbuf->stride[2]);
++		return NULL;
++	}
++
++	/* The cache owns one ref. The caller gets another. */
++	image->gbmbuf = gbmbuf;
++	wl_list_insert(&gr->gbmbuf_images, &image->link);
++	gbm_buffer_backend_set_user_data(gbmbuf, egl_image_ref(image), gl_renderer_destroy_gbm_buffer);
++
++	return image;
++}
++
++static bool
++gl_renderer_import_gbm_buffer(struct weston_compositor *ec,
++                                       struct gbm_buffer *gbm_buf)
++{
++	struct gl_renderer *gr = get_renderer(ec);
++	struct egl_image *image;
++	struct gbm_device * gbm = gr->gbm_hdle;
++	struct gbm_buf_info  buf_info;
++	generic_buf_layout_t buf_lyt;
++	struct gbm_bo *bo;
++	uint32_t j;
++
++	buf_info.fd          = gbm_buf->fd;
++	buf_info.metadata_fd = gbm_buf->metadata_fd;
++	buf_info.height      = gbm_buf->height;
++	buf_info.width       = gbm_buf->width;
++	buf_info.format      = gbm_buf->format;
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"gl_renderer_import_gbm_buffer:Invoked");
++
++	//We will import BO to create an entry into the hash map for this buf_info
++	bo = gbm_bo_import(gbm, GBM_BO_IMPORT_GBM_BUF_TYPE, &buf_info, GBM_BO_USE_RENDERING);
++
++	//save gbm buffer object
++	gbm_buf->bo = bo;
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"gl_renderer_import_gbm_buffer:bo created= %p",bo);
++
++	int ret = gbm_perform(GBM_PERFORM_GET_PLANE_INFO, bo, &buf_lyt);
++	if(ret == GBM_ERROR_NONE){
++		gbm_buf->num_planes = buf_lyt.num_planes;
++		for(j = 0;j < buf_lyt.num_planes; j++) {
++			gbm_buf->offset[j] = buf_lyt.planes[j].offset;
++			gbm_buf->stride[j] = buf_lyt.planes[j].v_increment;
++		}
++	}
++	else
++			GBM_PROTOCOL_LOG(LOG_DBG,"gl_renderer_import_gbm_buffer::GET PLANE Info failed\n");
++
++	//Fill up the remaining fields with default values
++	for(;j < MAX_NUM_PLANES; j++){
++		gbm_buf->offset[j] = 0;
++		gbm_buf->stride[j] = 0;
++	}
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"gl_renderer_import_gbm_buffer:Invoke import_gbm_buffer()");
++	unsigned int secure_status = 0;
++	gbm_perform(GBM_PERFORM_GET_SECURE_BUFFER_STATUS, gbm_buf->bo, &secure_status);
++	if((gbm_buf->format == GBM_FORMAT_YCbCr_420_TP10_UBWC) ||
++			(gbm_buf->format == GBM_FORMAT_P010) ||
++			((gbm_buf->format == GBM_FORMAT_NV12) && secure_status)) {
++			return true;
++	}
++
++	image = import_gbm_buffer(gr, gbm_buf);
++
++	if (!image)
++		return false;
++
++	/* Cache retains a ref. */
++	egl_image_unref(image);
++
++	GBM_PROTOCOL_LOG(LOG_DBG,"gl_renderer_import_gbm_buffer:Exited");
++	return true;
++}
++
++static void
++gl_renderer_attach_gbm_buffer(struct weston_surface *surface,
++                                   struct weston_buffer *buffer,
++                                   struct gbm_buffer *gbmbuf)
++{
++	struct gl_renderer *gr = get_renderer(surface->compositor);
++	struct gl_surface_state *gs = get_surface_state(surface);
++	GLenum target;
++	int i;
++
++	buffer->width = gbmbuf->width;
++	buffer->height = gbmbuf->height;
++	buffer->y_inverted = !(gbmbuf->flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT);
++	unsigned int secure_status = 0;
++	gbm_perform(GBM_PERFORM_GET_SECURE_BUFFER_STATUS, gbmbuf->bo, &secure_status);
++	if ((gbmbuf->format != GBM_FORMAT_YCbCr_420_TP10_UBWC) &&
++		(gbmbuf->format != GBM_FORMAT_P010) &&
++		((gbmbuf->format == GBM_FORMAT_NV12) && !secure_status)) {
++		for (i = 0; i < gs->num_images; i++)
++			egl_image_unref(gs->images[i]);
++	}
++
++	gs->num_images = 0;
++
++	target = choose_texture_gbm_buf_target(gbmbuf);
++	switch (target) {
++	case GL_TEXTURE_2D:
++		gs->shader_variant = SHADER_VARIANT_RGBA;
++		break;
++	default:
++		gs->shader_variant = SHADER_VARIANT_EXTERNAL;
++	}
++	/*
++	* We try to always hold an imported EGLImage from the dmabuf
++	* to prevent the client from preventing re-imports. But, we also
++	* need to re-import every time the contents may change because
++	* GL driver's caching may need flushing.
++	*
++	* Here we release the cache reference which has to be final.
++	*/
++	gs->images[0] = gbm_buffer_backend_get_user_data(gbmbuf);
++
++	if ((gbmbuf->format != GBM_FORMAT_YCbCr_420_TP10_UBWC) &&
++		(gbmbuf->format != GBM_FORMAT_P010) &&
++		((gbmbuf->format == GBM_FORMAT_NV12) && !secure_status)) {
++		if (gs->images[0]) {
++			int ret;
++
++		ret = egl_image_unref(gs->images[0]);
++		assert(ret == 0);
++		}
++
++		gs->images[0] = import_gbm_buffer(gr, gbmbuf);
++		if (!gs->images[0]) {
++			gbm_buffer_send_server_error(gbmbuf,
++						"EGL gbmbuf import failed");
++			return;
++		}
++		gs->num_images = 1;
++
++		ensure_textures(gs, target, 1);
++
++		glActiveTexture(GL_TEXTURE0);
++		glBindTexture(target, gs->textures[0]);
++		gr->image_target_texture_2d(target, gs->images[0]->image);
++
++		gs->pitch = buffer->width;
++		gs->height = buffer->height;
++		gs->buffer_type = BUFFER_TYPE_EGL;
++		gs->y_inverted = buffer->y_inverted;
++	}
++}
++
+ static void
+ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
+ {
+@@ -2931,6 +3239,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
+ 	struct gl_surface_state *gs = get_surface_state(es);
+ 	struct wl_shm_buffer *shm_buffer;
+ 	struct linux_dmabuf_buffer *dmabuf;
++	struct gbm_buffer *gbmbuf;
+ 	EGLint format;
+ 	int i;
+ 
+@@ -2963,7 +3272,9 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
+ 		gl_renderer_attach_egl(es, buffer, format);
+ 	else if ((dmabuf = linux_dmabuf_buffer_get(buffer->resource)))
+ 		gl_renderer_attach_dmabuf(es, buffer, dmabuf);
+-	else {
++	else if ((gbmbuf = gbm_buffer_get(buffer->resource))){
++		gl_renderer_attach_gbm_buffer(es, buffer, gbmbuf);
++	} else {
+ 		weston_log("unhandled buffer type!\n");
+ 		if (gr->has_bind_display) {
+ 		  weston_log("eglQueryWaylandBufferWL failed\n");
+@@ -3327,6 +3638,12 @@ gl_renderer_create_window_surface(struct gl_renderer *gr,
+ 				  const uint32_t *drm_formats,
+ 				  unsigned drm_formats_count)
+ {
++	static bool firstCreateWin = true;
++	if (firstCreateWin) {
++		weston_log("GL - first create window start \n");
++		firstCreateWin = false;
++	}
++
+ 	EGLSurface egl_surface = EGL_NO_SURFACE;
+ 	EGLConfig egl_config;
+ 
+@@ -3651,6 +3968,11 @@ gl_renderer_display_create(struct weston_compositor *ec,
+ 	struct gl_renderer *gr;
+ 	int ret;
+ 
++	static bool firstCreateDisplay = true;
++	if (firstCreateDisplay) {
++		weston_log("GL - setup egl start \n");
++	}
++
+ 	gr = zalloc(sizeof *gr);
+ 	if (gr == NULL)
+ 		return -1;
+@@ -3659,6 +3981,9 @@ gl_renderer_display_create(struct weston_compositor *ec,
+ 	wl_list_init(&gr->shader_list);
+ 	gr->platform = options->egl_platform;
+ 
++	//gbm device handle
++	gr->gbm_hdle =(struct gbm_device *)options->egl_native_display;
++
+ 	gr->shader_scope = gl_shader_scope_create(gr);
+ 	if (!gr->shader_scope)
+ 		goto fail;
+@@ -3705,6 +4030,11 @@ gl_renderer_display_create(struct weston_compositor *ec,
+ 		}
+ 	}
+ 
++	if (firstCreateDisplay) {
++		weston_log("GL - setup egl end \n");
++		firstCreateDisplay = false;
++	}
++
+ 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
+ 	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
+ 	ec->capabilities |= WESTON_CAP_VIEW_CLIP_MASK;
+@@ -3712,8 +4042,10 @@ gl_renderer_display_create(struct weston_compositor *ec,
+ 		ec->capabilities |= WESTON_CAP_EXPLICIT_SYNC;
+ 
+ 	wl_list_init(&gr->dmabuf_images);
++	wl_list_init(&gr->gbmbuf_images);
+ 	if (gr->has_dmabuf_import) {
+ 		gr->base.import_dmabuf = gl_renderer_import_dmabuf;
++		gr->base.import_gbm_buffer = gl_renderer_import_gbm_buffer;
+ 		gr->base.get_supported_formats = gl_renderer_get_supported_formats;
+ 		ret = populate_supported_formats(ec, &gr->supported_formats);
+ 		if (ret < 0)
+diff --git a/libweston/renderer-gl/meson.build b/libweston/renderer-gl/meson.build
+index 4d9f64df..4e9e50f1 100644
+--- a/libweston/renderer-gl/meson.build
++++ b/libweston/renderer-gl/meson.build
+@@ -34,6 +34,7 @@ deps_renderer_gl = [
+ 	dep_pixman,
+ 	dep_libweston_private,
+ 	dep_libdrm_headers,
++	dep_gbm,
+ 	dep_vertex_clipping
+ ]
+ 
+@@ -55,3 +56,8 @@ plugin_gl = shared_library(
+ 	install_dir: dir_module_libweston
+ )
+ env_modmap += 'gl-renderer.so=@0@;'.format(plugin_gl.full_path())
++
++install_headers(
++	'gl-renderer.h',
++	subdir: dir_include_libweston_private_install
++)
+diff --git a/meson.build b/meson.build
+index 0d0c565f..9d55ac3d 100644
+--- a/meson.build
++++ b/meson.build
+@@ -34,6 +34,7 @@ dir_bin = join_paths(dir_prefix, get_option('bindir'))
+ dir_data = join_paths(dir_prefix, get_option('datadir'))
+ dir_include_libweston = 'libweston-@0@'.format(libweston_major)
+ dir_include_libweston_install = join_paths(dir_include_libweston, 'libweston')
++dir_include_libweston_private_install = join_paths(dir_include_libweston, 'libweston-private')
+ dir_lib = join_paths(dir_prefix, get_option('libdir'))
+ dir_libexec = join_paths(dir_prefix, get_option('libexecdir'))
+ dir_module_weston = join_paths(dir_lib, 'weston')
+@@ -42,6 +43,7 @@ dir_data_pc = join_paths(dir_data, 'pkgconfig')
+ dir_lib_pc = join_paths(dir_lib, 'pkgconfig')
+ dir_man = join_paths(dir_prefix, get_option('mandir'))
+ dir_protocol_libweston = join_paths('libweston-@0@'.format(libweston_major), 'protocols')
++dir_weston_shared = 'weston-shared'
+ 
+ public_inc = include_directories('include')
+ common_inc = [ include_directories('.'), public_inc ]
+diff --git a/protocol/gbm-buffer-backend.xml b/protocol/gbm-buffer-backend.xml
+new file mode 100644
+index 00000000..13a2f9a9
+--- /dev/null
++++ b/protocol/gbm-buffer-backend.xml
+@@ -0,0 +1,168 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<protocol name="gbm_buffer_backend">
++
++  <copyright>
++    Copyright (c) 2017, The Linux Foundation. All rights reserved.
++
++    Redistribution and use in source and binary forms, with or without
++    modification, are permitted provided that the following conditions are
++    met:
++    * Redistributions of source code must retain the above copyright
++    notice, this list of conditions and the following disclaimer.
++    * Redistributions in binary form must reproduce the above
++    copyright notice, this list of conditions and the following
++    disclaimer in the documentation and/or other materials provided
++    with the distribution.
++    * Neither the name of The Linux Foundation nor the names of its
++    contributors may be used to endorse or promote products derived
++    from this software without specific prior written permission.
++
++    THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++    WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++    ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++    Copyright (c) 2014, 2015 Collabora, Ltd.
++
++    Permission to use, copy, modify, distribute, and sell this
++    software and its documentation for any purpose is hereby granted
++    without fee, provided that the above copyright notice appear in
++    all copies and that both that copyright notice and this permission
++    notice appear in supporting documentation, and that the name of
++    the copyright holders not be used in advertising or publicity
++    pertaining to distribution of the software without specific,
++    written prior permission.  The copyright holders make no
++    representations about the suitability of this software for any
++    purpose.  It is provided "as is" without express or implied
++    warranty.
++
++    THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
++    SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
++    FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
++    SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
++    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
++    ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
++    THIS SOFTWARE.
++  </copyright>
++
++  <interface name="gbm_buffer_backend" version="1">
++    <description summary="GBM buffer backend support">
++    This factory interface used to create wl_buffer from given GBM buffer.
++    </description>
++
++    <request name="destroy" type="destructor">
++      <description summary="unbind the factory">
++        Destroy the protocol object created at client.
++      </description>
++    </request>
++
++    <request name="create_params">
++      <description summary="create a temporary object for buffer parameters">
++        This temporary object is used to hold gbm_buffer_params as
++        a single batch to create a wl_buffer.It can only be used once and
++        should be destroyed after an 'created' or 'failed' event has been
++        received.
++      </description>
++      <arg name="params_id" type="new_id" interface="gbm_buffer_params"
++           summary="the new temporary"/>
++    </request>
++
++  </interface>
++
++  <interface name="gbm_buffer_params" version="1">
++    <description summary="parameters for creating a gbmbuf-based wl_buffer">
++      This temporary object is a collection of dmabufs and other
++      parameters that together form a single logical buffer. The temporary
++      object may eventually create one wl_buffer unless cancelled by
++      destroying it before requesting 'create'.
++
++      Single-planar formats only require one dmabuf, however
++      multi-planar formats may require more than one dmabuf. For all
++      formats, 'add' request must be called once per plane (even if the
++      underlying dmabuf fd is identical).
++
++      You must use consecutive plane indices ('plane_idx' argument for 'add')
++      from zero to the number of planes used by the drm_fourcc format code.
++      All planes required by the format must be given exactly once, but can
++      be given in any order. Each plane index can be set only once.
++    </description>
++
++    <request name="destroy" type="destructor">
++      <description summary="delete this object, used or not">
++        Cleans up the temporary data sent to the server for dmabuf-based
++        wl_buffer creation.
++      </description>
++    </request>
++
++    <enum name="flags">
++      <entry name="y_invert" value="1" summary="contents are y-inverted"/>
++      <entry name="interlaced" value="2" summary="content is interlaced"/>
++      <entry name="bottom_first" value="4" summary="bottom field first"/>
++    </enum>
++
++    <request name="create">
++      <description summary="create a wl_buffer from the given gbmbufs">
++        This asks for creation of a wl_buffer from the added gbmbuf
++        buffers. The wl_buffer is not created immediately but returned via
++        the 'created' event if the gbmbuf sharing succeeds. The sharing
++        may fail at runtime for reasons a client cannot predict, in
++        which case the 'failed' event is triggered.
++
++        The 'format' argument is a DRM_FORMAT code, as defined by the
++        libdrm's drm_fourcc.h. The Linux kernel's DRM sub-system is the
++        authoritative source on how the format codes should work.
++
++        The 'flags' is a bitfield of the flags defined in enum "flags".
++        'y_invert' means the that the image needs to be y-flipped.
++
++        Flag 'interlaced' means that the frame in the buffer is not
++        progressive as usual, but interlaced. An interlaced buffer as
++        supported here must always contain both top and bottom fields.
++        The top field always begins on the first pixel row. The temporal
++        ordering between the two fields is top field first, unless
++        'bottom_first' is specified. It is undefined whether 'bottom_first'
++        is ignored if 'interlaced' is not set.
++
++      </description>
++      <arg name="fd" type="fd" summary="ion lib based fd"/>
++      <arg name="meta_fd" type="fd" summary="ion lib based meta_fd"/>
++      <arg name="width" type="uint" summary="base plane width in pixels"/>
++      <arg name="height" type="uint" summary="base plane height in pixels"/>
++      <arg name="format" type="uint" summary="DRM_FORMAT code"/>
++      <arg name="flags" type="int" summary="see enum flags"/>
++    </request>
++
++    <event name="created">
++      <description summary="buffer creation succeeded">
++        This event indicates that the attempted buffer creation was
++        successful. It provides the new wl_buffer referencing the dmabuf(s).
++
++        Upon receiving this event, the client should destroy the
++        zlinux_dmabuf_params object.
++      </description>
++      <arg name="buffer" type="new_id" interface="wl_buffer"
++           summary="the newly created wl_buffer"/>
++    </event>
++
++    <event name="failed">
++      <description summary="buffer creation failed">
++        This event indicates that the attempted buffer creation has
++        failed. It usually means that one of the dmabuf constraints
++        has not been fulfilled.
++
++        Upon receiving this event, the client should destroy the
++        zlinux_buffer_params object.
++      </description>
++    </event>
++
++  </interface>
++
++</protocol>
+diff --git a/protocol/meson.build b/protocol/meson.build
+index 7d869dad..46074ba8 100644
+--- a/protocol/meson.build
++++ b/protocol/meson.build
+@@ -8,6 +8,7 @@ install_data(
+ 	[
+ 		'weston-debug.xml',
+ 		'weston-direct-display.xml',
++		'gbm-buffer-backend.xml',
+ 	],
+ 	install_dir: join_paths(dir_data, dir_protocol_libweston)
+ )
+@@ -34,6 +35,7 @@ generated_protocols = [
+ 	[ 'weston-test', 'internal' ],
+ 	[ 'weston-touch-calibration', 'internal' ],
+ 	[ 'weston-direct-display', 'internal' ],
++	[ 'gbm-buffer-backend', 'internal' ],
+ 	[ 'xdg-output', 'v1' ],
+ 	[ 'xdg-shell', 'v6' ],
+ 	[ 'xdg-shell', 'stable' ],
+-- 
+2.17.1
+

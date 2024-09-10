@@ -7,6 +7,7 @@
  SourcePath=/usr/bin/ssgtzd
  After=qteesupplicant.service
  StartLimitIntervalSec=0
+ ConditionPathExists=!/dev/kvm
 
  [Service]
  User=system

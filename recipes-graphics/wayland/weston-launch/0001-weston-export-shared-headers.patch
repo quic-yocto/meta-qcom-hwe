@@ -1,0 +1,38 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From 11196021c3ce382bc1702bcecab847a4681552c6 Mon Sep 17 00:00:00 2001
+From: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
+Date: Mon, 19 Aug 2024 15:00:34 +0530
+Subject: [PATCH] weston: export shared headers
+
+Signed-off-by: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
+---
+ shared/meson.build | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/shared/meson.build b/shared/meson.build
+index 9a4af530..60307a97 100644
+--- a/shared/meson.build
++++ b/shared/meson.build
+@@ -1,3 +1,16 @@
++install_headers(
++	'cairo-util.h',
++	'fd-util.h',
++	'file-util.h',
++	'helpers.h',
++	'image-loader.h',
++	'os-compatibility.h',
++	'platform.h',
++	'string-helpers.h',
++	'timespec-util.h',
++	'weston-egl-ext.h',
++	'xalloc.h'
++)
+ srcs_libshared = [
+ 	'config-parser.c',
+ 	'option-parser.c',
+-- 
+2.17.1
+

@@ -1,0 +1,66 @@
+From b06e3f524ff21240f5eed9fd5e39e39aeea98fa9 Mon Sep 17 00:00:00 2001
+From: Amisha Jain <quic_amisjain@quicinc.com>
+Date: Thu, 18 Jul 2024 13:04:37 +0530
+Subject: [PATCH] obex: Move size emit signal to plugins instead of obex.c
+
+Instead of emitting the property "Size" from obex_put_stream_start(),
+Call the function manager_emit_transfer_property() from plugins/*.c
+wherever plugin has transfer object present.
+
+Signed-off-by: Amisha Jain <quic_amisjain@quicinc.com>
+Upstream-Status: PENDING
+---
+ obexd/plugins/ftp.c | 5 +++++
+ obexd/plugins/opp.c | 5 +++++
+ obexd/src/obex.c    | 3 ---
+ 3 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/obexd/plugins/ftp.c b/obexd/plugins/ftp.c
+index 4b04bab..970ef52 100644
+--- a/obexd/plugins/ftp.c
++++ b/obexd/plugins/ftp.c
+@@ -175,6 +175,11 @@ int ftp_chkput(struct obex_session *os, void *user_data)
+ 
+ 	ret = obex_put_stream_start(os, path);
+ 
++	if (obex_get_size(os) != OBJECT_SIZE_DELETE &&
++				obex_get_size(os) != OBJECT_SIZE_UNKNOWN) {
++		manager_emit_transfer_property(ftp->transfer, "Size");
++	}
++
+ 	if (ret == 0)
+ 		manager_emit_transfer_started(ftp->transfer);
+ 
+diff --git a/obexd/plugins/opp.c b/obexd/plugins/opp.c
+index 8601613..4b32ac4 100644
+--- a/obexd/plugins/opp.c
++++ b/obexd/plugins/opp.c
+@@ -87,6 +87,11 @@ skip_auth:
+ 
+ 	err = obex_put_stream_start(os, path);
+ 
++	if (obex_get_size(os) != OBJECT_SIZE_DELETE &&
++				obex_get_size(os) != OBJECT_SIZE_UNKNOWN) {
++		manager_emit_transfer_property(user_data, "Size");
++	}
++
+ 	g_free(path);
+ 
+ 	if (err < 0)
+diff --git a/obexd/src/obex.c b/obexd/src/obex.c
+index 3a68fd6..e816a26 100644
+--- a/obexd/src/obex.c
++++ b/obexd/src/obex.c
+@@ -716,9 +716,6 @@ int obex_put_stream_start(struct obex_session *os, const char *filename)
+ 		return err;
+ 	}
+ 
+-	if (os->size != OBJECT_SIZE_DELETE && os->size != OBJECT_SIZE_UNKNOWN)
+-		manager_emit_transfer_property(os->service_data, "Size");
+-
+ 	os->path = g_strdup(filename);
+ 
+ 	return 0;
+-- 
+2.17.1
+

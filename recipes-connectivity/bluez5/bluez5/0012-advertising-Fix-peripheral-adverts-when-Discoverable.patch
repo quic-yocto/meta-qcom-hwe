@@ -1,0 +1,88 @@
+From 828bc564e6e84fc0499f2e3a99438240e4ff6de7 Mon Sep 17 00:00:00 2001
+From: Simon Mikuda <simon.mikuda@streamunlimited.com>
+Date: Fri, 28 Jul 2023 12:56:04 +0200
+Subject: [PATCH BlueZ] advertising: Fix peripheral adverts when Discoverable =
+ false
+
+There is a problem with this configuration: Type = peripheral,
+Discoverable = false and Adapter is discoverable
+
+In this state device will start advertise discoverable advertisements
+even when user wanted non-discoverable advertisements.
+
+This change will add empty Flags when "Discoverable" parameter is set.
+
+Upstream-Status: BACKPORT
+---
+ src/advertising.c |  8 ++------
+ src/shared/ad.c   | 14 ++++++++++++++
+ src/shared/ad.h   |  2 ++
+ 3 files changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/src/advertising.c b/src/advertising.c
+index 1fe371a..817d58b 100644
+--- a/src/advertising.c
++++ b/src/advertising.c
+@@ -683,11 +683,6 @@ fail:
+ 
+ static bool set_flags(struct btd_adv_client *client, uint8_t flags)
+ {
+-	if (!flags) {
+-		bt_ad_clear_flags(client->data);
+-		return true;
+-	}
+-
+ 	/* Set BR/EDR Not Supported for LE only */
+ 	if (!btd_adapter_get_bredr(client->manager->adapter))
+ 		flags |= BT_AD_FLAG_NO_BREDR;
+@@ -1389,7 +1384,8 @@ static DBusMessage *parse_advertisement(struct btd_adv_client *client)
+ 		}
+ 	}
+ 
+-	if (bt_ad_has_flags(client->data)) {
++	if (bt_ad_get_flags(client->data) &
++			(BT_AD_FLAG_GENERAL | BT_AD_FLAG_LIMITED)) {
+ 		/* BLUETOOTH SPECIFICATION Version 5.0 | Vol 3, Part C
+ 		 * page 2042:
+ 		 * A device in the broadcast mode shall not set the
+diff --git a/src/shared/ad.c b/src/shared/ad.c
+index 27b76dc..5713585 100644
+--- a/src/shared/ad.c
++++ b/src/shared/ad.c
+@@ -936,6 +936,20 @@ bool bt_ad_add_flags(struct bt_ad *ad, uint8_t *flags, size_t len)
+ 	return ad_replace_data(ad, BT_AD_FLAGS, flags, len);
+ }
+ 
++bool bt_ad_get_flags(struct bt_ad *ad)
++{
++	struct bt_ad_data *data;
++
++	if (!ad)
++		return false;
++
++	data = queue_find(ad->data, data_type_match, UINT_TO_PTR(BT_AD_FLAGS));
++	if (!data || data->len != 1)
++		return false;
++
++	return data->data[0];
++}
++
+ bool bt_ad_has_flags(struct bt_ad *ad)
+ {
+ 	struct bt_ad_data *data;
+diff --git a/src/shared/ad.h b/src/shared/ad.h
+index feb712f..8907a9a 100644
+--- a/src/shared/ad.h
++++ b/src/shared/ad.h
+@@ -157,6 +157,8 @@ bool bt_ad_add_flags(struct bt_ad *ad, uint8_t *flags, size_t len);
+ 
+ bool bt_ad_has_flags(struct bt_ad *ad);
+ 
++bool bt_ad_get_flags(struct bt_ad *ad);
++
+ void bt_ad_clear_flags(struct bt_ad *ad);
+ 
+ bool bt_ad_add_data(struct bt_ad *ad, uint8_t type, void *data, size_t len);
+-- 
+2.17.1
+

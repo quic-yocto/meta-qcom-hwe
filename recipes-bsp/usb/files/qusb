@@ -577,6 +577,17 @@ usb_init() {
 		# instance for ADB
 		mkdir functions/ffs.usb0
 
+                echo "Qualcomm" > strings/0x409/manufacturer
+
+                serialno="$(printf "%x" "$(cat /sys/devices/soc0/serial_number)")"
+                if [ ! "$serialno" ]; then
+                        serialno="12345678"
+                fi
+
+                echo $serialno > strings/0x409/serialnumber
+		# Hostname command gives the SOC name.
+                echo $(hostname)"_"$serialno > strings/0x409/product
+
 		# mount functionfs
 		if [ ! -d /dev/usb-ffs/adb ]; then
 			mkdir -p /dev/usb-ffs/adb
@@ -586,6 +597,7 @@ usb_init() {
 		cd /sys/kernel/config/usb_gadget/adb
 	fi
 
+	# Let android-gadget-setup fill strings/0x409/* using android-gadget-setup.machine
 	mkdir functions/ecm.ecm
 	mkdir functions/ffs.diag
 	mkdir functions/ffs.dun
@@ -595,19 +607,6 @@ usb_init() {
 	mkdir functions/rndis.rndis
 	mkdir functions/uac2.0
 	mkdir functions/uvc.0
-
-	echo "QCOM" > strings/0x409/manufacturer
-
-	serialno="$(printf "%x" "$(cat /sys/devices/soc0/serial_number)")"
-	if [ ! "$serialno" ]; then
-		serialno="12345678"
-	fi
-
-	echo $serialno > strings/0x409/serialnumber
-	serialno=$(echo $serialno | tr '[:upper:]' '[:lower:]')
-	# Didn't perform hex connversion since serialno from cmdline was already hex.
-	#TODO - update soc/platform IDs
-	echo "QCM6490_$serialno" > strings/0x409/product
 
 	# Mount ffs nodes for diag
 	if [ ! -d /dev/ffs-diag ]; then

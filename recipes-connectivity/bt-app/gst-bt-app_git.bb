@@ -4,7 +4,7 @@ DESCRIPTION = "Bluetooth application layer"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=0b86b60d6735397ecc40b62500bf35432312fe90;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/btapp"
+SRC_URI = "git://git.codelinaro.org/clo/le/platform/qcom-opensource/bt.git;protocol=https;rev=cf59992e8164b3e36cba646ac7fdf3f4622757f5;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/btapp"
 
 S = "${WORKDIR}"
 

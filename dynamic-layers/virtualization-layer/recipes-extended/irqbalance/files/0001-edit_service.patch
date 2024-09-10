@@ -1,0 +1,27 @@
+From 4980f78c819c0615b49619a83790e585b8a80a37 Mon Sep 17 00:00:00 2001
+From: Shivendra Pratap <quic_spratap@quicinc.com>
+Date: Thu, 13 Jun 2024 18:22:01 +0530
+Subject: [PATCH] edit_service
+
+Signed-off-by: Shivendra Pratap <quic_spratap@quicinc.com>
+---
+ misc/irqbalance.service | 2 ++--
+ 1 file changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/misc/irqbalance.service b/misc/irqbalance.service
+index fcc29c2..c3afed6 100644
+--- a/misc/irqbalance.service
++++ b/misc/irqbalance.service
+@@ -6,8 +6,8 @@ ConditionVirtualization=!container
+
+ [Service]
+ EnvironmentFile=-/usr/lib/irqbalance/defaults.env
+-EnvironmentFile=-/path/to/irqbalance.env
++EnvironmentFile=-/usr/sbin/irqbalance.env
+ ExecStart=/usr/sbin/irqbalance --foreground $IRQBALANCE_ARGS
+ ReadOnlyPaths=/
+ ReadWritePaths=/proc/irq
+ RestrictAddressFamilies=AF_UNIX
+--
+2.34.1
+

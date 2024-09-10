@@ -1,0 +1,24 @@
+From 031fc5464910a762e075af5b9cc3d736a7f5301f Mon Sep 17 00:00:00 2001
+From: Amisha Jain <quic_amisjain@quicinc.com>
+Date: Thu, 30 May 2024 17:51:04 +0530
+Subject: [PATCH] Set variable MAP_ROOT="map-messages" to create MAP sdp record
+
+---
+ obexd/src/obex.service.in | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/obexd/src/obex.service.in b/obexd/src/obex.service.in
+index f691b05..6d63ec1 100644
+--- a/obexd/src/obex.service.in
++++ b/obexd/src/obex.service.in
+@@ -4,6 +4,7 @@ Requires=bluetooth.service
+ After=bluetooth.service
+ 
+ [Service]
++Environment="MAP_ROOT="map-messages""
+ Type=dbus
+ BusName=org.bluez.obex
+ ExecStart=@pkglibexecdir@/obexd -a -r /var/bluetooth
+-- 
+2.17.1
+

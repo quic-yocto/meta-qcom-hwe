@@ -9,7 +9,7 @@ DEPENDS += "pulseaudio glib-2.0 qcom-pal qcom-vui-interface-header"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "77d475894e06da15b27f9e91a3f2d3ac788e44e0d1fe6de408ce523427c078b7"
+SRC_URI[armv8-2a.sha256sum] = "d5573666ea733d3e3a05e8cfbdda89908d83aae21b46d3079c0775f124186638"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
