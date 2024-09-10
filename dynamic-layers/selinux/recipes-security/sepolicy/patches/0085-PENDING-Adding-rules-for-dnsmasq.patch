@@ -1,58 +1,28 @@
-From 4ca3a224a31cad5170bb94705e795ee70c04aa66 Mon Sep 17 00:00:00 2001
+From 0cd760e2e610922cc9a20688410c7d71833212e2 Mon Sep 17 00:00:00 2001
 From: Gargi Misra <quic_gmisra@quicinc.com>
-Date: Wed, 22 May 2024 10:35:18 +0530
+Date: Wed, 17 Jul 2024 13:57:32 +0530
 Subject: [PATCH] PENDING: Adding rules for dnsmasq
 
-This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
-
-Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
-SPDX-License-Identifier: BSD-3-Clause-Clear
-
 Signed-off-by: Gargi Misra <quic_gmisra@quicinc.com>
-
 ---
- policy/modules/kernel/domain.if    | 17 +++++++++++++++++
- policy/modules/services/dnsmasq.te |  5 +++++
- 2 files changed, 22 insertions(+)
+ policy/modules/services/dnsmasq.te |   4 ++++
+ 1 files changed, 4 insertions(+)
 
-diff --git a/policy/modules/kernel/domain.if b/policy/modules/kernel/domain.if
-index 6561a1bfe..5e7ec08f4 100644
---- a/policy/modules/kernel/domain.if
-+++ b/policy/modules/kernel/domain.if
-@@ -1556,3 +1556,20 @@ interface(`domain_unconfined',`
- 	typeattribute $1 set_curr_context;
- 	typeattribute $1 process_uncond_exempt;
- ')
-+
-+########################################
-+## <summary>
-+##      Allow domain to watch systemd_resolved_runtime_t
-+## </summary>
-+## <param name="domain">
-+##      <summary>
-+##      Domain allowed access.
-+##      </summary>
-+## </param>
-+#
-+interface(`watch_dir_systemd_resolved_runtime',`
-+       gen_require(`
-+               type systemd_resolved_runtime_t;
-+       ')
-+       allow $1 systemd_resolved_runtime_t:dir watch;
-+')
 diff --git a/policy/modules/services/dnsmasq.te b/policy/modules/services/dnsmasq.te
-index 0fdaaf6c6..f53f16290 100644
+index 0fdaaf6c6..0a830339c 100644
 --- a/policy/modules/services/dnsmasq.te
 +++ b/policy/modules/services/dnsmasq.te
-@@ -98,6 +98,11 @@ miscfiles_read_localization(dnsmasq_t)
- userdom_dontaudit_use_unpriv_user_fds(dnsmasq_t)
- userdom_dontaudit_search_user_home_dirs(dnsmasq_t)
- 
-+list_dirs_pattern( dnsmasq_t , systemd_resolved_runtime_t,  systemd_resolved_runtime_t)
-+watch_dir_systemd_resolved_runtime(dnsmasq_t)
+@@ -93,6 +93,10 @@ auth_use_nsswitch(dnsmasq_t)
+
+ logging_send_syslog_msg(dnsmasq_t)
+
++systemd_read_dir_resolved_runtime(dnsmasq_t)
 +corenet_tcp_bind_all_unreserved_ports(dnsmasq_t)
-+fs_search_tmpfs(dnsmasq_t);
++fs_search_tmpfs(dnsmasq_t)
 +
- optional_policy(`
- 	cobbler_read_lib_files(dnsmasq_t)
- ')
+ miscfiles_read_localization(dnsmasq_t)
+
+ userdom_dontaudit_use_unpriv_user_fds(dnsmasq_t)
+
+--
+2.17.1

@@ -1,0 +1,80 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+## <summary>thermal-engine daemon</summary>
+
+########################################
+## <summary>
+##      Read thermal_config file
+##      that is located in /etc folder
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_read_thermal_config',`
+    gen_require(`
+        type etc_t, qcom_thermal_etc_t;
+    ')
+
+    allow $1 etc_t:dir list_dir_perms;
+    read_files_pattern($1, etc_t, qcom_thermal_etc_t)
+')
+
+########################################
+## <summary>
+##       Add rules to allow thermal-engine service to create sockets in /dev/socket
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`qcom_allow_thermal_sock_manage',`
+    gen_require(`
+            type qcom_thermal_sock_t;
+    ')
+    manage_sock_files_pattern($1, qcom_thermal_sock_t, qcom_thermal_sock_t)
+    allow $1 qcom_thermal_sock_t:file manage_file_perms;
+    allow $1 qcom_thermal_sock_t:sock_file { write create setattr unlink };
+')
+
+########################################
+## <summary>
+##       Allow connecting to thermal-engine socket
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Target domain
+##  </summary>
+## </param>
+#
+interface(`qcom_connect_to_thermal_socket',`
+    gen_require(`
+        type qcom_thermal-engine_t, qcom_thermal_sock_t;
+    ')
+    allow $1 qcom_thermal_sock_t:dir { search_dir_perms};
+    allow $1 qcom_thermal_sock_t:sock_file write;
+    allow $1 qcom_thermal-engine_t:unix_stream_socket connectto;
+')
+
+########################################
+## <summary>
+##       Allow manage service for initrc_exec_t scripts
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Target domain
+##  </summary>
+## </param>
+#
+interface(`qcom_init_manage_thermal_engine_service_admin',`
+    gen_require(`
+        type qcom_thermal-engine_t;
+        class service {start stop status };
+       ')
+    allow $1 qcom_thermal-engine_exec_t:service { status start stop };
+')

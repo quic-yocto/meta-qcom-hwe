@@ -1,0 +1,39 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(qcom_thermal_engine, 1.0)
+
+########################################
+#
+# thermal-engine
+#
+
+type qcom_thermal-engine_t;
+type qcom_thermal-engine_exec_t;
+
+init_daemon_domain(qcom_thermal-engine_t, qcom_thermal-engine_exec_t)
+qcom_init_manage_thermal_engine_service_admin(initrc_t)
+
+type qcom_thermal_sock_t;
+files_type(qcom_thermal_sock_t)
+dev_node(qcom_thermal_sock_t)
+qcom_allow_thermal_sock_manage(qcom_thermal-engine_t)
+
+# configuration files
+type qcom_thermal_etc_t;
+files_type(qcom_thermal_etc_t)
+
+allow qcom_thermal-engine_t self:capability {sys_nice sys_boot};
+allow qcom_thermal-engine_t self:process { setsched getsched };
+allow qcom_thermal-engine_t self:{ socket netlink_kobject_uevent_socket } create_socket_perms;
+allow qcom_thermal-engine_t self:netlink_generic_socket create_socket_perms;
+allow qcom_thermal-engine_t self:fifo_file rw_fifo_file_perms;
+allow qcom_thermal-engine_t self:unix_stream_socket create_stream_socket_perms;
+allow qcom_thermal-engine_t syslogd_var_run_t:dir search;
+allow qcom_thermal-engine_t self:qipcrtr_socket { write read create getattr setopt };
+
+logging_send_syslog_msg(qcom_thermal-engine_t)
+qcom_read_thermal_config(qcom_thermal-engine_t)
+dev_rw_sysfs(qcom_thermal-engine_t)
+kernel_read_system_state(qcom_thermal-engine_t)
+dontaudit qcom_thermal-engine_t default_t:dir search;

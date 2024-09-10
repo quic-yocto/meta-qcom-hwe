@@ -1,12 +1,14 @@
 POLICY_MONOLITHIC = "y"
 
+export POLICY_MONOLITHIC
+
 FILESEXTRAPATHS:append := "${THISDIR}:"
 FILESEXTRAPATHS:append := "${THISDIR}/patches:"
 
-SRC_URI:remove = "file://0042-policy-modules-system-systemd-systemd-user-fixes.patch"
+SRC_URI:remove:qcom = "file://0042-policy-modules-system-systemd-systemd-user-fixes.patch"
 
 #Patches
-SRC_URI += "file://0070-PENDING-allow-logging-domains-to-execute-busybox.patch \
+SRC_URI:append:qcom = " file://0070-PENDING-allow-logging-domains-to-execute-busybox.patch \
             file://0071-PENDING-Add-net_admin-capability-to-modutils.patch \
             file://0072-PENDING-allow-systemd-generator-to-getattr-of-unit-files.patch \
             file://0073-PENDING-add-perms-to-mount-to-resolve-service-fails.patch \
@@ -22,27 +24,39 @@ SRC_URI += "file://0070-PENDING-allow-logging-domains-to-execute-busybox.patch \
             file://0083-PENDING-Add-Docker-related-policies.patch \
             file://0084-PENDING-Allow-SE-policy-read-and-write-access-to-dbu.patch \
             file://0085-PENDING-Adding-rules-for-dnsmasq.patch \
+            file://0086-PENDING-networkmanager-allow-access-tmpfs.patch \
 "
 
 #Policy folders
-SRC_URI += "file://apps/ \
+SRC_URI:append:qcom = " file://apps/ \
             file://kernel/ \
             file://roles/ \
             file://services/ \
             file://system/ \
             file://admin/ \
             file://target/ \
+            file://files/ \
 "
 
 #enable test sepolicy
 ENABLE_TEST_SEPOLICY ?= "y"
-SRC_URI += "\
+SRC_URI:append:qcom = "\
             ${@bb.utils.contains('ENABLE_TEST_SEPOLICY', 'y', 'file://test/', '', d)} \
             file://0999-Move-root-user-to-unconfined-context.patch \
+            file://0998-refpolicy-config-update-ssh-to-login-in-sysadmin-rol.patch \
 "
 
 EXTRA_OEMAKE += "tc_usrsbindir=${STAGING_SBINDIR_NATIVE}"
 EXTRA_OEMAKE += "tc_sbindir=${STAGING_DIR_NATIVE}${base_sbindir_native}"
+
+do_compile:qcom() {
+        if [ -f "${WORKDIR}/modules.conf" ] ; then
+                cp -f ${WORKDIR}/modules.conf ${S}/policy/modules.conf
+        fi
+        # oe_runmake conf
+        disable_policy_modules
+        oe_runmake policy
+}
 
 prepare_policy_store () {
         oe_runmake 'DESTDIR=${D}' 'prefix=${D}${prefix}' install
@@ -77,13 +91,26 @@ prepare_policy_store () {
         fi
 }
 
+COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs8300"
+
+def get_machine(d):
+    need_machine = (d.getVar('COMPATIBLE_MACHINE') or "").split("|")
+    if need_machine:
+        import re
+        compat_machines = (d.getVar('MACHINEOVERRIDES') or "").split(":")
+        for n in need_machine:
+            for m in compat_machines:
+                if re.match(n, m):
+                    return n
+
 def test_modules_list(d):
-    machine = d.getVar("MACHINE")
+    machine = get_machine(d)
 
     target_to_policy_map = {
-        'qcm6490': ['qcm6490_test', 'qcm8550_test'],
-        'qcs9100': ['qcs9100_test'],
-        'qcm8550': ['qcm6490_test', 'qcm8550_test'],
+        'qcm6490': ['qcm6490_test', 'qcs9100_test'],
+        'qcs9100': ['qcm6490_test', 'qcs9100_test'],
+        'qcs8300': ['qcm6490_test', 'qcs9100_test'],
+        'qcm8550': ['qcm8550_test'],
         'qcs8550': ['qcs8550_test'],
     }
 
@@ -93,12 +120,13 @@ def test_modules_list(d):
         return None
 
 def target_modules_list(d):
-    machine = d.getVar("MACHINE")
+    machine = get_machine(d)
 
     target_to_policy_map = {
-        'qcm6490': ['qcm6490', 'qcm8550'],
-        'qcs9100': ['qcs9100'],
-        'qcm8550': ['qcm6490', 'qcm8550'],
+        'qcm6490': ['qcm6490', 'qcs9100'],
+        'qcs9100': ['qcm6490', 'qcs9100'],
+        'qcs8300': ['qcm6490', 'qcs9100'],
+        'qcm8550': ['qcm8550'],
         'qcs8550': ['qcs8550'],
     }
 
@@ -160,13 +188,26 @@ def copy_policies(src_path, dst_path, dir_list, d):
                else:
                    shutil.copy2(qc_module_path, ref_module_path)
 
+def copy_conf(src_path, dst_path, d):
+    import shutil
+    conf_file_path = os.path.join(src_path, "modules.conf")
+    if os.path.exists(src_path):
+        shutil.copy2(conf_file_path, dst_path)
+    conf_file_path = os.path.join(src_path, "booleans.conf")
+    if os.path.exists(src_path):
+        shutil.copy2(conf_file_path, dst_path)
+
 def install_policy(d):
     src_path = os.path.join(d.getVar("WORKDIR"))
     dst_path = os.path.join(d.getVar("S"), "policy", "modules")
     dir_list = ["apps","kernel","roles","services","system","admin"]
     # copy policies
     copy_policies(src_path, dst_path, dir_list,d)
+    # copy modules.conf
+    conf_src_path = os.path.join(d.getVar("WORKDIR"), "files")
+    conf_dst_path = os.path.join(d.getVar("S"), "policy")
+    copy_conf(conf_src_path, conf_dst_path,d)
 
-do_patch:append() {
+do_patch:append:qcom() {
     install_policy(d)
 }

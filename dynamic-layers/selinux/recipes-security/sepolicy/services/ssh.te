@@ -5,3 +5,4 @@ init_manage_utmp(ssh_keygen_t);
 init_manage_utmp_dir(ssh_keygen_t);
 init_stream_connect_script(sshd_t);
 init_manage_utmp_dir(sshd_t);
+unconfined_shell_domtrans(sshd_t);

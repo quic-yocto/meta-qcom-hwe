@@ -1,0 +1,11 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+#file_context for thermal-engine service
+
+/usr/bin/thermal-engine                 -- gen_context(system_u:object_r:qcom_thermal-engine_exec_t,s0)
+/etc/thermal-engine.conf                   gen_context(system_u:object_r:qcom_thermal_etc_t,s0)
+/dev/socket/thermal-recv-client         -s gen_context(system_u:object_r:qcom_thermal_sock_t,s0)
+/dev/socket/thermal-recv-passive-client -s gen_context(system_u:object_r:qcom_thermal_sock_t,s0)
+/dev/socket/thermal-send-client         -s gen_context(system_u:object_r:qcom_thermal_sock_t,s0)
+/dev/socket/thermal-send-rule           -s gen_context(system_u:object_r:qcom_thermal_sock_t,s0)

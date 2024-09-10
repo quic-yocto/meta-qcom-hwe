@@ -54,6 +54,9 @@ allow qcom_qwesd_t self:qipcrtr_socket create_socket_perms;
 allow qcom_qwesd_t self:capability2 { block_suspend wake_alarm };
 allow qcom_qwesd_t self:socket { create rw_socket_perms };
 qcom_sfs_config_trans_qtee_supplicant_persist(qcom_qwesd_t)
+
+qcom_qseecom_alloc_buf_rw(qcom_qwesd_t)
+
 #################################################################
 # Rules ending for generic permissions for qwesd.
 ##################################################################

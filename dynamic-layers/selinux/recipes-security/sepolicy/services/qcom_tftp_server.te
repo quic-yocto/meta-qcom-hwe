@@ -25,3 +25,5 @@ files_manage_var_lib_dirs(qcom_tftp_server_t)
 type qcom_rfs_persist_t;
 files_type(qcom_rfs_persist_t)
 qcom_manage_tftp_rfs_data_files(qcom_tftp_server_t)
+
+miscfiles_read_localization(qcom_tftp_server_t)

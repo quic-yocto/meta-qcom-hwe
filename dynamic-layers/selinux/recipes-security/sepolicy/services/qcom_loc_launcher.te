@@ -11,10 +11,20 @@ type qcom_loc_launcher_exec_t;
 init_daemon_domain(qcom_loc_launcher_t, qcom_loc_launcher_exec_t)
 corecmd_search_bin(qcom_loc_launcher_t)
 
-allow qcom_loc_launcher_t self:capability { setuid setgid };
+allow qcom_loc_launcher_t self:capability { setuid setgid net_admin };
 
 # loc-launcher sends signal to child process
-allow qcom_loc_launcher_t { qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t qcom_blpsvc_t }:process signal;
+allow qcom_loc_launcher_t { self qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t qcom_blpsvc_t }:process signal;
+
+miscfiles_read_localization(qcom_loc_launcher_t)
+
+# read generic SSL/TLS certificates.
+miscfiles_read_generic_certs(qcom_loc_launcher_t)
+
+allow qcom_loc_launcher_t qcom_blpsvc_t:unix_dgram_socket sendto;
+allow qcom_loc_launcher_t self:netlink_generic_socket create_socket_perms;
+
+allow qcom_loc_launcher_t qcom_xtwifi_client_t:unix_dgram_socket sendto;
 
 #########################
 #### location conf files
@@ -58,7 +68,7 @@ domtrans_pattern(qcom_loc_launcher_t, qcom_xtwifi_client_exec_t, qcom_xtwifi_cli
 
 allow qcom_xtwifi_client_t self:process getsched;
 
-allow qcom_xtwifi_client_t {qcom_lowi_server_t qcom_xtwifi_agent_t}:unix_dgram_socket sendto;
+allow qcom_xtwifi_client_t {qcom_lowi_server_t qcom_xtwifi_agent_t qcom_blpsvc_t}:unix_dgram_socket sendto;
 
 # qwes interaction
 qcom_connect_socket_qwes(qcom_xtwifi_client_t)
@@ -110,6 +120,8 @@ domtrans_pattern(qcom_loc_launcher_t, qcom_lowi_server_exec_t, qcom_lowi_server_
 allow qcom_lowi_server_t self:netlink_generic_socket create_socket_perms;
 kernel_read_network_state(qcom_lowi_server_t)
 
+allow qcom_lowi_server_t self:process getcap;
+
 # load kernel-mod netdev-wlan0
 kernel_request_load_module(qcom_lowi_server_t)
 
@@ -142,7 +154,14 @@ allow qcom_blpsvc_t {qcom_lowi_server_t qcom_xtwifi_client_t}:unix_dgram_socket 
 # context
 allow qcom_blpsvc_t qcom_loc_data_t:sock_file { create  unlink getattr };
 
+allow qcom_blpsvc_t qcom_loc_data_t:file map;
+
 userdom_search_user_home_dirs(qcom_blpsvc_t)
+
+# send to sockets created by test apps (eg:nlp-api-test) started from shell
+initrc_dgram_send(qcom_blpsvc_t)
+
+miscfiles_read_localization(qcom_blpsvc_t)
 
 #########################
 #### common rules for loc-launcher daemons and child process
@@ -213,6 +232,6 @@ sysnet_read_config(qcom_edgnss_daemon_t)
 sysnet_read_config(qcom_xtwifi_agent_t)
 sysnet_read_config(qcom_blpsvc_t)
 
-allow { qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t } self:qipcrtr_socket create_socket_perms;
+allow { qcom_loc_launcher_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t } self:qipcrtr_socket create_socket_perms;
 
 qcom_connect_to_property_vault({ qcom_loc_launcher_t qcom_xtwifi_agent_t qcom_xtwifi_client_t qcom_xtra_daemon_t qcom_edgnss_daemon_t qcom_lowi_server_t qcom_blpsvc_t })

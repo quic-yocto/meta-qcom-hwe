@@ -26,6 +26,10 @@
 /dev/fastrpc-cdsp1  -c           gen_context(system_u:object_r:qcom_cdsp_device_t,s0)
 
 /dev/byte-cntr    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
+/dev/byte-cntr1    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
+/dev/tmc_etf0    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
+/dev/tmc_etr0    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
+/dev/tmc_etr1    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
 
 #Audio driver nodes
 /dev/dma_heap/qcom,audio-ml   -c gen_context(system_u:object_r:qcom_audioml_heap_device_t,s0)

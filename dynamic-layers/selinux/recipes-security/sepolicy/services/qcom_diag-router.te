@@ -32,3 +32,6 @@ qcom_dev_coresight_rw_device(qcom_diag-router_t)
 init_search_runtime(qcom_diag-router_t)
 logging_send_syslog_msg(qcom_diag-router_t)
 
+miscfiles_read_localization(qcom_diag-router_t)
+
+

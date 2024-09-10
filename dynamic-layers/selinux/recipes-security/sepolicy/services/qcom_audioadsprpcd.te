@@ -21,3 +21,6 @@ dev_read_system_dmabuf(qcom_audioadsprpcd_t)
 
 dev_watch_dev_dirs(qcom_audioadsprpcd_t)
 libs_watch_shared_libs_dirs(qcom_audioadsprpcd_t)
+
+miscfiles_read_localization(qcom_audioadsprpcd_t)
+
