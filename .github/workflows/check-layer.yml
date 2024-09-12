@@ -13,6 +13,4 @@ jobs:
 
       - name: Run yocto-check-layer
         run: |
-          mkdir -p ../build
-          cd ../build
-          kas shell ../meta-qcom-hwe/ci/qcs6490-rb3gen2-core-kit.yml --command "yocto-check-layer-wrapper `pwd`/../meta-qcom-hwe --dependency `pwd`/poky/meta `pwd`/meta-qcom --no-auto-dependency"
+          ci/yocto-check-layer.sh
