@@ -6,7 +6,7 @@
 
 OpenEmbedded/Yocto Project hardware enablement layer for Qualcomm based platforms.
 
-This layers provides aditional recipes and machine configuration files for Qualcomm platform.
+This layers provides additional recipes and machine configuration files for Qualcomm platform.
 
 This layer depends on:
 
