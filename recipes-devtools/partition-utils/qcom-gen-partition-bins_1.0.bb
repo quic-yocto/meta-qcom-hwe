@@ -5,6 +5,8 @@ LIC_FILES_CHKSUM = " file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=3771d4920b
 
 DEPENDS += "qcom-ptool-native"
 
+inherit python3native
+
 do_configure[noexec] = "1"
 
 do_compile[depends] += " \
@@ -12,7 +14,7 @@ do_compile[depends] += " \
    "
 do_compile() {
     # ptool to generate partition bins
-    ${STAGING_BINDIR_NATIVE}/ptool.py -x ${DEPLOY_DIR_IMAGE}/partition.xml
+    ${PYTHON} ${STAGING_BINDIR_NATIVE}/ptool.py -x ${DEPLOY_DIR_IMAGE}/partition.xml
 }
 
 inherit deploy

@@ -5,6 +5,8 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/BSD-3-Clause-Clear;md5=7a434440
 
 DEPENDS += "qcom-gen-partitions-tool-native"
 
+inherit python3native
+
 PROVIDES += "virtual/partconf"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
@@ -24,7 +26,7 @@ PARTCONF:qcs9100 = "qcs9100-partitions.conf"
 
 do_compile() {
     # Generate partition.xml using gen_partition utility
-    ${STAGING_BINDIR_NATIVE}/gen_partition.py \
+    ${PYTHON} ${STAGING_BINDIR_NATIVE}/gen_partition.py \
         -i ${WORKDIR}/${PARTCONF} \
         -o ${B}/${MACHINE}-partition.xml
 }
