@@ -69,3 +69,24 @@ jobs:
           export KAS_WORK_DIR=$PWD/../kas
           mkdir $KAS_WORK_DIR
           kas build ci/${{ matrix.machine }}.yml
+
+      - name: Publish image
+        run: |
+          build_dir=/srv/gh-runners/quic-yocto/builds/${GITHUB_RUN_ID}
+          mkdir -p $build_dir
+          img_dir=$build_dir/${{ matrix.machine }}
+          [ -d $img_dir ] && rm -rf $img_dir
+          mv ../kas/build/tmp/deploy/images/${{matrix.machine}} $img_dir
+
+          # Instruct our file server to make these files available for download
+          url="https://quic-yocto-fileserver-1029608027416.us-central1.run.app/${GITHUB_RUN_ID}/${{ matrix.machine }}/"
+
+          retries=3
+          for ((i=0; i<retries; i++)); do
+              curl -X POST -v ${url} && break
+              echo "something went wrong, sleep and retry"
+              sleep 2
+          done
+          (( retries == i )) && { echo 'Failed to publish artifacts'; exit 1; }
+
+          echo Image available at: ${url}
