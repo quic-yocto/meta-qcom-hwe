@@ -1,0 +1,127 @@
+From b810267a82fc163c2b1e4597923c4f822ce9da6b Mon Sep 17 00:00:00 2001
+From: Roshan Sivakumar <quic_roshs@quicinc.com>
+Date: Fri, 11 Oct 2024 14:23:37 +0530
+Subject: [PATCH] Add-support-systemd-boot-Automatic-boot-assessment
+
+Add support for Automatic Boot Assessment [1].
+Boot entries are now created with an additional suffix, which
+represents the amount of maximum tries for boot counting.
+
+Upstream-Status: Pending
+
+[1] https://systemd.io/AUTOMATIC_BOOT_ASSESSMENT/
+[2] https://github.com/ostreedev/ostree/pull/3310
+
+Signed-off-by: Roshan Sivakumar <quic_roshs@quicinc.com>
+---
+ src/libostree/ostree-sysroot-deploy.c | 65 +++++++++++++++++++++++++--
+ 1 file changed, 61 insertions(+), 4 deletions(-)
+
+diff --git a/src/libostree/ostree-sysroot-deploy.c b/src/libostree/ostree-sysroot-deploy.c
+index 5dc2b7bb..9ef3ad15 100644
+--- a/src/libostree/ostree-sysroot-deploy.c
++++ b/src/libostree/ostree-sysroot-deploy.c
+@@ -28,6 +28,7 @@
+ #include <sys/statvfs.h>
+ #include <sys/socket.h>
+ #include <sys/ioctl.h>
++#include <stdbool.h>
+ #include <sys/poll.h>
+ #include <linux/fs.h>
+ #include <err.h>
+@@ -56,6 +57,8 @@
+ #define OSTREE_DEPLOYMENT_FINALIZING_ID SD_ID128_MAKE(e8,64,6c,d6,3d,ff,46,25,b7,79,09,a8,e7,a4,09,94)
+ #endif
+
++#define SYSTEMD_BOOT_MAX_RETRIES 3
++
+ /*
+  * Like symlinkat() but overwrites (atomically) an existing
+  * symlink.
+@@ -1733,6 +1736,57 @@ parse_os_release (const char *contents,
+   return ret;
+ }
+
++/* Generate the entry name we will use in /boot/loader/entries for this deployment.
++ * The provided n_deployments should be the total number of target deployments (which
++ * might be different from the cached value in the sysroot).
++ */
++static char *
++bootloader_entry_name (OstreeSysroot *sysroot, guint n_deployments,
++                           OstreeDeployment *deployment)
++{
++  guint index = n_deployments - ostree_deployment_get_index (deployment);
++  const char *stateroot = ostree_deployment_get_osname (deployment);
++  return g_strdup_printf ("ostree-%d-%s", index, stateroot);
++}
++
++/* Drop all temporary entries in /boot/loader/entries for this deployment,
++ * which were created during automatic boot assesment
++ * https://systemd.io/AUTOMATIC_BOOT_ASSESSMENT/
++ */
++static gboolean
++bootloader_remove_tmp_entries (int dfd, const char *entry_name, GCancellable *cancellable,
++                               GError **error)
++{
++  g_auto(GLnxDirFdIterator) dfd_iter = { 0, };
++  g_autofree char *entry_name_init = g_strdup_printf ("%s+%d", entry_name, SYSTEMD_BOOT_MAX_RETRIES);
++
++  if (!glnx_dirfd_iterator_init_at (dfd, ".", FALSE, &dfd_iter, error))
++    return FALSE;
++
++  while (TRUE)
++    {
++      struct dirent *dent = NULL;
++
++      if (!glnx_dirfd_iterator_next_dent_ensure_dtype (&dfd_iter, &dent, cancellable, error))
++        return FALSE;
++      if (dent == NULL)
++        break;
++
++      /* Don't remove default boot entry (with +3 suffix) */
++      if (g_str_has_prefix (dent->d_name, entry_name_init))
++        continue;
++
++      if (g_str_has_prefix (dent->d_name, entry_name))
++        {
++          if (!glnx_shutil_rm_rf_at (dfd_iter.fd, dent->d_name, cancellable, error))
++            return FALSE;
++        }
++
++    }
++
++    return TRUE;
++}
++
+ /* Given @deployment, prepare it to be booted; basically copying its
+  * kernel/initramfs into /boot/ostree (if needed) and writing out an entry in
+  * /boot/loader/entries.
+@@ -1774,9 +1828,7 @@ install_deployment_kernel (OstreeSysroot   *sysroot,
+   const char *bootcsum = ostree_deployment_get_bootcsum (deployment);
+   g_autofree char *bootcsumdir = g_strdup_printf ("ostree/%s-%s", osname, bootcsum);
+   g_autofree char *bootconfdir = g_strdup_printf ("loader.%d/entries", new_bootversion);
+-  g_autofree char *bootconf_name = g_strdup_printf ("ostree-%d-%s.conf",
+-                                   n_deployments - ostree_deployment_get_index (deployment),
+-                                   osname);
++  g_autofree char *bootconf_name = bootloader_entry_name (sysroot, n_deployments, deployment);
+   if (!glnx_shutil_mkdir_p_at (sysroot->boot_fd, bootcsumdir, 0775, cancellable, error))
+     return FALSE;
+
+@@ -2018,8 +2070,13 @@ install_deployment_kernel (OstreeSysroot   *sysroot,
+   if (!glnx_opendirat (sysroot->boot_fd, bootconfdir, TRUE, &bootconf_dfd, error))
+     return FALSE;
+
++  g_autofree char *bootconf_filename = g_strdup_printf ("%s+%d.conf", bootconf_name, SYSTEMD_BOOT_MAX_RETRIES);
++
++  if (!bootloader_remove_tmp_entries(bootconf_dfd, bootconf_name, cancellable, error))
++    return FALSE;
++
+   if (!ostree_bootconfig_parser_write_at (ostree_deployment_get_bootconfig (deployment),
+-                                          bootconf_dfd, bootconf_name,
++                                          bootconf_dfd, bootconf_filename,
+                                           cancellable, error))
+     return FALSE;
+
+--
+2.34.1
+
