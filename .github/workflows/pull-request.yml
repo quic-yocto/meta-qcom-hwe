@@ -28,3 +28,10 @@ jobs:
           mkdir build
           cd build
           kas build ../ci/${{ matrix.machine }}.yml
+
+          set -x
+          build_dir=/srv/gh-runners/quic-yocto/builds/${GITHUB_RUN_ID}
+          mkdir -p $build_dir
+          img_dir=$build_dir/${{ matrix.machine }}
+          [ -d $img_dir ] && rm -rf $img_dir
+          mv build/tmp/deploy/images/${{ matrix.machine }} $img_dir
