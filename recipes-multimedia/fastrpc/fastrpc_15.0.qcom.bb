@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "adsprpc daemon."
 
-DEPENDS += "dspservices-headers libdmabufheap"
+DEPENDS += "dspservices-headers qcom-libdmabufheap"
 
 DEFAULT_PREFERENCE = "-1"
 

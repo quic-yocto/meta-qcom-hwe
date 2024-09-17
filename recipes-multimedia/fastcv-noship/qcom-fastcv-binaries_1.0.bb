@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "Generates libfastcvopt"
 
-DEPENDS += "libdmabufheap syslog-plumber property-vault glib-2.0 fastrpc"
+DEPENDS += "qcom-libdmabufheap syslog-plumber property-vault glib-2.0 fastrpc"
 
 RDEPENDS:${PN} += "${PN}-cpu ${PN}-dsp"
 

@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "Securemsm library with sampleclient used to test sampleapp with qseecom driver through QSEEComApi library"
 
-DEPENDS += "minkipc securemsm-features glib-2.0 glibc linux-kernel-qcom-headers libdmabufheap"
+DEPENDS += "minkipc securemsm-features glib-2.0 glibc linux-kernel-qcom-headers qcom-libdmabufheap"
 
 QCM6490_SHA256SUM = "a09a75150acc50b67e7ef874037b2a5173b5e9f91d99b111cfc3be3e1c706b98"
 QCS9100_SHA256SUM = "37cf1a9a669d595a76edd7478e5d59bfe6aa09ae96b26e040a816e148ee92b48"

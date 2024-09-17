@@ -26,7 +26,7 @@ SRC_URI:append:qcs9100 = "  file://0001-drm-backend-power-off-during-hotplug-dis
 SRC_URI:append:qcs8300 = "  file://0001-drm-backend-power-off-during-hotplug-disconnect.patch \
                             file://0001-weston-add-sdm-option.patch"
 
-DEPENDS:append:qcom-custom-bsp = " property-vault gbm libdmabufheap"
+DEPENDS:append:qcom-custom-bsp = " property-vault gbm qcom-libdmabufheap"
 DEPENDS:append:qcm6490 = " qcom-display-hal-linux"
 
 EXTRA_OEMESON += "-Ddeprecated-wl-shell=true"

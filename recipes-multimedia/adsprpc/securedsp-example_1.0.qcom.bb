@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f2
 
 DESCRIPTION = "Example for Secure DSP usecase."
 
-DEPENDS += "fastrpc libvmmem securemsm-features"
+DEPENDS += "fastrpc qcom-libvmmem securemsm-features"
 
 PBT_ARCH = "aarch64"
 
