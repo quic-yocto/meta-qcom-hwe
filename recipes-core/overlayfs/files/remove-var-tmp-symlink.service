@@ -4,7 +4,7 @@ Description=remove /var/tmp symlink
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/sh -c "if [ -L /var/tmp ] && [ -d /var/volatile/tmp ]; then unlink /var/tmp; mkdir -p /var/tmp; restorecon -R /var/tmp; fi;"
+ExecStart=/bin/sh -c "if [ -L /var/tmp ] && [ -d /var/volatile/tmp ]; then unlink /var/tmp; mkdir -p /var/tmp; if env selinuxenabled && command -v restorecon >/dev/null 2>&1; then restorecon -R /var/tmp; fi; fi;"
 
 [Install]
 WantedBy=local-fs.target
