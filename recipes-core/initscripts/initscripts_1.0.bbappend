@@ -12,6 +12,7 @@ SRC_URI:append:qcom = " \
     file://modem-start-stop.service \
     file://debug-config.service \
     file://debug_config_qcs9100.sh \
+    file://coresight_reset_source_sink.sh \
 "
 
 do_install:append:qcom() {
@@ -41,6 +42,7 @@ do_install:append:qcom() {
     install -m 0755 ${WORKDIR}/debug_config_qcm6490.sh ${D}${sysconfdir}/initscripts/debug_config_qcm6490.sh
     install -m 0755 ${WORKDIR}/debug_config_qcs9100.sh ${D}${sysconfdir}/initscripts/debug_config_qcs9100.sh
     install -m 0644 ${WORKDIR}/debug-config.service -D ${D}${systemd_unitdir}/system/debug-config.service
+    install -m 0755 ${WORKDIR}/coresight_reset_source_sink.sh ${D}${sysconfdir}/initscripts/coresight_reset_source_sink.sh
     ln -sf ${systemd_unitdir}/system/debug-config.service ${D}${systemd_unitdir}/system/multi-user.target.wants/debug-config.service
 }
 
@@ -71,4 +73,4 @@ INITSCRIPT_PACKAGES =+ "${PN}-debug-config"
 INITSCRIPT_NAME:${PN}-debug-config = "debug_config.sh"
 
 PACKAGES =+ "${PN}-debug-config"
-FILES:${PN}-debug-config += "${systemd_unitdir}/system/debug-config.service ${systemd_unitdir}/system/multi-user.target.wants/debug-config.service ${sysconfdir}/initscripts/debug_config_qcm6490.sh ${sysconfdir}/initscripts/debug_config_qcs9100.sh ${sysconfdir}/initscripts/debug_config.sh"
+FILES:${PN}-debug-config += "${systemd_unitdir}/system/debug-config.service ${systemd_unitdir}/system/multi-user.target.wants/debug-config.service ${sysconfdir}/initscripts/debug_config_qcm6490.sh ${sysconfdir}/initscripts/debug_config_qcs9100.sh ${sysconfdir}/initscripts/debug_config.sh ${sysconfdir}/initscripts/coresight_reset_source_sink.sh"
