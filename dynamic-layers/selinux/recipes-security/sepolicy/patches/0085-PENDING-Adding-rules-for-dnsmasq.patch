@@ -1,28 +1,29 @@
-From 0cd760e2e610922cc9a20688410c7d71833212e2 Mon Sep 17 00:00:00 2001
+From cea49f149f6bd48d590993b8fb0d5b55c59f8522 Mon Sep 17 00:00:00 2001
 From: Gargi Misra <quic_gmisra@quicinc.com>
-Date: Wed, 17 Jul 2024 13:57:32 +0530
+Date: Mon, 9 Sep 2024 15:02:14 +0530
 Subject: [PATCH] PENDING: Adding rules for dnsmasq
 
+Upstream-status: Pending
 Signed-off-by: Gargi Misra <quic_gmisra@quicinc.com>
 ---
- policy/modules/services/dnsmasq.te |   4 ++++
- 1 files changed, 4 insertions(+)
+ policy/modules/services/dnsmasq.te | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/policy/modules/services/dnsmasq.te b/policy/modules/services/dnsmasq.te
-index 0fdaaf6c6..0a830339c 100644
+index 0fdaaf6c6..d57d5ab18 100644
 --- a/policy/modules/services/dnsmasq.te
 +++ b/policy/modules/services/dnsmasq.te
-@@ -93,6 +93,10 @@ auth_use_nsswitch(dnsmasq_t)
+@@ -93,6 +93,11 @@ auth_use_nsswitch(dnsmasq_t)
 
  logging_send_syslog_msg(dnsmasq_t)
 
 +systemd_read_dir_resolved_runtime(dnsmasq_t)
++systemd_watch_dir_resolved_runtime(dnsmasq_t)
 +corenet_tcp_bind_all_unreserved_ports(dnsmasq_t)
 +fs_search_tmpfs(dnsmasq_t)
 +
  miscfiles_read_localization(dnsmasq_t)
 
  userdom_dontaudit_use_unpriv_user_fds(dnsmasq_t)
-
 --
 2.17.1

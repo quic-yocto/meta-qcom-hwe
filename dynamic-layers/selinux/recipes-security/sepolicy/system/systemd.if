@@ -35,3 +35,21 @@ interface(`systemd_read_dir_resolved_runtime',`
 
         allow $1 systemd_resolved_runtime_t:dir read;
 ')
+
+#######################################
+## <summary>
+##  Allow domain to watch systemd_resolved_runtime dir
+## </summary>
+## <param name="domain">
+##      <summary>
+##      domain allowed access
+##      </summary>
+## </param>
+#
+interface(`systemd_watch_dir_resolved_runtime',`
+        gen_require(`
+                type systemd_resolved_runtime_t;
+        ')
+
+        allow $1 systemd_resolved_runtime_t:dir watch;
+')
