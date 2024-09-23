@@ -1,0 +1,52 @@
+header:
+  version: 12
+
+machine: unset
+
+target:
+  - qcom-minimal-image
+
+distro: qcom-wayland
+
+bblayers_conf_header:
+  standard: |
+    LCONF_VERSION = "7"
+    BBPATH = "${TOPDIR}"
+    BBFILES ?= ""
+
+local_conf_header:
+  standard: |
+    CONF_VERSION = "2"
+    BBMASK = ""
+    BB_GENERATE_MIRROR_TARBALLS = "0"
+    PATCHRESOLVE = "noop"
+    # Force error for dangling bbappends
+    BB_DANGLINGAPPENDS_WARNONLY_forcevariable = "false"
+
+  Parallelism: |
+    # Capture the count of cpu cores available from the host.
+    CPU_COUNT = "${@oe.utils.cpu_count(at_least=2)}"
+    # Number of parallel threads make can run based on cpu cores with a max cap at 20.
+    THREAD_COUNT = "${@oe.utils.cpu_count(at_least=2, at_most=20)}"
+    # Determines how many tasks bitbake should run in parallel.
+    BB_NUMBER_THREADS ?= "${CPU_COUNT}"
+    # Determines how many tasks bitbake should run in parallel during parsing.
+    BB_NUMBER_PARSE_THREADS ?= "${CPU_COUNT}"
+    # Specifies a maximum CPU pressure threshold for bitbake scheduler to start new tasks.
+    BB_PRESSURE_MAX_CPU = "900000"
+    # Specifies a maximum IO pressure threshold for bitbake scheduler to start new tasks.
+    BB_PRESSURE_MAX_IO = "900000"
+    # Specifies a maximum Memory pressure threshold for bitbake scheduler to start new tasks.
+    BB_PRESSURE_MAX_MEMORY = "900000"
+    # Determines how many processes make should run in parallel when running compile tasks.
+    PARALLEL_MAKE ?= "-j ${THREAD_COUNT} -l ${THREAD_COUNT}"
+
+  meta-qcom-hwe: |
+    SDKMACHINE = "x86_64"
+    DISTRO_VERSION = "1.0"
+    DEBUG_BUILD = "0"
+    IMAGE_FSTYPES:append = " tar.xz"
+
+  rm_dir: |
+    # Extra options that can be changed by the user
+    INHERIT += "rm_work"

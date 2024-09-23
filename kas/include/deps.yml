@@ -1,0 +1,59 @@
+header:
+  version: 12
+
+repos:
+  poky:
+    url: https://git.yoctoproject.org/git/poky
+    branch: kirkstone
+    commit: 6bd3969d32730538608e680653e032e66958fe84
+    layers:
+      meta:
+      meta-poky:
+
+  meta-openembedded:
+    url: https://git.openembedded.org/meta-openembedded
+    branch: kirkstone
+    commit: 52ecd66835dcfd8b4e55c9cb6325908ccea6a4e7
+    layers:
+      meta-oe:
+      meta-filesystems:
+      meta-networking:
+      meta-perl:
+      meta-python:
+      meta-gnome:
+
+  meta-qcom:
+    url: https://github.com/Linaro/meta-qcom
+    branch: kirkstone
+    commit: 7c801f12f799ec59dfe393ec20ad8b5963a74c41
+
+  meta-qcom-hwe:
+    url: https://github.com/quic-yocto/meta-qcom-hwe
+    branch: kirkstone
+    commit: cd798c785ccc8e110693630e82411498b75cfb49
+
+  meta-qcom-distro:
+    url: https://github.com/quic-yocto/meta-qcom-distro
+    branch: kirkstone
+    commit: 40f6afb30ceeb4e2f1bd85ffd744d6a65aa7a88a
+
+  meta-security:
+    url: https://git.yoctoproject.org/meta-security
+    branch: kirkstone
+    commit: 353078bc06c8b471736daab6ed193e30d533d1f1
+
+  meta-virtualization:
+    url: https://git.yoctoproject.org/meta-virtualization
+    branch: kirkstone
+    commit: ef76369f844f8b5afea416372172824987ad4fec
+
+  meta-selinux:
+    url: https://git.yoctoproject.org/meta-selinux
+    branch: kirkstone
+    commit: a401f4b2816a0b41ce8d9351542658c721935bcd
+
+  meta-rust:
+    url: https://github.com/meta-rust/meta-rust
+    branch: master
+    commit: 9611b42d73c7546c3d845da380943a0a4f4205f0
+

@@ -1,0 +1,5 @@
+header:
+  version: 12
+
+env:
+  QCOM_SELECTED_BSP: "base"

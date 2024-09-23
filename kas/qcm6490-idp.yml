@@ -1,0 +1,8 @@
+header:
+  version: 12
+
+  includes:
+    - include/deps.yml
+    - include/base.yml
+
+machine: qcm6490-idp
