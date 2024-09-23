@@ -51,7 +51,7 @@ PREFERRED_VERSION_libqmi:qcom-custom-bsp ?= "1.34.0.qcom"
 PREFERRED_VERSION_libqrtr-glib:qcom-custom-bsp ?= "1.2.0.qcom"
 
 #Use qcom specific version of wpa-supplicant in custom-bsp
-PREFERRED_VERSION_wpa-supplicant:qcom-custom-bsp ?= "6.0.qcom"
+PREFERRED_VERSION_wpa-supplicant:qcom-custom-bsp ?= "2.10.qcom"
 
 # For module signing
 INHERIT += " qmodule"
