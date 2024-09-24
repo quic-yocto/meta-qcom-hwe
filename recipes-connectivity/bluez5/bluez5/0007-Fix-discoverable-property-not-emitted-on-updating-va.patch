@@ -13,9 +13,7 @@ From DUT, bluetoothctl go to menu advertise
 set discoverable to off and then advertise on.
 
 Signed-off-by: Prathibha Madugonde <quic_prathm@quicinc.com>
-
-upstream-status: backport
-
+Upstream-Status: Backport
 ---
  client/advertising.c | 8 +-------
  1 file changed, 1 insertion(+), 7 deletions(-)

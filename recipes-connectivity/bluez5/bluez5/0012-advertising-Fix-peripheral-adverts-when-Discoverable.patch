@@ -12,7 +12,7 @@ even when user wanted non-discoverable advertisements.
 
 This change will add empty Flags when "Discoverable" parameter is set.
 
-Upstream-Status: BACKPORT
+Upstream-Status: Backport
 ---
  src/advertising.c |  8 ++------
  src/shared/ad.c   | 14 ++++++++++++++

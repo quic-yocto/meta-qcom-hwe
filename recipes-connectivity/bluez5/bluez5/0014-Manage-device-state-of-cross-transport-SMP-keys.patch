@@ -17,6 +17,7 @@ So bluetoothd needs to consider LE paired/bonded when receiving SMP keys
 even if they are cross-transport derived.
 
 Signed-off-by: Chenhong Zhou <quic_chezhou@quicinc.com>
+Upstream-Status: Pending
 ---
  src/adapter.c | 54 ++++++++++++++++++++++++++++++++++++++-------------
  1 file changed, 41 insertions(+), 13 deletions(-)

@@ -16,7 +16,7 @@ dbus: arguments to dbus_message_get_no_reply() were incorrect, assertion
 This is normally a bug in some application using the D-Bus library.
 
 Signed-off-by: Cheng Jiang <quic_chejiang@quicinc.com>
-Upstream-Status: BACKPORT
+Upstream-Status: Backport
 ---
  src/advertising.c | 11 ++++++++++-
  1 file changed, 10 insertions(+), 1 deletion(-)

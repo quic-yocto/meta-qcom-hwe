@@ -16,7 +16,8 @@ From DUT, bluetoothctl go to menu advertise
 set discoverable to off and then advertise on.
 In AD Flags BR/EDR not supported BIT shall be set.
 
-Upstream-Status: BACKPORT
+Signed-off-by: Prathibha Madugonde <quic_prathm@quicinc.com>
+Upstream-Status: Backport
 
 ---
  src/advertising.c | 3 +--

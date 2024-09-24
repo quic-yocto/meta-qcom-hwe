@@ -8,7 +8,7 @@ Call the function manager_emit_transfer_property() from plugins/*.c
 wherever plugin has transfer object present.
 
 Signed-off-by: Amisha Jain <quic_amisjain@quicinc.com>
-Upstream-Status: PENDING
+Upstream-Status: Pending
 ---
  obexd/plugins/ftp.c | 5 +++++
  obexd/plugins/opp.c | 5 +++++

@@ -19,6 +19,10 @@ attributes:
 [/org/bluez/app/service0/chrc1]# gatt.read
 01                                               .
 [/org/bluez/app/service0/chrc1]#
+
+Signed-off-by: Damodar Reddy GangiReddy<quic_dgangire@quicinc.com>
+Upstream-Status: Backport
+
 ---
  client/gatt.c | 298 +++++++++++++++++++++++++++++++++++++++-----------
  client/gatt.h |   4 +

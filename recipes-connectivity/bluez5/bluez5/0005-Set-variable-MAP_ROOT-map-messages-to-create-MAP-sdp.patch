@@ -5,7 +5,7 @@ Subject: [PATCH] Set variable MAP_ROOT="map-messages" to create MAP sdp record
 
 Signed-off-by: Damodar Reddy GangiReddy<quic_dgangire@quicinc.com>
 
-upstream-status: inappropriate
+Upstream-Status: Inappropriate
 
 ---
  obexd/src/obex.service.in | 1 +

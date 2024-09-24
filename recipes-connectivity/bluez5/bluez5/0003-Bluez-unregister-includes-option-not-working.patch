@@ -8,7 +8,7 @@ included service uuid, since the space between them is missing
 the menu option is not working as intended.
 
 Signed-off-by: Naga Bhavani Akella <quic_nakella@quicinc.com>
-Upstream-Status: PENDING
+Upstream-Status: Pending
 ---
  client/main.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
