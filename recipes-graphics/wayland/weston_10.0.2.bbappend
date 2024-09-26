@@ -6,12 +6,12 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d79ee9e66bb0f95d3386a7acae780b70 \
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/weston-launch:"
 
-SRC_URI:append = "   file://weston.png \
-              file://weston.desktop \
-              file://xwayland.weston-start \
-              file://systemd-notify.weston-start \
-              file://0001-weston-Add-stack-protector-flag.patch \
-              file://0001-weston-enable-gbm-buffer-backend-protocol.patch"
+SRC_URI:append:qcom = "   file://weston.png \
+                          file://weston.desktop \
+                          file://xwayland.weston-start \
+                          file://systemd-notify.weston-start \
+                          file://0001-weston-Add-stack-protector-flag.patch \
+                          file://0001-weston-enable-gbm-buffer-backend-protocol.patch"
 
 SRC_URI:append:qcm6490 = "  file://weston.ini \
                             file://0001-Add-sdm-backend.patch \
