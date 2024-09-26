@@ -1,12 +1,13 @@
-name: Push Build
+name: Build Yocto
 
 on:
+  pull_request:
   push:
     branches:
       - main
 
 jobs:
-  kas:
+  compile:
     strategy:
       fail-fast: true
       matrix:
@@ -21,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: kas build
+      - name: Kas build
         run: |
           export DL_DIR=/srv/gh-runners/quic-yocto/downloads
           export SSTATE_DIR=/srv/gh-runners/quic-yocto/sstate-cache
