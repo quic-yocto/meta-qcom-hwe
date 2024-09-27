@@ -1,0 +1,45 @@
+From 652c245f787e85231e4db3c37a068f0c6180e85e Mon Sep 17 00:00:00 2001
+From: Mukesh Ojha <quic_mojha@quicinc.com>
+Date: Fri, 5 Jul 2024 21:02:52 +0530
+Subject: [PATCH 3/4] FROMLIST: arm64: dts: qcom: sa8775p: Add TCSR halt
+ register space
+
+Enable download mode for sa8775p which can help collect
+ramdump for this SoC.
+
+Change-Id: I0b8b5541e875783ea03e946c2d70ffb2db9e41dd
+Signed-off-by: Mukesh Ojha <quic_mojha@quicinc.com>
+Link: https://lore.kernel.org/lkml/20240705153252.1571814-2-quic_mojha@quicinc.com/
+Signed-off-by: Shivendra Pratap <quic_spratap@quicinc.com>
+Upstream-status: Submitted [ https://lore.kernel.org/lkml/20240705153252.1571814-2-quic_mojha@quicinc.com/ ]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index e6eb32582abf..5f0292ecbb1f 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -226,6 +226,7 @@ firmware {
+ 		scm {
+ 			compatible = "qcom,scm-sa8775p", "qcom,scm";
+ 			memory-region = <&tz_ffi_mem>;
++			qcom,dload-mode = <&tcsr 0x13000>;
+ 		};
+ 	};
+ 
+@@ -1939,6 +1940,11 @@ tcsr_mutex: hwlock@1f40000 {
+ 			#hwlock-cells = <1>;
+ 		};
+ 
++		tcsr: syscon@1fc0000 {
++			compatible = "qcom,sa8775p-tcsr", "syscon";
++			reg = <0x0 0x1fc0000 0x0 0x30000>;
++		};
++
+ 		gpucc: clock-controller@3d90000 {
+ 			compatible = "qcom,sa8775p-gpucc";
+ 			reg = <0x0 0x03d90000 0x0 0xa000>;
+-- 
+2.34.1
+

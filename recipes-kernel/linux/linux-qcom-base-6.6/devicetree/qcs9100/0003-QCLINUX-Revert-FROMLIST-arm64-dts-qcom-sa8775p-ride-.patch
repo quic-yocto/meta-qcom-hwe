@@ -1,0 +1,53 @@
+From b9e1531573e2a2f1982169efd9a9f445da98991c Mon Sep 17 00:00:00 2001
+From: Komal Bajaj <quic_kbajaj@quicinc.com>
+Date: Fri, 30 Aug 2024 17:56:02 +0530
+Subject: [PATCH 3/5] QCLINUX: Revert "FROMLIST: arm64: dts: qcom:
+ sa8775p-ride: enable remoteprocs"
+
+This reverts commit 62ffd63a9255dc2bc75de5b4db41c1747f6fadbc.
+
+Signed-off-by: Komal Bajaj <quic_kbajaj@quicinc.com>
+Upstream-Status: Inappropriate [Revert]
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts | 25 -----------------------
+ 1 file changed, 25 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index c8abdd65204f..d43dc5b9a213 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -722,31 +722,6 @@ &pcie1_phy {
+ 	status = "okay";
+ };
+ 
+-&remoteproc_adsp {
+-	firmware-name = "qcom/sa8775p/adsp.mbn";
+-	status = "okay";
+-};
+-
+-&remoteproc_cdsp0 {
+-	firmware-name = "qcom/sa8775p/cdsp0.mbn";
+-	status = "okay";
+-};
+-
+-&remoteproc_cdsp1 {
+-	firmware-name = "qcom/sa8775p/cdsp1.mbn";
+-	status = "okay";
+-};
+-
+-&remoteproc_gpdsp0 {
+-	firmware-name = "qcom/sa8775p/gpdsp0.mbn";
+-	status = "okay";
+-};
+-
+-&remoteproc_gpdsp1 {
+-	firmware-name = "qcom/sa8775p/gpdsp1.mbn";
+-	status = "okay";
+-};
+-
+ &uart10 {
+ 	compatible = "qcom,geni-debug-uart";
+ 	pinctrl-0 = <&qup_uart10_default>;
+-- 
+2.45.2
+

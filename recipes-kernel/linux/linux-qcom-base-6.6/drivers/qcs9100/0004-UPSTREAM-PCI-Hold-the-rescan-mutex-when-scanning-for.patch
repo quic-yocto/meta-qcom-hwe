@@ -1,0 +1,39 @@
+From 0f3e06381a98342e64fa53972b16f74339c08913 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Wed, 12 Jun 2024 10:20:14 +0200
+Subject: [PATCH 4/9] UPSTREAM: PCI: Hold the rescan mutex when scanning for
+ the first time
+
+With the introduction of PCI device power control drivers that will be
+able to trigger the port rescan when probing, we need to hold the rescan
+mutex during the initial pci_host_probe() too or the two could get in
+each other's way.
+
+Tested-by: Amit Pundir <amit.pundir@linaro.org>
+Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8550-QRD, SM8650-QRD & SM8650-HDK
+Tested-by: Caleb Connolly <caleb.connolly@linaro.org> # OnePlus 8T
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Link: https://lore.kernel.org/r/20240612082019.19161-2-brgl@bgdev.pl
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 5799eba8eeabe79a476016f22a7aea57467b7638]
+---
+ drivers/pci/probe.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 43159965e09e..5f0988a36c52 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -3072,7 +3072,9 @@ int pci_host_probe(struct pci_host_bridge *bridge)
+ 	struct pci_bus *bus, *child;
+ 	int ret;
+ 
++	pci_lock_rescan_remove();
+ 	ret = pci_scan_root_bus_bridge(bridge);
++	pci_unlock_rescan_remove();
+ 	if (ret < 0) {
+ 		dev_err(bridge->dev.parent, "Scanning root bridge failed");
+ 		return ret;
+-- 
+2.25.1
+

@@ -1,0 +1,33 @@
+From 6ac8473ebaf854509505bb2670319d8fff62901f Mon Sep 17 00:00:00 2001
+From: Tengfei Fan <quic_tengfan@quicinc.com>
+Date: Mon, 5 Aug 2024 19:08:03 +0200
+Subject: [PATCH 2/6] UPSTREAM: dt-bindings: mailbox: qcom-ipcc: Add GPDSP0 and
+ GPDSP1 clients
+
+Add GPDSP0 and GPDSP1 clients for SA8775p platform.
+
+Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Link: https://lore.kernel.org/r/20240805-topic-sa8775p-iot-remoteproc-v4-2-86affdc72c04@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 89817522b1a58970ac1247f65af009b046344fb0]
+---
+ include/dt-bindings/mailbox/qcom-ipcc.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/dt-bindings/mailbox/qcom-ipcc.h b/include/dt-bindings/mailbox/qcom-ipcc.h
+index fbfa3febc66d..fd85a79381b3 100644
+--- a/include/dt-bindings/mailbox/qcom-ipcc.h
++++ b/include/dt-bindings/mailbox/qcom-ipcc.h
+@@ -33,5 +33,7 @@
+ #define IPCC_CLIENT_NSP1		18
+ #define IPCC_CLIENT_TME			23
+ #define IPCC_CLIENT_WPSS		24
++#define IPCC_CLIENT_GPDSP0		31
++#define IPCC_CLIENT_GPDSP1		32
+ 
+ #endif
+-- 
+2.45.2
+

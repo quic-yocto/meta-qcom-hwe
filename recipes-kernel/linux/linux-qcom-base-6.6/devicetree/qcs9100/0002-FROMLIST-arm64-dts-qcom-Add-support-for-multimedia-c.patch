@@ -1,0 +1,93 @@
+From 62b42469595ebeb6c3e49ea839edc82f510640c1 Mon Sep 17 00:00:00 2001
+From: Taniya Das <quic_tdas@quicinc.com>
+Date: Sat, 17 Aug 2024 15:28:09 +0530
+Subject: [PATCH] FROMLIST: arm64: dts: qcom: Add support for multimedia clock
+ controllers
+
+Add support for video, camera, display0 and display1 clock
+controllers on SA8775P platform.
+
+Signed-off-by: Taniya Das <quic_tdas@quicinc.com>
+Upstream-Status: Submitted [https://patchwork.kernel.org/project/linux-clk/patch/20240816-sa8775p-mm-v3-v1-8-77d53c3c0cef@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 57 +++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index e6eb32582abf..e7febe9854a2 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -2121,6 +2121,47 @@ llcc: system-cache-controller@9200000 {
+ 			interrupts = <GIC_SPI 580 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+ 
++		videocc: clock-controller@abf0000 {
++			compatible = "qcom,sa8775p-videocc";
++			reg = <0x0 0x0abf0000 0x0 0x10000>;
++			clocks = <&gcc GCC_VIDEO_AHB_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK_A>,
++				 <&sleep_clk>;
++			power-domains = <&rpmhpd SA8775P_MMCX>;
++			#clock-cells = <1>;
++			#reset-cells = <1>;
++			#power-domain-cells = <1>;
++		};
++
++		camcc: clock-controller@ade0000 {
++			compatible = "qcom,sa8775p-camcc";
++			reg = <0x0 0x0ade0000 0x0 0x20000>;
++			clocks = <&gcc GCC_CAMERA_AHB_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK_A>,
++				 <&sleep_clk>;
++			power-domains = <&rpmhpd SA8775P_MMCX>;
++			#clock-cells = <1>;
++			#reset-cells = <1>;
++			#power-domain-cells = <1>;
++		};
++
++		dispcc0: clock-controller@af00000 {
++			compatible = "qcom,sa8775p-dispcc0";
++			reg = <0x0 0x0af00000 0x0 0x20000>;
++			clocks = <&gcc GCC_DISP_AHB_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK_A>,
++				 <&sleep_clk>,
++				 <0>, <0>, <0>, <0>,
++				 <0>, <0>, <0>, <0>;
++			power-domains = <&rpmhpd SA8775P_MMCX>;
++			#clock-cells = <1>;
++			#reset-cells = <1>;
++			#power-domain-cells = <1>;
++		};
++
+ 		pdc: interrupt-controller@b220000 {
+ 			compatible = "qcom,sa8775p-pdc", "qcom,pdc";
+ 			reg = <0x0 0x0b220000 0x0 0x30000>,
+@@ -2168,6 +2209,22 @@ pdc: interrupt-controller@b220000 {
+ 			interrupt-controller;
+ 		};
+ 
++		dispcc1: clock-controller@22100000 {
++			compatible = "qcom,sa8775p-dispcc1";
++			reg = <0x0 0x22100000 0x0 0x20000>;
++			clocks = <&gcc GCC_DISP_AHB_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK_A>,
++				 <&sleep_clk>,
++				 <0>, <0>, <0>, <0>,
++				 <0>, <0>, <0>, <0>;
++			power-domains = <&rpmhpd SA8775P_MMCX>;
++			#clock-cells = <1>;
++			#reset-cells = <1>;
++			#power-domain-cells = <1>;
++			status = "disabled";
++		};
++
+ 		aoss_qmp: power-management@c300000 {
+ 			compatible = "qcom,sa8775p-aoss-qmp", "qcom,aoss-qmp";
+ 			reg = <0x0 0x0c300000 0x0 0x400>;
+-- 
+2.45.2
+

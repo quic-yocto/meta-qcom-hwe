@@ -1,0 +1,56 @@
+From fbc975ad897b9c51e66da9283febea6accc9317c Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 30 Aug 2024 19:21:35 +0530
+Subject: [PATCH 6/6] BACKPORT: arm64: dts: qcom: sa8775p-ride: enable remoteprocs
+
+Enable all remoteproc nodes on the sa8775p-ride board and point to the
+appropriate firmware files.
+
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Link: https://lore.kernel.org/r/20240805-topic-sa8775p-iot-remoteproc-v4-6-86affdc72c04@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 2bec6f6a22815c6a5651d2b9aa4f54baf1ae5e73]
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts | 25 +++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index d43dc5b9a213..c8abdd65204f 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -722,6 +722,31 @@ &pcie1_phy {
+ 	status = "okay";
+ };
+ 
++&remoteproc_adsp {
++	firmware-name = "qcom/sa8775p/adsp.mbn";
++	status = "okay";
++};
++
++&remoteproc_cdsp0 {
++	firmware-name = "qcom/sa8775p/cdsp0.mbn";
++	status = "okay";
++};
++
++&remoteproc_cdsp1 {
++	firmware-name = "qcom/sa8775p/cdsp1.mbn";
++	status = "okay";
++};
++
++&remoteproc_gpdsp0 {
++	firmware-name = "qcom/sa8775p/gpdsp0.mbn";
++	status = "okay";
++};
++
++&remoteproc_gpdsp1 {
++	firmware-name = "qcom/sa8775p/gpdsp1.mbn";
++	status = "okay";
++};
++
+ &uart10 {
+ 	compatible = "qcom,geni-debug-uart";
+ 	pinctrl-0 = <&qup_uart10_default>;
+-- 
+2.45.2
+

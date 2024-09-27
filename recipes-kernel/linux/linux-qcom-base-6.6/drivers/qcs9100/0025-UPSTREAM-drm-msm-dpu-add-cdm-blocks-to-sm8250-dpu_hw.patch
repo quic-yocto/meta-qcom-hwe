@@ -1,0 +1,38 @@
+From 2488351655609a3b59140841a7fc58618ea8941d Mon Sep 17 00:00:00 2001
+From: Abhinav Kumar <quic_abhinavk@quicinc.com>
+Date: Tue, 12 Dec 2023 12:52:44 -0800
+Subject: [PATCH 25/33] UPSTREAM: drm/msm/dpu: add cdm blocks to sm8250
+ dpu_hw_catalog
+
+Add CDM blocks to the sm8250 dpu_hw_catalog to support
+YUV format output from writeback block.
+
+changes in v2:
+	- re-use the cdm definition from sc7280
+
+Signed-off-by: Abhinav Kumar <quic_abhinavk@quicinc.com>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Patchwork: https://patchwork.freedesktop.org/patch/571819/
+Link: https://lore.kernel.org/r/20231212205254.12422-7-quic_abhinavk@quicinc.com
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Mahadevan <quic_mahap@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git e1239661c9e9a628e0871f461bafebba324658d9]
+---
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h
+index 48c73c9384ff..a57d50b1f028 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h
+@@ -384,6 +384,7 @@ const struct dpu_mdss_cfg dpu_sm8250_cfg = {
+ 	.mdss_ver = &sm8250_mdss_ver,
+ 	.caps = &sm8250_dpu_caps,
+ 	.mdp = &sm8250_mdp,
++	.cdm = &sc7280_cdm,
+ 	.ctl_count = ARRAY_SIZE(sm8250_ctl),
+ 	.ctl = sm8250_ctl,
+ 	.sspp_count = ARRAY_SIZE(sm8250_sspp),
+-- 
+2.34.1
+

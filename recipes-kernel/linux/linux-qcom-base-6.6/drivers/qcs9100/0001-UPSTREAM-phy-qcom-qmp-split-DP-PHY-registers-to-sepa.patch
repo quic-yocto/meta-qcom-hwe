@@ -1,0 +1,371 @@
+From b827e370e61b1838616c299cc95209c0e22efd66 Mon Sep 17 00:00:00 2001
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Fri, 19 Jul 2024 12:14:44 +0530
+Subject: [PATCH 1/9] UPSTREAM: phy: qcom: qmp: split DP PHY registers to
+ separate headers
+
+Split the DP PHY register definitions to separate headers, removing them
+from the global one.
+
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20240126-phy-qmp-merge-common-v2-4-a463d0b57836@linaro.org
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+Signed-off-by: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Signed-off-by: Ritesh Kumar <quic_riteshk@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git ef643d55fdeb30299367e0e15ef47945f60d5a11]
+---
+ drivers/phy/qualcomm/phy-qcom-edp.c           |  3 +-
+ drivers/phy/qualcomm/phy-qcom-qmp-combo.c     | 10 ++-
+ drivers/phy/qualcomm/phy-qcom-qmp-dp-com-v3.h | 18 ++++
+ drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v3.h | 21 +++++
+ drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v4.h | 19 ++++
+ drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v5.h | 13 +++
+ drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v6.h | 13 +++
+ drivers/phy/qualcomm/phy-qcom-qmp-dp-phy.h    | 62 +++++++++++++
+ .../phy/qualcomm/phy-qcom-qmp-usb-legacy.c    |  2 +
+ drivers/phy/qualcomm/phy-qcom-qmp.h           | 88 +++++++++++++++++++
+ 10 files changed, 247 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/phy/qualcomm/phy-qcom-qmp-dp-com-v3.h
+ create mode 100644 drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v3.h
+ create mode 100644 drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v4.h
+ create mode 100644 drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v5.h
+ create mode 100644 drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v6.h
+ create mode 100644 drivers/phy/qualcomm/phy-qcom-qmp-dp-phy.h
+
+diff --git a/drivers/phy/qualcomm/phy-qcom-edp.c b/drivers/phy/qualcomm/phy-qcom-edp.c
+index 8e5078304646..9818d994c68b 100644
+--- a/drivers/phy/qualcomm/phy-qcom-edp.c
++++ b/drivers/phy/qualcomm/phy-qcom-edp.c
+@@ -21,7 +21,8 @@
+ 
+ #include <dt-bindings/phy/phy.h>
+ 
+-#include "phy-qcom-qmp.h"
++#include "phy-qcom-qmp-dp-phy.h"
++#include "phy-qcom-qmp-qserdes-com-v4.h"
+ 
+ /* EDP_PHY registers */
+ #define DP_PHY_CFG                              0x0010
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-combo.c b/drivers/phy/qualcomm/phy-qcom-qmp-combo.c
+index a2745f9eb68b..8598f2dc4092 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-combo.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-combo.c
+@@ -31,6 +31,14 @@
+ #include "phy-qcom-qmp-pcs-usb-v5.h"
+ #include "phy-qcom-qmp-pcs-usb-v6.h"
+ 
++#include "phy-qcom-qmp-dp-com-v3.h"
++
++#include "phy-qcom-qmp-dp-phy.h"
++#include "phy-qcom-qmp-dp-phy-v3.h"
++#include "phy-qcom-qmp-dp-phy-v4.h"
++#include "phy-qcom-qmp-dp-phy-v5.h"
++#include "phy-qcom-qmp-dp-phy-v6.h"
++
+ /* QPHY_SW_RESET bit */
+ #define SW_RESET				BIT(0)
+ /* QPHY_POWER_DOWN_CONTROL */
+@@ -2212,7 +2220,7 @@ static int qmp_v456_configure_dp_phy(struct qmp_combo *qmp)
+ 	u32 status;
+ 	int ret;
+ 
+-	writel(0x0f, qmp->dp_dp_phy + QSERDES_V4_DP_PHY_CFG_1);
++	writel(0x0f, qmp->dp_dp_phy + QSERDES_DP_PHY_CFG_1);
+ 
+ 	qmp_combo_configure_dp_mode(qmp);
+ 
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-dp-com-v3.h b/drivers/phy/qualcomm/phy-qcom-qmp-dp-com-v3.h
+new file mode 100644
+index 000000000000..396179ef38b0
+--- /dev/null
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-dp-com-v3.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ */
++
++#ifndef QCOM_PHY_QMP_DP_COM_V3_H_
++#define QCOM_PHY_QMP_DP_COM_V3_H_
++
++/* Only for QMP V3 & V4 PHY - DP COM registers */
++#define QPHY_V3_DP_COM_PHY_MODE_CTRL			0x00
++#define QPHY_V3_DP_COM_SW_RESET				0x04
++#define QPHY_V3_DP_COM_POWER_DOWN_CTRL			0x08
++#define QPHY_V3_DP_COM_SWI_CTRL				0x0c
++#define QPHY_V3_DP_COM_TYPEC_CTRL			0x10
++#define QPHY_V3_DP_COM_TYPEC_PWRDN_CTRL			0x14
++#define QPHY_V3_DP_COM_RESET_OVRD_CTRL			0x1c
++
++#endif
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v3.h b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v3.h
+new file mode 100644
+index 000000000000..00a9702abccd
+--- /dev/null
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v3.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ */
++
++#ifndef QCOM_PHY_QMP_DP_PHY_V3_H_
++#define QCOM_PHY_QMP_DP_PHY_V3_H_
++
++/* Only for QMP V3 PHY - DP PHY registers */
++#define QSERDES_V3_DP_PHY_AUX_INTERRUPT_MASK		0x048
++#define QSERDES_V3_DP_PHY_AUX_INTERRUPT_CLEAR		0x04c
++#define QSERDES_V3_DP_PHY_AUX_BIST_CFG			0x050
++
++#define QSERDES_V3_DP_PHY_VCO_DIV			0x064
++#define QSERDES_V3_DP_PHY_TX0_TX1_LANE_CTL		0x06c
++#define QSERDES_V3_DP_PHY_TX2_TX3_LANE_CTL		0x088
++
++#define QSERDES_V3_DP_PHY_SPARE0			0x0ac
++#define QSERDES_V3_DP_PHY_STATUS			0x0c0
++
++#endif
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v4.h b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v4.h
+new file mode 100644
+index 000000000000..ed6795e1257c
+--- /dev/null
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v4.h
+@@ -0,0 +1,19 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ */
++
++#ifndef QCOM_PHY_QMP_DP_PHY_V4_H_
++#define QCOM_PHY_QMP_DP_PHY_V4_H_
++
++/* Only for QMP V4 PHY - DP PHY registers */
++#define QSERDES_V4_DP_PHY_AUX_INTERRUPT_MASK		0x054
++#define QSERDES_V4_DP_PHY_AUX_INTERRUPT_CLEAR		0x058
++#define QSERDES_V4_DP_PHY_VCO_DIV			0x070
++#define QSERDES_V4_DP_PHY_TX0_TX1_LANE_CTL		0x078
++#define QSERDES_V4_DP_PHY_TX2_TX3_LANE_CTL		0x09c
++#define QSERDES_V4_DP_PHY_SPARE0			0x0c8
++#define QSERDES_V4_DP_PHY_AUX_INTERRUPT_STATUS		0x0d8
++#define QSERDES_V4_DP_PHY_STATUS			0x0dc
++
++#endif
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v5.h b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v5.h
+new file mode 100644
+index 000000000000..f5cfacf9be96
+--- /dev/null
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v5.h
+@@ -0,0 +1,13 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ */
++
++#ifndef QCOM_PHY_QMP_DP_PHY_V5_H_
++#define QCOM_PHY_QMP_DP_PHY_V5_H_
++
++/* Only for QMP V5 PHY - DP PHY registers */
++#define QSERDES_V5_DP_PHY_AUX_INTERRUPT_STATUS		0x0d8
++#define QSERDES_V5_DP_PHY_STATUS			0x0dc
++
++#endif
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v6.h b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v6.h
+new file mode 100644
+index 000000000000..01a20d3be4b8
+--- /dev/null
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy-v6.h
+@@ -0,0 +1,13 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ */
++
++#ifndef QCOM_PHY_QMP_DP_PHY_V6_H_
++#define QCOM_PHY_QMP_DP_PHY_V6_H_
++
++/* Only for QMP V6 PHY - DP PHY registers */
++#define QSERDES_V6_DP_PHY_AUX_INTERRUPT_STATUS		0x0e0
++#define QSERDES_V6_DP_PHY_STATUS			0x0e4
++
++#endif
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy.h b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy.h
+new file mode 100644
+index 000000000000..0ebd405bcaf0
+--- /dev/null
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-dp-phy.h
+@@ -0,0 +1,62 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ */
++
++#ifndef QCOM_PHY_QMP_DP_PHY_H_
++#define QCOM_PHY_QMP_DP_PHY_H_
++
++/* QMP PHY - DP PHY registers */
++#define QSERDES_DP_PHY_REVISION_ID0			0x000
++#define QSERDES_DP_PHY_REVISION_ID1			0x004
++#define QSERDES_DP_PHY_REVISION_ID2			0x008
++#define QSERDES_DP_PHY_REVISION_ID3			0x00c
++#define QSERDES_DP_PHY_CFG				0x010
++#define QSERDES_DP_PHY_CFG_1				0x014
++#define QSERDES_DP_PHY_PD_CTL				0x018
++#define QSERDES_DP_PHY_MODE				0x01c
++#define QSERDES_DP_PHY_AUX_CFG0				0x020
++#define QSERDES_DP_PHY_AUX_CFG1				0x024
++#define QSERDES_DP_PHY_AUX_CFG2				0x028
++#define QSERDES_DP_PHY_AUX_CFG3				0x02c
++#define QSERDES_DP_PHY_AUX_CFG4				0x030
++#define QSERDES_DP_PHY_AUX_CFG5				0x034
++#define QSERDES_DP_PHY_AUX_CFG6				0x038
++#define QSERDES_DP_PHY_AUX_CFG7				0x03c
++#define QSERDES_DP_PHY_AUX_CFG8				0x040
++#define QSERDES_DP_PHY_AUX_CFG9				0x044
++
++/* QSERDES COM_BIAS_EN_CLKBUFLR_EN bits */
++# define QSERDES_V3_COM_BIAS_EN				0x0001
++# define QSERDES_V3_COM_BIAS_EN_MUX			0x0002
++# define QSERDES_V3_COM_CLKBUF_R_EN			0x0004
++# define QSERDES_V3_COM_CLKBUF_L_EN			0x0008
++# define QSERDES_V3_COM_EN_SYSCLK_TX_SEL		0x0010
++# define QSERDES_V3_COM_CLKBUF_RX_DRIVE_L		0x0020
++# define QSERDES_V3_COM_CLKBUF_RX_DRIVE_R		0x0040
++
++/* QPHY_TX_TX_EMP_POST1_LVL bits */
++# define DP_PHY_TXn_TX_EMP_POST1_LVL_MASK		0x001f
++# define DP_PHY_TXn_TX_EMP_POST1_LVL_MUX_EN		0x0020
++
++/* QPHY_TX_TX_DRV_LVL bits */
++# define DP_PHY_TXn_TX_DRV_LVL_MASK			0x001f
++# define DP_PHY_TXn_TX_DRV_LVL_MUX_EN			0x0020
++
++/* QSERDES_DP_PHY_PD_CTL bits */
++# define DP_PHY_PD_CTL_PWRDN				0x001
++# define DP_PHY_PD_CTL_PSR_PWRDN			0x002
++# define DP_PHY_PD_CTL_AUX_PWRDN			0x004
++# define DP_PHY_PD_CTL_LANE_0_1_PWRDN			0x008
++# define DP_PHY_PD_CTL_LANE_2_3_PWRDN			0x010
++# define DP_PHY_PD_CTL_PLL_PWRDN			0x020
++# define DP_PHY_PD_CTL_DP_CLAMP_EN			0x040
++
++/* QPHY_DP_PHY_AUX_INTERRUPT_STATUS bits */
++# define PHY_AUX_STOP_ERR_MASK				0x01
++# define PHY_AUX_DEC_ERR_MASK				0x02
++# define PHY_AUX_SYNC_ERR_MASK				0x04
++# define PHY_AUX_ALIGN_ERR_MASK				0x08
++# define PHY_AUX_REQ_ERR_MASK				0x10
++
++#endif
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-usb-legacy.c b/drivers/phy/qualcomm/phy-qcom-qmp-usb-legacy.c
+index cf466f6df94d..ec51c8e20ac5 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-usb-legacy.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-usb-legacy.c
+@@ -25,6 +25,8 @@
+ #include "phy-qcom-qmp-pcs-usb-v4.h"
+ #include "phy-qcom-qmp-pcs-usb-v5.h"
+ 
++#include "phy-qcom-qmp-dp-com-v3.h"
++
+ /* QPHY_SW_RESET bit */
+ #define SW_RESET				BIT(0)
+ /* QPHY_POWER_DOWN_CONTROL */
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp.h b/drivers/phy/qualcomm/phy-qcom-qmp.h
+index e2c22edfe653..2c1651a09942 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp.h
++++ b/drivers/phy/qualcomm/phy-qcom-qmp.h
+@@ -142,4 +142,92 @@
+ #define QSERDES_V6_DP_PHY_AUX_INTERRUPT_STATUS		0x0e0
+ #define QSERDES_V6_DP_PHY_STATUS			0x0e4
+ 
++/* Only for QMP V3 & V4 PHY - DP COM registers */
++#define QPHY_V3_DP_COM_PHY_MODE_CTRL			0x00
++#define QPHY_V3_DP_COM_SW_RESET				0x04
++#define QPHY_V3_DP_COM_POWER_DOWN_CTRL			0x08
++#define QPHY_V3_DP_COM_SWI_CTRL				0x0c
++#define QPHY_V3_DP_COM_TYPEC_CTRL			0x10
++#define QPHY_V3_DP_COM_TYPEC_PWRDN_CTRL			0x14
++#define QPHY_V3_DP_COM_RESET_OVRD_CTRL			0x1c
++
++/* QSERDES V3 COM bits */
++# define QSERDES_V3_COM_BIAS_EN				0x0001
++# define QSERDES_V3_COM_BIAS_EN_MUX			0x0002
++# define QSERDES_V3_COM_CLKBUF_R_EN			0x0004
++# define QSERDES_V3_COM_CLKBUF_L_EN			0x0008
++# define QSERDES_V3_COM_EN_SYSCLK_TX_SEL		0x0010
++# define QSERDES_V3_COM_CLKBUF_RX_DRIVE_L		0x0020
++# define QSERDES_V3_COM_CLKBUF_RX_DRIVE_R		0x0040
++
++/* QSERDES V3 TX bits */
++# define DP_PHY_TXn_TX_EMP_POST1_LVL_MASK		0x001f
++# define DP_PHY_TXn_TX_EMP_POST1_LVL_MUX_EN		0x0020
++# define DP_PHY_TXn_TX_DRV_LVL_MASK			0x001f
++# define DP_PHY_TXn_TX_DRV_LVL_MUX_EN			0x0020
++
++/* QMP PHY - DP PHY registers */
++#define QSERDES_DP_PHY_REVISION_ID0			0x000
++#define QSERDES_DP_PHY_REVISION_ID1			0x004
++#define QSERDES_DP_PHY_REVISION_ID2			0x008
++#define QSERDES_DP_PHY_REVISION_ID3			0x00c
++#define QSERDES_DP_PHY_CFG				0x010
++#define QSERDES_DP_PHY_PD_CTL				0x018
++# define DP_PHY_PD_CTL_PWRDN				0x001
++# define DP_PHY_PD_CTL_PSR_PWRDN			0x002
++# define DP_PHY_PD_CTL_AUX_PWRDN			0x004
++# define DP_PHY_PD_CTL_LANE_0_1_PWRDN			0x008
++# define DP_PHY_PD_CTL_LANE_2_3_PWRDN			0x010
++# define DP_PHY_PD_CTL_PLL_PWRDN			0x020
++# define DP_PHY_PD_CTL_DP_CLAMP_EN			0x040
++#define QSERDES_DP_PHY_MODE				0x01c
++#define QSERDES_DP_PHY_AUX_CFG0				0x020
++#define QSERDES_DP_PHY_AUX_CFG1				0x024
++#define QSERDES_DP_PHY_AUX_CFG2				0x028
++#define QSERDES_DP_PHY_AUX_CFG3				0x02c
++#define QSERDES_DP_PHY_AUX_CFG4				0x030
++#define QSERDES_DP_PHY_AUX_CFG5				0x034
++#define QSERDES_DP_PHY_AUX_CFG6				0x038
++#define QSERDES_DP_PHY_AUX_CFG7				0x03c
++#define QSERDES_DP_PHY_AUX_CFG8				0x040
++#define QSERDES_DP_PHY_AUX_CFG9				0x044
++
++/* Only for QMP V3 PHY - DP PHY registers */
++#define QSERDES_V3_DP_PHY_AUX_INTERRUPT_MASK		0x048
++# define PHY_AUX_STOP_ERR_MASK				0x01
++# define PHY_AUX_DEC_ERR_MASK				0x02
++# define PHY_AUX_SYNC_ERR_MASK				0x04
++# define PHY_AUX_ALIGN_ERR_MASK				0x08
++# define PHY_AUX_REQ_ERR_MASK				0x10
++
++#define QSERDES_V3_DP_PHY_AUX_INTERRUPT_CLEAR		0x04c
++#define QSERDES_V3_DP_PHY_AUX_BIST_CFG			0x050
++
++#define QSERDES_V3_DP_PHY_VCO_DIV			0x064
++#define QSERDES_V3_DP_PHY_TX0_TX1_LANE_CTL		0x06c
++#define QSERDES_V3_DP_PHY_TX2_TX3_LANE_CTL		0x088
++
++#define QSERDES_V3_DP_PHY_SPARE0			0x0ac
++#define DP_PHY_SPARE0_MASK				0x0f
++#define DP_PHY_SPARE0_ORIENTATION_INFO_SHIFT		0x04(0x0004)
++
++#define QSERDES_V3_DP_PHY_STATUS			0x0c0
++
++/* Only for QMP V4 PHY - DP PHY registers */
++#define QSERDES_V4_DP_PHY_CFG_1				0x014
++#define QSERDES_V4_DP_PHY_AUX_INTERRUPT_MASK		0x054
++#define QSERDES_V4_DP_PHY_AUX_INTERRUPT_CLEAR		0x058
++#define QSERDES_V4_DP_PHY_VCO_DIV			0x070
++#define QSERDES_V4_DP_PHY_TX0_TX1_LANE_CTL		0x078
++#define QSERDES_V4_DP_PHY_TX2_TX3_LANE_CTL		0x09c
++#define QSERDES_V4_DP_PHY_SPARE0			0x0c8
++#define QSERDES_V4_DP_PHY_AUX_INTERRUPT_STATUS		0x0d8
++#define QSERDES_V4_DP_PHY_STATUS			0x0dc
++
++#define QSERDES_V5_DP_PHY_STATUS			0x0dc
++
++/* Only for QMP V6 PHY - DP PHY registers */
++#define QSERDES_V6_DP_PHY_AUX_INTERRUPT_STATUS		0x0e0
++#define QSERDES_V6_DP_PHY_STATUS			0x0e4
++
+ #endif
+-- 
+2.17.1
+

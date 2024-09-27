@@ -1,0 +1,50 @@
+From f5aee7ab77e24ae165cc2dc4592aa63a9ac7fa54 Mon Sep 17 00:00:00 2001
+From: Manikanta Pubbisetty <quic_mpubbise@quicinc.com>
+Date: Fri, 19 Jul 2024 14:03:43 +0530
+Subject: [PATCH 7/7] FROMLIST: wifi: ath11k: Fix double free issue during SRNG
+ deinit
+
+Currently struct ath11k_hal::srng_config pointer is not assigned
+to NULL after freeing the memory in ath11k_hal_srng_deinit().
+This could lead to double free issue in a scenario where
+ath11k_hal_srng_deinit() is invoked back to back.
+
+In the current code, although the chances are very low, the above
+said scenario could happen when hardware recovery has failed and
+then there is another FW assert where ath11k_hal_srng_deinit() is
+invoked once again as part of recovery.
+
+Fix this by assigning the struct ath11k_hal::srng_config pointer
+to NULL after freeing the memory.
+
+Signed-off-by: Manikanta Pubbisetty <quic_mpubbise@quicinc.com>
+Signed-off-by: Balaji Pothunoori <quic_bpothuno@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-wireless/20240826053326.8878-1-quic_bpothuno@quicinc.com/]
+---
+ drivers/net/wireless/ath/ath11k/hal.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/ath/ath11k/hal.c b/drivers/net/wireless/ath/ath11k/hal.c
+index 0a99aa7ddbf4..e6fe0df4b941 100644
+--- a/drivers/net/wireless/ath/ath11k/hal.c
++++ b/drivers/net/wireless/ath/ath11k/hal.c
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: BSD-3-Clause-Clear
+ /*
+  * Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
+- * Copyright (c) 2022, Qualcomm Innovation Center, Inc. All rights reserved.
++ * Copyright (c) 2022, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+  */
+ #include <linux/dma-mapping.h>
+ #include "hal_tx.h"
+@@ -1324,6 +1324,7 @@ void ath11k_hal_srng_deinit(struct ath11k_base *ab)
+ 	ath11k_hal_free_cont_rdp(ab);
+ 	ath11k_hal_free_cont_wrp(ab);
+ 	kfree(hal->srng_config);
++	hal->srng_config = NULL;
+ }
+ EXPORT_SYMBOL(ath11k_hal_srng_deinit);
+ 
+-- 
+2.25.1
+

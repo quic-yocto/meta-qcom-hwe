@@ -1,0 +1,32 @@
+From 104a45f3de58224ba9f24ed1092c80c8b7686e22 Mon Sep 17 00:00:00 2001
+From: Taniya Das <quic_tdas@quicinc.com>
+Date: Mon, 15 Jul 2024 11:42:06 +0530
+Subject: [PATCH 7/8] FROMLIST: arm64: dts: qcom: Update sleep_clk frequency to
+ 32000 on SA8775P
+
+The HW supported sleep_clk frequency on SA8775P is 32000, hence
+update the sleep_clk frequency with the correct value on SA8775P.
+
+Fixes: 603f96d4c9d0 ("arm64: dts: qcom: add initial support for qcom sa8775p-ride")
+Signed-off-by: Taniya Das <quic_tdas@quicinc.com>
+Upstream-Status: Submitted [https://patchwork.kernel.org/project/linux-clk/patch/20240816-sa8775p-mm-v3-v1-7-77d53c3c0cef@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index c1b33fb00c4e..592a18dac93f 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -562,7 +562,7 @@ &serdes1 {
+ };
+
+ &sleep_clk {
+-	clock-frequency = <32764>;
++	clock-frequency = <32000>;
+ };
+
+ &spi16 {
+--
+2.45.2
+

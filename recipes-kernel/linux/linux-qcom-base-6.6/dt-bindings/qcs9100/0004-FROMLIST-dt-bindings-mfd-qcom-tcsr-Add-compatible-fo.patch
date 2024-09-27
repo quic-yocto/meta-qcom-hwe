@@ -1,0 +1,32 @@
+From bbd72331db85c06c6e98aef953c87fb86d080853 Mon Sep 17 00:00:00 2001
+From: Mukesh Ojha <quic_mojha@quicinc.com>
+Date: Fri, 5 Jul 2024 21:02:51 +0530
+Subject: [PATCH 4/4] FROMLIST: dt-bindings: mfd: qcom,tcsr: Add compatible for
+ sa8775p
+
+Document the compatible for sa8775p SoC.
+
+Change-Id: I8dac588d2c8142fb7755342168bc54eb56d97b93
+Signed-off-by: Mukesh Ojha <quic_mojha@quicinc.com>
+Link: https://lore.kernel.org/lkml/20240705153252.1571814-1-quic_mojha@quicinc.com/
+Signed-off-by: Shivendra Pratap <quic_spratap@quicinc.com>
+Upstream-status: Submitted [ https://lore.kernel.org/lkml/20240705153252.1571814-1-quic_mojha@quicinc.com/ ]
+---
+ Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml b/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
+index 5ad9d5deaaf8..ddfd421659e3 100644
+--- a/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
++++ b/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
+@@ -20,6 +20,7 @@ properties:
+           - qcom,msm8976-tcsr
+           - qcom,msm8998-tcsr
+           - qcom,qcs404-tcsr
++          - qcom,sa8775p-tcsr
+           - qcom,sc7180-tcsr
+           - qcom,sc7280-tcsr
+           - qcom,sc8280xp-tcsr
+-- 
+2.34.1
+

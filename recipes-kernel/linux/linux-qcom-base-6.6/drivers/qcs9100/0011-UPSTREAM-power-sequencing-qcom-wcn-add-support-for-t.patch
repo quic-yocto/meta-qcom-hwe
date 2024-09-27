@@ -1,0 +1,51 @@
+From cd310a592b035b6a79f4e7e123b3d9d319ca3974 Mon Sep 17 00:00:00 2001
+From: Konrad Dybcio <konradybcio@kernel.org>
+Date: Tue, 13 Aug 2024 21:08:41 +0200
+Subject: [PATCH] UPSTREAM: power: sequencing: qcom-wcn: add support for the
+ WCN6855 PMU
+
+Enable support for controlling the power-up sequence of the PMU inside
+the WCN6855 model.
+
+Signed-off-by: Konrad Dybcio <konradybcio@kernel.org>
+[Bartosz: split Konrad's bigger patch, write the commit message]
+Co-developed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Link: https://lore.kernel.org/r/20240813190841.155067-1-brgl@bgdev.pl
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git b8e4b0529d59a3ccd0b25a31d3cfc8b0f3b34068]
+---
+ drivers/power/sequencing/pwrseq-qcom-wcn.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+index 700879474abf..4fa129877d7e 100644
+--- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
++++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+@@ -198,6 +198,13 @@ static const struct pwrseq_qcom_wcn_pdata pwrseq_qca6390_of_data = {
+ 	.gpio_enable_delay_ms = 100,
+ };
+ 
++static const struct pwrseq_qcom_wcn_pdata pwrseq_wcn6855_of_data = {
++	.vregs = pwrseq_qca6390_vregs,
++	.num_vregs = ARRAY_SIZE(pwrseq_qca6390_vregs),
++	.pwup_delay_ms = 50,
++	.gpio_enable_delay_ms = 5,
++};
++
+ static const char *const pwrseq_wcn7850_vregs[] = {
+ 	"vdd",
+ 	"vddio",
+@@ -321,6 +328,10 @@ static const struct of_device_id pwrseq_qcom_wcn_of_match[] = {
+ 		.compatible = "qcom,qca6390-pmu",
+ 		.data = &pwrseq_qca6390_of_data,
+ 	},
++	{
++		.compatible = "qcom,wcn6855-pmu",
++		.data = &pwrseq_wcn6855_of_data,
++	},
+ 	{
+ 		.compatible = "qcom,wcn7850-pmu",
+ 		.data = &pwrseq_wcn7850_of_data,
+-- 
+2.25.1
+

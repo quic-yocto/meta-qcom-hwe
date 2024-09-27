@@ -1,0 +1,97 @@
+From e1e7fb54880f1789f3b285f9ab63d360132d0533 Mon Sep 17 00:00:00 2001
+From: Abel Vesa <abel.vesa@linaro.org>
+Date: Fri, 19 Jul 2024 10:59:54 +0530
+Subject: [PATCH 9/9] BACKPORT: UPSTREAM: drm/msm/dp: Add support for
+ determining the eDP/DP mode from DT
+
+Instead of relying on different compatibles for eDP and DP, lookup
+the panel node in devicetree to figure out the connector type and
+then pass on that information to the PHY. External DP doesn't have
+a panel described in DT, therefore, assume it's eDP if panel node is present.
+
+Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Reviewed-by: Bjorn Andersson <quic_bjorande@quicinc.com>
+Patchwork: https://patchwork.freedesktop.org/patch/584534/
+Link: https://lore.kernel.org/r/20240324-x1e80100-display-refactor-connector-v4-1-e0ebaea66a78@linaro.org
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git d8f177ba1b983e478a8d83ca94b49371129e2c34]
+---
+ drivers/gpu/drm/msm/dp/dp_display.c | 32 ++++++++++++++++++++++++++++-
+ 1 file changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/msm/dp/dp_display.c b/drivers/gpu/drm/msm/dp/dp_display.c
+index ed77c957eceb..60ac8e02a364 100644
+--- a/drivers/gpu/drm/msm/dp/dp_display.c
++++ b/drivers/gpu/drm/msm/dp/dp_display.c
+@@ -9,6 +9,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/component.h>
+ #include <linux/of_irq.h>
++#include <linux/phy/phy.h>
+ #include <linux/delay.h>
+ #include <drm/display/drm_dp_aux_bus.h>
+ 
+@@ -747,6 +748,7 @@ static int dp_init_sub_modules(struct dp_display_private *dp)
+ 	struct dp_panel_in panel_in = {
+ 		.dev = dev,
+ 	};
++	struct phy *phy;
+ 
+ 	dp->parser = dp_parser_get(dp->pdev);
+ 	if (IS_ERR(dp->parser)) {
+@@ -756,6 +758,15 @@ static int dp_init_sub_modules(struct dp_display_private *dp)
+ 		goto error;
+ 	}
+ 
++	phy = dp->parser->io.phy;
++	rc = phy_set_mode_ext(phy, PHY_MODE_DP,
++		      dp->dp_display.is_edp ? PHY_SUBMODE_EDP : PHY_SUBMODE_DP);
++	if (rc) {
++		DRM_ERROR("failed to set phy submode, rc = %d\n", rc);
++		dp->catalog = NULL;
++		goto error;
++	}
++
+ 	dp->catalog = dp_catalog_get(dev, &dp->parser->io);
+ 	if (IS_ERR(dp->catalog)) {
+ 		rc = PTR_ERR(dp->catalog);
+@@ -1252,6 +1263,25 @@ static const struct msm_dp_desc *dp_display_get_desc(struct platform_device *pde
+ 	return NULL;
+ }
+ 
++static int dp_display_get_connector_type(struct platform_device *pdev,
++					 const struct msm_dp_desc *desc)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct device_node *aux_bus = of_get_child_by_name(node, "aux-bus");
++	struct device_node *panel = of_get_child_by_name(aux_bus, "panel");
++	int connector_type;
++
++	if (panel)
++		connector_type = DRM_MODE_CONNECTOR_eDP;
++	else
++		connector_type = DRM_MODE_SUBCONNECTOR_DisplayPort;
++
++	of_node_put(panel);
++	of_node_put(aux_bus);
++
++	return connector_type;
++}
++
+ static int dp_display_probe(struct platform_device *pdev)
+ {
+ 	int rc = 0;
+@@ -1274,7 +1304,7 @@ static int dp_display_probe(struct platform_device *pdev)
+ 	dp->pdev = pdev;
+ 	dp->name = "drm_dp";
+ 	dp->id = desc->id;
+-	dp->dp_display.connector_type = desc->connector_type;
++	dp->dp_display.connector_type = dp_display_get_connector_type(pdev, desc);
+ 	dp->wide_bus_en = desc->wide_bus_en;
+ 	dp->dp_display.is_edp =
+ 		(dp->dp_display.connector_type == DRM_MODE_CONNECTOR_eDP);
+-- 
+2.17.1
+

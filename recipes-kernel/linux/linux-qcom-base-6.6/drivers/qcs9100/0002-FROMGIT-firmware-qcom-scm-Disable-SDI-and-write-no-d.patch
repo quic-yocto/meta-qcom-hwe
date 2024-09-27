@@ -1,0 +1,76 @@
+From 8edfafe5febe87ba3de12bf8b9d195e5f9a47126 Mon Sep 17 00:00:00 2001
+From: Mukesh Ojha <quic_mojha@quicinc.com>
+Date: Mon, 8 Jul 2024 21:23:32 +0530
+Subject: [PATCH 2/4] FROMGIT: firmware: qcom: scm: Disable SDI and write no
+ dump to dump mode
+
+SDI is enabled for most of the Qualcomm SoCs and as per commit
+ff4aa3bc9825 ("firmware: qcom_scm: disable SDI if required")
+it was recommended to disable SDI by mentioning it in device tree
+to avoid hang during watchdog or during reboot.
+
+However, for some cases if download mode tcsr register already
+configured from boot firmware to collect dumps and if SDI is
+disabled via means of mentioning it in device tree we could
+still end up with dump collection. Disabling SDI alone is
+not completely enough to disable dump mode and we also need to
+zero out the bits download bits from tcsr register.
+
+Current commit now, unconditionally call qcom_scm_set_download_mode()
+based on download_mode flag, at max if TCSR register is not mentioned
+or available for a SoC it will fallback to legacy way of setting
+download mode through command which may be no-ops or return error
+in case current firmware does not implements QCOM_SCM_INFO_IS_CALL_AVAIL
+so, at worst it does nothing if it fails.
+
+It also does to call SDI disable call if dload mode is disabled, which
+looks fine to do as intention is to disable dump collection even if
+system crashes.
+
+Fixes: ff4aa3bc9825 ("firmware: qcom_scm: disable SDI if required")
+Change-Id: Iab388e0d8d260a4bf2acb3130c6bbf9d64d05536
+Signed-off-by: Mukesh Ojha <quic_mojha@quicinc.com>
+Link: https://lore.kernel.org/lkml/172375444804.1011236.8458670417053252638.b4-ty@kernel.org/
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Git-Commit: 79cb2cb8d89b7eca87e8dac031dadea4aeafeaa7
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=79cb2cb8d89b7eca87e8dac031dadea4aeafeaa7
+Signed-off-by: Shivendra Pratap <quic_spratap@quicinc.com>
+Upstream-status: Submitted [ https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=79cb2cb8d89b7eca87e8dac031dadea4aeafeaa7 ]
+---
+ drivers/firmware/qcom_scm.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
+index e0fd92777bd2..b4437989078a 100644
+--- a/drivers/firmware/qcom_scm.c
++++ b/drivers/firmware/qcom_scm.c
+@@ -1571,8 +1571,7 @@ static int qcom_scm_probe(struct platform_device *pdev)
+ 	 * will cause the boot stages to enter download mode, unless
+ 	 * disabled below by a clean shutdown/reboot.
+ 	 */
+-	if (download_mode)
+-		qcom_scm_set_download_mode(true);
++	qcom_scm_set_download_mode(download_mode);
+ 
+ 	ret = of_reserved_mem_device_init(__scm->dev);
+ 	if (ret && ret != -ENODEV)
+@@ -1594,11 +1593,11 @@ static int qcom_scm_probe(struct platform_device *pdev)
+ 		return dev_err_probe(__scm->dev, PTR_ERR(__scm->mempool),
+ 					"Failed to create the SCM memory pool\n");
+ 
+-	/*
+-	 * Disable SDI if indicated by DT that it is enabled by default.
+-	 */
+-	if (of_property_read_bool(pdev->dev.of_node, "qcom,sdi-enabled"))
+-		qcom_scm_disable_sdi();
++        /*
++         * Disable SDI if indicated by DT that it is enabled by default.
++         */
++	if (of_property_read_bool(pdev->dev.of_node, "qcom,sdi-enabled") || !download_mode)
++                qcom_scm_disable_sdi();
+ 
+ 	return 0;
+ }
+-- 
+2.34.1
+

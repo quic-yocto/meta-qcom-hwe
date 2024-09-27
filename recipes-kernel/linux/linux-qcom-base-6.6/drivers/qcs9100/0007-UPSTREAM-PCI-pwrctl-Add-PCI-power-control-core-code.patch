@@ -1,0 +1,309 @@
+From 7f0690ac4334cb467248b87861bdb594ec45e57e Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Wed, 12 Jun 2024 10:20:17 +0200
+Subject: [PATCH 7/9] UPSTREAM: PCI/pwrctl: Add PCI power control core code
+
+Some PCI devices must be powered-on before they can be detected on the
+bus. Introduce a simple framework reusing the existing PCI OF
+infrastructure.
+
+The way this works is: a DT node representing a PCI device connected to
+the port can be matched against its power control platform driver. If
+the match succeeds, the driver is responsible for powering-up the device
+and calling pci_pwrctl_device_set_ready() which will trigger a PCI bus
+rescan as well as subscribe to PCI bus notifications.
+
+When the device is detected and created, we'll make it consume the same
+DT node that the platform device did. When the device is bound, we'll
+create a device link between it and the parent power control device.
+
+Tested-by: Amit Pundir <amit.pundir@linaro.org>
+Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8550-QRD, SM8650-QRD & SM8650-HDK
+Tested-by: Caleb Connolly <caleb.connolly@linaro.org> # OnePlus 8T
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Link: https://lore.kernel.org/r/20240612082019.19161-5-brgl@bgdev.pl
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 4565d2652a37e438e4cd729e2a8dfeffe34c958c]
+---
+ MAINTAINERS                 |   8 +++
+ drivers/pci/Kconfig         |   1 +
+ drivers/pci/Makefile        |   1 +
+ drivers/pci/pwrctl/Kconfig  |   8 +++
+ drivers/pci/pwrctl/Makefile |   4 ++
+ drivers/pci/pwrctl/core.c   | 137 ++++++++++++++++++++++++++++++++++++
+ include/linux/pci-pwrctl.h  |  51 ++++++++++++++
+ 7 files changed, 210 insertions(+)
+ create mode 100644 drivers/pci/pwrctl/Kconfig
+ create mode 100644 drivers/pci/pwrctl/Makefile
+ create mode 100644 drivers/pci/pwrctl/core.c
+ create mode 100644 include/linux/pci-pwrctl.h
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 9e5534ea9b7b..be6fcaa7f9e8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -16557,6 +16557,14 @@ F:	Documentation/driver-api/pci/p2pdma.rst
+ F:	drivers/pci/p2pdma.c
+ F:	include/linux/pci-p2pdma.h
+ 
++PCI POWER CONTROL
++M:	Bartosz Golaszewski <brgl@bgdev.pl>
++L:	linux-pci@vger.kernel.org
++S:	Maintained
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git
++F:	drivers/pci/pwrctl/*
++F:	include/linux/pci-pwrctl.h
++
+ PCI SUBSYSTEM
+ M:	Bjorn Helgaas <bhelgaas@google.com>
+ L:	linux-pci@vger.kernel.org
+diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+index e9ae66cc4189..70b87db20dab 100644
+--- a/drivers/pci/Kconfig
++++ b/drivers/pci/Kconfig
+@@ -291,5 +291,6 @@ source "drivers/pci/hotplug/Kconfig"
+ source "drivers/pci/controller/Kconfig"
+ source "drivers/pci/endpoint/Kconfig"
+ source "drivers/pci/switch/Kconfig"
++source "drivers/pci/pwrctl/Kconfig"
+ 
+ endif
+diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
+index cc8b4e01e29d..6ae202d950f8 100644
+--- a/drivers/pci/Makefile
++++ b/drivers/pci/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_PCI)		+= access.o bus.o probe.o host-bridge.o \
+ 
+ obj-$(CONFIG_PCI)		+= msi/
+ obj-$(CONFIG_PCI)		+= pcie/
++obj-$(CONFIG_PCI)		+= pwrctl/
+ 
+ ifdef CONFIG_PCI
+ obj-$(CONFIG_PROC_FS)		+= proc.o
+diff --git a/drivers/pci/pwrctl/Kconfig b/drivers/pci/pwrctl/Kconfig
+new file mode 100644
+index 000000000000..96195395af69
+--- /dev/null
++++ b/drivers/pci/pwrctl/Kconfig
+@@ -0,0 +1,8 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++menu "PCI Power control drivers"
++
++config PCI_PWRCTL
++	tristate
++
++endmenu
+diff --git a/drivers/pci/pwrctl/Makefile b/drivers/pci/pwrctl/Makefile
+new file mode 100644
+index 000000000000..52ae0640ef7b
+--- /dev/null
++++ b/drivers/pci/pwrctl/Makefile
+@@ -0,0 +1,4 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++obj-$(CONFIG_PCI_PWRCTL)		+= pci-pwrctl-core.o
++pci-pwrctl-core-y			:= core.o
+diff --git a/drivers/pci/pwrctl/core.c b/drivers/pci/pwrctl/core.c
+new file mode 100644
+index 000000000000..feca26ad2f6a
+--- /dev/null
++++ b/drivers/pci/pwrctl/core.c
+@@ -0,0 +1,137 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2024 Linaro Ltd.
++ */
++
++#include <linux/device.h>
++#include <linux/export.h>
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/pci-pwrctl.h>
++#include <linux/property.h>
++#include <linux/slab.h>
++
++static int pci_pwrctl_notify(struct notifier_block *nb, unsigned long action,
++			     void *data)
++{
++	struct pci_pwrctl *pwrctl = container_of(nb, struct pci_pwrctl, nb);
++	struct device *dev = data;
++
++	if (dev_fwnode(dev) != dev_fwnode(pwrctl->dev))
++		return NOTIFY_DONE;
++
++	switch (action) {
++	case BUS_NOTIFY_ADD_DEVICE:
++		/*
++		 * We will have two struct device objects bound to two different
++		 * drivers on different buses but consuming the same DT node. We
++		 * must not bind the pins twice in this case but only once for
++		 * the first device to be added.
++		 *
++		 * If we got here then the PCI device is the second after the
++		 * power control platform device. Mark its OF node as reused.
++		 */
++		dev->of_node_reused = true;
++		break;
++	case BUS_NOTIFY_BOUND_DRIVER:
++		pwrctl->link = device_link_add(dev, pwrctl->dev,
++					       DL_FLAG_AUTOREMOVE_CONSUMER);
++		if (!pwrctl->link)
++			dev_err(pwrctl->dev, "Failed to add device link\n");
++		break;
++	case BUS_NOTIFY_UNBOUND_DRIVER:
++		if (pwrctl->link)
++			device_link_remove(dev, pwrctl->dev);
++		break;
++	}
++
++	return NOTIFY_DONE;
++}
++
++/**
++ * pci_pwrctl_device_set_ready() - Notify the pwrctl subsystem that the PCI
++ * device is powered-up and ready to be detected.
++ *
++ * @pwrctl: PCI power control data.
++ *
++ * Returns:
++ * 0 on success, negative error number on error.
++ *
++ * Note:
++ * This function returning 0 doesn't mean the device was detected. It means,
++ * that the bus rescan was successfully started. The device will get bound to
++ * its PCI driver asynchronously.
++ */
++int pci_pwrctl_device_set_ready(struct pci_pwrctl *pwrctl)
++{
++	int ret;
++
++	if (!pwrctl->dev)
++		return -ENODEV;
++
++	pwrctl->nb.notifier_call = pci_pwrctl_notify;
++	ret = bus_register_notifier(&pci_bus_type, &pwrctl->nb);
++	if (ret)
++		return ret;
++
++	pci_lock_rescan_remove();
++	pci_rescan_bus(to_pci_dev(pwrctl->dev->parent)->bus);
++	pci_unlock_rescan_remove();
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pci_pwrctl_device_set_ready);
++
++/**
++ * pci_pwrctl_device_unset_ready() - Notify the pwrctl subsystem that the PCI
++ * device is about to be powered-down.
++ *
++ * @pwrctl: PCI power control data.
++ */
++void pci_pwrctl_device_unset_ready(struct pci_pwrctl *pwrctl)
++{
++	/*
++	 * We don't have to delete the link here. Typically, this function
++	 * is only called when the power control device is being detached. If
++	 * it is being detached then the child PCI device must have already
++	 * been unbound too or the device core wouldn't let us unbind.
++	 */
++	bus_unregister_notifier(&pci_bus_type, &pwrctl->nb);
++}
++EXPORT_SYMBOL_GPL(pci_pwrctl_device_unset_ready);
++
++static void devm_pci_pwrctl_device_unset_ready(void *data)
++{
++	struct pci_pwrctl *pwrctl = data;
++
++	pci_pwrctl_device_unset_ready(pwrctl);
++}
++
++/**
++ * devm_pci_pwrctl_device_set_ready - Managed variant of
++ * pci_pwrctl_device_set_ready().
++ *
++ * @dev: Device managing this pwrctl provider.
++ * @pwrctl: PCI power control data.
++ *
++ * Returns:
++ * 0 on success, negative error number on error.
++ */
++int devm_pci_pwrctl_device_set_ready(struct device *dev,
++				     struct pci_pwrctl *pwrctl)
++{
++	int ret;
++
++	ret = pci_pwrctl_device_set_ready(pwrctl);
++	if (ret)
++		return ret;
++
++	return devm_add_action_or_reset(dev,
++					devm_pci_pwrctl_device_unset_ready,
++					pwrctl);
++}
++EXPORT_SYMBOL_GPL(devm_pci_pwrctl_device_set_ready);
++
++MODULE_AUTHOR("Bartosz Golaszewski <bartosz.golaszewski@linaro.org>");
++MODULE_DESCRIPTION("PCI Device Power Control core driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/pci-pwrctl.h b/include/linux/pci-pwrctl.h
+new file mode 100644
+index 000000000000..45e9cfe740e4
+--- /dev/null
++++ b/include/linux/pci-pwrctl.h
+@@ -0,0 +1,51 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2024 Linaro Ltd.
++ */
++
++#ifndef __PCI_PWRCTL_H__
++#define __PCI_PWRCTL_H__
++
++#include <linux/notifier.h>
++
++struct device;
++struct device_link;
++
++/*
++ * This is a simple framework for solving the issue of PCI devices that require
++ * certain resources (regulators, GPIOs, clocks) to be enabled before the
++ * device can actually be detected on the PCI bus.
++ *
++ * The idea is to reuse the platform bus to populate OF nodes describing the
++ * PCI device and its resources, let these platform devices probe and enable
++ * relevant resources and then trigger a rescan of the PCI bus allowing for the
++ * same device (with a second associated struct device) to be registered with
++ * the PCI subsystem.
++ *
++ * To preserve a correct hierarchy for PCI power management and device reset,
++ * we create a device link between the power control platform device (parent)
++ * and the supplied PCI device (child).
++ */
++
++/**
++ * struct pci_pwrctl - PCI device power control context.
++ * @dev: Address of the power controlling device.
++ *
++ * An object of this type must be allocated by the PCI power control device and
++ * passed to the pwrctl subsystem to trigger a bus rescan and setup a device
++ * link with the device once it's up.
++ */
++struct pci_pwrctl {
++	struct device *dev;
++
++	/* Private: don't use. */
++	struct notifier_block nb;
++	struct device_link *link;
++};
++
++int pci_pwrctl_device_set_ready(struct pci_pwrctl *pwrctl);
++void pci_pwrctl_device_unset_ready(struct pci_pwrctl *pwrctl);
++int devm_pci_pwrctl_device_set_ready(struct device *dev,
++				     struct pci_pwrctl *pwrctl);
++
++#endif /* __PCI_PWRCTL_H__ */
+-- 
+2.25.1
+

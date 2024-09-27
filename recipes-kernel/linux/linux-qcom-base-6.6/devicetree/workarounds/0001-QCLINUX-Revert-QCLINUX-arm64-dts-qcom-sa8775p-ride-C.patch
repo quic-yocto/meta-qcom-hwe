@@ -1,0 +1,30 @@
+From dc8fb1706b789bbf7bde09e591e049298dce8299 Mon Sep 17 00:00:00 2001
+From: Komal Bajaj <quic_kbajaj@quicinc.com>
+Date: Fri, 30 Aug 2024 18:37:04 +0530
+Subject: [PATCH 1/5] QCLINUX: Revert "QCLINUX: arm64: dts: qcom: sa8775p-ride:
+ Change firmware format for GPDSP1"
+
+This reverts commit 81ae59d05c8d03960ca16ebc8fd8ad458dd276c9.
+
+Signed-off-by: Komal Bajaj <quic_kbajaj@quicinc.com>
+Upstream-Status: Inappropriate [Revert]
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index d8dabd1859b7..c8abdd65204f 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -743,7 +743,7 @@ &remoteproc_gpdsp0 {
+ };
+ 
+ &remoteproc_gpdsp1 {
+-	firmware-name = "qcom/sa8775p/gpdsp1.mdt";
++	firmware-name = "qcom/sa8775p/gpdsp1.mbn";
+ 	status = "okay";
+ };
+ 
+-- 
+2.45.2
+

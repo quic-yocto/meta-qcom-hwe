@@ -1,0 +1,189 @@
+From 0948c30ebf0bd1620c0e5d1b81bc1d2bc9d88e40 Mon Sep 17 00:00:00 2001
+From: Miaoqing Pan <quic_miaoqing@quicinc.com>
+Date: Tue, 25 Jun 2024 13:28:40 +0800
+Subject: [PATCH] FROMLIST: arm64: dts: qcom: sa8775p-ride: add WiFi/BT nodes
+
+Add a node for the PMU module of the WCN6855 present on the sa8775p-ride
+board. Assign its LDO power outputs to the existing WiFi/Bluetooth module.
+
+Signed-off-by: Miaoqing Pan <quic_miaoqing@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20240906055609.2200641-1-quic_miaoqing@quicinc.com/T/#u]
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts | 119 ++++++++++++++++++++++
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi     |   9 ++
+ 2 files changed, 128 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index 81a7eeb9cfcd..75ed42ecbec3 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -30,6 +30,83 @@ aliases {
+ 	chosen {
+ 		stdout-path = "serial0:115200n8";
+ 	};
++
++	vreg_conn_1p8: vreg_conn_1p8 {
++		compatible = "regulator-fixed";
++		regulator-name = "vreg_conn_1p8";
++		startup-delay-us = <4000>;
++		enable-active-high;
++		gpio = <&pmm8654au_1_gpios 4 GPIO_ACTIVE_HIGH>;
++	};
++
++	vreg_conn_pa: vreg_conn_pa {
++		compatible = "regulator-fixed";
++		regulator-name = "vreg_conn_pa";
++		startup-delay-us = <4000>;
++		enable-active-high;
++		gpio = <&pmm8654au_1_gpios 6 GPIO_ACTIVE_HIGH>;
++	};
++
++	wcn6855-pmu {
++		compatible = "qcom,wcn6855-pmu";
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&bt_en_state>, <&wlan_en_state>;
++
++		vddio-supply = <&vreg_conn_pa>;
++		vddaon-supply = <&vreg_l2c>;
++		vddpmu-supply = <&vreg_conn_1p8>;
++		vddrfa0p95-supply = <&vreg_l2c>;
++		vddrfa1p3-supply = <&vreg_l6e>;
++		vddrfa1p9-supply = <&vreg_s5a>;
++		vddpcie1p3-supply = <&vreg_l6e>;
++		vddpcie1p9-supply = <&vreg_s5a>;
++
++		bt-enable-gpios = <&pmm8654au_1_gpios 8 GPIO_ACTIVE_HIGH>;
++		wlan-enable-gpios = <&pmm8654au_1_gpios 7 GPIO_ACTIVE_HIGH>;
++
++		regulators {
++			vreg_pmu_rfa_cmn: ldo0 {
++				regulator-name = "vreg_pmu_rfa_cmn";
++			};
++
++			vreg_pmu_aon_0p59: ldo1 {
++				regulator-name = "vreg_pmu_aon_0p59";
++			};
++
++			vreg_pmu_wlcx_0p8: ldo2 {
++				regulator-name = "vreg_pmu_wlcx_0p8";
++			};
++
++			vreg_pmu_wlmx_0p85: ldo3 {
++				regulator-name = "vreg_pmu_wlmx_0p85";
++			};
++
++			vreg_pmu_btcmx_0p85: ldo4 {
++				regulator-name = "vreg_pmu_btcmx_0p85";
++			};
++
++			vreg_pmu_rfa_0p8: ldo5 {
++				regulator-name = "vreg_pmu_rfa_0p8";
++			};
++
++			vreg_pmu_rfa_1p2: ldo6 {
++				regulator-name = "vreg_pmu_rfa_1p2";
++			};
++
++			vreg_pmu_rfa_1p7: ldo7 {
++				regulator-name = "vreg_pmu_rfa_1p7";
++			};
++
++			vreg_pmu_pcie_0p9: ldo8 {
++				regulator-name = "vreg_pmu_pcie_0p9";
++			};
++
++			vreg_pmu_pcie_1p8: ldo9 {
++				regulator-name = "vreg_pmu_pcie_1p8";
++			};
++		};
++	};
+ };
+ 
+ &apps_rsc {
+@@ -471,6 +548,20 @@ &pmm8654au_1_gpios {
+ 			  "USB2_PWR_EN",
+ 			  "USB2_FAULT";
+ 
++	wlan_en_state: wlan-en-state {
++		pins = "gpio7";
++		function = "normal";
++		output-low;
++		bias-pull-down;
++	};
++
++	bt_en_state: bt-en-state {
++		pins = "gpio8";
++		function = "normal";
++		output-low;
++		bias-pull-down;
++	};
++
+ 	usb2_en_state: usb2-en-state {
+ 		pins = "gpio9";
+ 		function = "normal";
+@@ -720,6 +811,23 @@ &pcie1_phy {
+ 	status = "okay";
+ };
+ 
++&pcieport0 {
++	wifi@0 {
++		compatible = "pci17cb,1101";
++		reg = <0x10000 0x0 0x0 0x0 0x0>;
++
++		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
++		vddaon-supply = <&vreg_pmu_aon_0p59>;
++		vddwlcx-supply = <&vreg_pmu_wlcx_0p8>;
++		vddwlmx-supply = <&vreg_pmu_wlmx_0p85>;
++		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
++		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
++		vddrfa1p7-supply = <&vreg_pmu_rfa_1p7>;
++		vddpcie0p9-supply = <&vreg_pmu_pcie_0p9>;
++		vddpcie1p8-supply = <&vreg_pmu_pcie_1p8>;
++	};
++};
++
+ &uart10 {
+ 	compatible = "qcom,geni-debug-uart";
+ 	pinctrl-0 = <&qup_uart10_default>;
+@@ -737,6 +845,17 @@ &uart17 {
+ 	pinctrl-0 = <&qup_uart17_default>;
+ 	pinctrl-names = "default";
+ 	status = "okay";
++
++	bluetooth {
++		compatible = "qcom,wcn6855-bt";
++
++		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
++		vddaon-supply = <&vreg_pmu_aon_0p59>;
++		vddbtcmx-supply = <&vreg_pmu_btcmx_0p85>;
++		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
++		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
++		vddrfa1p7-supply = <&vreg_pmu_rfa_1p7>;
++	};
+ };
+ 
+ &ufs_mem_hc {
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index d4ca92b98c7d..e02babeb614f 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -2470,6 +2470,15 @@ pcie0: pci@1c00000{
+ 		phy-names = "pciephy";
+ 
+ 		status = "disabled";
++
++		pcieport0: pcie@0 {
++			device_type = "pci";
++			reg = <0x0 0x0 0x0 0x0 0x0>;
++			#address-cells = <3>;
++			#size-cells = <2>;
++			ranges;
++			bus-range = <0x01 0xff>;
++		};
+ 	};
+ 
+ 	pcie0_phy: phy@1c04000 {
+-- 
+2.25.1
+

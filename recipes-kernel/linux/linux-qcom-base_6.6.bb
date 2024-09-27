@@ -13,6 +13,8 @@ COMPATIBLE_MACHINE = "(qcom)"
 
 SRC_URI = " git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git;protocol=https;branch=linux-6.6.y \
             file://qcom.cfg \
+            file://vm-configs/qcom_vm.cfg \
+            file://qcom_debug.cfg \
             "
 # Apply qcom patches
 require ${BPN}-${PV}/configs.inc
@@ -22,6 +24,7 @@ require ${BPN}-${PV}/dt-bindings.inc
 require ${BPN}-${PV}/tools.inc
 
 KERNEL_CONFIG_FRAGMENTS:append = " ${WORKDIR}/qcom.cfg"
+KERNEL_CONFIG_FRAGMENTS:append = " ${@oe.utils.vartrue('DEBUG_BUILD', '${WORKDIR}/qcom_debug.cfg', '', d)}"
 
 S = "${WORKDIR}/git"
 

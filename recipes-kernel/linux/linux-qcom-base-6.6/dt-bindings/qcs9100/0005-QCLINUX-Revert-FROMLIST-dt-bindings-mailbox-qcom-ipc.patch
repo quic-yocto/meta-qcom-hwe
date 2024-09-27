@@ -1,0 +1,29 @@
+From 3aa280e1b112385e667f3c3fac3bb87dc852c704 Mon Sep 17 00:00:00 2001
+From: Komal Bajaj <quic_kbajaj@quicinc.com>
+Date: Fri, 30 Aug 2024 18:18:26 +0530
+Subject: [PATCH 5/5] QCLINUX: Revert "FROMLIST: dt-bindings: mailbox:
+ qcom-ipcc: Add GPDSP0 and GPDSP1 clients"
+
+This reverts commit 4ed86626142eb692deb785939f5e3deae1665f76.
+
+Signed-off-by: Komal Bajaj <quic_kbajaj@quicinc.com>
+Upstream-Status: Inappropriate [Revert]
+---
+ include/dt-bindings/mailbox/qcom-ipcc.h | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/include/dt-bindings/mailbox/qcom-ipcc.h b/include/dt-bindings/mailbox/qcom-ipcc.h
+index fd85a79381b3..fbfa3febc66d 100644
+--- a/include/dt-bindings/mailbox/qcom-ipcc.h
++++ b/include/dt-bindings/mailbox/qcom-ipcc.h
+@@ -33,7 +33,5 @@
+ #define IPCC_CLIENT_NSP1		18
+ #define IPCC_CLIENT_TME			23
+ #define IPCC_CLIENT_WPSS		24
+-#define IPCC_CLIENT_GPDSP0		31
+-#define IPCC_CLIENT_GPDSP1		32
+ 
+ #endif
+-- 
+2.45.2
+

@@ -11,7 +11,8 @@ inherit kernel
 COMPATIBLE_MACHINE = "(qcom)"
 
 
-SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=9d53679ea3d39978f5107f11dd2c24c285eb191c;branch=kernel.qclinux.1.0.r1-rel;destsuffix=kernel \
+SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=b09a1d09b89bba12367c99fb46706fd8ef5c0459;branch=kernel.qclinux.1.0.r1-rel;destsuffix=kernel \
+           file://0001-PENDING-qcom-ice-Fix-incorrect-error-handling.patch \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux.cfg', '', d)} \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux_debug.cfg', '', d)} \
            "

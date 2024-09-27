@@ -1,0 +1,34 @@
+From 92a6abd14211dccaa2a294542ebb35ea770f1662 Mon Sep 17 00:00:00 2001
+From: Abel Vesa <abel.vesa@linaro.org>
+Date: Wed, 21 Feb 2024 00:05:21 +0200
+Subject: [PATCH 6/9] UPSTREAM: dt-bindings: phy: qcom-edp: Add X1E80100 PHY
+ compatibles
+
+The Qualcomm X1E80100 platform has multiple PHYs that can work in both
+eDP or DP mode, so document their compatible.
+
+Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/r/20240221-phy-qualcomm-edp-x1e80100-v4-1-4e5018877bee@linaro.org
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+Signed-off-by: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 5d5607861350db4020b3d74c02837ffc008701d9]
+---
+ Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml
+index 6566353f1a02..4e15d90d08b0 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml
+@@ -21,6 +21,7 @@ properties:
+       - qcom,sc8180x-edp-phy
+       - qcom,sc8280xp-dp-phy
+       - qcom,sc8280xp-edp-phy
++      - qcom,x1e80100-dp-phy
+ 
+   reg:
+     items:
+-- 
+2.17.1
+

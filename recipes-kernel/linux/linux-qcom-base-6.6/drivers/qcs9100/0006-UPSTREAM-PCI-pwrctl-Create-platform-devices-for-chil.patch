@@ -1,0 +1,81 @@
+From 663209f5b44ba9a69c1b9d6b7c98372f257fd204 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Wed, 12 Jun 2024 10:20:16 +0200
+Subject: [PATCH 6/9] UPSTREAM: PCI/pwrctl: Create platform devices for child
+ OF nodes of the port node
+
+In preparation for introducing PCI device power control - a set of
+library functions that will allow powering-up of PCI devices before
+they're detected on the PCI bus - we need to populate the devices
+defined on the device-tree.
+
+We are reusing the platform bus as it provides us with all the
+infrastructure we need to match the pwrctl drivers against the
+compatibles from OF nodes.
+
+These platform devices will be probed by the driver core and bound to
+the PCI pwrctl drivers we'll introduce later.
+
+Tested-by: Amit Pundir <amit.pundir@linaro.org>
+Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8550-QRD, SM8650-QRD & SM8650-HDK
+Tested-by: Caleb Connolly <caleb.connolly@linaro.org> # OnePlus 8T
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Link: https://lore.kernel.org/r/20240612082019.19161-4-brgl@bgdev.pl
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 8fb18619d9102e8f4f6184cdac482422d9293b48]
+---
+ drivers/pci/bus.c    | 9 +++++++++
+ drivers/pci/remove.c | 3 ++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index 826b5016a101..3e3517567721 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -12,6 +12,7 @@
+ #include <linux/errno.h>
+ #include <linux/ioport.h>
+ #include <linux/of.h>
++#include <linux/of_platform.h>
+ #include <linux/proc_fs.h>
+ #include <linux/slab.h>
+ 
+@@ -354,6 +355,14 @@ void pci_bus_add_device(struct pci_dev *dev)
+ 		pci_warn(dev, "device attach failed (%d)\n", retval);
+ 
+ 	pci_dev_assign_added(dev, true);
++
++	if (pci_is_bridge(dev)) {
++		retval = of_platform_populate(dev->dev.of_node, NULL, NULL,
++					      &dev->dev);
++		if (retval)
++			pci_err(dev, "failed to populate child OF nodes (%d)\n",
++				retval);
++	}
+ }
+ EXPORT_SYMBOL_GPL(pci_bus_add_device);
+ 
+diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+index d749ea8250d6..910387e5bdbf 100644
+--- a/drivers/pci/remove.c
++++ b/drivers/pci/remove.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #include <linux/pci.h>
+ #include <linux/module.h>
++#include <linux/of_platform.h>
+ #include "pci.h"
+ 
+ static void pci_free_resources(struct pci_dev *dev)
+@@ -18,7 +19,7 @@ static void pci_stop_dev(struct pci_dev *dev)
+ 	pci_pme_active(dev, false);
+ 
+ 	if (pci_dev_is_added(dev)) {
+-
++		of_platform_depopulate(&dev->dev);
+ 		device_release_driver(&dev->dev);
+ 		pci_proc_detach_device(dev);
+ 		pci_remove_sysfs_dev_files(dev);
+-- 
+2.25.1
+

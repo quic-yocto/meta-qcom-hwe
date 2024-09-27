@@ -1,0 +1,229 @@
+From 6d8efb2b102bb9b2766ab3dd1e6e77bf9a92bf3a Mon Sep 17 00:00:00 2001
+From: Marijn Suijten <marijn.suijten@somainline.org>
+Date: Sat, 2 Dec 2023 01:40:27 +0200
+Subject: [PATCH 02/33] UPSTREAM: drm/msm/dpu: Drop unused qseed_type from
+ catalog dpu_caps
+
+The SSPP scaler subblk is responsible for reporting its version (via the
+.id field, feature bits on the parent SSPP block, and since recently
+also from reading a register to supersede a read-but-unset version field
+in the catalog), leaving this global qseed_type field logically unused.
+Remove this dead code to lighten the catalog and bringup-overhead.
+
+Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Reviewed-by: Abhinav Kumar <quic_abhinavk@quicinc.com>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Patchwork: https://patchwork.freedesktop.org/patch/570109/
+Link: https://lore.kernel.org/r/20231201234234.2065610-4-dmitry.baryshkov@linaro.org
+Signed-off-by: Mahadevan <quic_mahap@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 88fc981f8ef232848fb60f77660a27826ea518ef]
+---
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_3_0_msm8998.h  | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_4_0_sdm845.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_0_sm8150.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_1_sc8180x.h  | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_2_sc7180.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_3_sm6115.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_4_sm6350.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_9_sm6375.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_0_sm8350.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_2_sc7280.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_0_sc8280xp.h | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_1_sm8450.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_9_0_sm8550.h   | 1 -
+ drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h           | 2 --
+ 15 files changed, 16 deletions(-)
+
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_3_0_msm8998.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_3_0_msm8998.h
+index 43c47a19cd94..ff83bf694fee 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_3_0_msm8998.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_3_0_msm8998.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps msm8998_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0x7,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED3,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_4_0_sdm845.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_4_0_sdm845.h
+index 88a5177dfdb7..05f71f04b8ac 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_4_0_sdm845.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_4_0_sdm845.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sdm845_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0xb,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED3,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_0_sm8150.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_0_sm8150.h
+index f0c3804f4258..cbe4d0ce230b 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_0_sm8150.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_0_sm8150.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sm8150_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0xb,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED3,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_1_sc8180x.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_1_sc8180x.h
+index 47de71e71e31..b093da7b95f8 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_1_sc8180x.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_1_sc8180x.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sc8180x_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0xb,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED3,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h
+index ee781037ada9..a99a95cc7c2d 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_0_sm8250.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sm8250_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0xb,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_2_sc7180.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_2_sc7180.h
+index 69d3f7e5e095..0882a64b80e5 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_2_sc7180.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_2_sc7180.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sc7180_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0x9,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+ 	.max_linewidth = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_3_sm6115.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_3_sm6115.h
+index 7e6000167ef0..cde131a922fe 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_3_sm6115.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_3_sm6115.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sm6115_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0x4,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+ 	.max_linewidth = 2160,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_4_sm6350.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_4_sm6350.h
+index cf5db6f296bd..3aba274faeec 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_4_sm6350.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_4_sm6350.h
+@@ -11,7 +11,6 @@
+ static const struct dpu_caps sm6350_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0x7,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_9_sm6375.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_9_sm6375.h
+index a327e21c90fb..8afb8a8072b0 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_9_sm6375.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_6_9_sm6375.h
+@@ -11,7 +11,6 @@
+ static const struct dpu_caps sm6375_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0x4,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+ 	.max_linewidth = 2160,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_0_sm8350.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_0_sm8350.h
+index 428bcbcfbf19..47b09a33c972 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_0_sm8350.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_0_sm8350.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sm8350_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0xb,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_2_sc7280.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_2_sc7280.h
+index 9195cb996f44..f7ea3f37bf5b 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_2_sc7280.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_7_2_sc7280.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sc7280_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0x7,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+ 	.max_linewidth = 2400,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_0_sc8280xp.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_0_sc8280xp.h
+index ff9adb8000ac..66bb6ab95f22 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_0_sc8280xp.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_0_sc8280xp.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sc8280xp_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 11,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_1_sm8450.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_1_sm8450.h
+index 72a1726371ca..e49c528d2a31 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_1_sm8450.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_8_1_sm8450.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sm8450_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0xb,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_9_0_sm8550.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_9_0_sm8550.h
+index 7bed819dfc39..e60427f54b27 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_9_0_sm8550.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_9_0_sm8550.h
+@@ -10,7 +10,6 @@
+ static const struct dpu_caps sm8550_dpu_caps = {
+ 	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
+ 	.max_mixer_blendstages = 0xb,
+-	.qseed_type = DPU_SSPP_SCALER_QSEED4,
+ 	.has_src_split = true,
+ 	.has_dim_layer = true,
+ 	.has_idle_pc = true,
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h b/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h
+index 3f82d84bd1c9..9e7750c47cd0 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h
+@@ -346,7 +346,6 @@ struct dpu_rotation_cfg {
+  * @max_mixer_width    max layer mixer line width support.
+  * @max_mixer_blendstages max layer mixer blend stages or
+  *                       supported z order
+- * @qseed_type         qseed2 or qseed3 support.
+  * @has_src_split      source split feature status
+  * @has_dim_layer      dim layer feature status
+  * @has_idle_pc        indicate if idle power collapse feature is supported
+@@ -359,7 +358,6 @@ struct dpu_rotation_cfg {
+ struct dpu_caps {
+ 	u32 max_mixer_width;
+ 	u32 max_mixer_blendstages;
+-	u32 qseed_type;
+ 	bool has_src_split;
+ 	bool has_dim_layer;
+ 	bool has_idle_pc;
+-- 
+2.34.1
+

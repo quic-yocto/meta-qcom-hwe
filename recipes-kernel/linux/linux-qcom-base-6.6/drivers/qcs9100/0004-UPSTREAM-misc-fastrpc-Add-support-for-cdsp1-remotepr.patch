@@ -1,0 +1,69 @@
+From 0273438e50d3ef62936671ca149bc4098aad9228 Mon Sep 17 00:00:00 2001
+From: Ling Xu <quic_lxu5@quicinc.com>
+Date: Mon, 5 Aug 2024 19:08:05 +0200
+Subject: [PATCH 4/6] UPSTREAM: misc: fastrpc: Add support for cdsp1 remoteproc
+
+The fastrpc supports 4 remoteproc. There are some products which
+support cdsp1 remoteproc. Add changes to support cdsp1 remoteproc.
+
+Signed-off-by: Ling Xu <quic_lxu5@quicinc.com>
+[Bartosz: ported to mainline]
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 590c42d9e278f8e6bf6d673f3101ac102369efc7]
+---
+ drivers/misc/fastrpc.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/misc/fastrpc.c b/drivers/misc/fastrpc.c
+index dbd26c3b245b..2fcbf2b0fe22 100644
+--- a/drivers/misc/fastrpc.c
++++ b/drivers/misc/fastrpc.c
+@@ -27,7 +27,8 @@
+ #define MDSP_DOMAIN_ID (1)
+ #define SDSP_DOMAIN_ID (2)
+ #define CDSP_DOMAIN_ID (3)
+-#define FASTRPC_DEV_MAX		4 /* adsp, mdsp, slpi, cdsp*/
++#define CDSP1_DOMAIN_ID (4)
++#define FASTRPC_DEV_MAX		5 /* adsp, mdsp, slpi, cdsp, cdsp1 */
+ #define FASTRPC_MAX_SESSIONS	14
+ #define FASTRPC_MAX_VMIDS	16
+ #define FASTRPC_ALIGN		128
+@@ -106,7 +107,7 @@
+ #define miscdev_to_fdevice(d) container_of(d, struct fastrpc_device, miscdev)
+ 
+ static const char *domains[FASTRPC_DEV_MAX] = { "adsp", "mdsp",
+-						"sdsp", "cdsp"};
++						"sdsp", "cdsp", "cdsp1" };
+ struct fastrpc_phy_page {
+ 	u64 addr;		/* physical address */
+ 	u64 size;		/* size of contiguous region */
+@@ -2265,7 +2266,7 @@ static int fastrpc_rpmsg_probe(struct rpmsg_device *rpdev)
+ 		return err;
+ 	}
+ 
+-	for (i = 0; i <= CDSP_DOMAIN_ID; i++) {
++	for (i = 0; i < FASTRPC_DEV_MAX; i++) {
+ 		if (!strcmp(domains[i], domain)) {
+ 			domain_id = i;
+ 			break;
+@@ -2306,13 +2307,14 @@ static int fastrpc_rpmsg_probe(struct rpmsg_device *rpdev)
+ 	case ADSP_DOMAIN_ID:
+ 	case MDSP_DOMAIN_ID:
+ 	case SDSP_DOMAIN_ID:
+-		/* Unsigned PD offloading is only supported on CDSP*/
++		/* Unsigned PD offloading is only supported on CDSP and CDSP1 */
+ 		data->unsigned_support = false;
+ 		err = fastrpc_device_register(rdev, data, secure_dsp, domains[domain_id]);
+ 		if (err)
+ 			goto fdev_error;
+ 		break;
+ 	case CDSP_DOMAIN_ID:
++	case CDSP1_DOMAIN_ID:
+ 		data->unsigned_support = true;
+ 		/* Create both device nodes so that we can allow both Signed and Unsigned PD */
+ 		err = fastrpc_device_register(rdev, data, true, domains[domain_id]);
+-- 
+2.45.2
+

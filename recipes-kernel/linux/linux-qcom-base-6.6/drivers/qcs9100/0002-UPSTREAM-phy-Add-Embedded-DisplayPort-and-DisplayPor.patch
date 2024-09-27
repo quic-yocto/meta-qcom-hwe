@@ -1,0 +1,37 @@
+From b8ed61623a4f17210674686f254b67e3c633f212 Mon Sep 17 00:00:00 2001
+From: Abel Vesa <abel.vesa@linaro.org>
+Date: Sun, 24 Mar 2024 20:50:17 +0200
+Subject: [PATCH 2/9] UPSTREAM: phy: Add Embedded DisplayPort and DisplayPort
+ submodes
+
+In some cases, a DP PHY needs to be configured to work in eDP mode.
+So add submodes for both DP and eDP so they can be used by the
+controllers for specifying the mode the PHY should be configured in.
+
+Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20240324-x1e80100-phy-edp-compatible-refactor-v5-1-a0db5f3150bc@linaro.org
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+Signed-off-by: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 368d67dab4cc4a3ffd39fbd062b2f5796cdbb37b]
+---
+ include/linux/phy/phy-dp.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/linux/phy/phy-dp.h b/include/linux/phy/phy-dp.h
+index 18cad23642cd..9cce5766bc0b 100644
+--- a/include/linux/phy/phy-dp.h
++++ b/include/linux/phy/phy-dp.h
+@@ -8,6 +8,9 @@
+ 
+ #include <linux/types.h>
+ 
++#define PHY_SUBMODE_DP	0
++#define PHY_SUBMODE_EDP	1
++
+ /**
+  * struct phy_configure_opts_dp - DisplayPort PHY configuration set
+  *
+-- 
+2.17.1
+

@@ -1,0 +1,40 @@
+From a80d493f3756928aabd45cb3f8897ae5100803c8 Mon Sep 17 00:00:00 2001
+From: Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
+Date: Wed, 10 Jul 2024 22:30:57 -0400
+Subject: [PATCH 7/7] UPSTREAM: Bluetooth: hci_qca: Fix build error
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This fixes the following build error introduced by b80f4e3b8cb8
+("Bluetooth: hci_qca: schedule a devm action for disabling the clock"):
+
+drivers/bluetooth/hci_qca.c: In function ‘qca_serdev_remove’:
+drivers/bluetooth/hci_qca.c:2501:2: error: label at end of compound statement
+ 2501 |  default:
+      |  ^~~~~~~
+
+Fixes: b80f4e3b8cb8 ("Bluetooth: hci_qca: schedule a devm action for disabling the clock")
+Signed-off-by: Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
+Upstream-Status: Backport
+[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+84f9288208dfcd955446060a53add15b9e01af4e]
+---
+ drivers/bluetooth/hci_qca.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+index dc286a823..a52f3f8bd 100644
+--- a/drivers/bluetooth/hci_qca.c
++++ b/drivers/bluetooth/hci_qca.c
+@@ -2478,6 +2478,7 @@ static void qca_serdev_remove(struct serdev_device *serdev)
+ 			qca_power_shutdown(&qcadev->serdev_hu);
+ 		break;
+ 	default:
++		break;
+ 	}
+ 
+ 	hci_uart_unregister_device(&qcadev->serdev_hu);
+-- 
+2.25.1
+

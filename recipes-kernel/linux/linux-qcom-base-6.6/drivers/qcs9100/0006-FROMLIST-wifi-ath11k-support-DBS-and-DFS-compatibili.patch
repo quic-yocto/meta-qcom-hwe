@@ -1,0 +1,153 @@
+From 6c19558a74da476aeae2b96bf1ee9f15f2835882 Mon Sep 17 00:00:00 2001
+From: "Yu Zhang(Yuriy)" <quic_yuzha@quicinc.com>
+Date: Mon, 12 Aug 2024 10:57:49 +0800
+Subject: [PATCH 6/7] FROMLIST: wifi: ath11k: support DBS and DFS compatibility
+
+Now some chips which support 'support_dual_stations' will enable DBS,
+but will disable DFS. Restructure the ath11k_mac_setup_iface_combinations
+function to support DBS and DFS compatibility.
+
+About 'support_dual_station' feature can refer:
+https://msgid.link/20230714023801.2621802-2-quic_cjhuang@quicinc.com
+
+Add a ieee80211_iface_combination to support DBS and DFS compatibility,
+one combination can support DFS(same with non dual sta), another
+combination can support DBS. When running different scenarios that will
+use different ieee80211_iface_combination due to mac80211 will go through
+all of possible interface combinations.
+
+In addition, maximum number of interfaces of these types should be total
+allowed in this group.
+
+The chips affected are:
+
+ QCA6390 hw2.0
+ WCN6855 hw2.0
+ WCN6855 hw2.1
+
+Other chips are not affected.
+
+Tested-on: WCN6855 WLAN.HSP.1.1-04402-QCAHSPSWPL_V1_V2_SILICONZ_IOE-1.
+
+Signed-off-by: Yu Zhang(Yuriy) <quic_yuzha@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-wireless/20240829064420.3074140-1-quic_yuzha@quicinc.com/]
+---
+ drivers/net/wireless/ath/ath11k/mac.c | 79 +++++++++++++--------------
+ 1 file changed, 37 insertions(+), 42 deletions(-)
+
+diff --git a/drivers/net/wireless/ath/ath11k/mac.c b/drivers/net/wireless/ath/ath11k/mac.c
+index 1ae43f2d73e6..9056401f341a 100644
+--- a/drivers/net/wireless/ath/ath11k/mac.c
++++ b/drivers/net/wireless/ath/ath11k/mac.c
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: BSD-3-Clause-Clear
+ /*
+  * Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
+- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
++ * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+  */
+ 
+ #include <net/mac80211.h>
+@@ -9318,63 +9318,58 @@ static int ath11k_mac_setup_iface_combinations(struct ath11k *ar)
+ 	struct ath11k_base *ab = ar->ab;
+ 	struct ieee80211_iface_combination *combinations;
+ 	struct ieee80211_iface_limit *limits;
+-	int n_limits;
++	int n_limits, n_combos;
+ 
+-	combinations = kzalloc(sizeof(*combinations), GFP_KERNEL);
++	if (ab->hw_params.support_dual_stations)
++		n_combos = 2;
++	else
++		n_combos = 1;
++
++	combinations = kcalloc(n_combos, sizeof(*combinations), GFP_KERNEL);
+ 	if (!combinations)
+ 		return -ENOMEM;
+ 
+ 	n_limits = 2;
+-
+ 	limits = kcalloc(n_limits, sizeof(*limits), GFP_KERNEL);
+ 	if (!limits) {
+ 		kfree(combinations);
+ 		return -ENOMEM;
+ 	}
+ 
++	limits[0].max = 1;
++	limits[0].types |= BIT(NL80211_IFTYPE_STATION);
++	limits[1].max = 16;
++	limits[1].types |= BIT(NL80211_IFTYPE_AP);
++	if (IS_ENABLED(CONFIG_MAC80211_MESH) &&
++	    ab->hw_params.interface_modes & BIT(NL80211_IFTYPE_MESH_POINT))
++		limits[1].types |= BIT(NL80211_IFTYPE_MESH_POINT);
++
++	combinations[0].limits = limits;
++	combinations[0].n_limits = n_limits;
++	combinations[0].beacon_int_infra_match = true;
++	combinations[0].beacon_int_min_gcd = 100;
++	combinations[0].max_interfaces = 16;
++	combinations[0].num_different_channels = 1;
++	combinations[0].radar_detect_widths = BIT(NL80211_CHAN_WIDTH_20_NOHT) |
++						BIT(NL80211_CHAN_WIDTH_20) |
++						BIT(NL80211_CHAN_WIDTH_40) |
++						BIT(NL80211_CHAN_WIDTH_80) |
++						BIT(NL80211_CHAN_WIDTH_80P80) |
++						BIT(NL80211_CHAN_WIDTH_160);
++
+ 	if (ab->hw_params.support_dual_stations) {
+ 		limits[0].max = 2;
+-		limits[0].types |= BIT(NL80211_IFTYPE_STATION);
+-
+-		limits[1].max = 1;
+-		limits[1].types |= BIT(NL80211_IFTYPE_AP);
+-		if (IS_ENABLED(CONFIG_MAC80211_MESH) &&
+-		    ab->hw_params.interface_modes & BIT(NL80211_IFTYPE_MESH_POINT))
+-			limits[1].types |= BIT(NL80211_IFTYPE_MESH_POINT);
+-
+-		combinations[0].limits = limits;
+-		combinations[0].n_limits = 2;
+-		combinations[0].max_interfaces = ab->hw_params.num_vdevs;
+-		combinations[0].num_different_channels = 2;
+-		combinations[0].beacon_int_infra_match = true;
+-		combinations[0].beacon_int_min_gcd = 100;
+-	} else {
+-		limits[0].max = 1;
+-		limits[0].types |= BIT(NL80211_IFTYPE_STATION);
+-
+-		limits[1].max = 16;
+-		limits[1].types |= BIT(NL80211_IFTYPE_AP);
+-
+-		if (IS_ENABLED(CONFIG_MAC80211_MESH) &&
+-		    ab->hw_params.interface_modes & BIT(NL80211_IFTYPE_MESH_POINT))
+-			limits[1].types |= BIT(NL80211_IFTYPE_MESH_POINT);
+-
+-		combinations[0].limits = limits;
+-		combinations[0].n_limits = 2;
+-		combinations[0].max_interfaces = 16;
+-		combinations[0].num_different_channels = 1;
+-		combinations[0].beacon_int_infra_match = true;
+-		combinations[0].beacon_int_min_gcd = 100;
+-		combinations[0].radar_detect_widths = BIT(NL80211_CHAN_WIDTH_20_NOHT) |
+-							BIT(NL80211_CHAN_WIDTH_20) |
+-							BIT(NL80211_CHAN_WIDTH_40) |
+-							BIT(NL80211_CHAN_WIDTH_80) |
+-							BIT(NL80211_CHAN_WIDTH_80P80) |
+-							BIT(NL80211_CHAN_WIDTH_160);
++
++		combinations[1].limits = limits;
++		combinations[1].n_limits = n_limits;
++		combinations[1].beacon_int_infra_match = true;
++		combinations[1].beacon_int_min_gcd = 100;
++		combinations[1].max_interfaces = ab->hw_params.num_vdevs;
++		combinations[1].num_different_channels = 2;
+ 	}
+ 
+ 	ar->hw->wiphy->iface_combinations = combinations;
+-	ar->hw->wiphy->n_iface_combinations = 1;
++	ar->hw->wiphy->n_iface_combinations = n_combos;
+ 
+ 	return 0;
+ }
+-- 
+2.25.1
+

@@ -1,0 +1,30 @@
+From 9bdf7f4d96dc37cc9b79a414fdd7d8d55ebd4bf6 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 16 Aug 2024 12:23:44 +0200
+Subject: [PATCH 3/3] FROMLIST: dt-bindings: misc: qcom,fastrpc: document new
+ domain ID
+
+Add "cdsp1" as the new supported label for the CDSP1 fastrpc domain.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240816102345.16481-1-brgl@bgdev.pl]
+---
+ Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml b/Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml
+index ee9be8ee7091..74555abf652a 100644
+--- a/Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml
++++ b/Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml
+@@ -26,6 +26,7 @@ properties:
+       - mdsp
+       - sdsp
+       - cdsp
++      - cdsp1
+ 
+   memory-region:
+     maxItems: 1
+-- 
+2.34.1
+

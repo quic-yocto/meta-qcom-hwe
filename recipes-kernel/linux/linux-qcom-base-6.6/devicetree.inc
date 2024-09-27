@@ -30,6 +30,16 @@ SRC_URI:append = " \
     file://qcs9100/0001-UPSTREAM-arm64-dts-qcom-sa8775p-add-TRNG-node.patch \
     file://qcs9100/0001-UPSTREAM-arm64-dts-qcom-sa8775p-enable-the-inline-cr.patch \
     file://qcs9100/0001-BACKPORT-arm64-dts-qcom-sa8775p-add-a-dedicated-memo.patch \
+    file://qcs9100/0001-UPSTREAM-arm64-dts-qcom-sa8775p-Add-CPU-and-LLCC-BWM.patch \
+    file://qcs9100/0001-UPSTREAM-arm64-dts-qcom-Add-coresight-nodes-for-SA87.patch \
+    file://qcs9100/0002-FROMLIST-arm64-dts-qcom-Add-support-for-multimedia-c.patch \
+    file://qcs9100/0002-QCLINUX-Revert-FROMLIST-arm64-dts-qcom-sa8775p-add-A.patch \
+    file://qcs9100/0005-BACKPORT-arm64-dts-qcom-sa8775p-add-ADSP-CDSP-and-GP.patch \
+    file://qcs9100/0001-UPSTREAM-arm64-dts-qcom-sa8775p-fix-the-fastrpc-labe.patch \
+    file://qcs9100/0002-UPSTREAM-arm64-qcom-sa8775p-Add-ADSP-and-CDSP0-fastr.patch \
+    file://qcs9100/0003-FROMLIST-arm64-dts-qcom-sa8775p-Add-TCSR-halt-regist.patch \
+    file://qcs9100/0001-arm64-dts-qcom-sa8775p-Add-new-memory-map-updates-to.patch \
+    file://qcs9100/0002-arm64-dts-qcom-sa8775p-Update-memory-map-for-SA8775P.patch \
     "
 # qcs9100 board dts patches
 SRC_URI:append = " \
@@ -38,4 +48,9 @@ SRC_URI:append = " \
     file://workarounds/0001-QCLINUX-arm64-dts-qcom-sa8775p-ride-Change-firmware-.patch \
     file://qcs9100/0004-FROMLIST-arm64-dts-qcom-sa8775p-ride-Add-QCS9100-com.patch \
     file://addons/0002-QCLINUX-arm64-dts-qcom-sa8775p-ride-Add-board-id-and.patch \
+    file://qcs9100/0001-FROMLIST-arm64-dts-qcom-Update-sleep_clk-frequency-t.patch \
+    file://workarounds/0001-QCLINUX-Revert-QCLINUX-arm64-dts-qcom-sa8775p-ride-C.patch \
+    file://qcs9100/0003-QCLINUX-Revert-FROMLIST-arm64-dts-qcom-sa8775p-ride-.patch \
+    file://qcs9100/0006-BACKPORT-Enable-all-remoteproc-nodes-on-the-sa8775p-.patch \
+    file://qcs9100/0001-FROMLIST-arm64-dts-qcom-sa8775p-ride-add-WiFi-BT-nod.patch \
     "

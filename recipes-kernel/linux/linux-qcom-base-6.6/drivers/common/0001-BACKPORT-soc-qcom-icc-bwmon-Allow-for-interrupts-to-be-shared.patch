@@ -1,0 +1,57 @@
+From b0e8e04926bbedb78a5507c2f036719a370a6e33 Mon Sep 17 00:00:00 2001
+From: Sibi Sankar <quic_sibis@quicinc.com>
+Date: Fri, 30 Aug 2024 12:37:08 +0530
+Subject: [PATCH] BACKPORT: soc: qcom: icc-bwmon: Allow for interrupts to be shared
+ across instances
+
+The multiple BWMONv4 instances available on the X1E80100 SoC use the
+same interrupt number. Mark them are shared to allow for re-use across
+instances.
+
+Using IRQF_SHARED coupled with devm_request_threaded_irq implies that
+the irq can still trigger during/after bwmon_remove due to other active
+bwmon instances. Handle this race by relying on bwmon_disable to disable
+the interrupt and coupled with explicit request/free irqs.
+
+Signed-off-by: Sibi Sankar <quic_sibis@quicinc.com>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20240624092214.146935-4-quic_sibis@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git dc18836435e7f8dda019db2c618c69194933157f]
+---
+ drivers/soc/qcom/icc-bwmon.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/soc/qcom/icc-bwmon.c b/drivers/soc/qcom/icc-bwmon.c
+index adf2d523f103..e58b11c31fed 100644
+--- a/drivers/soc/qcom/icc-bwmon.c
++++ b/drivers/soc/qcom/icc-bwmon.c
+@@ -781,9 +781,14 @@ static int bwmon_probe(struct platform_device *pdev)
+ 	bwmon->dev = dev;
+ 
+ 	bwmon_disable(bwmon);
+-	ret = devm_request_threaded_irq(dev, bwmon->irq, bwmon_intr,
+-					bwmon_intr_thread,
+-					IRQF_ONESHOT, dev_name(dev), bwmon);
++
++	/*
++	 * SoCs with multiple cpu-bwmon instances can end up using a shared interrupt
++	 * line. Using the devm_ variant might result in the IRQ handler being executed
++	 * after bwmon_disable in bwmon_remove()
++	 */
++	ret = request_threaded_irq(bwmon->irq, bwmon_intr, bwmon_intr_thread,
++			IRQF_ONESHOT | IRQF_SHARED, dev_name(dev), bwmon);
+ 	if (ret)
+ 		return dev_err_probe(dev, ret, "failed to request IRQ\n");
+ 
+@@ -799,6 +804,7 @@ static int bwmon_remove(struct platform_device *pdev)
+ 
+ 	bwmon_disable(bwmon);
+ 
++	free_irq(bwmon->irq, bwmon);
+ 	return 0;
+ }
+ 
+-- 
+2.17.1
+

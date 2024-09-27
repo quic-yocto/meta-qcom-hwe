@@ -1,0 +1,37 @@
+From c8e8e2edb0ce6776ef55f3c0f1dbb6c90f0e4bfc Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Tue, 13 Aug 2024 21:07:50 +0200
+Subject: [PATCH] UPSTREAM: power: sequencing: request the WLAN enable GPIO
+ as-is
+
+If the WCN module is powered up before linux boots and the ath11k driver
+probes at the same time as the power sequencing driver, we may end up
+driving the wlan-enable GPIO low in the latter, breaking the start-up of
+the WLAN module. Request the wlan-enable GPIO as-is so that if the WLAN
+module is already starting/started, we leave it alone.
+
+Fixes: 2f1630f437df ("power: pwrseq: add a driver for the PMU module on the QCom WCN chipsets")
+Reported-by: Stephan Gerhold <stephan.gerhold@linaro.org>
+Link: https://lore.kernel.org/r/20240813190751.155035-1-brgl@bgdev.pl
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git a9aaf1ff88a8cb99a1335c9eb76de637f0cf8c10]
+---
+ drivers/power/sequencing/pwrseq-qcom-wcn.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+index 42dacfda745e..d786cbf1b2cd 100644
+--- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
++++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+@@ -283,7 +283,7 @@ static int pwrseq_qcom_wcn_probe(struct platform_device *pdev)
+ 				     "Failed to get the Bluetooth enable GPIO\n");
+ 
+ 	ctx->wlan_gpio = devm_gpiod_get_optional(dev, "wlan-enable",
+-						 GPIOD_OUT_LOW);
++						 GPIOD_ASIS);
+ 	if (IS_ERR(ctx->wlan_gpio))
+ 		return dev_err_probe(dev, PTR_ERR(ctx->wlan_gpio),
+ 				     "Failed to get the WLAN enable GPIO\n");
+-- 
+2.25.1
+

@@ -1,0 +1,89 @@
+From 62139756f823179b5c18eb63bbac44553fe04a1c Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Wed, 5 Jun 2024 14:21:04 +0200
+Subject: [PATCH 2/2] UPSTREAM: dt-bindings: net: wireless: qcom,ath11k:
+ describe the ath11k on QCA6390
+
+Add a PCI compatible for the ATH11K module on QCA6390 and describe the
+power inputs from the PMU that it consumes.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Signed-off-by: Kalle Valo <quic_kvalo@quicinc.com>
+Link: https://msgid.link/20240605122106.23818-2-brgl@bgdev.pl
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 71839a929d9ee97daab319d370fc0f6720daef43]
+---
+ .../net/wireless/qcom,ath11k-pci.yaml         | 46 +++++++++++++++++++
+ 1 file changed, 46 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/net/wireless/qcom,ath11k-pci.yaml b/Documentation/devicetree/bindings/net/wireless/qcom,ath11k-pci.yaml
+index 817f02a8b481..a321205a4126 100644
+--- a/Documentation/devicetree/bindings/net/wireless/qcom,ath11k-pci.yaml
++++ b/Documentation/devicetree/bindings/net/wireless/qcom,ath11k-pci.yaml
+@@ -16,6 +16,7 @@ description: |
+ properties:
+   compatible:
+     enum:
++      - pci17cb,1101  # QCA6390
+       - pci17cb,1103  # WCN6855
+ 
+   reg:
+@@ -27,10 +28,55 @@ properties:
+       string to uniquely identify variant of the calibration data for designs
+       with colliding bus and device ids
+ 
++  vddrfacmn-supply:
++    description: VDD_RFA_CMN supply regulator handle
++
++  vddaon-supply:
++    description: VDD_AON supply regulator handle
++
++  vddwlcx-supply:
++    description: VDD_WL_CX supply regulator handle
++
++  vddwlmx-supply:
++    description: VDD_WL_MX supply regulator handle
++
++  vddrfa0p8-supply:
++    description: VDD_RFA_0P8 supply regulator handle
++
++  vddrfa1p2-supply:
++    description: VDD_RFA_1P2 supply regulator handle
++
++  vddrfa1p7-supply:
++    description: VDD_RFA_1P7 supply regulator handle
++
++  vddpcie0p9-supply:
++    description: VDD_PCIE_0P9 supply regulator handle
++
++  vddpcie1p8-supply:
++    description: VDD_PCIE_1P8 supply regulator handle
++
+ required:
+   - compatible
+   - reg
+ 
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: pci17cb,1101
++    then:
++      required:
++        - vddrfacmn-supply
++        - vddaon-supply
++        - vddwlcx-supply
++        - vddwlmx-supply
++        - vddrfa0p8-supply
++        - vddrfa1p2-supply
++        - vddrfa1p7-supply
++        - vddpcie0p9-supply
++        - vddpcie1p8-supply
++
+ additionalProperties: false
+ 
+ examples:
+-- 
+2.25.1
+

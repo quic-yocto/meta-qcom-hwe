@@ -1,0 +1,33 @@
+From 7ec8684af6b8fa7deca6c236850612bd54f6fec0 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Mon, 5 Aug 2024 19:08:02 +0200
+Subject: [PATCH 1/6] UPSTREAM: dt-bindings: misc: qcom,fastrpc: increase the
+ max number of iommus
+
+The fastrpc components on the SA8775P SoC can require up to 10 IOMMU
+entries. Bump the maxItems.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 42a21d00aac515fad1f9a10052c6e9710c6f7813]
+---
+ Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml b/Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml
+index 2dc3e245fa5d..ee9be8ee7091 100644
+--- a/Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml
++++ b/Documentation/devicetree/bindings/misc/qcom,fastrpc.yaml
+@@ -79,7 +79,7 @@ patternProperties:
+ 
+       iommus:
+         minItems: 1
+-        maxItems: 3
++        maxItems: 10
+ 
+       qcom,nsessions:
+         $ref: /schemas/types.yaml#/definitions/uint32
+-- 
+2.45.2
+

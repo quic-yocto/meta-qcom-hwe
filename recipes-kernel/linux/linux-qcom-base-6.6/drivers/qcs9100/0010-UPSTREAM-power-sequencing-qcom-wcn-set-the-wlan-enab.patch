@@ -1,0 +1,41 @@
+From 0c5a0a00b022ca6ac020149518da8c67db0dd05d Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Fri, 23 Aug 2024 13:55:00 +0200
+Subject: [PATCH] UPSTREAM: power: sequencing: qcom-wcn: set the wlan-enable
+ GPIO to output
+
+Commit a9aaf1ff88a8 ("power: sequencing: request the WLAN enable GPIO
+as-is") broke WLAN on boards on which the wlan-enable GPIO enabling the
+wifi module isn't in output mode by default. We need to set direction to
+output while retaining the value that was already set to keep the ath
+module on if it's already started.
+
+Fixes: a9aaf1ff88a8 ("power: sequencing: request the WLAN enable GPIO as-is")
+Link: https://lore.kernel.org/r/20240823115500.37280-1-brgl@bgdev.pl
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git d8b762070c3fde224f8b9ea3cf59bc41a5a3eb57]
+---
+ drivers/power/sequencing/pwrseq-qcom-wcn.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+index d786cbf1b2cd..700879474abf 100644
+--- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
++++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+@@ -288,6 +288,13 @@ static int pwrseq_qcom_wcn_probe(struct platform_device *pdev)
+ 		return dev_err_probe(dev, PTR_ERR(ctx->wlan_gpio),
+ 				     "Failed to get the WLAN enable GPIO\n");
+ 
++	/*
++	 * Set direction to output but keep the current value in order to not
++	 * disable the WLAN module accidentally if it's already powered on.
++	 */
++	gpiod_direction_output(ctx->wlan_gpio,
++			       gpiod_get_value_cansleep(ctx->wlan_gpio));
++
+ 	ctx->clk = devm_clk_get_optional(dev, NULL);
+ 	if (IS_ERR(ctx->clk))
+ 		return dev_err_probe(dev, PTR_ERR(ctx->clk),
+-- 
+2.25.1
+

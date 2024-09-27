@@ -1,0 +1,72 @@
+From 01161b5bd464f1e3612a27bc3019c2af9412e625 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Wed, 12 Jun 2024 10:20:15 +0200
+Subject: [PATCH 5/9] UPSTREAM: PCI/pwrctl: Reuse the OF node for power
+ controlled devices
+
+With PCI power control we deal with two struct device objects bound to
+two different drivers but consuming the same OF node. We must not bind
+the pinctrl twice. To that end: before setting the OF node of the newly
+instantiated PCI device, check if a platform device consuming the same
+OF node doesn't already exist on the platform bus and - if so - mark the
+PCI device as reusing the OF node.
+
+Tested-by: Amit Pundir <amit.pundir@linaro.org>
+Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8550-QRD, SM8650-QRD & SM8650-HDK
+Tested-by: Caleb Connolly <caleb.connolly@linaro.org> # OnePlus 8T
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Link: https://lore.kernel.org/r/20240612082019.19161-3-brgl@bgdev.pl
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 62c953f0f4fb0b5f67b0ad3096ab38f5c5712d75]
+---
+ drivers/pci/of.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/pci/of.c b/drivers/pci/of.c
+index 51e3dd0ea5ab..b908fe1ae951 100644
+--- a/drivers/pci/of.c
++++ b/drivers/pci/of.c
+@@ -6,6 +6,7 @@
+  */
+ #define pr_fmt(fmt)	"PCI: OF: " fmt
+ 
++#include <linux/cleanup.h>
+ #include <linux/irqdomain.h>
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+@@ -13,6 +14,7 @@
+ #include <linux/of_irq.h>
+ #include <linux/of_address.h>
+ #include <linux/of_pci.h>
++#include <linux/platform_device.h>
+ #include "pci.h"
+ 
+ #ifdef CONFIG_PCI
+@@ -25,16 +27,20 @@
+  */
+ int pci_set_of_node(struct pci_dev *dev)
+ {
+-	struct device_node *node;
+-
+ 	if (!dev->bus->dev.of_node)
+ 		return 0;
+ 
+-	node = of_pci_find_child_device(dev->bus->dev.of_node, dev->devfn);
++	struct device_node *node __free(device_node) =
++		of_pci_find_child_device(dev->bus->dev.of_node, dev->devfn);
+ 	if (!node)
+ 		return 0;
+ 
+-	device_set_node(&dev->dev, of_fwnode_handle(node));
++	struct device *pdev __free(put_device) =
++		bus_find_device_by_of_node(&platform_bus_type, node);
++	if (pdev)
++		dev->bus->dev.of_node_reused = true;
++
++	device_set_node(&dev->dev, of_fwnode_handle(no_free_ptr(node)));
+ 	return 0;
+ }
+ 
+-- 
+2.25.1
+
