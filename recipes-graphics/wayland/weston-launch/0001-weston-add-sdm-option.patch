@@ -14,10 +14,10 @@ Signed-off-by: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
  2 files changed, 13 insertions(+)
 
 diff --git a/meson.build b/meson.build
-index f5aa460f..28d9845c 100644
+index 2b8f8a8..0f2fa48 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -155,6 +155,7 @@ dep_libdl = cc.find_library('dl')
+@@ -157,6 +157,7 @@ dep_libdl = cc.find_library('dl')
  dep_libdrm = dependency('libdrm', version: '>= 2.4.95')
  dep_libdrm_headers = dep_libdrm.partial_dependency(compile_args: true)
  dep_threads = dependency('threads')
@@ -26,7 +26,7 @@ index f5aa460f..28d9845c 100644
  dep_libdrm_version = dep_libdrm.version()
  if dep_libdrm_version.version_compare('>=2.4.107')
 diff --git a/meson_options.txt b/meson_options.txt
-index 8a527d74..5d5b3630 100644
+index 8a527d7..5d5b363 100644
 --- a/meson_options.txt
 +++ b/meson_options.txt
 @@ -2,6 +2,18 @@
@@ -48,6 +48,3 @@ index 8a527d74..5d5b3630 100644
  option(
  	'backend-drm',
  	type: 'boolean',
--- 
-2.17.1
-

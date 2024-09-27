@@ -7,7 +7,8 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=7a434440b651f4a4
 
 SRC_URI = "file://usb.service \
            file://qusb \
-	   file://usb_bind.rules"
+	   file://usb_bind.rules \
+	   file://var-usbfw.mount"
 
 do_install() {
 	install -d ${D}${bindir}
@@ -17,8 +18,20 @@ do_install() {
 	install -m 0644 ${WORKDIR}/usb_bind.rules ${D}${sysconfdir}/udev/rules.d/
 }
 
+do_install:append:qcm6490 () {
+	install -d ${D}${systemd_unitdir}/system/local-fs.target.wants
+	install -d ${D}/var/usbfw
+	install -d ${D}/lib/firmware
+	install -m 0644  ${WORKDIR}/var-usbfw.mount ${D}${systemd_unitdir}/system/var-usbfw.mount
+	ln -sf ${systemd_unitdir}/system/var-usbfw.mount ${D}${systemd_unitdir}/system/local-fs.target.wants/var-usbfw.mount
+	ln -sf /var/usbfw/renesas_usb_fw.mem ${D}/lib/firmware/renesas_usb_fw.mem
+}
+
 FILES:${PN} += "${systemd_unitdir}/system/ \
 		${bindir} \
 		${nonarch_base_libdir}/udev/rules.d/usb_bind.rules"
+
+FILES:${PN}:append:qcm6490 = "/var/usbfw \
+			      /lib/firmware/*"
 
 SYSTEMD_SERVICE_${PN} = "usb.service"

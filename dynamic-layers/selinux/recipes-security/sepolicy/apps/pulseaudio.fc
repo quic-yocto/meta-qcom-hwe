@@ -9,3 +9,4 @@
 /etc/usecaseKvManager.xml                   gen_context(system_u:object_r:qcom_pulseaudio_etc_t,s0)
 /etc/backend_conf.xml                       gen_context(system_u:object_r:qcom_pulseaudio_etc_t,s0)
 /etc/qcm6490-.*                             gen_context(system_u:object_r:qcom_pulseaudio_etc_t,s0)
+/etc/models/acd(/.*)?                       gen_context(system_u:object_r:qcom_pulseaudio_acdb_etc_t,s0)

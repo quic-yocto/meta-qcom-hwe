@@ -21,7 +21,7 @@ Signed-off-by: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
  8 files changed, 141 insertions(+), 13 deletions(-)
 
 diff --git a/compositor/main.c b/compositor/main.c
-index cdd69684..17c960e1 100644
+index cdd6968..17c960e 100644
 --- a/compositor/main.c
 +++ b/compositor/main.c
 @@ -26,6 +26,10 @@
@@ -103,7 +103,7 @@ index cdd69684..17c960e1 100644
  	logger = weston_log_subscriber_create_log(weston_logfile);
  
 diff --git a/libweston-desktop/internal.h b/libweston-desktop/internal.h
-index 2606d279..263ba281 100644
+index 2606d27..263ba28 100644
 --- a/libweston-desktop/internal.h
 +++ b/libweston-desktop/internal.h
 @@ -203,6 +203,12 @@ weston_desktop_surface_set_relative_to(struct weston_desktop_surface *surface,
@@ -120,7 +120,7 @@ index 2606d279..263ba281 100644
  weston_desktop_surface_popup_grab(struct weston_desktop_surface *popup,
  				  struct weston_desktop_seat *seat,
 diff --git a/libweston-desktop/surface.c b/libweston-desktop/surface.c
-index 433f08ae..c49516fa 100644
+index 433f08a..c49516f 100644
 --- a/libweston-desktop/surface.c
 +++ b/libweston-desktop/surface.c
 @@ -797,6 +797,16 @@ weston_desktop_surface_unset_relative_to(struct weston_desktop_surface *surface)
@@ -141,7 +141,7 @@ index 433f08ae..c49516fa 100644
  weston_desktop_surface_popup_grab(struct weston_desktop_surface *surface,
  				  struct weston_desktop_seat *seat,
 diff --git a/libweston-desktop/xdg-shell.c b/libweston-desktop/xdg-shell.c
-index 6cbf55e4..c863ccc0 100644
+index 6cbf55e..c863ccc 100644
 --- a/libweston-desktop/xdg-shell.c
 +++ b/libweston-desktop/xdg-shell.c
 @@ -459,6 +459,29 @@ weston_desktop_xdg_toplevel_protocol_move(struct wl_client *wl_client,
@@ -183,7 +183,7 @@ index 6cbf55e4..c863ccc0 100644
  	.set_min_size        = weston_desktop_xdg_toplevel_protocol_set_min_size,
  	.set_max_size        = weston_desktop_xdg_toplevel_protocol_set_max_size,
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index be440b84..a45abdf3 100644
+index be440b8..a45abdf 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -584,8 +584,13 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
@@ -201,7 +201,7 @@ index be440b84..a45abdf3 100644
  		}
  	}
 diff --git a/libweston/backend-drm/meson.build b/libweston/backend-drm/meson.build
-index 23db9127..7f155e4d 100644
+index 23db912..7f155e4 100644
 --- a/libweston/backend-drm/meson.build
 +++ b/libweston/backend-drm/meson.build
 @@ -83,6 +83,10 @@ if get_option('remoting') or get_option('pipewire')
@@ -216,7 +216,7 @@ index 23db9127..7f155e4d 100644
  	'drm-backend',
  	srcs_drm,
 diff --git a/libweston/input.c b/libweston/input.c
-index 6fb4bed3..b60e15ba 100644
+index 6fb4bed..b60e15b 100644
 --- a/libweston/input.c
 +++ b/libweston/input.c
 @@ -23,6 +23,11 @@
@@ -287,7 +287,7 @@ index 6fb4bed3..b60e15ba 100644
  
  	end = keyboard->keys.data + keyboard->keys.size;
 diff --git a/meson_options.txt b/meson_options.txt
-index c84a1f51..3defec21 100644
+index c84a1f5..3defec2 100644
 --- a/meson_options.txt
 +++ b/meson_options.txt
 @@ -1,17 +1,18 @@
@@ -327,6 +327,3 @@ index c84a1f51..3defec21 100644
 +	value: true,
 +	description: 'DRM: run qcom bsp related flow'
 +)
--- 
-2.17.1
-

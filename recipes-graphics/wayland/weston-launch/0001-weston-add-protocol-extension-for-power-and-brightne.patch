@@ -25,7 +25,7 @@ Signed-off-by: Devanshi Bansal <quic_devanshi@quicinc.com>
  create mode 100644 protocol/weston-qti-extn.xml
 
 diff --git a/clients/meson.build b/clients/meson.build
-index 3c3212dd..762b882c 100644
+index 3c3212d..762b882 100644
 --- a/clients/meson.build
 +++ b/clients/meson.build
 @@ -55,6 +55,15 @@ simple_clients = [
@@ -46,7 +46,7 @@ index 3c3212dd..762b882c 100644
  		'sources': [
 diff --git a/clients/weston-qti-extn-test.c b/clients/weston-qti-extn-test.c
 new file mode 100644
-index 00000000..53d3c5e9
+index 0000000..53d3c5e
 --- /dev/null
 +++ b/clients/weston-qti-extn-test.c
 @@ -0,0 +1,166 @@
@@ -217,7 +217,7 @@ index 00000000..53d3c5e9
 +  exit(0);
 +}
 diff --git a/libweston/meson.build b/libweston/meson.build
-index ffdab47a..9494fd8e 100644
+index ffdab47..9494fd8 100644
 --- a/libweston/meson.build
 +++ b/libweston/meson.build
 @@ -38,6 +38,7 @@ srcs_libweston = [
@@ -239,7 +239,7 @@ index ffdab47a..9494fd8e 100644
  if get_option('renderer-gl')
 diff --git a/libweston/weston-qti-extn.c b/libweston/weston-qti-extn.c
 new file mode 100644
-index 00000000..3ad6addb
+index 0000000..3ad6add
 --- /dev/null
 +++ b/libweston/weston-qti-extn.c
 @@ -0,0 +1,130 @@
@@ -375,7 +375,7 @@ index 00000000..3ad6addb
 +
 diff --git a/libweston/weston-qti-extn.h b/libweston/weston-qti-extn.h
 new file mode 100644
-index 00000000..646331a2
+index 0000000..646331a
 --- /dev/null
 +++ b/libweston/weston-qti-extn.h
 @@ -0,0 +1,71 @@
@@ -451,7 +451,7 @@ index 00000000..646331a2
 +#endif /* WESTON_POWERMODE_BACKLIGHT_BACKEND_H */
 +
 diff --git a/protocol/meson.build b/protocol/meson.build
-index 46074ba8..4c9cf93b 100644
+index 46074ba..4c9cf93 100644
 --- a/protocol/meson.build
 +++ b/protocol/meson.build
 @@ -8,6 +8,7 @@ install_data(
@@ -472,7 +472,7 @@ index 46074ba8..4c9cf93b 100644
  	[ 'xdg-shell', 'stable' ],
 diff --git a/protocol/weston-qti-extn.xml b/protocol/weston-qti-extn.xml
 new file mode 100644
-index 00000000..7377bf8a
+index 0000000..7377bf8
 --- /dev/null
 +++ b/protocol/weston-qti-extn.xml
 @@ -0,0 +1,69 @@
@@ -545,6 +545,3 @@ index 00000000..7377bf8a
 +  </interface>
 +
 +</protocol>
--- 
-2.17.1
-

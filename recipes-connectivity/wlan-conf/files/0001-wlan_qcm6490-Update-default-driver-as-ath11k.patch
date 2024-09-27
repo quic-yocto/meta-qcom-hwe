@@ -1,0 +1,64 @@
+From 3e1cc42e37201a6bbd7cdab075cc3925e166a874 Mon Sep 17 00:00:00 2001
+From: Eswar Kesavalu <quic_ekesaval@quicinc.com>
+Date: Fri, 13 Sep 2024 15:03:37 +0530
+Subject: [PATCH 1/2] wlan_qcm6490: Update default driver as ath11k
+
+Current wlan script behavior is to load the qcacld wlan
+driver by default.
+
+Also, for qcacld driver, this script will do insmod and rmmod,
+while the upstream driver shall be loaded as part of kernel.
+
+This Change is to make MODNAME=ath11k_ahb by default and
+not to start the dhcpcd explicitly since it is already
+started by dhcpcd systemd service
+
+Also, does not do rmmod for ath11k driver as this script
+has not loaded it.
+
+Change-Id: I954387129750054c6ef834e6f43b4415dd6633d4
+CRs-Fixed: 3924182
+---
+ wlan_qcm6490/wlan | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/wlan_qcm6490/wlan b/wlan_qcm6490/wlan
+index 6999c11..459f977 100644
+--- a/wlan_qcm6490/wlan
++++ b/wlan_qcm6490/wlan
+@@ -32,7 +32,11 @@
+ # SPDX-License-Identifier: BSD-3-Clause-Clear
+ 
+ export MODULE_BASE=/lib/modules/`uname -r`
+-export MODNAME=wlan
++#To load qcacld driver make MODNAME=wlan
++#export MODNAME=wlan
++
++#MODNAME=ath11k_ahb indicates upstream ath11k driver is being loaded
++export MODNAME=ath11k_ahb
+ export RETRY_LIMIT=20
+ HELP="Usage $0 {start | stop | restart} <ap | sta,ap>"
+ DUMP_TO_KMSG=/dev/kmsg
+@@ -75,7 +79,6 @@ do_ctrl_cld_ll () {
+ 
+ 	wpa_supplicant -Dnl80211 -iwlan0 -ddd -c /etc/wpa_supplicant.conf -t -f /tmp/wpa_supplicant-log.txt &
+ 
+-	dhcpcd wlan0
+ 
+         cnt=0
+         while ! [ -d /var/run/wpa_supplicant ]
+@@ -110,8 +113,9 @@ do_ctrl_cld_ll () {
+     stop)
+         echo "Stopping WLAN..." > $DUMP_TO_KMSG
+ 	killall wpa_supplicant
+-	killall dhcpcd
+-	rmmod $MODNAME
++        if [ "$MODNAME" = "wlan" ]; then
++            rmmod $MODNAME
++        fi
+         ;;
+ 
+     restart)
+-- 
+2.25.1
+

@@ -47,5 +47,9 @@ RDEPENDS:${PN}:append:qcom-custom-bsp = ' \
     qcom-sva-eai \
     qcom-pa-pal-voiceui \
     qcom-pa-pal-acd \
+    qcom-audio-plugin-headers \
+    qcom-dac-mer-testapp \
+    qcom-dac-plugin \
+    qcom-mercury-plugin \
     ${PULSEAUDIO_PKGS}  \
 '

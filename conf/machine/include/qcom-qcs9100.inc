@@ -12,12 +12,13 @@ DBG_CMDLINE = "${@oe.utils.conditional('DEBUG_BUILD','1','reboot=panic_warm page
 # Additional Kernel cmdline parameters for performance optimizations
 CONSOLE_CMDLINE = "${@oe.utils.conditional('PERFORMANCE_BUILD','1','console=','console=ttyMSM0,115200n8 earlycon',d)}"
 
-KERNEL_CMDLINE_EXTRA ?= "root=/dev/disk/by-partlabel/system rw rootwait ${CONSOLE_CMDLINE} pcie_pme=nomsi net.ifnames=0 pci=noaer kpti=off kasan=off kasan.stacktrace=off swiotlb=128 ${DBG_CMDLINE} mitigations=auto kernel.sched_pelt_multiplier=4 rcupdate.rcu_expedited=1 rcu_nocbs=0-7 no-steal-acc vfio_iommu_type1.allow_unsafe_interrupts=1"
+KERNEL_CMDLINE_EXTRA ?= "root=/dev/disk/by-partlabel/system rw rootwait ${CONSOLE_CMDLINE} pcie_pme=nomsi net.ifnames=0 pci=noaer kpti=off kasan=off kasan.stacktrace=off swiotlb=128 ${DBG_CMDLINE} mitigations=auto kernel.sched_pelt_multiplier=4 rcupdate.rcu_expedited=1 rcu_nocbs=0-7 no-steal-acc vfio_iommu_type1.allow_unsafe_interrupts=1 fw_devlink.strict=1"
 
 # Disable serial console for performance
 SERIAL_CONSOLES = "${@oe.utils.conditional('PERFORMANCE_BUILD','1','','115200;ttyMSM0',d)}"
 
 MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
+    fastrpc \
     kernel-modules \
     pd-mapper \
     qrtr \
@@ -29,7 +30,6 @@ MACHINE_EXTRA_RDEPENDS += " \
 "
 
 MACHINE_EXTRA_RRECOMMENDS:append:qcom-custom-bsp = " \
-    fastrpc \
     qcom-subsystem-ramdump \
     trace-cmd \
 "

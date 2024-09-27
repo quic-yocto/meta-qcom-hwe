@@ -13,10 +13,10 @@ Signed-off-by: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
  1 file changed, 12 insertions(+)
 
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 42787702..14a08d55 100644
+index be440b8..a72de35 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
-@@ -2052,6 +2052,17 @@ drm_connector_fini(struct drm_connector *connector)
+@@ -2059,6 +2059,17 @@ drm_connector_fini(struct drm_connector *connector)
  	drm_property_info_free(connector->props, WDRM_CONNECTOR__COUNT);
  }
  
@@ -34,7 +34,7 @@ index 42787702..14a08d55 100644
  static void
  drm_head_log_info(struct drm_head *head, const char *msg)
  {
-@@ -2062,6 +2073,7 @@ drm_head_log_info(struct drm_head *head, const char *msg)
+@@ -2069,6 +2080,7 @@ drm_head_log_info(struct drm_head *head, const char *msg)
  			   head->base.make, head->base.model,
  			   head->base.serial_number ?: "");
  	} else {
@@ -42,6 +42,3 @@ index 42787702..14a08d55 100644
  		weston_log("DRM: head '%s' %s, connector %d is disconnected.\n",
  			   head->base.name, msg, head->connector.connector_id);
  	}
--- 
-2.17.1
-

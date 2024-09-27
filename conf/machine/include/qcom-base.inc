@@ -53,6 +53,9 @@ PREFERRED_VERSION_libqrtr-glib:qcom-custom-bsp ?= "1.2.0.qcom"
 #Use qcom specific version of wpa-supplicant in custom-bsp
 PREFERRED_VERSION_wpa-supplicant:qcom-custom-bsp ?= "2.10.qcom"
 
+#Use qcom specific version of fastrpc in custom-bsp
+PREFERRED_VERSION_fastrpc:qcom-custom-bsp ?= "15.0.qcom"
+
 # For module signing
 INHERIT += " qmodule"
 

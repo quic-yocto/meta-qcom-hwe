@@ -25,3 +25,4 @@ allow pulseaudio_t qcom_pulseaudio_acdb_etc_t:dir manage_dir_perms;
 init_dbus_chat_script(pulseaudio_t)
 init_bt_socket_manage(pulseaudio_t)
 allow pulseaudio_t self:bluetooth_socket { create accept bind getopt listen read setopt write connect shutdown};
+pulseaudio_acd_read_permission_t(pulseaudio_t)

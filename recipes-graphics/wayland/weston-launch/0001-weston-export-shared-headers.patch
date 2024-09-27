@@ -13,7 +13,7 @@ Signed-off-by: Rajavenu Kyatham <quic_rkyatham@quicinc.com>
  1 file changed, 13 insertions(+)
 
 diff --git a/shared/meson.build b/shared/meson.build
-index 9a4af530..60307a97 100644
+index 9a4af53..60307a9 100644
 --- a/shared/meson.build
 +++ b/shared/meson.build
 @@ -1,3 +1,16 @@
@@ -33,6 +33,3 @@ index 9a4af530..60307a97 100644
  srcs_libshared = [
  	'config-parser.c',
  	'option-parser.c',
--- 
-2.17.1
-

@@ -29,7 +29,7 @@ RDEPENDS:${PN}:append:qcom-base-bsp = " \
 RDEPENDS:${PN}:append = "tcpdump rfkill dnsmasq dhcpcd iperf2 iperf3 nftables iputils trace-cmd"
 
 
-RDEPENDS:${PN}:append:qcom-custsom-bsp = "\
+RDEPENDS:${PN}:append:qcom-custom-bsp = "\
 	qcom-ath6kl-utils \
 	qcom-ftm \
 	qcom-wlan-tools \

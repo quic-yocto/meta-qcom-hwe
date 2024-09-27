@@ -18,6 +18,7 @@ KERNEL_CMDLINE_EXTRA ?= "root=/dev/disk/by-partlabel/system rw rootwait ${CONSOL
 SERIAL_CONSOLES = "${@oe.utils.conditional('PERFORMANCE_BUILD','1','','115200;ttyMSM0',d)}"
 
 MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
+    fastrpc \
     kernel-modules \
     pd-mapper \
     qrtr \
@@ -29,7 +30,6 @@ MACHINE_EXTRA_RDEPENDS += " \
 "
 
 MACHINE_EXTRA_RRECOMMENDS:append:qcom-custom-bsp = " \
-    fastrpc \
     qcom-subsystem-ramdump \
     trace-cmd \
 "

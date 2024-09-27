@@ -72,7 +72,7 @@ Signed-off-by: Devanshi Bansal <quic_devanshi@quicinc.com>
  create mode 100644 libweston/backend-sdm/state-propose.c
 
 diff --git a/compositor/main.c b/compositor/main.c
-index 322f2ff5..cdd69684 100644
+index 322f2ff..cdd6968 100644
 --- a/compositor/main.c
 +++ b/compositor/main.c
 @@ -2617,6 +2617,69 @@ load_pipewire(struct weston_compositor *c, struct weston_config *wc)
@@ -155,10 +155,10 @@ index 322f2ff5..cdd69684 100644
  		return load_x11_backend(compositor, argc, argv, config);
  	else if (strstr(backend, "wayland-backend.so"))
 diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
-index d99dc763..8bf7d96c 100644
+index 0086e67..31bfda8 100644
 --- a/include/libweston/libweston.h
 +++ b/include/libweston/libweston.h
-@@ -1857,6 +1857,7 @@ weston_compositor_add_destroy_listener_once(struct weston_compositor *compositor
+@@ -1867,6 +1867,7 @@ weston_compositor_add_destroy_listener_once(struct weston_compositor *compositor
  
  enum weston_compositor_backend {
  	WESTON_BACKEND_DRM,
@@ -168,7 +168,7 @@ index d99dc763..8bf7d96c 100644
  	WESTON_BACKEND_RDP,
 diff --git a/libweston/backend-sdm/fb.c b/libweston/backend-sdm/fb.c
 new file mode 100644
-index 00000000..99ebe181
+index 0000000..99ebe18
 --- /dev/null
 +++ b/libweston/backend-sdm/fb.c
 @@ -0,0 +1,636 @@
@@ -810,7 +810,7 @@ index 00000000..99ebe181
 +#endif
 diff --git a/libweston/backend-sdm/kms.c b/libweston/backend-sdm/kms.c
 new file mode 100644
-index 00000000..da161a65
+index 0000000..da161a6
 --- /dev/null
 +++ b/libweston/backend-sdm/kms.c
 @@ -0,0 +1,165 @@
@@ -981,7 +981,7 @@ index 00000000..da161a65
 +}
 diff --git a/libweston/backend-sdm/meson.build b/libweston/backend-sdm/meson.build
 new file mode 100644
-index 00000000..860e76c8
+index 0000000..860e76c
 --- /dev/null
 +++ b/libweston/backend-sdm/meson.build
 @@ -0,0 +1,71 @@
@@ -1058,7 +1058,7 @@ index 00000000..860e76c8
 +install_headers(backend_drm_h, subdir: dir_include_libweston_install)
 diff --git a/libweston/backend-sdm/modes.c b/libweston/backend-sdm/modes.c
 new file mode 100644
-index 00000000..f7446e7f
+index 0000000..f7446e7
 --- /dev/null
 +++ b/libweston/backend-sdm/modes.c
 @@ -0,0 +1,213 @@
@@ -1277,7 +1277,7 @@ index 00000000..f7446e7f
 +}
 diff --git a/libweston/backend-sdm/sdm-gbm.c b/libweston/backend-sdm/sdm-gbm.c
 new file mode 100644
-index 00000000..82063970
+index 0000000..8206397
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-gbm.c
 @@ -0,0 +1,286 @@
@@ -1569,7 +1569,7 @@ index 00000000..82063970
 +}
 diff --git a/libweston/backend-sdm/sdm-internal.h b/libweston/backend-sdm/sdm-internal.h
 new file mode 100644
-index 00000000..fbb10293
+index 0000000..fbb1029
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-internal.h
 @@ -0,0 +1,519 @@
@@ -2094,7 +2094,7 @@ index 00000000..fbb10293
 +#endif
 diff --git a/libweston/backend-sdm/sdm-service/sdm_color_mode_intf.h b/libweston/backend-sdm/sdm-service/sdm_color_mode_intf.h
 new file mode 100644
-index 00000000..e912cbb1
+index 0000000..e912cbb
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_color_mode_intf.h
 @@ -0,0 +1,34 @@
@@ -2135,7 +2135,7 @@ index 00000000..e912cbb1
 \ No newline at end of file
 diff --git a/libweston/backend-sdm/sdm-service/sdm_color_mode_intf_impl.cpp b/libweston/backend-sdm/sdm-service/sdm_color_mode_intf_impl.cpp
 new file mode 100644
-index 00000000..c22a3023
+index 0000000..c22a302
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_color_mode_intf_impl.cpp
 @@ -0,0 +1,464 @@
@@ -2606,7 +2606,7 @@ index 00000000..c22a3023
 \ No newline at end of file
 diff --git a/libweston/backend-sdm/sdm-service/sdm_color_mode_intf_impl.h b/libweston/backend-sdm/sdm-service/sdm_color_mode_intf_impl.h
 new file mode 100644
-index 00000000..fc49bbc4
+index 0000000..fc49bbc
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_color_mode_intf_impl.h
 @@ -0,0 +1,108 @@
@@ -2721,7 +2721,7 @@ index 00000000..fc49bbc4
 \ No newline at end of file
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display.cpp b/libweston/backend-sdm/sdm-service/sdm_display.cpp
 new file mode 100644
-index 00000000..09af7f7b
+index 0000000..09af7f7
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display.cpp
 @@ -0,0 +1,1747 @@
@@ -4474,7 +4474,7 @@ index 00000000..09af7f7b
 +}  // namespace sdm
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display.h b/libweston/backend-sdm/sdm-service/sdm_display.h
 new file mode 100644
-index 00000000..233524ac
+index 0000000..233524a
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display.h
 @@ -0,0 +1,311 @@
@@ -4791,7 +4791,7 @@ index 00000000..233524ac
 +#endif  // __SDM_DISPLAY_H__
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_buffer_allocator.cpp b/libweston/backend-sdm/sdm-service/sdm_display_buffer_allocator.cpp
 new file mode 100644
-index 00000000..0adf38fc
+index 0000000..0adf38f
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_buffer_allocator.cpp
 @@ -0,0 +1,433 @@
@@ -5230,7 +5230,7 @@ index 00000000..0adf38fc
 +#endif
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_buffer_allocator.h b/libweston/backend-sdm/sdm-service/sdm_display_buffer_allocator.h
 new file mode 100644
-index 00000000..51726ad1
+index 0000000..51726ad
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_buffer_allocator.h
 @@ -0,0 +1,78 @@
@@ -5314,7 +5314,7 @@ index 00000000..51726ad1
 +
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_buffer_sync_handler.cpp b/libweston/backend-sdm/sdm-service/sdm_display_buffer_sync_handler.cpp
 new file mode 100644
-index 00000000..495b9e99
+index 0000000..495b9e9
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_buffer_sync_handler.cpp
 @@ -0,0 +1,86 @@
@@ -5406,7 +5406,7 @@ index 00000000..495b9e99
 +}  // namespace sdm
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_buffer_sync_handler.h b/libweston/backend-sdm/sdm-service/sdm_display_buffer_sync_handler.h
 new file mode 100644
-index 00000000..afa69cc9
+index 0000000..afa69cc
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_buffer_sync_handler.h
 @@ -0,0 +1,49 @@
@@ -5461,7 +5461,7 @@ index 00000000..afa69cc9
 +#endif  // __SDM_DISPLAY_BUFFER_SYNC_HANDLER_H__
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_connect.cpp b/libweston/backend-sdm/sdm-service/sdm_display_connect.cpp
 new file mode 100644
-index 00000000..f55375c3
+index 0000000..f55375c
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_connect.cpp
 @@ -0,0 +1,592 @@
@@ -6059,7 +6059,7 @@ index 00000000..f55375c3
 +#endif
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_connect.h b/libweston/backend-sdm/sdm-service/sdm_display_connect.h
 new file mode 100644
-index 00000000..a12298d9
+index 0000000..a12298d
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_connect.h
 @@ -0,0 +1,278 @@
@@ -6343,7 +6343,7 @@ index 00000000..a12298d9
 +#endif // SDM_DISPLAY_CONNECT_H
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_debugger.cpp b/libweston/backend-sdm/sdm-service/sdm_display_debugger.cpp
 new file mode 100644
-index 00000000..00008202
+index 0000000..0000820
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_debugger.cpp
 @@ -0,0 +1,285 @@
@@ -6634,7 +6634,7 @@ index 00000000..00008202
 +}  // namespace sdm
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_debugger.h b/libweston/backend-sdm/sdm-service/sdm_display_debugger.h
 new file mode 100644
-index 00000000..456422f4
+index 0000000..456422f
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_debugger.h
 @@ -0,0 +1,100 @@
@@ -6740,7 +6740,7 @@ index 00000000..456422f4
 +#endif  // __SDM_DISPLAY_DEBUGGER_H__
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_interface.h b/libweston/backend-sdm/sdm-service/sdm_display_interface.h
 new file mode 100644
-index 00000000..208849ac
+index 0000000..208849a
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_interface.h
 @@ -0,0 +1,241 @@
@@ -6987,7 +6987,7 @@ index 00000000..208849ac
 +#endif // SDM_DISPLAY_INTERFACE_H
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_socket_handler.cpp b/libweston/backend-sdm/sdm-service/sdm_display_socket_handler.cpp
 new file mode 100644
-index 00000000..7a6ef864
+index 0000000..7a6ef86
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_socket_handler.cpp
 @@ -0,0 +1,46 @@
@@ -7039,7 +7039,7 @@ index 00000000..7a6ef864
 +}  // namespace sdm
 diff --git a/libweston/backend-sdm/sdm-service/sdm_display_socket_handler.h b/libweston/backend-sdm/sdm-service/sdm_display_socket_handler.h
 new file mode 100644
-index 00000000..caf8e42c
+index 0000000..caf8e42
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/sdm_display_socket_handler.h
 @@ -0,0 +1,46 @@
@@ -7091,7 +7091,7 @@ index 00000000..caf8e42c
 +#endif  // __SDM_DISPLAY_SOCKET_HANDLER_H__
 diff --git a/libweston/backend-sdm/sdm-service/uevent.c b/libweston/backend-sdm/sdm-service/uevent.c
 new file mode 100644
-index 00000000..7860222f
+index 0000000..7860222
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/uevent.c
 @@ -0,0 +1,135 @@
@@ -7232,7 +7232,7 @@ index 00000000..7860222f
 +}
 diff --git a/libweston/backend-sdm/sdm-service/uevent.h b/libweston/backend-sdm/sdm-service/uevent.h
 new file mode 100644
-index 00000000..caea3290
+index 0000000..caea329
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm-service/uevent.h
 @@ -0,0 +1,40 @@
@@ -7278,7 +7278,7 @@ index 00000000..caea3290
 +
 diff --git a/libweston/backend-sdm/sdm.c b/libweston/backend-sdm/sdm.c
 new file mode 100644
-index 00000000..ea184e7b
+index 0000000..dd78a65
 --- /dev/null
 +++ b/libweston/backend-sdm/sdm.c
 @@ -0,0 +1,1888 @@
@@ -9172,7 +9172,7 @@ index 00000000..ea184e7b
 +}
 diff --git a/libweston/backend-sdm/state-propose.c b/libweston/backend-sdm/state-propose.c
 new file mode 100644
-index 00000000..b63e568e
+index 0000000..b63e568
 --- /dev/null
 +++ b/libweston/backend-sdm/state-propose.c
 @@ -0,0 +1,174 @@
@@ -9351,10 +9351,10 @@ index 00000000..b63e568e
 +	}
 +}
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index f87eb371..f6914fb9 100644
+index eebc22b..f705a2f 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
-@@ -8245,6 +8245,7 @@ weston_compositor_get_user_data(struct weston_compositor *compositor)
+@@ -8276,6 +8276,7 @@ weston_compositor_get_user_data(struct weston_compositor *compositor)
  
  static const char * const backend_map[] = {
  	[WESTON_BACKEND_DRM] =		"drm-backend.so",
@@ -9363,7 +9363,7 @@ index f87eb371..f6914fb9 100644
  	[WESTON_BACKEND_HEADLESS] =	"headless-backend.so",
  	[WESTON_BACKEND_RDP] =		"rdp-backend.so",
 diff --git a/libweston/launcher-direct.c b/libweston/launcher-direct.c
-index c04ba857..c6befbc9 100644
+index c04ba85..c6befbc 100644
 --- a/libweston/launcher-direct.c
 +++ b/libweston/launcher-direct.c
 @@ -70,23 +70,28 @@ is_drm_master(int drm_fd)
@@ -9406,12 +9406,12 @@ index c04ba857..c6befbc9 100644
  #endif
  
 diff --git a/libweston/meson.build b/libweston/meson.build
-index 257d6950..8579743a 100644
+index 7ae3aa1..ffdab47 100644
 --- a/libweston/meson.build
 +++ b/libweston/meson.build
-@@ -150,10 +150,19 @@ srcs_session_helper = [
+@@ -157,10 +157,19 @@ deps_session_helper = [
+ 	dep_libweston_private,
  ]
- deps_session_helper = [ dep_libweston_private_h ]
  
 +deps_session_helper = [
 +dep_libweston_private_h,
@@ -9429,7 +9429,7 @@ index 257d6950..8579743a 100644
  systemd_dep = dependency('', required: false)
  if get_option('launcher-logind')
  	systemd_dep = dependency('libsystemd', version: '>= 209', required: false)
-@@ -197,7 +206,7 @@ endif
+@@ -204,7 +213,7 @@ endif
  lib_session_helper = static_library(
  	'session-helper',
  	srcs_session_helper,
@@ -9438,7 +9438,7 @@ index 257d6950..8579743a 100644
  	dependencies: deps_session_helper,
  	install: false
  )
-@@ -250,6 +259,7 @@ endif
+@@ -268,6 +277,7 @@ install_headers(
  subdir('color-lcms')
  subdir('renderer-gl')
  subdir('backend-drm')
@@ -9447,7 +9447,7 @@ index 257d6950..8579743a 100644
  subdir('backend-headless')
  subdir('backend-rdp')
 diff --git a/meson.build b/meson.build
-index f5aa460f..0d0c565f 100644
+index 2b8f8a8..9d55ac3 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -1,9 +1,11 @@
@@ -9462,7 +9462,7 @@ index f5aa460f..0d0c565f 100644
  		'b_lundef=true',
  	],
  	meson_version: '>= 0.52.1',
-@@ -72,6 +74,7 @@ foreach a : global_args_maybe
+@@ -74,6 +76,7 @@ foreach a : global_args_maybe
  	endif
  endforeach
  add_global_arguments(global_args, language: 'c')
@@ -9470,7 +9470,7 @@ index f5aa460f..0d0c565f 100644
  
  if cc.has_header_symbol('sys/sysmacros.h', 'major')
  	config_h.set('MAJOR_IN_SYSMACROS', 1)
-@@ -119,10 +122,12 @@ config_h.set_quoted('LIBWESTON_MODULEDIR', dir_module_libweston)
+@@ -121,10 +124,12 @@ config_h.set_quoted('LIBWESTON_MODULEDIR', dir_module_libweston)
  
  config_h.set10('TEST_GL_RENDERER', get_option('test-gl-renderer'))
  
@@ -9484,7 +9484,7 @@ index f5aa460f..0d0c565f 100644
  			backend_default = b
  		endif
  	endforeach
-@@ -155,6 +160,15 @@ dep_libdl = cc.find_library('dl')
+@@ -157,6 +162,15 @@ dep_libdl = cc.find_library('dl')
  dep_libdrm = dependency('libdrm', version: '>= 2.4.95')
  dep_libdrm_headers = dep_libdrm.partial_dependency(compile_args: true)
  dep_threads = dependency('threads')
@@ -9501,7 +9501,7 @@ index f5aa460f..0d0c565f 100644
  dep_libdrm_version = dep_libdrm.version()
  if dep_libdrm_version.version_compare('>=2.4.107')
 diff --git a/meson_options.txt b/meson_options.txt
-index 8a527d74..c84a1f51 100644
+index 8a527d7..c84a1f5 100644
 --- a/meson_options.txt
 +++ b/meson_options.txt
 @@ -1,7 +1,18 @@
@@ -9524,6 +9524,3 @@ index 8a527d74..c84a1f51 100644
  option(
  	'backend-drm',
  	type: 'boolean',
--- 
-2.17.1
-

@@ -1,7 +1,6 @@
 SUMMARY = "Package group to bring in BT releated packages for LE system"
 
 LICENSE = "BSD-3-Clause"
-LICENSE = "Qualcomm-Technologies-Inc.-Proprietary"
 
 PACKAGE_ARCH = "${TUNE_PKGARCH}"
 inherit packagegroup
@@ -28,11 +27,3 @@ RDEPENDS:${PN} = "\
     btdevicetree \
     bluetooth-tools "
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
-
-BTVENDORPROP ?= 'False'
-
-RDEPENDS:${PN} += " \
-    ${@oe.utils.conditional('BTVENDORPROP', 'True', 'qesl-ap', '', d)} \
-    ${@oe.utils.conditional('BTVENDORPROP', 'True', 'qesl-me', '', d)} \
-"

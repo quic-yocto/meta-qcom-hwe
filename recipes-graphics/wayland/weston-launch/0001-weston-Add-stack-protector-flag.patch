@@ -15,10 +15,10 @@ Signed-off-by: Devanshi Bansal <quic_devanshi@quicinc.com>
  2 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/clients/meson.build b/clients/meson.build
-index 3cc4080c..3c3212dd 100644
+index 362f7fe..5f1bc7b 100644
 --- a/clients/meson.build
 +++ b/clients/meson.build
-@@ -191,7 +191,8 @@ foreach t : simple_clients
+@@ -176,7 +176,8 @@ foreach t : simple_clients
  			t_name, t.get('sources'),
  			include_directories: common_inc,
  			dependencies: t_deps,
@@ -29,7 +29,7 @@ index 3cc4080c..3c3212dd 100644
  	endif
  endforeach
 diff --git a/compositor/meson.build b/compositor/meson.build
-index 8a54ea99..55bf728a 100644
+index 8a54ea9..55bf728 100644
 --- a/compositor/meson.build
 +++ b/compositor/meson.build
 @@ -47,7 +47,8 @@ exe_weston = executable(
@@ -42,6 +42,3 @@ index 8a54ea99..55bf728a 100644
  )
  install_headers('weston.h', subdir: 'weston')
  
--- 
-2.34.1
-

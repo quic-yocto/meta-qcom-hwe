@@ -1,0 +1,10 @@
+[Unit]
+Description=cDSP RPC daemon
+
+[Service]
+Type=exec
+Restart=always
+ExecStart=/usr/bin/cdsprpcd
+
+[Install]
+WantedBy=multi-user.target

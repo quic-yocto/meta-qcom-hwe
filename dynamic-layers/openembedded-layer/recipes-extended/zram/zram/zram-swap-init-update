@@ -30,6 +30,9 @@ fi
 
 memtotal=$(grep MemTotal /proc/meminfo | awk ' { print $2 } ')
 memzram=$(($memtotal*${ZRAM_SIZE_PERCENT}/100))
+if [ $memzram -gt 6291456 ]; then
+	memzram=6291456
+fi
 
 zramctl -a ${ZRAM_ALGORITHM} -s ${memzram}KB $device
 mkswap -L "zram-swap" $device

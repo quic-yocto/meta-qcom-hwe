@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 
 inherit module deploy
 
-SRC_URI   =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=26019785fb7062044cf892e1b8112c0e26e95e56;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/wlan-devicetree \
+SRC_URI   =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https;rev=1d891e6214c5c38796803ae09098833b2d5455ae;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/wlan-devicetree \
 	      ${@bb.utils.contains('PREFERRED_PROVIDER_virtual/kernel', 'linux-kernel-qcom-rt', 'file://0001-wlan-devicetree-disable-icnss-driver.patch', '', d)}"
 
 S = "${WORKDIR}/wlan/wlan-devicetree"

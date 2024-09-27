@@ -36,7 +36,7 @@ Signed-off-by: Devanshi Bansal <quic_devanshi@quicinc.com>
  create mode 100644 protocol/gbm-buffer-backend.xml
 
 diff --git a/clients/meson.build b/clients/meson.build
-index 5f1bc7b7..3c3212dd 100644
+index 5f1bc7b..3c3212d 100644
 --- a/clients/meson.build
 +++ b/clients/meson.build
 @@ -40,6 +40,21 @@ simple_clients_enabled = get_option('simple-clients')
@@ -63,15 +63,15 @@ index 5f1bc7b7..3c3212dd 100644
  		'sources': [
 diff --git a/clients/simple-gbmbuf.c b/clients/simple-gbmbuf.c
 new file mode 100644
-index 00000000..93f42757
+index 0000000..93f4275
 --- /dev/null
 +++ b/clients/simple-gbmbuf.c
 @@ -0,0 +1,764 @@
 +/*
-+ * Copyright © 2021 The Linux Foundation. All rights reserved.
-+ * Copyright © 2011 Benjamin Franzke
-+ * Copyright © 2010 Intel Corporation
-+ * Copyright © 2014 Collabora Ltd.
++ * Copyright Â© 2021 The Linux Foundation. All rights reserved.
++ * Copyright Â© 2011 Benjamin Franzke
++ * Copyright Â© 2010 Intel Corporation
++ * Copyright Â© 2014 Collabora Ltd.
 + *
 + * Permission to use, copy, modify, distribute, and sell this software and its
 + * documentation for any purpose is hereby granted without fee, provided that
@@ -832,7 +832,7 @@ index 00000000..93f42757
 +	return 0;
 +}
 diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
-index 8bf7d96c..31bfda8f 100644
+index d99dc76..0086e67 100644
 --- a/include/libweston/libweston.h
 +++ b/include/libweston/libweston.h
 @@ -23,6 +23,11 @@
@@ -867,7 +867,7 @@ index 8bf7d96c..31bfda8f 100644
  	bool (*import_dmabuf)(struct weston_compositor *ec,
  			      struct linux_dmabuf_buffer *buffer);
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 42787702..be440b84 100644
+index 4278770..be440b8 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -25,6 +25,11 @@
@@ -935,7 +935,7 @@ index 42787702..be440b84 100644
  		if (linux_explicit_synchronization_setup(compositor) < 0)
  			weston_log("Error: initializing explicit "
 diff --git a/libweston/backend-drm/fb.c b/libweston/backend-drm/fb.c
-index ba0c177e..08144536 100644
+index ba0c177..0814453 100644
 --- a/libweston/backend-drm/fb.c
 +++ b/libweston/backend-drm/fb.c
 @@ -25,6 +25,11 @@
@@ -1020,7 +1020,7 @@ index ba0c177e..08144536 100644
  			goto unsuitable;
  
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index f6914fb9..f705a2f4 100644
+index f87eb37..eebc22b 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
 @@ -24,6 +24,11 @@
@@ -1076,7 +1076,7 @@ index f6914fb9..f705a2f4 100644
  weston_version(int *major, int *minor, int *micro)
  {
 diff --git a/libweston/drm-formats.c b/libweston/drm-formats.c
-index 6bc08b5d..d96c842d 100644
+index 6bc08b5..d96c842 100644
 --- a/libweston/drm-formats.c
 +++ b/libweston/drm-formats.c
 @@ -21,6 +21,11 @@
@@ -1146,7 +1146,7 @@ index 6bc08b5d..d96c842d 100644
  }
 diff --git a/libweston/gbm-buffer-backend.c b/libweston/gbm-buffer-backend.c
 new file mode 100644
-index 00000000..d216d932
+index 0000000..d216d93
 --- /dev/null
 +++ b/libweston/gbm-buffer-backend.c
 @@ -0,0 +1,511 @@
@@ -1179,7 +1179,7 @@ index 00000000..d216d932
 +*    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 +*
 +*
-+*    Copyright © 2014, 2015 Collabora, Ltd.
++*    Copyright Â© 2014, 2015 Collabora, Ltd.
 +*
 +*    Permission to use, copy, modify, distribute, and sell this
 +*    software and its documentation for any purpose is hereby granted
@@ -1663,7 +1663,7 @@ index 00000000..d216d932
 +
 diff --git a/libweston/gbm-buffer-backend.h b/libweston/gbm-buffer-backend.h
 new file mode 100644
-index 00000000..a6f64bc2
+index 0000000..2009630
 --- /dev/null
 +++ b/libweston/gbm-buffer-backend.h
 @@ -0,0 +1,173 @@
@@ -1696,7 +1696,7 @@ index 00000000..a6f64bc2
 +*    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 +*
 +*
-+*    Copyright � 2014, 2015 Collabora, Ltd.
++*    Copyright © 2014, 2015 Collabora, Ltd.
 +*
 +*    Permission to use, copy, modify, distribute, and sell this
 +*    software and its documentation for any purpose is hereby granted
@@ -1841,7 +1841,7 @@ index 00000000..a6f64bc2
 +#endif /* WESTON_GBM_BUFFER_BACKEND_H */
 +
 diff --git a/libweston/libweston-internal.h b/libweston/libweston-internal.h
-index 7c30706f..ca5588da 100644
+index 7c30706..ca5588d 100644
 --- a/libweston/libweston-internal.h
 +++ b/libweston/libweston-internal.h
 @@ -23,6 +23,11 @@
@@ -1867,7 +1867,7 @@ index 7c30706f..ca5588da 100644
  weston_compositor_offscreen(struct weston_compositor *compositor);
  
 diff --git a/libweston/meson.build b/libweston/meson.build
-index 8579743a..ffdab47a 100644
+index 257d695..7ae3aa1 100644
 --- a/libweston/meson.build
 +++ b/libweston/meson.build
 @@ -5,6 +5,7 @@ deps_libweston = [
@@ -1905,9 +1905,9 @@ index 8579743a..ffdab47a 100644
 +	dep_libweston_private,
 +]
  
- deps_session_helper = [
- dep_libweston_private_h,
-@@ -256,6 +263,17 @@ if get_option('deprecated-weston-launch')
+ if get_option('backend-drm')
+ 	deps_session_helper += dep_libdrm
+@@ -247,6 +254,17 @@ if get_option('deprecated-weston-launch')
  	meson.add_install_script('echo', 'REMINDER: You are installing weston-launch, please make it setuid-root.')
  endif
  
@@ -1926,7 +1926,7 @@ index 8579743a..ffdab47a 100644
  subdir('renderer-gl')
  subdir('backend-drm')
 diff --git a/libweston/pixman-renderer.c b/libweston/pixman-renderer.c
-index 754adce2..02875ac4 100644
+index 754adce..02875ac 100644
 --- a/libweston/pixman-renderer.c
 +++ b/libweston/pixman-renderer.c
 @@ -38,6 +38,7 @@
@@ -2071,7 +2071,7 @@ index 754adce2..02875ac4 100644
  		/* set shadow image transformation */
  		w = output->current_mode->width;
 diff --git a/libweston/pixman-renderer.h b/libweston/pixman-renderer.h
-index 2b81dde5..4ad4ae75 100644
+index 2b81dde..4ad4ae7 100644
 --- a/libweston/pixman-renderer.h
 +++ b/libweston/pixman-renderer.h
 @@ -35,6 +35,7 @@ pixman_renderer_init(struct weston_compositor *ec);
@@ -2083,7 +2083,7 @@ index 2b81dde5..4ad4ae75 100644
  
  int
 diff --git a/libweston/renderer-gl/gl-renderer-internal.h b/libweston/renderer-gl/gl-renderer-internal.h
-index 72101b47..777dc01a 100644
+index 72101b4..777dc01 100644
 --- a/libweston/renderer-gl/gl-renderer-internal.h
 +++ b/libweston/renderer-gl/gl-renderer-internal.h
 @@ -23,6 +23,11 @@
@@ -2117,7 +2117,7 @@ index 72101b47..777dc01a 100644
  	bool has_gl_texture_rg;
  
 diff --git a/libweston/renderer-gl/gl-renderer.c b/libweston/renderer-gl/gl-renderer.c
-index a5f5eae4..0d225dbc 100644
+index a5f5eae..0d225db 100644
 --- a/libweston/renderer-gl/gl-renderer.c
 +++ b/libweston/renderer-gl/gl-renderer.c
 @@ -23,6 +23,11 @@
@@ -2556,7 +2556,7 @@ index a5f5eae4..0d225dbc 100644
  		ret = populate_supported_formats(ec, &gr->supported_formats);
  		if (ret < 0)
 diff --git a/libweston/renderer-gl/meson.build b/libweston/renderer-gl/meson.build
-index 4d9f64df..4e9e50f1 100644
+index 4d9f64d..4e9e50f 100644
 --- a/libweston/renderer-gl/meson.build
 +++ b/libweston/renderer-gl/meson.build
 @@ -34,6 +34,7 @@ deps_renderer_gl = [
@@ -2577,10 +2577,10 @@ index 4d9f64df..4e9e50f1 100644
 +	subdir: dir_include_libweston_private_install
 +)
 diff --git a/meson.build b/meson.build
-index 0d0c565f..9d55ac3d 100644
+index f5aa460..2b8f8a8 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -34,6 +34,7 @@ dir_bin = join_paths(dir_prefix, get_option('bindir'))
+@@ -32,6 +32,7 @@ dir_bin = join_paths(dir_prefix, get_option('bindir'))
  dir_data = join_paths(dir_prefix, get_option('datadir'))
  dir_include_libweston = 'libweston-@0@'.format(libweston_major)
  dir_include_libweston_install = join_paths(dir_include_libweston, 'libweston')
@@ -2588,7 +2588,7 @@ index 0d0c565f..9d55ac3d 100644
  dir_lib = join_paths(dir_prefix, get_option('libdir'))
  dir_libexec = join_paths(dir_prefix, get_option('libexecdir'))
  dir_module_weston = join_paths(dir_lib, 'weston')
-@@ -42,6 +43,7 @@ dir_data_pc = join_paths(dir_data, 'pkgconfig')
+@@ -40,6 +41,7 @@ dir_data_pc = join_paths(dir_data, 'pkgconfig')
  dir_lib_pc = join_paths(dir_lib, 'pkgconfig')
  dir_man = join_paths(dir_prefix, get_option('mandir'))
  dir_protocol_libweston = join_paths('libweston-@0@'.format(libweston_major), 'protocols')
@@ -2598,7 +2598,7 @@ index 0d0c565f..9d55ac3d 100644
  common_inc = [ include_directories('.'), public_inc ]
 diff --git a/protocol/gbm-buffer-backend.xml b/protocol/gbm-buffer-backend.xml
 new file mode 100644
-index 00000000..13a2f9a9
+index 0000000..13a2f9a
 --- /dev/null
 +++ b/protocol/gbm-buffer-backend.xml
 @@ -0,0 +1,168 @@
@@ -2771,7 +2771,7 @@ index 00000000..13a2f9a9
 +
 +</protocol>
 diff --git a/protocol/meson.build b/protocol/meson.build
-index 7d869dad..46074ba8 100644
+index 7d869da..46074ba 100644
 --- a/protocol/meson.build
 +++ b/protocol/meson.build
 @@ -8,6 +8,7 @@ install_data(
@@ -2790,6 +2790,3 @@ index 7d869dad..46074ba8 100644
  	[ 'xdg-output', 'v1' ],
  	[ 'xdg-shell', 'v6' ],
  	[ 'xdg-shell', 'stable' ],
--- 
-2.17.1
-

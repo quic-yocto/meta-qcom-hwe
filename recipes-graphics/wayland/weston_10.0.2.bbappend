@@ -5,7 +5,6 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d79ee9e66bb0f95d3386a7acae780b70 \
                     "
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/weston-launch:"
-FILESPATH =+ "${WORKSPACE}:"
 
 SRC_URI:append = "   file://weston.png \
               file://weston.desktop \

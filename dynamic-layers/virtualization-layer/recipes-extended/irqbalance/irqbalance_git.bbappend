@@ -1,16 +1,16 @@
 
 FILESEXTRAPATHS:prepend:qcom := "${THISDIR}/files:"
 
-SRC_URI += "file://irq.sh \
-  file://irqbalance.env \
-  file://0001-edit_service.patch \
-  "
+SRC_URI:append:qcom = " \
+    file://irq.sh \
+    file://irqbalance.env \
+    file://0001-edit_service.patch \
+    file://0001-irqbalance-Add-Stop-timeout-of-20-seconds-for-irqbal.patch \
+    "
 
-do_install:append() {
-	install -Dm 0644 ${S}/../irq.sh ${D}/usr/sbin/irq.sh
+do_install:append:qcom() {
+	install -Dm 0755 ${S}/../irq.sh ${D}/usr/sbin/irq.sh
 	install -Dm 0644 ${S}/../irqbalance.env ${D}/usr/sbin/irqbalance.env
 }
-
-#SYSTEMD_SERVICE:${PN} = "irqbalance.service"
 
 FILES:${PN} += "usr/sbin/irq.sh"

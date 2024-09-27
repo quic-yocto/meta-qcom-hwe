@@ -12,12 +12,13 @@ DBG_CMDLINE = "${@oe.utils.conditional('DEBUG_BUILD','1','page_owner=on qcom_scm
 # Additional Kernel cmdline parameters for performance optimizations
 CONSOLE_CMDLINE = "${@oe.utils.conditional('PERFORMANCE_BUILD','1','console=','console=ttyMSM0,115200n8 earlycon',d)}"
 
-KERNEL_CMDLINE_EXTRA ?= "root=/dev/disk/by-partlabel/system rw rootwait ${CONSOLE_CMDLINE} pcie_pme=nomsi kernel.sched_pelt_multiplier=4 rcupdate.rcu_expedited=1 rcu_nocbs=0-7 kpti=off kasan=off kasan.stacktrace=off no-steal-acc ${DBG_CMDLINE} swiotlb=128 mitigations=auto"
+KERNEL_CMDLINE_EXTRA ?= "root=/dev/disk/by-partlabel/system rw rootwait ${CONSOLE_CMDLINE} pcie_pme=nomsi kernel.sched_pelt_multiplier=4 rcupdate.rcu_expedited=1 rcu_nocbs=0-7 kpti=off kasan=off kasan.stacktrace=off no-steal-acc ${DBG_CMDLINE} swiotlb=128 mitigations=auto net.ifnames=0"
 
 # Disable serial console for performance
 SERIAL_CONSOLES = "${@oe.utils.conditional('PERFORMANCE_BUILD','1','','115200;ttyMSM0',d)}"
 
 MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
+    fastrpc \
     kernel-modules \
     modemmanager \
     pd-mapper \
@@ -28,9 +29,9 @@ MACHINE_EXTRA_RDEPENDS += " \
 "
 
 MACHINE_EXTRA_RRECOMMENDS:append:qcom-custom-bsp = " \
-    fastrpc \
     kernel-module-wlan-platform \
     kernel-module-qcacld-wlan \
+    kernel-module-qca6490 \
     packagegroup-qcom-sensors \
     qcom-subsystem-ramdump \
     securedsp-example \

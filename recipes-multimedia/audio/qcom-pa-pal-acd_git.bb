@@ -12,6 +12,10 @@ S = "${WORKDIR}/audio/opensource/pulseaudio-plugins/test/acd"
 DEPENDS = "pulseaudio glib-2.0 qcom-pal qcom-vui-interface-header"
 EXTRA_OECONF = "--with-glib"
 
+do_install:append:qcm6490() {
+    mkdir -p -m 0755 ${D}${sysconfdir}/models/acd/
+}
+
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 

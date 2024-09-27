@@ -560,6 +560,13 @@ init_uvc_configuration() {
 	fi
 }
 
+bind_xhci_hcd() {
+	if [ -d /sys/bus/pci/drivers/xhci_hcd ]; then
+		bdf=$(lspci | grep "USB controller" | awk '{print $1}')
+		echo $bdf > /sys/bus/pci/drivers/xhci_hcd/bind
+	fi
+}
+
 usb_init() {
 	if [ ! -d /sys/kernel/config/usb_gadget ]; then
 		mount -t configfs none /sys/kernel/config
@@ -624,6 +631,9 @@ usb_init() {
 
 	#initialize uvc related configuration
 	init_uvc_configuration
+
+	#bind usb over pcie controller
+	bind_xhci_hcd
 
 	# Add entry for persisting the composition
 	if [ -s /etc/usb/usb_pid ]; then

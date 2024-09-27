@@ -1,0 +1,32 @@
+From b2b22251b5fa8ec2d60e550d0a03847f5efe6591 Mon Sep 17 00:00:00 2001
+From: Shivendra Pratap <quic_spratap@quicinc.com>
+Date: Fri, 23 Aug 2024 15:54:04 +0530
+Subject: [PATCH] irqbalance: Add Stop timeout of 20 seconds for irqbalance
+
+Add Stop timeout of 20 seconds for irqbalance. It was that
+in some case irqbalance service is taking more than 1.5
+minutes to stop when a device reboot is issued from userspace.
+This is delaying system reboot by more than 1.5 seconds. To
+avoid this, adding a 20 second Stop timeout (TimeoutStopSec)
+for irqbalance service.
+
+Signed-off-by: Shivendra Pratap <quic_spratap@quicinc.com>
+upstream-status: inappropriate
+---
+ misc/irqbalance.service | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/misc/irqbalance.service b/misc/irqbalance.service
+index b7189dd..84b32f1 100644
+--- a/misc/irqbalance.service
++++ b/misc/irqbalance.service
+@@ -12,6 +12,7 @@ ReadOnlyPaths=/
+ ReadWritePaths=/proc/irq
+ RestrictAddressFamilies=AF_UNIX
+ RuntimeDirectory=irqbalance/
++TimeoutStopSec=20s
+
+ [Install]
+ WantedBy=multi-user.target
+--
+2.34.1

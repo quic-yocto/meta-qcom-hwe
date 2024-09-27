@@ -1,0 +1,30 @@
+From 76c4443b4e8e1ba69140e96816b9ef891e2db4d7 Mon Sep 17 00:00:00 2001
+From: Balaji Pothunoori <quic_bpothuno@quicinc.com>
+Date: Mon, 23 Sep 2024 16:00:58 +0530
+Subject: [PATCH 2/2] wlan_qcm6490: add WoWLAN pattern to wpa_supplicant conf
+
+This update introduces the Wake on Wireless LAN pattern
+to keep the device in suspend mode when the wlan_daemon
+stops.
+
+Change-Id: I8651047eedd7c22b60d3055046a71bc9e3d50890
+CRs-Fixed: 3931317
+---
+ wlan_qcm6490/wpa_supplicant.conf | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/wlan_qcm6490/wpa_supplicant.conf b/wlan_qcm6490/wpa_supplicant.conf
+index 5d74445..8b02546 100644
+--- a/wlan_qcm6490/wpa_supplicant.conf
++++ b/wlan_qcm6490/wpa_supplicant.conf
+@@ -1,6 +1,7 @@
+ # Only WPA-PSK is used. Any valid cipher combination is accepted.
+ ctrl_interface=/var/run/sockets
+ update_config=1
++wowlan_triggers=magic_pkt
+ 
+ network={
+ #Open-Configuration
+-- 
+2.25.1
+

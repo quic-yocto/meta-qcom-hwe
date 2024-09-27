@@ -1,0 +1,10 @@
+[Unit]
+Description=aDSP RPC daemon
+
+[Service]
+Type=exec
+Restart=always
+ExecStart=/usr/bin/adsprpcd
+
+[Install]
+WantedBy=multi-user.target

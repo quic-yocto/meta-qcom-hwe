@@ -27,3 +27,21 @@ interface(`qcom_pulseaudio_socket_connect',`
         allow $1 pulseaudio_t:lnk_file read;
         allow $1 pulseaudio_t:unix_stream_socket connectto;
 ')
+
+#######################################
+## <summary>
+##       Add rules for read access of ACD model event.eai on pulseaudio_t
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+
+interface(`pulseaudio_acd_read_permission_t',`
+    gen_require(`
+        type qcom_pulseaudio_acdb_etc_t;
+    ')
+    allow $1 qcom_pulseaudio_acdb_etc_t:file read;
+')
