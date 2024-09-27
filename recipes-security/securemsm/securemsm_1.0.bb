@@ -7,9 +7,9 @@ DESCRIPTION = "Securemsm library with sampleclient used to test sampleapp with q
 
 DEPENDS += "minkipc securemsm-features glib-2.0 glibc linux-kernel-qcom-headers libdmabufheap"
 
-SRC_URI[qcm6490.sha256sum] = "9cb3b54c3e0cd69b4e9033b989f80ee1a77eafef5db441a2533930649a0581b4"
-SRC_URI[qcs9100.sha256sum] = "0dcb4ab1a9382238cebaee3346e98112d5a0c8c73ee18fe88507e79b38cc21df"
-SRC_URI[qcs8300.sha256sum] = "eb77d10c8d48ae376da6674a5b32ad4a2c953ef236e30133f49f2f372fd5989e"
+SRC_URI[qcm6490.sha256sum] = "a09a75150acc50b67e7ef874037b2a5173b5e9f91d99b111cfc3be3e1c706b98"
+SRC_URI[qcs9100.sha256sum] = "37cf1a9a669d595a76edd7478e5d59bfe6aa09ae96b26e040a816e148ee92b48"
+SRC_URI[qcs8300.sha256sum] = "d47bb8b63e9dfc24cd3fb2bce7c65432471e9ebc1d915c65568a44d2d859f3bb"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
@@ -23,7 +23,6 @@ do_install:append() {
 
 FILES:${PN} += "/usr/bin/*"
 FILES:${PN} += "${bindir}/* /var/cache/*"
-
 
 INSANE_SKIP:${PN} += "debug-files"
 

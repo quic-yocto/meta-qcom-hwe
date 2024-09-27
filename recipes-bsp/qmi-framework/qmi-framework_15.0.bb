@@ -7,9 +7,9 @@ DESCRIPTION = "QMI framework will provide sample applications to test QMI commun
 
 DEPENDS += "glib-2.0 property-vault syslog-plumber qrtr"
 
-SRC_URI[qcm6490.sha256sum] = "53f55a4e2356cf9be8e869084d10370634c03d1b82840e6fac1c019ffb626b64"
-SRC_URI[qcs9100.sha256sum] = "5b364e6f79108e291ca993ea58fb5b695607bd5fc6a0f348c8ba8a61626d4f5f"
-SRC_URI[qcs8300.sha256sum] = "6b8e66e3db9f8177a9b82ca337aeb55bbbc4fc10fa40b38c4414b5d54b7e6254"
+SRC_URI[qcm6490.sha256sum] = "03babd17817d5961fb920fe35f99d6069564546867ae852d90823025414db7e3"
+SRC_URI[qcs9100.sha256sum] = "adc030844554e74e789e6335b22adf96472b52b05ab2051f758ece62ff929d3d"
+SRC_URI[qcs8300.sha256sum] = "1d392c31ad2737adf560c7f3bd09368df8593dbd19e24343b7794f87fe0840fc"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

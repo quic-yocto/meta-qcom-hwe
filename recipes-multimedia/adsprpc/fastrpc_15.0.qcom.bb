@@ -8,10 +8,12 @@ DESCRIPTION = "adsprpc daemon."
 DEPENDS += "dspservices-headers libdmabufheap"
 
 PBT_ARCH = "${MACHINE_ARCH}"
-SRC_URI[qcs6490_rb3gen2_core_kit.sha256sum] = "156c79f1de7f83edf9ce3c5a7fd92e13e329a7437764046733d64ea4a4032bb7"
-SRC_URI[qcs6490_rb3gen2_vision_kit.sha256sum] = "1bc76becfdbfc143073555cd2d05d3833a787e889eb7675251040262fd7ef6b7"
-SRC_URI[qcs8300_ride_sx.sha256sum] = "02f95473d196947424e548acf11b00bcca75a5df5bb4b434b4bb13de1ad4ce30"
-SRC_URI[qcs9100_ride_sx.sha256sum] = "08c1035367a1987fac3904b33dcc74cfee3217177b72bdd7c5bd7874c282b2d3"
+
+SRC_URI[qcm6490_idp.sha256sum] = "13df2cdf9afec576dd1411391d25036679e26e10bf673c69f77b44324cdb4739"
+SRC_URI[qcs6490_rb3gen2_core_kit.sha256sum] = "7cbc787b4c08aacbf0be5f846839a4757d9bba21265e7176aef300cc118134f0"
+SRC_URI[qcs6490_rb3gen2_vision_kit.sha256sum] = "bd2c70f481efa903c4c0549cd8dd758a88643abf895265499169cd24dab625e4"
+SRC_URI[qcs8300_ride_sx.sha256sum] = "c0fcdb7149d52904b0a6a8bf774cdaa50cac0ce2db3e6de1bdf89f099619953e"
+SRC_URI[qcs9100_ride_sx.sha256sum] = "940fcb0127fbb7a7ec8c14c37e9df387d88aa922341d1f84b7f59187902aafe9"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

@@ -14,6 +14,6 @@ PBT_ARCH = "armv8-2a"
 
 PV = "1.0"
 
-SRC_URI[armv8-2a.sha256sum] = "None"
+SRC_URI[armv8-2a.sha256sum] = "6fd1a0f60f254d5846ce8d54e769aec0c827dcd9e4ddd4fe87e5e1eda37c7f8c"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"

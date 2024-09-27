@@ -7,7 +7,7 @@ DESCRIPTION = "dspservices headers."
 
 PBT_ARCH = "aarch64"
 
-SRC_URI[aarch64.sha256sum] = "6df41ccaab3728d77cdc0828371b564cd7595f83cc235d2d5ff2ff692cd97246"
+SRC_URI[aarch64.sha256sum] = "d7fc145ece1d053452ccc21ebf02ac2966fea1e7ce6b9443fa16140362d6a770"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

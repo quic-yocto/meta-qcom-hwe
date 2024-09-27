@@ -6,8 +6,8 @@ COMPATIBLE_MACHINE = "qcm6490|qcs9100"
 
 SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${HLOSFIRMWARE}.zip;name=${PBT_ARCH}"
 
-SRC_URI[qcm6490.sha256sum] = "b84431edd9b75a8fa4ca3ec55786c1a12becb0f51d4a7ada14d15c6d8074d2f2"
-SRC_URI[qcs9100.sha256sum] = "ef906eab241e742b8fd8c781f9c9dd8d8cbc0677d52ed880a009c950e7d82f81"
+SRC_URI[qcm6490.sha256sum] = "5c1d4c3ee6cf9d7003ce8665f2168b89c8a528f8ffaf0ac71d505dddfe8c5e5e"
+SRC_URI[qcs9100.sha256sum] = "314857337ea6184a6430c894788cd26a6cd95171bf672e997b9b83e27d470ae4"
 
 include firmware-common.inc
 

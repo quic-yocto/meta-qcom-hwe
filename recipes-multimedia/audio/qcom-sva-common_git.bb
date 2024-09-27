@@ -7,6 +7,6 @@ DESCRIPTION = "sva-common"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "e3822616db00f9277a813bf588f7f6343d084b4b2d2b4536e132a0ab29e7e082"
+SRC_URI[armv8-2a.sha256sum] = "ed4dbcc7136fef2111fa2db5935978e30fe8bc7f5c15787eef4131f7d28acd95"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"

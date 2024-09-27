@@ -7,11 +7,11 @@ DESCRIPTION = "Adreno Graphics"
 
 DEPENDS += "wayland glib-2.0 linux-kernel-qcom-headers property-vault libdmabufheap gbm"
 
-PROVIDES = "  virtual/libgles1 virtual/libgles2 virtual/egl adreno"
+PROVIDES = "  virtual/libgles1 virtual/libgles2 virtual/egl"
 
-SRC_URI[qcm6490.sha256sum] = "12df550361ec10213f0fd408bb95e655cd3e623de04055391bc9e56c1c46e445"
-SRC_URI[qcs9100.sha256sum] = "26e576c447c0ed12316bb335a8b971b458597d015d941d4e6aa99b1b1b12d3e5"
-SRC_URI[qcs8300.sha256sum] = "86e4382ad612c940adcff28e32edb19ac03e47c4d966ac16831ca9e70c9ea64c"
+SRC_URI[qcm6490.sha256sum] = "89269c36b5c179327d015724371e167e6a72cbdd640242c56f2b6f629618a44a"
+SRC_URI[qcs9100.sha256sum] = "3709ab3ff2775209317c4a616c8926aa807c3d8058f7d41e83bb20e59e6277a8"
+SRC_URI[qcs8300.sha256sum] = "7093fc00ae39d8c39c960507e5c8f05667b91fd5e46f46c05b991652b53a86da"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
