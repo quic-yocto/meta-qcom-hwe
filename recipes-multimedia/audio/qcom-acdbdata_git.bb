@@ -42,6 +42,10 @@ do_install:append:qcs9100() {
     mkdir -p -m 0755 ${D}${sysconfdir}/acdbdata/qcs9100_ridesx
     install -m 0644 ${S}/qcs9100/qcs9100_ridesx/acdb_cal.acdb ${D}${sysconfdir}/acdbdata/qcs9100_ridesx/acdb_cal.acdb
     install -m 0644 ${S}/qcs9100/qcs9100_ridesx/workspaceFileXml.qwsp ${D}${sysconfdir}/acdbdata/qcs9100_ridesx/workspaceFileXml.qwsp
+
+    mkdir -p -m 0755 ${D}${sysconfdir}/acdbdata/qcs9075_rb8
+    install -m 0644 ${S}/qcs9075/qcs9075_rb8/acdb_cal.acdb ${D}${sysconfdir}/acdbdata/qcs9075_rb8/acdb_cal.acdb
+    install -m 0644 ${S}/qcs9075/qcs9075_rb8/workspaceFileXml.qwsp ${D}${sysconfdir}/acdbdata/qcs9075_rb8/workspaceFileXml.qwsp
 }
 
 DEPENDS = "qcom-kvh2xml"
