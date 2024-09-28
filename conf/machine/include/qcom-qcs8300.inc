@@ -25,9 +25,6 @@ MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
     tqftpserv \
 "
 
-MACHINE_EXTRA_RDEPENDS += " \
-    packagegroup-firmware-qcs8300 \
-"
 
 MACHINE_EXTRA_RRECOMMENDS:append:qcom-custom-bsp = " \
     qcom-subsystem-ramdump \
