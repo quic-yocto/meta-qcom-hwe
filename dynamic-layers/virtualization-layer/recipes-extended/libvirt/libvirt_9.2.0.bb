@@ -5,6 +5,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
                     file://COPYING.LESSER;md5=4b54a1fd55a448865a0b32d41598759d"
 SECTION = "console/tools"
 
+DEFAULT_PREFERENCE = "1"
+
 DEPENDS = "bridge-utils gnutls libxml2 lvm2 avahi parted curl libpcap util-linux e2fsprogs pm-utils \
 	   iptables dnsmasq readline libtasn1 libxslt-native acl libdevmapper libtirpc \
            python3-docutils-native \
