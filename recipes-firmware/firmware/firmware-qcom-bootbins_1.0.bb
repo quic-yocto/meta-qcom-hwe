@@ -9,7 +9,7 @@ PROVIDES += "virtual/bootbins"
 SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${BOOTBINARIES}.zip;name=${PBT_ARCH}"
 
 SRC_URI[qcm6490.sha256sum] = "2ab34df1fdbff9f052b4bd55832fb2ad3385b4ea6a8a2a4a340e4a8dac2527c1"
-SRC_URI[qcs9100.sha256sum] = "176fcab2a8d479994399fbc835fe45d662710670f5bdd1b01039a79e8747e9a0"
+SRC_URI[qcs9100.sha256sum] = "b79572132c4b2d455dd4353c63fb66688ec728feaf43d52e79ddd38a9dce0074"
 
 include firmware-common.inc
 
