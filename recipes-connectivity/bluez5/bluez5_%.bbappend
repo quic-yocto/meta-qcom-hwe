@@ -24,6 +24,7 @@ SRC_URI:append:qcom = " file://0001-Setting-default-values-in-main.conf.patch \
                         file://0014-Manage-device-state-of-cross-transport-SMP-keys.patch \
                         file://0015-client-gatt-Fix-scan-build-warning.patch \
                         file://0016-client-Allow-gatt.select-attribute-to-work-with-local-attributes.patch \
+                        file://0017-client-Invalidate-scan-filter-on-scan-command.patch \
                         file://qca_set_bdaddr.service \
                         file://qca_set_bdaddr.sh \
 "
