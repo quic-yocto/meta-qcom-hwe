@@ -12,7 +12,7 @@ SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/pulseau
 
 S = "${WORKDIR}/audio/opensource/pulseaudio-plugins/modules/pa-pal-plugins"
 
-DEPENDS = "qcom-agm pulseaudio qcom-pal"
+DEPENDS = "qcom-agm pulseaudio qcom-pal qcom-pal-headers qcom-vui-interface-header"
 EXTRA_OECONF = " --with-pa_version=15.0 --without-pa-support-card-status"
 
 PACKAGES =+ "\
