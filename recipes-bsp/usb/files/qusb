@@ -284,9 +284,9 @@ run_90CC() {
 	echo 0x90CC > idProduct
 	echo "DIAG_ADB_UAC2_UVC" > configs/c.1/strings/0x409/configuration
 	ln -s functions/ffs.diag configs/c.1/f1
-	ln -s functions/ffs.usb0 configs/c.1/f2
-	ln -s functions/uac2.0 configs/c.1/f3
-	ln -s functions/uvc.0 configs/c.1/f4
+	ln -s functions/uac2.0 configs/c.1/f2
+	ln -s functions/uvc.0 configs/c.1/f3
+	ln -s functions/ffs.usb0 configs/c.1/f4
 	usb_bind
 	cd /
 }
