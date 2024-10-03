@@ -30,5 +30,3 @@ MACHINE_EXTRA_RRECOMMENDS:append:qcom-custom-bsp = " \
     qcom-subsystem-ramdump \
     trace-cmd \
 "
-
-QCOM_BOOTIMG_ROOTFS ?= "/dev/disk/by-partlabel/system"

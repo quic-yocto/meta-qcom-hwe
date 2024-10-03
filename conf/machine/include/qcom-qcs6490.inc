@@ -37,5 +37,3 @@ MACHINE_EXTRA_RRECOMMENDS:append:qcom-custom-bsp = " \
     securedsp-example \
     wlan-conf \
 "
-
-QCOM_BOOTIMG_ROOTFS ?= "/dev/disk/by-partlabel/system"

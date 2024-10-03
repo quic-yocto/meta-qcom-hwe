@@ -71,6 +71,8 @@ IMAGE_TYPES_MASKED = "tar.gz"
 
 SERIAL_CONSOLE ?= "115200 ttyMSM0"
 
+QCOM_BOOTIMG_ROOTFS ?= "/dev/disk/by-partlabel/system"
+
 #
 # Below are variables are backport from meta/conf/image-uefi.conf master branch
 #
