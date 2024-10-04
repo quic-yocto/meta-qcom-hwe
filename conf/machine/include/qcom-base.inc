@@ -1,3 +1,6 @@
+SOC_FAMILY:prepend = "qcom:"
+require conf/machine/include/soc-family.inc
+
 #Define and add SOC_ARCH to the list of architectures compatible with the given target.
 SOC_ARCH = "${@ d.getVar('SOC_FAMILY').replace('-', '_').replace('qcom:', '')}"
 PACKAGE_EXTRA_ARCHS:append = "${@['', ' ${SOC_ARCH}']['${SOC_ARCH}' != "${MACHINE_ARCH}"]}"
@@ -44,6 +47,8 @@ PREFERRED_PROVIDER_virtual/bootbins ?= "firmware-qcom-bootbins"
 # Recipe provider for disk partition configuration
 PREFERRED_PROVIDER_virtual/partconf ?= "firmware-qcom-partconf"
 
+PREFERRED_PROVIDER_android-tools-conf = "android-tools-conf-configfs"
+
 # Use qcom specific version of modemmanger in custom-bsp
 PREFERRED_VERSION_modemmanager:qcom-custom-bsp ?= "1.22.0.qcom"
 PREFERRED_VERSION_libqmi:qcom-custom-bsp ?= "1.34.0.qcom"
@@ -69,8 +74,14 @@ EXTRA_IMAGECMD:ext4 = "-i 4096 -b 4096"
 # Mask out tar.gz from IMAGE_FSTYPES
 IMAGE_TYPES_MASKED = "tar.gz"
 
-SERIAL_CONSOLE ?= "115200 ttyMSM0"
+# Default serial console for QCOM devices
+SERIAL_CONSOLES ?= "115200;ttyMSM0"
 
+INITRAMFS_MAXSIZE = "393216"
+
+# Boot image settings
+QCOM_BOOTIMG_KERNEL_BASE ?= "0x80000000"
+QCOM_BOOTIMG_PAGE_SIZE ?= "4096"
 QCOM_BOOTIMG_ROOTFS ?= "/dev/disk/by-partlabel/system"
 
 #
