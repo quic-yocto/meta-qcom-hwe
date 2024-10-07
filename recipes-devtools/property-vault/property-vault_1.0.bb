@@ -1,4 +1,4 @@
-inherit autotools pkgconfig systemd useradd
+inherit autotools pkgconfig systemd
 
 DESCRIPTION = "property vault managment"
 SUMMARY = "property vault managment"
@@ -15,7 +15,7 @@ SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=le-utils"
 
 S = "${WORKDIR}/le-utils/property-vault"
 
-DEPENDS += "libselinux syslog-plumber glib-2.0"
+DEPENDS += "libselinux syslog-plumber glib-2.0 useradd-qcom"
 
 PACKAGECONFIG ??= "\
     ${@bb.utils.filter('DISTRO_FEATURES', 'systemd', d)} \
@@ -27,14 +27,10 @@ SYSTEMD_SERVICE:${PN} = "property-vault.service persist-property-vault.service"
 do_install:append() {
     install -b -m 0644 /dev/null -D ${D}${sysconfdir}/build.prop 
     chown system:system ${D}${sysconfdir}/build.prop
-    install -b -m 0644 /dev/null -D ${D}/var/leutils/build.prop
-    chown system:system ${D}/var/leutils/build.prop
+
 }
 
-USERADD_PACKAGES = "${PN}"
-USERADD_PARAM:${PN} = "-M system"
-
-FILES:${PN} += " /etc/build.prop /var/leutils/build.prop"
+FILES:${PN} += " /etc/build.prop "
 
 python () {
     mach_overrides = d.getVar('MACHINEOVERRIDES').split(":")
