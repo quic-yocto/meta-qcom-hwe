@@ -20,3 +20,4 @@ RDEPENDS:${PN}:qcom-custom-bsp:qcs9100 = "camxcommon camxlib camx chicdk camerad
 RDEPENDS:${PN}:qcom-custom-bsp:qcs8300 = "camxcommon camxlib camx chicdk cameradlkm"
 
 RDEPENDS:${PN}:append:qcm6490:qcom-custom-bsp = " qcom-camera-server"
+RDEPENDS:${PN}:append:qcs9100:qcom-custom-bsp = " qcom-camera-server"
