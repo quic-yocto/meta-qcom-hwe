@@ -21,6 +21,10 @@ EXTRA_OECONF += " --with-systemd"
 #Disable the split of debug information into -dbg files
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
+do_compile:prepend() {
+    export LD_LIBRARY_PATH="${STAGING_DIR_NATIVE}/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
+}
+
 #Skips check for .so symlinks
 INSANE_SKIP:${PN} = "dev-so"
 
