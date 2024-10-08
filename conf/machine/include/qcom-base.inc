@@ -1,9 +1,5 @@
 # Common configurations and variables for Qualcomm platforms.
 
-require conf/machine/include/qcom-common.inc
-DEFAULTTUNE = "armv8-2a-crypto"
-require conf/machine/include/arm/arch-armv8-2a.inc
-
 # Provider for linux kernel
 PREFERRED_PROVIDER_virtual/kernel ?= "linux-yocto-dev"
 
