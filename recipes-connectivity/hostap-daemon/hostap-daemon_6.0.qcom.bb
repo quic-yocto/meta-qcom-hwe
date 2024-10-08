@@ -1,4 +1,4 @@
-inherit pkgconfig logging
+inherit pkgconfig
 
 include hostap-daemon.inc
 

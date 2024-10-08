@@ -1,4 +1,4 @@
-inherit autotools-brokensep pkgconfig logging
+inherit autotools-brokensep pkgconfig
 
 DESCRIPTION = "CLD80211 LIB"
 

@@ -1,4 +1,4 @@
-inherit pkgconfig logging
+inherit pkgconfig
 include wpa-supplicant.inc
 
 DEFAULT_PREFERENCE = "-1"
