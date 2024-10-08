@@ -20,18 +20,17 @@ do_install() {
 
 do_install:append:qcm6490 () {
 	install -d ${D}${systemd_unitdir}/system/local-fs.target.wants
-	install -d ${D}/var/usbfw
-	install -d ${D}/lib/firmware
-	install -m 0644  ${WORKDIR}/var-usbfw.mount ${D}${systemd_unitdir}/system/var-usbfw.mount
+	install -m 0644 ${WORKDIR}/var-usbfw.mount ${D}${systemd_unitdir}/system/var-usbfw.mount
+	install -d ${D}${nonarch_base_libdir}/firmware/
 	ln -sf ${systemd_unitdir}/system/var-usbfw.mount ${D}${systemd_unitdir}/system/local-fs.target.wants/var-usbfw.mount
-	ln -sf /var/usbfw/renesas_usb_fw.mem ${D}/lib/firmware/renesas_usb_fw.mem
+	ln -sf /var/usbfw/renesas_usb_fw.mem ${D}${nonarch_base_libdir}/firmware/renesas_usb_fw.mem
 }
 
 FILES:${PN} += "${systemd_unitdir}/system/ \
 		${bindir} \
 		${nonarch_base_libdir}/udev/rules.d/usb_bind.rules"
 
-FILES:${PN}:append:qcm6490 = "/var/usbfw \
-			      /lib/firmware/*"
+FILES:${PN}:append:qcm6490 = " ${systemd_unitdir}/system/* \
+				${nonarch_base_libdir}/firmware/*"
 
 SYSTEMD_SERVICE_${PN} = "usb.service"
