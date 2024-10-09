@@ -4,6 +4,7 @@
 PREFERRED_PROVIDER_virtual/kernel ?= "linux-yocto-dev"
 
 KERNEL_IMAGETYPE ?= "Image"
+KERNEL_IMAGETYPES ?= "Image.gz"
 
 # QDL expects 4096 aligned ext4 image for flashing
 IMAGE_FSTYPES = "ext4"
