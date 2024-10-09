@@ -16,7 +16,7 @@ S = "${WORKDIR}/vendor/qcom/opensource/camera-kernel"
 
 MODULES_INSTALL_TARGET = "modules_install headers_install"
 
-COMPATIBLE_MACHINE = "qcm6490|qcs9100"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs8300"
 
 python get_soc_family() {
     need_machine = d.getVar('COMPATIBLE_MACHINE')

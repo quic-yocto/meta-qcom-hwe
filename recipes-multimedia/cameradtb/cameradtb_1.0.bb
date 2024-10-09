@@ -18,7 +18,7 @@ S = "${WORKDIR}/vendor/qcom/opensource/camera-devicetree"
 DTC := "${KBUILD_OUTPUT}/scripts/dtc/dtc"
 KERNEL_INCLUDE := "${STAGING_KERNEL_DIR}/include/"
 
-COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs6490"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs6490|qcs8300"
 BOARD_NAME = "idp|core|vision"
 
 python get_soc_family() {
@@ -57,6 +57,8 @@ do_compile() {
         fi
     elif [ "${SOC_FAM}" = "qcs9100" ]; then
             oe_runmake ${EXTRA_OEMAKE} qcs9100-camera
+    elif [ "${SOC_FAM}" = "qcs8300" ]; then
+            oe_runmake ${EXTRA_OEMAKE} qcs8300-camera
     else
         echo "Unknown SOC_FAM -> " ${SOC_FAM}
     fi
