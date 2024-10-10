@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Function to format BD-Address and Set it
 set_bda() {
