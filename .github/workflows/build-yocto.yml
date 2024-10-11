@@ -7,6 +7,17 @@ on:
       - main
 
 jobs:
+  yocto-check-layer:
+    runs-on: [self-hosted, x86]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run yocto-check-layer
+        run: |
+          ci/yocto-check-layer.sh
+
   compile:
     strategy:
       fail-fast: true
