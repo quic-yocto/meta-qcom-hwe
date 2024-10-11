@@ -66,8 +66,6 @@ jobs:
           export CACHE_DIR=/srv/gh-runners/quic-yocto
           export DL_DIR=${CACHE_DIR}/downloads
           export SSTATE_DIR=${CACHE_DIR}/sstate-cache
-          mkdir -p $DL_DIR
-          mkdir -p $SSTATE_DIR
-          mkdir build
-          cd build
-          kas build ../ci/mirror.yml:../ci/${{ matrix.machine }}.yml
+          export KAS_WORK_DIR=$PWD/../kas
+          mkdir $KAS_WORK_DIR
+          kas build ci/mirror.yml:ci/${{ matrix.machine }}.yml
