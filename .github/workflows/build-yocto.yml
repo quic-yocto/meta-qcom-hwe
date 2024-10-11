@@ -7,18 +7,41 @@ on:
       - main
 
 jobs:
-  yocto-check-layer:
+  kas-lock:
     runs-on: [self-hosted, x86]
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Run kas lock
+        run: |
+          kas dump --update --lock --inplace ci/base.yml
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kas-lock
+          path: ci/*.lock.yml
+
+  yocto-check-layer:
+    needs: kas-lock
+    runs-on: [self-hosted, x86]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: kas-lock
+          path: ci/*.lock.yml
+
       - name: Run yocto-check-layer
         run: |
           ci/yocto-check-layer.sh
 
   compile:
+    needs: kas-lock
     strategy:
       fail-fast: true
       matrix:
@@ -32,6 +55,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: kas-lock
+          path: ci/*.lock.yml
 
       - name: Kas build
         run: |
