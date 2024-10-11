@@ -26,7 +26,8 @@ local_conf_header:
     CONF_VERSION = "2"
     INIT_MANAGER = "systemd"
     PACKAGE_CLASSES = "package_ipk"
-    INHERIT += "buildstats buildstats-summary buildhistory"
+    INHERIT += "buildstats buildstats-summary"
+    INHERIT += "buildhistory"
     INHERIT += "rm_work"
 
 machine: unset
