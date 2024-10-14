@@ -11,6 +11,7 @@ FILESEXTRAPATHS:prepend := " ${THISDIR}/files:"
 
 SRC_URI = "git://w1.fi/hostap.git;protocol=https;branch=main"
 SRC_URI += "file://misc/"
+SRC_URI += "file://patch/0001-UPSTREAM-hostapd-Fix-clearing-up-settings-for-color-switch.patch;patchdir=${WORKDIR}/git/"
 
 SRCREV = "9716bf1160beb677e965d9e6475d6c9e162e8374"
 
