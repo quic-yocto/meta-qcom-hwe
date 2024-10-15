@@ -1,0 +1,11 @@
+# Reviewers to be assigned for any changes in ci/ subdirectory
+ci/*  @quaresmajose @ricardosalveti @sbanerjee-quic
+
+# Reviewers to be assigned for any changes in conf/ subdirectory
+conf/*  @quic-vkraleti @ricardosalveti @sbanerjee-quic
+
+# Reviewers to be assigned for any changes in recipes-kernel/linux/ subdirectory
+recipes-kernel/linux/*  @NainaMehtaQUIC @quic-vkraleti @sbanerjee-quic
+
+# Reviewers responsible for all changes in entire repository 
+*  @quic-vkraleti @ricardosalveti @sbanerjee-quic
