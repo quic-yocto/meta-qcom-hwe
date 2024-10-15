@@ -1,0 +1,59 @@
+name: Assign Reviewers
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  assign_reviewers:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Get list of modified files
+      id: files
+      run: |
+        git fetch origin main
+        git diff --name-only HEAD ${{ github.sha }} > modified_files.txt
+        cat modified_files.txt
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Assign reviewers based on directory paths
+      run: |
+        # Define the list of reviewers based on file paths
+        conf_reviewers="ricardosalveti,quic-vkraleti,sbanerjee-quic"
+        kernel_reviewers="NainaMehtaQUIC,quic-vkraleti,sbanerjee-quic"
+        ci_reviewers="ricardosalveti,quic-vkraleti,sbanerjee-quic,quaresmajose"
+        default_reviewers="ricardosalveti,quic-vkraleti,sbanerjee-quic"
+        
+        # Initialize a variable to hold the selected reviewers
+        reviewers=""
+
+        # Read the modified files
+        while IFS= read -r file; do
+          if [[ "$file" == conf/* ]]; then
+            reviewers="$conf_reviewers"
+            break
+          elif [[ "$file" == recipes-kernel/linux/* ]]; then
+            reviewers="$kernel_reviewers"
+            break
+          elif [[ "$file" == ci/* ]]; then
+            reviewers="$ci_reviewers"
+            break
+          fi
+        done < modified_files.txt
+
+        # Use default reviewers if no path matched
+        if [ -z "$reviewers" ]; then
+          reviewers="$default_reviewers"
+        fi
+
+        # Add the reviewers to the pull request
+        gh pr edit ${{ github.event.pull_request.number }} --add-reviewer $reviewers
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
