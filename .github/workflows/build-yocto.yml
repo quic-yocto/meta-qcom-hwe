@@ -70,3 +70,14 @@ jobs:
           mkdir build
           cd build
           kas build ../ci/${{ matrix.machine }}.yml
+
+      - name: Publish image
+        run: |
+          set -x
+          build_dir=/srv/gh-runners/quic-yocto/builds/${GITHUB_RUN_ID}
+          mkdir -p $build_dir
+          img_dir=$build_dir/${{ matrix.machine }}
+          [ -d $img_dir ] && rm -rf $img_dir
+          mv build/build/tmp/deploy/images/${{matrix.machine}} $img_dir
+
+          echo Image available at: https://quic-yocto-fileserver-1029608027416.us-central1.run.app/${GITHUB_RUN_ID}/${{ matrix.machine }}
