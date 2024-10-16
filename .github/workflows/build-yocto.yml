@@ -8,6 +8,7 @@ on:
 
 jobs:
   yocto-check-layer:
+    if: github.repository == 'quic-yocto/meta-qcom-hwe'
     runs-on: [self-hosted, x86]
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +20,7 @@ jobs:
           ci/yocto-check-layer.sh
 
   compile:
+    if: github.repository == 'quic-yocto/meta-qcom-hwe'
     strategy:
       fail-fast: true
       matrix:
