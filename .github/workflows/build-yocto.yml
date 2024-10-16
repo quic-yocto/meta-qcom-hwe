@@ -8,6 +8,7 @@ on:
 
 jobs:
   kas-lock:
+    if: github.repository == 'quic-yocto/meta-qcom-hwe'
     runs-on: [self-hosted, x86]
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +26,7 @@ jobs:
 
   yocto-check-layer:
     needs: kas-lock
+    if: github.repository == 'quic-yocto/meta-qcom-hwe'
     runs-on: [self-hosted, x86]
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +44,7 @@ jobs:
 
   compile:
     needs: kas-lock
+    if: github.repository == 'quic-yocto/meta-qcom-hwe'
     strategy:
       fail-fast: true
       matrix:
