@@ -17,6 +17,7 @@
  Restart=always
  RemainAfterExit=yes
  ExecStart=/usr/bin/ssgtzd
+ TimeoutSec=5
 
  [Install]
  WantedBy=multi-user.target
