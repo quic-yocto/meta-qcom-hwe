@@ -3,6 +3,6 @@
 header:
   version: 14
   includes:
-  - ci/base.yml
+  - ci/qcm6490.yml
 
 machine: qcs6490-rb3gen2-core-kit
