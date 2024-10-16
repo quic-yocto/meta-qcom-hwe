@@ -9,6 +9,7 @@ on:
 
 jobs:
   repolinter:
+    if: github.repository == 'quic-yocto/meta-qcom-hwe'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
