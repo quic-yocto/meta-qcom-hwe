@@ -42,7 +42,13 @@ jobs:
 
   compile:
     needs: kas-lock
+    env:
+      PERSISTENT_DIR: /srv/gh-runners/quic-yocto
+      DL_DIR: ${{ env.PERSISTENT_DIR }}/downloads
+      SSTATE_DIR: ${{ env.PERSISTENT_DIR }}/sstate-cache
+      KAS_BUILD_DIR: ${{ env.GITHUB_WORKSPACE }}/../build
     strategy:
+      max-parallel: 1
       fail-fast: true
       matrix:
         machine:
@@ -63,10 +69,11 @@ jobs:
 
       - name: Kas build
         run: |
-          export DL_DIR=/srv/gh-runners/quic-yocto/downloads
-          export SSTATE_DIR=/srv/gh-runners/quic-yocto/sstate-cache
-          mkdir -p $DL_DIR
-          mkdir -p $SSTATE_DIR
-          mkdir build
-          cd build
-          kas build ../ci/${{ matrix.machine }}.yml
+          kas build ci/${{ matrix.machine }}.yml
+
+      - name: Cleanup sstate-cache
+        run: |
+          SSTATE_CACHE_MANAGEMENT="${PWD}/poky/scripts/sstate-cache-management.py --cache-dir $SSTATE_DIR --remove-duplicated --remove-orphans --debug"
+          #FIXME: only to check, when done remove the "echo no" and add the "--yes" arg
+          SSTATE_CACHE_MANAGEMENT="echo no | $SSTATE_CACHE_MANAGEMENT"
+          kas shell ci/${{ matrix.machine }}.yml --command "$SSTATE_CACHE_MANAGEMENT"
