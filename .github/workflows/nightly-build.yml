@@ -8,6 +8,7 @@ on:
 
 jobs:
   compile:
+    if: github.repository == 'quic-yocto/meta-qcom-hwe'
     strategy:
       fail-fast: true
       matrix:
