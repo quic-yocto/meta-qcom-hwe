@@ -69,4 +69,4 @@ jobs:
           mkdir -p $SSTATE_DIR
           mkdir build
           cd build
-          kas build ../ci/${{ matrix.machine }}.yml
+          kas build ../ci/mirror.yml:../ci/${{ matrix.machine }}.yml
