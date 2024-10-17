@@ -30,6 +30,25 @@ revision: HEAD
 
 See `conf/machine` for the complete list of supported devices.
 
+## Quick build
+Please refer to the [Yocto Project Reference Manual](https://docs.yoctoproject.org/ref-manual/system-requirements.html) to set up your Yocto Project build environment.
+
+Please follow the instructions below for a KAS-based build. The KAS tool offers an easy way to setup bitbake based projects. For more details, visit the [KAS documentation](https://kas.readthedocs.io/en/latest/index.html).
+
+1. Install kas tool
+	```
+	sudo pip3 install kas
+	```
+2. Clone meta-qcom-hwe layer
+	```
+	git clone https://github.com/quic-yocto/meta-qcom-hwe.git -b main
+	```
+3. Build using the KAS configuration for one of the supported boards
+	```
+	kas build meta-qcom-hwe/ci/qcs6490-rb3gen2-core-kit.yml
+	```
+For a manual build without KAS, refer to the [Yocto Project Quick Build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html).
+
 ## Contributing
 
 Please submit any patches against the `meta-qcom-hwe` layer (branch **main**) by using the GitHub pull-request feature. Fork the repo, create a branch, do the work, rebase from upstream, and create the pull request.
