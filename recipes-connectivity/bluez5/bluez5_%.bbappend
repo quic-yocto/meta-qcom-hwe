@@ -28,6 +28,7 @@ SRC_URI:append:qcom = " file://0001-Setting-default-values-in-main.conf.patch \
                         file://0018-device-Remove-device-after-all-bearers-are-disconnec.patch \
                         file://qca_set_bdaddr.service \
                         file://qca_set_bdaddr.sh \
+                        file://0019-UPSTREAM-Fix-triggering-disconnect_timeout.patch \
 "
 
 #Include obex to support obex related profiles like OPP, FTP, MAP, PBAP

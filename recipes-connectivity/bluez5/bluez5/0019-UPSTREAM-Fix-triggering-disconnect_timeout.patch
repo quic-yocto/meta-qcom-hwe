@@ -1,0 +1,41 @@
+From 18ea3dbfe2f36a38a78eb143df0bb67abace184b Mon Sep 17 00:00:00 2001
+From: Raghavender Reddy Bujala <quic_rbujala@quicinc.com>
+Date: Thu, 17 Oct 2024 11:52:19 +0530
+Subject: [PATCH] UPSTREAM: Fix triggering disconnect_timeout
+
+avdtp: Fix triggering disconnect_timeout while discovering capabilities
+
+If there are many endpoint registered it may delay the discovering of
+the capabilities long enough to trigger diconnect_timeout which may
+cause unexpected collisions/disconnections.
+
+Signed-off-by: Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
+Git-commit: c1d01a378f23549e57c6d439cfa740c8b32ecc17
+Signed-off-by: Raghavender Reddy Bujala <quic_rbujala@quicinc.com>
+Upstream-Status: Backport
+---
+ profiles/audio/avdtp.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/profiles/audio/avdtp.c b/profiles/audio/avdtp.c
+index 289b40827..80fbe847e 100644
+--- a/profiles/audio/avdtp.c
++++ b/profiles/audio/avdtp.c
+@@ -2037,6 +2037,14 @@ failed:
+ static gboolean avdtp_parse_cmd(struct avdtp *session, uint8_t transaction,
+ 				uint8_t signal_id, void *buf, int size)
+ {
++	/* Reset disconnect timer if command is received */
++	if (session->dc_timer) {
++		timeout_remove(session->dc_timer);
++		session->dc_timer = timeout_add_seconds(session->dc_timeout,
++						disconnect_timeout,
++						session, NULL);
++	}
++
+ 	switch (signal_id) {
+ 	case AVDTP_DISCOVER:
+ 		DBG("Received DISCOVER_CMD");
+-- 
+2.17.1
+
