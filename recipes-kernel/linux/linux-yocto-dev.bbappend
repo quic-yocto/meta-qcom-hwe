@@ -31,3 +31,8 @@ KBUILD_DEFCONFIG:qcom ?= "defconfig"
 do_install:append:qcom() {
 	sed -i 's:${TMPDIR}::g' ${WORKDIR}/linux-${PACKAGE_ARCH}-${LINUX_KERNEL_TYPE}-build/drivers/gpu/drm/msm/generated/*
 }
+
+# For dtb.bin
+QCOM_DTBBIN = ""
+QCOM_DTBBIN:qcom = "linux-qcom-dtbbin"
+inherit ${QCOM_DTBBIN}
