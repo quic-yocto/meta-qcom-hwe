@@ -6,6 +6,9 @@ PREFERRED_PROVIDER_virtual/kernel ?= "linux-yocto-dev"
 KERNEL_IMAGETYPE ?= "Image"
 KERNEL_IMAGETYPES ?= "Image.gz"
 
+# For dtb.bin generation
+KERNEL_CLASSES += "linux-qcom-dtbbin"
+
 # QDL expects 4096 aligned ext4 image for flashing
 IMAGE_FSTYPES = "ext4"
 IMAGE_ROOTFS_ALIGNMENT = "4096"
