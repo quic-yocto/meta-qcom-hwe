@@ -67,6 +67,7 @@ SRC_URI:append = " \
     file://qcs9100/0010-FROMLIST-arm64-dts-qcom-qcs9100-Add-support-for-the-.patch \
     file://qcs9100/0011-QCLINUX-arm64-dts-qcom-Add-Modify-board-id-and-msm-i.patch \
     file://qcs9100/0007-FROMLIST-arm64-dts-qcom-sa8775p-ride-Enable-Display-.patch \
+    file://qcs9100/0001-FROMLIST-arm64-dts-qcom-sa8775p-Update-iommu-map-ent.patch \
     "
 
 # qcs615 dtsi patches
