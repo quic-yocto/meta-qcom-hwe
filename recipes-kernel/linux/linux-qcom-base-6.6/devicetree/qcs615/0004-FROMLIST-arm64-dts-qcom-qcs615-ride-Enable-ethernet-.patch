@@ -1,0 +1,149 @@
+From 4ba268187c8dc7817eff255c9937aa24042b7bf5 Mon Sep 17 00:00:00 2001
+From: Yijie Yang <quic_yijiyang@quicinc.com>
+Date: Thu, 26 Sep 2024 17:54:38 +0800
+Subject: [PATCH] FROMLIST: arm64: dts: qcom: qcs615-ride: Enable ethernet node
+
+Enable the ethernet node, add the phy node and pinctrl for ethernet.
+
+Change-Id: Ieb9afa3d0ce423e08a3b94b4795cee6bd1c46708
+Signed-off-by: Yijie Yang <quic_yijiyang@quicinc.com>
+Link: https://lore.kernel.org/all/20241010-dts_qcs615-v1-2-05f27f6ac4d3@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241010-dts_qcs615-v1-2-05f27f6ac4d3@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615-ride.dts | 106 +++++++++++++++++++++++
+ 1 file changed, 106 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615-ride.dts b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+index a2af36b7608c..9b9d49bceca7 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+@@ -5,6 +5,7 @@
+ /dts-v1/;
+ 
+ #include <dt-bindings/regulator/qcom,rpmh-regulator.h>
++#include <dt-bindings/gpio/gpio.h>
+ #include "qcs615.dtsi"
+ / {
+ 	model = "Qualcomm Technologies, Inc. QCS615 Ride";
+@@ -200,6 +201,60 @@ vreg_l17a: ldo17 {
+ 	};
+ };
+ 
++&ethernet {
++	pinctrl-0 = <&ethernet_defaults>;
++	pinctrl-names = "default";
++
++	phy-handle = <&rgmii_phy>;
++	phy-mode = "rgmii";
++	max-speed = <1000>;
++
++	snps,mtl-rx-config = <&mtl_rx_setup>;
++	snps,mtl-tx-config = <&mtl_tx_setup>;
++
++	status = "okay";
++
++	mdio: mdio {
++		compatible = "snps,dwmac-mdio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		rgmii_phy: phy@7 {
++			compatible = "ethernet-phy-ieee802.3-c22";
++			reg = <0x7>;
++
++			interrupts-extended = <&tlmm 121 IRQ_TYPE_EDGE_FALLING>;
++			device_type = "ethernet-phy";
++			reset-gpios = <&tlmm 104 GPIO_ACTIVE_LOW>;
++			reset-assert-us = <11000>;
++			reset-deassert-us = <70000>;
++		};
++	};
++
++	mtl_rx_setup: rx-queues-config {
++		snps,rx-queues-to-use = <1>;
++		snps,rx-sched-sp;
++
++		queue0 {
++			snps,dcb-algorithm;
++			snps,map-to-dma-channel = <0x0>;
++			snps,route-up;
++			snps,priority = <0x1>;
++		};
++	};
++
++	mtl_tx_setup: tx-queues-config {
++		snps,tx-queues-to-use = <1>;
++		snps,tx-sched-wrr;
++
++		queue0 {
++			snps,weight = <0x10>;
++			snps,dcb-algorithm;
++			snps,priority = <0x0>;
++		};
++	};
++};
++
+ &gcc {
+ 	clocks = <&rpmhcc RPMH_CXO_CLK>,
+ 		 <&rpmhcc RPMH_CXO_CLK_A>,
+@@ -214,6 +269,57 @@ &rpmhcc {
+ 	clocks = <&xo_board_clk>;
+ };
+ 
++&tlmm {
++	ethernet_defaults: ethernet-defaults-state {
++		mdc-pins {
++			pins = "gpio113";
++			function = "rgmii";
++			bias-pull-up;
++		};
++
++		mdio-pins {
++			pins = "gpio114";
++			function = "rgmii";
++			bias-pull-up;
++		};
++
++		rgmii-rx-pins {
++			pins = "gpio81", "gpio82", "gpio83", "gpio102", "gpio103", "gpio112";
++			function = "rgmii";
++			bias-disable;
++			drive-strength = <2>;
++		};
++
++		rgmii-tx-pins {
++			pins = "gpio92", "gpio93", "gpio94", "gpio95", "gpio96", "gpio97";
++			function = "rgmii";
++			bias-pull-up;
++			drive-strength = <16>;
++		};
++
++		phy-intr-pins {
++			pins = "gpio121";
++			function = "gpio";
++			bias-disable;
++			drive-strength = <8>;
++		};
++
++		pps-pins {
++			pins = "gpio91";
++			function = "rgmii";
++			bias-disable;
++			drive-strength = <8>;
++		};
++
++		phy-reset-pins {
++			pins = "gpio104";
++			function = "gpio";
++			bias-pull-up;
++			drive-strength = <16>;
++		};
++	};
++};
++
+ &uart0 {
+ 	status = "okay";
+ };
+-- 
+2.34.1
+
