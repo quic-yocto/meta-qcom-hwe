@@ -6,7 +6,7 @@ DESCRIPTION = "Recipe to build Linux kernel"
 LICENSE = "GPLv2.0-with-linux-syscall-note"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-inherit kernel
+inherit kernel sota
 
 COMPATIBLE_MACHINE = "(qcom)"
 
