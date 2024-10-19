@@ -1,0 +1,126 @@
+From 344f416a95bfd3daa4f9f4a885343062dbb29772 Mon Sep 17 00:00:00 2001
+From: Mahadevan <quic_mahap@quicinc.com>
+Date: Wed, 9 Oct 2024 20:02:05 +0530
+Subject: [PATCH 7/7] FROMLIST: arm64: dts: qcom: sa8775p: add display dt nodes
+ for MDSS0 and DPU
+
+Add devicetree changes to enable MDSS0 display-subsystem its
+display-controller(DPU) for Qualcomm SA8775P platform.
+
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Mahadevan <quic_mahap@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241019-patchv3_1-v5-5-d2fb72c9a845@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 89 +++++++++++++++++++++++++++
+ 1 file changed, 89 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index d4f2bd38a29a..96dd5d61876e 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -6,6 +6,7 @@
+ #include <dt-bindings/interconnect/qcom,icc.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/clock/qcom,rpmh.h>
++#include <dt-bindings/clock/qcom,sa8775p-dispcc.h>
+ #include <dt-bindings/clock/qcom,sa8775p-gcc.h>
+ #include <dt-bindings/clock/qcom,sa8775p-gpucc.h>
+ #include <dt-bindings/interconnect/qcom,sa8775p-rpmh.h>
+@@ -3157,6 +3158,94 @@ camcc: clock-controller@ade0000 {
+ 			#power-domain-cells = <1>;
+ 		};
+ 
++		mdss0: display-subsystem@ae00000 {
++			compatible = "qcom,sa8775p-mdss";
++			reg = <0x0 0x0ae00000 0x0 0x1000>;
++			reg-names = "mdss";
++
++			/* same path used twice */
++			interconnects = <&mmss_noc MASTER_MDP0 QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&mmss_noc MASTER_MDP1 QCOM_ICC_TAG_ACTIVE_ONLY
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
++					<&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &config_noc SLAVE_DISPLAY_CFG QCOM_ICC_TAG_ACTIVE_ONLY>;
++			interconnect-names = "mdp0-mem",
++					     "mdp1-mem",
++					     "cpu-cfg";
++
++			resets = <&dispcc0 MDSS_DISP_CC_MDSS_CORE_BCR>;
++
++			power-domains = <&dispcc0 MDSS_DISP_CC_MDSS_CORE_GDSC>;
++
++			clocks = <&dispcc0 MDSS_DISP_CC_MDSS_AHB_CLK>,
++				 <&gcc GCC_DISP_HF_AXI_CLK>,
++				 <&dispcc0 MDSS_DISP_CC_MDSS_MDP_CLK>;
++
++			interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-controller;
++			#interrupt-cells = <1>;
++
++			iommus = <&apps_smmu 0x1000 0x402>;
++
++			#address-cells = <2>;
++			#size-cells = <2>;
++			ranges;
++
++			status = "disabled";
++
++			mdss0_mdp: display-controller@ae01000 {
++				compatible = "qcom,sa8775p-dpu";
++				reg = <0x0 0x0ae01000 0x0 0x8f000>,
++				      <0x0 0x0aeb0000 0x0 0x2008>;
++				reg-names = "mdp", "vbif";
++
++				clocks = <&gcc GCC_DISP_HF_AXI_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_AHB_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_MDP_LUT_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_MDP_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_VSYNC_CLK>;
++				clock-names = "bus",
++					      "iface",
++					      "lut",
++					      "core",
++					      "vsync";
++
++				assigned-clocks = <&dispcc0 MDSS_DISP_CC_MDSS_VSYNC_CLK>;
++				assigned-clock-rates = <19200000>;
++
++				operating-points-v2 = <&mdss0_mdp_opp_table>;
++				power-domains = <&rpmhpd SA8775P_MMCX>;
++
++				interrupt-parent = <&mdss0>;
++				interrupts = <0>;
++
++				mdss0_mdp_opp_table: opp-table {
++					compatible = "operating-points-v2";
++
++					opp-375000000 {
++						opp-hz = /bits/ 64 <375000000>;
++						required-opps = <&rpmhpd_opp_svs_l1>;
++					};
++
++					opp-500000000 {
++						opp-hz = /bits/ 64 <500000000>;
++						required-opps = <&rpmhpd_opp_nom>;
++					};
++
++					opp-575000000 {
++						opp-hz = /bits/ 64 <575000000>;
++						required-opps = <&rpmhpd_opp_turbo>;
++					};
++
++					opp-650000000 {
++						opp-hz = /bits/ 64 <650000000>;
++						required-opps = <&rpmhpd_opp_turbo_l1>;
++					};
++				};
++			};
++		};
++
+ 		dispcc0: clock-controller@af00000 {
+ 			compatible = "qcom,sa8775p-dispcc0";
+ 			reg = <0x0 0x0af00000 0x0 0x20000>;
+-- 
+2.34.1
+

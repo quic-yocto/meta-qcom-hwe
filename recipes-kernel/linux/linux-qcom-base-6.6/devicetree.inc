@@ -41,6 +41,7 @@ SRC_URI:append = " \
     file://qcs9100/0002-FROMLIST-arm64-dts-qcom-sa8775p-pmics-enable-rtc.patch \
     file://qcs9100/0003-FROMGIT-arm64-dts-qcom-sa8775p-ride-enable-pmm8654au.patch \
     file://qcs9100/0001-arm64-dts-qcom-sa8775p-Add-new-memory-map-updates-to.patch \
+    file://qcs9100/0007-FROMLIST-arm64-dts-qcom-sa8775p-add-display-dt-nodes.patch \
     "
 # qcs9100 board dts patches
 SRC_URI:append = " \

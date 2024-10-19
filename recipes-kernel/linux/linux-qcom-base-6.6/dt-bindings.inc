@@ -77,4 +77,8 @@ SRC_URI:append = " \
     file://qcs615/0002-FROMLIST-dt-bindings-ufs-qcom-Add-UFS-Host-Controlle.patch \
     file://qcs615/0002-FROMLIST-dt-bindings-net-qcom-ethqos-add-description.patch \
     file://qcs615/0001-BACKPORT-dt-bindings-mmc-Add-sdhci-compatible-for-QCS615.patch \
+    file://qcs9100/0001-UPSTREAM-dt-bindings-display-msm-document-the-SM8650.patch \
+    file://qcs9100/0002-UPSTREAM-dt-bindings-display-msm-Document-the-DPU-fo.patch \
+    file://qcs9100/0003-FROMLIST-dt-bindings-display-msm-Document-MDSS-on-SA.patch \
+    file://qcs9100/0004-FROMLIST-dt-bindings-display-msm-Document-the-DPU-fo.patch \
     "

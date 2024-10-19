@@ -151,4 +151,6 @@ SRC_URI:append = " \
     file://qcs615/0008-BACKPORT-phy-qcom-qmp-Add-debug-prints-for-register-.patch \
     file://qcs615/0009-FROMLIST-phy-qcom-qmp-usbc-Add-qmp-configuration-for.patch \
     file://qcs615/0010-FROMLIST-phy-qcom-qusb2-Add-support-for-QCS615.patch \
+    file://qcs9100/0005-FROMLIST-BACKPORT-drm-msm-mdss-Add-SA8775P-support.patch \
+    file://qcs9100/0006-FROMLIST-BACKPORT-drm-msm-dpu-Add-SA8775P-support.patch \
     "
