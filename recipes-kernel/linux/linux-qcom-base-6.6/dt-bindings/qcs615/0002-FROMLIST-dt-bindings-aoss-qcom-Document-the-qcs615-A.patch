@@ -1,0 +1,32 @@
+From 4d522acb41adf98af4966087189ccf6bef8b1eac Mon Sep 17 00:00:00 2001
+From: Kyle Deng <quic_chunkaid@quicinc.com>
+Date: Wed, 9 Oct 2024 11:26:48 +0800
+Subject: [PATCH] FROMLIST: dt-bindings: aoss: qcom: Document the qcs615
+ AOSS_QMP
+
+Document the Always-On Subsystem Qualcomm Message Protocol(AOSS_QMP)
+on the Qualcomm qcs615 platform.
+
+Change-Id: Ia620ff4a251dc81e577d0502579d7eb072abb6cd
+Signed-off-by: Kyle Deng <quic_chunkaid@quicinc.com>
+Link: https://lore.kernel.org/all/20241018073417.2338864-3-quic_chunkaid@quicinc.com/
+Upstream-Status: Submitted[https://lore.kernel.org/all/20241018073417.2338864-3-quic_chunkaid@quicinc.com/]
+---
+ Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml
+index cf7cb35032e8..8d39de7eb477 100644
+--- a/Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml
++++ b/Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml
+@@ -25,6 +25,7 @@ properties:
+   compatible:
+     items:
+       - enum:
++          - qcom,qcs615-aoss-qmp
+           - qcom,qcs8300-aoss-qmp
+           - qcom,qdu1000-aoss-qmp
+           - qcom,sa8775p-aoss-qmp
+-- 
+2.47.0.107.g34b6ce9b30
+

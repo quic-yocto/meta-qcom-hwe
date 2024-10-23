@@ -84,6 +84,7 @@ SRC_URI:append = " \
     file://qcs615/0003-FROMLIST-arm64-dts-qcom-qcs615-add-UFS-node.patch \
     file://qcs615/0003-FROMLIST-arm64-dts-qcom-qcs615-add-ethernet-node.patch \
     file://qcs615/0001-FROMLIST-arm64-dts-qcom-qcs615-add-SDHC1-and-SDHC2.patch \
+    file://qcs615/0003-FROMLIST-arm64-dts-qcom-qcs615-add-AOSS_QMP-node.patch \
     "
 
 # qcs615 board dts patches
