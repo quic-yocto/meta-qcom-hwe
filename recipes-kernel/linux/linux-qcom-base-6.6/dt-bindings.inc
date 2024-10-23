@@ -93,6 +93,10 @@ SRC_URI:append = " \
     file://common/0002-BACKPORT-dt-bindings-power-reset-Convert-mode-.-prop.patch \
     file://common/0003-FROMLIST-dt-bindings-arm-Document-reboot-mode-magic.patch \
     file://qcs8300/0001-FROMLIST-dt-bindings-watchdog-Document-Qualcomm-QCS8.patch \
+    file://qcs615/0003-FROMLIST-dt-bindings-clock-Add-Qualcomm-QCS615-Camer.patch \
+    file://qcs615/0005-FROMLIST-dt-bindings-clock-Add-Qualcomm-QCS615-Displ.patch \
+    file://qcs615/0007-FROMLIST-dt-bindings-clock-Add-Qualcomm-QCS615-Graph.patch \
+    file://qcs615/0009-FROMLIST-dt-bindings-clock-Add-Qualcomm-QCS615-Video.patch \
     file://qcs615/0001-FROMLIST-dt-bindings-mailbox-qcom-apcs-kpss-global-D.patch \
     file://qcs615/0002-FROMLIST-dt-bindings-aoss-qcom-Document-the-qcs615-A.patch \
     "

@@ -165,5 +165,11 @@ SRC_URI:append = " \
     file://qcs8300/0001-UPSTREAM-phy-qcom-qmp-Add-qmp-configuration-for-QCS8.patch \
     file://qcs8300/0002-UPSTREAM-phy-qcom-qmp-usb-simplify-clock-handling.patch \
     file://qcs8300/0003-UPSTREAM-phy-qcom-qmp-usb-rework-reset-handling.patch \
+    file://qcs615/0001-FROMLIST-clk-qcom-Update-the-support-for-alpha-mode-.patch \
+    file://qcs615/0002-FROMLIST-clk-qcom-clk-alpha-pll-Add-support-for-dyna.patch \
+    file://qcs615/0004-FROMLIST-clk-qcom-camcc-qcs615-Add-QCS615-camera-clo.patch \
+    file://qcs615/0006-FROMLIST-clk-qcom-dispcc-qcs615-Add-QCS615-display-c.patch \
+    file://qcs615/0008-FROMLIST-clk-qcom-gpucc-qcs615-Add-QCS615-graphics-c.patch \
+    file://qcs615/0010-FROMLIST-clk-qcom-videocc-qcs615-Add-QCS615-video-cl.patch \
     file://common/0004-FROMLIST-firmware-psci-Read-and-use-vendor-reset-typ.patch \
     "

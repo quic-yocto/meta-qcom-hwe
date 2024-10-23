@@ -1,0 +1,36 @@
+From 378122d124a09c9084f1cb31ac1eb3438e133401 Mon Sep 17 00:00:00 2001
+From: Taniya Das <quic_tdas@quicinc.com>
+Date: Fri, 8 Nov 2024 09:39:18 +0530
+Subject: [PATCH 01/11] FROMLIST: clk: qcom: Update the support for alpha mode
+ configuration
+
+The alpha_en_mask and alpha_mode_mask must be applied within the
+clk_alpha_pll_configure() function to ensure proper configuration of
+the alpha mode of the PLL.
+
+Fixes: c45ae598fc16 ("clk: qcom: support for alpha mode configuration")
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Tested-by: Gabor Juhos <j4g8y7@gmail.com>
+Signed-off-by: Taniya Das <quic_tdas@quicinc.com>
+Link: https://lore.kernel.org/linux-arm-msm/20241108-qcs615-mm-clockcontroller-v3-1-7d3b2d235fdf@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20241108-qcs615-mm-clockcontroller-v3-1-7d3b2d235fdf@quicinc.com/]
+---
+ drivers/clk/qcom/clk-alpha-pll.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/clk/qcom/clk-alpha-pll.c b/drivers/clk/qcom/clk-alpha-pll.c
+index 1701cce74df7..72eb3bf2bed8 100644
+--- a/drivers/clk/qcom/clk-alpha-pll.c
++++ b/drivers/clk/qcom/clk-alpha-pll.c
+@@ -380,6 +380,8 @@ void clk_alpha_pll_configure(struct clk_alpha_pll *pll, struct regmap *regmap,
+ 	mask |= config->pre_div_mask;
+ 	mask |= config->post_div_mask;
+ 	mask |= config->vco_mask;
++	mask |= config->alpha_en_mask;
++	mask |= config->alpha_mode_mask;
+ 
+ 	regmap_update_bits(regmap, PLL_USER_CTL(pll), mask, val);
+ 
+-- 
+2.34.1
+
