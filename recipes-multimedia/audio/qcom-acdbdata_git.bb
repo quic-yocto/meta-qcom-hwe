@@ -5,7 +5,11 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=3771d4920bd6
 
 DESCRIPTION = "Audio Calibration Library"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/audioreach-conf.git;protocol=https;rev=a9c0f871504b9100a0556f6b695500c40498f1ad;branch=audio-core.lnx.1.0.r1-rel;destsuffix=audio/opensource/audioreach-conf"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/audioreach-conf.git;protocol=https"
+SRCBRANCH  = "audio-core.lnx.1.0.r1-rel"
+SRCREV     = "a9c0f871504b9100a0556f6b695500c40498f1ad"
+
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/audioreach-conf"
 
 S = "${WORKDIR}/audio/opensource/audioreach-conf/ar-acdb/acdbdata"
 

@@ -4,8 +4,11 @@ DESCRIPTION = "subsystem ramdump"
 LICENSE = "BSD-3-Clause-Clear"
 LIC_FILES_CHKSUM += "file://subsystem_ramdump.c;beginline=1;endline=4;md5=e19ba7a648e00191388321a1e8a5c974"
 
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/ss-restart.git;protocol=https"
+SRCBRANCH  = "kernel.apps.lnx.4.0.r1-rel"
+SRCREV     = "4541e993a9f8ee40cfdea2521ac3621ceadb2f00"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/ss-restart.git;protocol=https;rev=4541e993a9f8ee40cfdea2521ac3621ceadb2f00;branch=kernel.apps.lnx.4.0.r1-rel;destsuffix=ss-restart"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=ss-restart"
 
 S = "${WORKDIR}/ss-restart/subsystem_ramdump"
 

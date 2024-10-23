@@ -12,10 +12,28 @@ MODULE_NAME = "qca6490"
 
 MODULE_NAME:qcm6490 := "qca6490"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https;rev=d61eba677e5f5aea6a0dc89b7c0664a63b51f485;branch=wlan-cld3.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qcacld-3.0"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https;rev=3e4a835eada76b5fac596c8d43d67ae975af7145;branch=wlan-cmn.driver.lnx.2.0.14.r1-rel;destsuffix=wlan/qca-wifi-host-cmn"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/fw-api.git;protocol=https;rev=e3a9e8051ec8a0c79fe4a1d932f234cf8dfa9565;branch=wlan-api.lnx.1.0.r230-rel;destsuffix=wlan/fw-api"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=fe1d44e365c52cc66c4a39f48cd0919de4b72dee;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/platform"
+QCOM_WLAN_QCACLD_SRC ?= "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qcacld-3.0.git;protocol=https"
+QCOM_WLAN_QCACLD_SRCBRANCH ?= "wlan-cld3.driver.lnx.2.0.14.r1-rel"
+QCOM_WLAN_QCACLD_SRCREV    ?= "d61eba677e5f5aea6a0dc89b7c0664a63b51f485"
+
+QCOM_WLAN_HOST_CMN_SRC ?= "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn.git;protocol=https"
+QCOM_WLAN_HOST_CMN_SRCBRANCH ?= "wlan-cmn.driver.lnx.2.0.14.r1-rel"
+QCOM_WLAN_HOST_CMN_SRCREV    ?= "3e4a835eada76b5fac596c8d43d67ae975af7145"
+
+QCOM_FW_API_SRC ?= "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/fw-api.git;protocol=https"
+QCOM_FW_API_SRCBRANCH ?= "wlan-api.lnx.1.0.r230-rel"
+QCOM_FW_API_SRCREV    ?= "e3a9e8051ec8a0c79fe4a1d932f234cf8dfa9565"
+
+QCOM_WLAN_SRC ?= "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https"
+QCOM_WLAN_SRCBRANCH ?= "wlan-platform.qclinux.1.0.r2-rel"
+QCOM_WLAN_SRCREV    ?= "fe1d44e365c52cc66c4a39f48cd0919de4b72dee"
+
+SRC_URI = " \
+    ${QCOM_WLAN_QCACLD_SRC};branch=${QCOM_WLAN_QCACLD_SRCBRANCH};rev=${QCOM_WLAN_QCACLD_SRCREV};destsuffix=wlan/qcacld-3.0 \
+    ${QCOM_WLAN_HOST_CMN_SRC};branch=${QCOM_WLAN_HOST_CMN_SRCBRANCH};rev=${QCOM_WLAN_HOST_CMN_SRCREV};destsuffix=wlan/qca-wifi-host-cmn \
+    ${QCOM_FW_API_SRC};branch=${QCOM_FW_API_SRCBRANCH};rev=${QCOM_FW_API_SRCREV};destsuffix=wlan/fw-api \
+    ${QCOM_WLAN_SRC};branch=${QCOM_WLAN_SRCBRANCH};rev=${QCOM_WLAN_SRCREV};destsuffix=wlan/platform \
+"
 SRC_URI += "file://qcacld-kbuild.patch"
 
 S = "${WORKDIR}/wlan/qcacld-3.0"

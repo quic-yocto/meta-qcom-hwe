@@ -6,7 +6,11 @@ LIC_FILES_CHKSUM += "file://service/src/agm.c;beginline=30;endline=31;md5=0f37b8
 
 inherit autotools pkgconfig
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/agm.git;protocol=https;rev=5545c40b2b2310e5fb5aa1ce9d23a1ffc494f493;branch=audio-core.lnx.1.0.r1-rel;destsuffix=audio/opensource/agm"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/agm.git;protocol=https"
+SRCBRANCH  = "audio-core.lnx.1.0.r1-rel"
+SRCREV     = "5545c40b2b2310e5fb5aa1ce9d23a1ffc494f493"
+
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/agm"
 
 S = "${WORKDIR}/audio/opensource/agm"
 

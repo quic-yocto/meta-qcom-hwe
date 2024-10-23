@@ -6,7 +6,11 @@ LIC_FILES_CHKSUM = "file://src/VoiceUIInterface.cpp;beginline=2;endline=4;md5=18
 
 DESCRIPTION = "VUI Interface plugin"
 
-SRC_URI    =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/arpal-lx.git;protocol=https;rev=0c3dadeb4ba53453b2a143fba6ceb5a2655fede6;branch=audio-core.lnx.1.0.r1-rel;destsuffix=audio/opensource/arpal-lx"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/arpal-lx.git;protocol=https"
+SRCBRANCH  = "audio-core.lnx.1.0.r1-rel"
+SRCREV     = "0c3dadeb4ba53453b2a143fba6ceb5a2655fede6"
+
+SRC_URI    =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/arpal-lx"
 
 S = "${WORKDIR}/audio/opensource/arpal-lx/plugins/vui_interface"
 

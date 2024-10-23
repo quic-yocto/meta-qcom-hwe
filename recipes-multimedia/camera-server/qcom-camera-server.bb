@@ -11,9 +11,12 @@ DEPENDS += "gtest"
 DEPENDS += "gbm"
 DEPENDS:append:qcm6490 = " property-vault syslog-plumber protobuf-native protobuf-c protobuf-c-native camx-kt"
 
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/le-services.git;protocol=https"
+SRCBRANCH  = "le-services.lnx.1.0.r1-rel"
+SRCREV     = "a90b5547d6e6ac0c817ab0387c8ecdaf65db6d7a"
 
-SRC_URI  := "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/le-services.git;protocol=https;rev=a90b5547d6e6ac0c817ab0387c8ecdaf65db6d7a;branch=le-services.lnx.1.0.r1-rel;destsuffix=le-camera-server"
-SRC_URI  += "file://cam-server-env"
+SRC_URI  = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=le-camera-server \
+            file://cam-server-env"
 
 S = "${WORKDIR}/le-camera-server"
 

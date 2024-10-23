@@ -6,9 +6,12 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=89aea4e17d99a7ca
 
 DEPENDS:qcom-custom-bsp += "linux-kernel-qcom-headers"
 
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/system/memory/libdmabufheap.git;protocol=https"
+SRCBRANCH  = "memory-le-apps.lnx.1.0.r35-rel"
+SRCREV     = "37bf33001a41b66676d6d1883982f0b14583fc02"
 
 SRC_URI   = " \
-             git://git.codelinaro.org/clo/le/platform/system/memory/libdmabufheap.git;protocol=https;rev=37bf33001a41b66676d6d1883982f0b14583fc02;branch=memory-le-apps.lnx.1.0.r35-rel;destsuffix=system/memory/libdmabufheap \
+             ${SRCPROJECT};branch=${SRCBRANCH};destsuffix=system/memory/libdmabufheap \
              file://kmem.rules \
              "
 

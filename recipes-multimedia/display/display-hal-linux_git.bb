@@ -12,7 +12,11 @@ LIC_FILES_CHKSUM = " \
 
 PACKAGE_ARCH = "${SOC_ARCH}"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/hardware/qcom/display.git;protocol=https;rev=036066afba14ac06a09e78f2036c206767e709e3;branch=display.qclinux.1.0.r1-rel;destsuffix=display/hardware/qcom/display"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/hardware/qcom/display.git;protocol=https"
+SRCBRANCH  = "display.qclinux.1.0.r1-rel"
+SRCREV     = "036066afba14ac06a09e78f2036c206767e709e3"
+
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=display/hardware/qcom/display"
 
 S = "${WORKDIR}/display/hardware/qcom/display"
 

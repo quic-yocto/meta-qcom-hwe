@@ -13,7 +13,11 @@ DEPENDS = "glib-2.0"
 
 inherit meson pkgconfig bash-completion gobject-introspection
 
-SRC_URI = "git://git.codelinaro.org/clo/le/mobile-broadband/libqmi.git;protocol=https;rev=3f07d6e5b4677558543b3b4484ea88ad92257e92;branch=telephony.qclinux.0.0.r1-rel;destsuffix=mobile-broadband/libqmi"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/mobile-broadband/libqmi.git;protocol=https"
+SRCBRANCH  = "telephony.qclinux.0.0.r1-rel"
+SRCREV     = "3f07d6e5b4677558543b3b4484ea88ad92257e92"
+
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=mobile-broadband/libqmi"
 
 S = "${WORKDIR}/mobile-broadband/libqmi"
 

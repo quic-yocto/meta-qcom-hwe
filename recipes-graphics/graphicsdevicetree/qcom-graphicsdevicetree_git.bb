@@ -4,7 +4,11 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=801f80980d171dd6
 
 inherit module deploy
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/graphics-devicetree.git;protocol=https;rev=94f56dbb81e58c862c50b9c945aa42ffe7ba216e;branch=gfx-kernel.le.0.0.r1-rel;destsuffix=graphics-devicetree"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/graphics-devicetree.git;protocol=https"
+SRCBRANCH  = "gfx-kernel.le.0.0.r1-rel"
+SRCREV     = "94f56dbb81e58c862c50b9c945aa42ffe7ba216e"
+
+SRC_URI =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=graphics-devicetree"
 
 S = "${WORKDIR}/graphics-devicetree"
 

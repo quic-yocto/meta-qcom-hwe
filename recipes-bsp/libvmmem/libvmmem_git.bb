@@ -9,9 +9,12 @@ LIC_FILES_CHKSUM += "file://vmmem.cpp;beginline=1;endline=4;md5=e19ba7a648e00191
 
 DEPENDS += "linux-kernel-qcom-headers"
 
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/system/memory/libvmmem.git;protocol=https"
+SRCBRANCH  = "kernel.apps.lnx.4.0.r1-rel"
+SRCREV     = "2b88e9bc6030893b8e9b46ae85999c8de103858d"
 
 SRC_URI   = " \
-             git://git.codelinaro.org/clo/le/platform/system/memory/libvmmem.git;protocol=https;rev=2b88e9bc6030893b8e9b46ae85999c8de103858d;branch=kernel.apps.lnx.4.0.r1-rel;destsuffix=system/memory/libvmmem \
+             ${SRCPROJECT};branch=${SRCBRANCH};destsuffix=system/memory/libvmmem \
              file://membuf.rules \
              "
 

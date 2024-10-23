@@ -12,8 +12,12 @@ ${BSD-3-Clause_LICENSE};md5=966a1bac2e99d152d17ed2b6d7ad8bab"
 DEPENDS = "glib-2.0 wayland displaydlkm"
 PROVIDES += "virtual/libgbm libgbm"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/display/libgbm.git;protocol=https;rev=5764548062cc98934c1f08ddae3927bb3633fcd4;branch=display.qclinux.1.0.r1-rel;destsuffix=display/vendor/qcom/opensource/display/libgbm \
-                file://pkgconfig/gbm.pc"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/display/libgbm.git;protocol=https"
+SRCBRANCH  = "display.qclinux.1.0.r1-rel"
+SRCREV     = "5764548062cc98934c1f08ddae3927bb3633fcd4"
+
+SRC_URI =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=display/vendor/qcom/opensource/display/libgbm \
+            file://pkgconfig/gbm.pc"
 
 S = "${WORKDIR}/display/vendor/qcom/opensource/display/libgbm"
 

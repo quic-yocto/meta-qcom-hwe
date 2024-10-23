@@ -5,8 +5,12 @@ LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=3771d4920bd6
 
 DESCRIPTION = "ACD UI test app"
 
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/pulseaudio-plugin.git;protocol=https"
+SRCBRANCH  = "audio-algos.lnx.1.0.r1-rel"
+SRCREV     = "47f57bb8df85b134c36e1db65cb1368cfa9cda32"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/pulseaudio-plugin.git;protocol=https;rev=47f57bb8df85b134c36e1db65cb1368cfa9cda32;branch=audio-algos.lnx.1.0.r1-rel;destsuffix=audio/opensource/pulseaudio-plugins"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/pulseaudio-plugins"
+
 S = "${WORKDIR}/audio/opensource/pulseaudio-plugins/test/acd"
 
 DEPENDS = "pulseaudio glib-2.0 qcom-pal qcom-vui-interface-header"

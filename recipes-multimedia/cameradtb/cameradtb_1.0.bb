@@ -5,7 +5,11 @@ DESCRIPTION = "QCOM Camera device-tree"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-devicetree.git;protocol=https;rev=d4fd0e969f2dc0349412bf4414f0b2a1b681d2a7;branch=camera-kernel.qclinux.1.0.r1-rel;destsuffix=vendor/qcom/opensource/camera-devicetree"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-devicetree.git;protocol=https"
+SRCBRANCH  = "camera-kernel.qclinux.1.0.r1-rel"
+SRCREV     = "d4fd0e969f2dc0349412bf4414f0b2a1b681d2a7"
+
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=vendor/qcom/opensource/camera-devicetree"
 
 DEPENDS:qcom-custom-bsp += "cameradlkm"
 

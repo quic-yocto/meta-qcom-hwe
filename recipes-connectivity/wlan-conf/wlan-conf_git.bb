@@ -4,8 +4,11 @@ DESCRIPTION = "Device specific config"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
+SRCPROJECT = "git://git.codelinaro.org/clo/le/qcom-opensource/mdm-init.git;protocol=https"
+SRCBRANCH  = "wlan-os-service.qclinux.1.1.r1-rel"
+SRCREV     = "86a12ca727d35f795876d19ea7b0bdf8ffdfe106"
 
-SRC_URI = "git://git.codelinaro.org/clo/le/qcom-opensource/mdm-init.git;protocol=https;rev=86a12ca727d35f795876d19ea7b0bdf8ffdfe106;branch=wlan-os-service.qclinux.1.1.r1-rel;destsuffix=mdm-init \
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=mdm-init \
            file://0001-wlan_qcm6490-Update-default-driver-as-ath11k.patch \
            file://0002-wlan_qcm6490-add-WoWLAN-pattern-to-wpa_supplicant-co.patch \
            file://wlan_daemon.service"
