@@ -145,6 +145,8 @@ dev_rw_kmsg(unconfined_t)
 allow getty_t self:capability2  {checkpoint_restore };
 allow  kernel_t self:capability2 { checkpoint_restore audit_read bpf perfmon};
 allow  kernel_t tty_device_t:chr_file {watch_reads };
+
+
 ### OSTree temp changes  once we move var refernce we might not need this
 gen_require(`
             type  systemd_generator_t;
@@ -157,6 +159,8 @@ gen_require(`
             type  systemd_networkd_t;
             type  udev_t;
             type  syslogd_t;
+            type  user_home_dir_t;
+            type  systemd_tmpfiles_t;
 ')
 
 allow {systemd_generator_t  systemd_modules_load_t systemd_logind_t qcom_usb_t}   usr_t:lnk_file  {read getattr};
@@ -171,6 +175,7 @@ allow udev_t  var_t:lnk_file {getattr read };
 allow qcom_usb_t var_t:lnk_file {getattr read };
 allow systemd_networkd_t var_t:lnk_file {getattr read };
 allow syslogd_t  var_t:lnk_file {getattr read };
+allow systemd_tmpfiles_t  user_home_dir_t:dir {create search read add_name};
 
 ##LCA test app rules
 qcom_loc_read_loc_sock_files(unconfined_t)

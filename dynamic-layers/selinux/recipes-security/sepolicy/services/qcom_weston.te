@@ -13,6 +13,7 @@ init_unit_file(qcom_weston_unit_t)
 
 type qcom_weston_tmp_t;
 type qcom_weston_etc_t;
+fs_associate(qcom_weston_etc_t)
 
 qcom_weston_etc_execute(qcom_weston_t)
 files_read_etc_files(qcom_weston_t)
