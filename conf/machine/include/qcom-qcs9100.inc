@@ -1,6 +1,6 @@
 # Configurations and variables for QCS9100 SoC family.
 
-SOC_FAMILY ?= "qcs9100"
+SOC_FAMILY = "qcs9100"
 require conf/machine/include/qcom-base.inc
 require conf/machine/include/qcom-common.inc
 
