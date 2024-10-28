@@ -172,3 +172,8 @@ allow qcom_usb_t var_t:lnk_file {getattr read };
 allow systemd_networkd_t var_t:lnk_file {getattr read };
 allow syslogd_t  var_t:lnk_file {getattr read };
 
+##LCA test app rules
+qcom_loc_read_loc_sock_files(unconfined_t)
+
+qcom_loc_locclient_generic_rules(unconfined_t)
+
