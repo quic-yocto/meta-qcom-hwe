@@ -1,23 +1,23 @@
-From 5a7d8c889a5cd0d50b4631fa5f7ac6bb3c188e85 Mon Sep 17 00:00:00 2001
+From 456152f23e2e509716ec348df2250e05390495a5 Mon Sep 17 00:00:00 2001
 From: Vedang Nagar <quic_vnagar@quicinc.com>
 Date: Tue, 27 Aug 2024 15:35:37 +0530
-Subject: [PATCH 12/29] FROMLIST: media: iris: implement s_fmt, g_fmt and
+Subject: FROMLIST: media: iris: implement s_fmt, g_fmt and
  try_fmt ioctls
 
-Implement s_fmt, g_fmt and try_fmt IOCTL ops in
-the driver with necessary hooks.
+Implement s_fmt, g_fmt and try_fmt ioctl ops with necessary hooks.
 
+Change-Id: Ic3e36d830b811ca22c4801eef10c39e2371587ee
 Signed-off-by: Vedang Nagar <quic_vnagar@quicinc.com>
 Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
-Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-12-c5fdbbe65e70@quicinc.com/]
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-10-c5eaa4e9ab9e@quicinc.com/]
 ---
- drivers/media/platform/qcom/iris/iris_vdec.c | 129 +++++++++++++++++++
+ drivers/media/platform/qcom/iris/iris_vdec.c | 131 +++++++++++++++++++
  drivers/media/platform/qcom/iris/iris_vdec.h |   2 +
- drivers/media/platform/qcom/iris/iris_vidc.c |  60 +++++++++
- 3 files changed, 191 insertions(+)
+ drivers/media/platform/qcom/iris/iris_vidc.c |  48 +++++++
+ 3 files changed, 181 insertions(+)
 
 diff --git a/drivers/media/platform/qcom/iris/iris_vdec.c b/drivers/media/platform/qcom/iris/iris_vdec.c
-index 7d1ef31c7c44..fd04f56b405d 100644
+index 7d1ef31c7c44..e807decdda2b 100644
 --- a/drivers/media/platform/qcom/iris/iris_vdec.c
 +++ b/drivers/media/platform/qcom/iris/iris_vdec.c
 @@ -3,6 +3,8 @@
@@ -37,7 +37,7 @@ index 7d1ef31c7c44..fd04f56b405d 100644
  
  void iris_vdec_inst_init(struct iris_inst *inst)
  {
-@@ -56,3 +59,129 @@ void iris_vdec_inst_deinit(struct iris_inst *inst)
+@@ -56,3 +59,131 @@ void iris_vdec_inst_deinit(struct iris_inst *inst)
  	kfree(inst->fmt_dst);
  	kfree(inst->fmt_src);
  }
@@ -49,28 +49,32 @@ index 7d1ef31c7c44..fd04f56b405d 100644
 +	struct v4l2_format *f_inst;
 +	struct vb2_queue *src_q;
 +
-+	src_q = v4l2_m2m_get_src_vq(m2m_ctx);
 +	memset(pixmp->reserved, 0, sizeof(pixmp->reserved));
-+	if (V4L2_TYPE_IS_OUTPUT(f->type)) {
++	switch (f->type) {
++	case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
 +		if (f->fmt.pix_mp.pixelformat != V4L2_PIX_FMT_H264) {
 +			f_inst = inst->fmt_src;
 +			f->fmt.pix_mp.width = f_inst->fmt.pix_mp.width;
 +			f->fmt.pix_mp.height = f_inst->fmt.pix_mp.height;
 +			f->fmt.pix_mp.pixelformat = f_inst->fmt.pix_mp.pixelformat;
 +		}
-+	} else if (V4L2_TYPE_IS_CAPTURE(f->type)) {
++		break;
++	case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
 +		if (f->fmt.pix_mp.pixelformat != V4L2_PIX_FMT_NV12) {
 +			f_inst = inst->fmt_dst;
 +			f->fmt.pix_mp.pixelformat = f_inst->fmt.pix_mp.pixelformat;
 +			f->fmt.pix_mp.width = f_inst->fmt.pix_mp.width;
 +			f->fmt.pix_mp.height = f_inst->fmt.pix_mp.height;
 +		}
++
++		src_q = v4l2_m2m_get_src_vq(m2m_ctx);
 +		if (vb2_is_streaming(src_q)) {
 +			f_inst = inst->fmt_src;
 +			f->fmt.pix_mp.height = f_inst->fmt.pix_mp.height;
 +			f->fmt.pix_mp.width = f_inst->fmt.pix_mp.width;
 +		}
-+	} else {
++		break;
++	default:
 +		return -EINVAL;
 +	}
 +
@@ -88,15 +92,10 @@ index 7d1ef31c7c44..fd04f56b405d 100644
 +	struct vb2_queue *q;
 +	u32 codec_align;
 +
-+	int ret = 0;
-+
-+	q = v4l2_m2m_get_vq(inst->m2m_ctx, f->type);
-+	if (!q)
-+		return -EINVAL;
-+
 +	iris_vdec_try_fmt(inst, f);
 +
-+	if (V4L2_TYPE_IS_OUTPUT(f->type)) {
++	switch (f->type) {
++	case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
 +		if (f->fmt.pix_mp.pixelformat != V4L2_PIX_FMT_H264)
 +			return -EINVAL;
 +
@@ -130,9 +129,11 @@ index 7d1ef31c7c44..fd04f56b405d 100644
 +		inst->crop.top = 0;
 +		inst->crop.width = f->fmt.pix_mp.width;
 +		inst->crop.height = f->fmt.pix_mp.height;
-+	} else if (V4L2_TYPE_IS_CAPTURE(f->type)) {
++		break;
++	case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
 +		fmt = inst->fmt_dst;
 +		fmt->type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
++		q = v4l2_m2m_get_vq(inst->m2m_ctx, f->type);
 +		if (q->streaming) {
 +			f->fmt.pix_mp.height = inst->fmt_src->fmt.pix_mp.height;
 +			f->fmt.pix_mp.width = inst->fmt_src->fmt.pix_mp.width;
@@ -160,12 +161,13 @@ index 7d1ef31c7c44..fd04f56b405d 100644
 +			inst->crop.width = f->fmt.pix_mp.width;
 +			inst->crop.height = f->fmt.pix_mp.height;
 +		}
-+	} else {
++		break;
++	default:
 +		return -EINVAL;
 +	}
 +	memcpy(f, fmt, sizeof(*fmt));
 +
-+	return ret;
++	return 0;
 +}
 diff --git a/drivers/media/platform/qcom/iris/iris_vdec.h b/drivers/media/platform/qcom/iris/iris_vdec.h
 index 0324d7f796dd..4f2557d15ca2 100644
@@ -180,21 +182,17 @@ index 0324d7f796dd..4f2557d15ca2 100644
  
  #endif
 diff --git a/drivers/media/platform/qcom/iris/iris_vidc.c b/drivers/media/platform/qcom/iris/iris_vidc.c
-index 70ce2296d1b2..7eafbbfd22e4 100644
+index b1a9f0b5380d..05146970189b 100644
 --- a/drivers/media/platform/qcom/iris/iris_vidc.c
 +++ b/drivers/media/platform/qcom/iris/iris_vidc.c
-@@ -255,6 +255,60 @@ int iris_close(struct file *filp)
+@@ -214,6 +214,48 @@ int iris_close(struct file *filp)
  	return 0;
  }
  
 +static int iris_try_fmt_vid_mplane(struct file *filp, void *fh, struct v4l2_format *f)
 +{
-+	struct iris_inst *inst;
++	struct iris_inst *inst = iris_get_inst(filp, NULL);
 +	int ret;
-+
-+	inst = iris_get_inst(filp, fh);
-+	if (!inst)
-+		return -EINVAL;
 +
 +	mutex_lock(&inst->lock);
 +	ret = iris_vdec_try_fmt(inst, f);
@@ -205,12 +203,8 @@ index 70ce2296d1b2..7eafbbfd22e4 100644
 +
 +static int iris_s_fmt_vid_mplane(struct file *filp, void *fh, struct v4l2_format *f)
 +{
-+	struct iris_inst *inst;
++	struct iris_inst *inst = iris_get_inst(filp, NULL);
 +	int ret;
-+
-+	inst = iris_get_inst(filp, fh);
-+	if (!inst)
-+		return -EINVAL;
 +
 +	mutex_lock(&inst->lock);
 +	ret = iris_vdec_s_fmt(inst, f);
@@ -221,12 +215,8 @@ index 70ce2296d1b2..7eafbbfd22e4 100644
 +
 +static int iris_g_fmt_vid_mplane(struct file *filp, void *fh, struct v4l2_format *f)
 +{
-+	struct iris_inst *inst;
++	struct iris_inst *inst = iris_get_inst(filp, NULL);
 +	int ret = 0;
-+
-+	inst = iris_get_inst(filp, fh);
-+	if (!inst)
-+		return -EINVAL;
 +
 +	mutex_lock(&inst->lock);
 +	if (V4L2_TYPE_IS_OUTPUT(f->type))
@@ -244,7 +234,7 @@ index 70ce2296d1b2..7eafbbfd22e4 100644
  static struct v4l2_file_operations iris_v4l2_file_ops = {
  	.owner                          = THIS_MODULE,
  	.open                           = iris_open,
-@@ -269,6 +323,12 @@ static const struct vb2_ops iris_vb2_ops = {
+@@ -228,6 +270,12 @@ static const struct vb2_ops iris_vb2_ops = {
  };
  
  static const struct v4l2_ioctl_ops iris_v4l2_ioctl_ops = {

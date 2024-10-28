@@ -1,11 +1,11 @@
-From cbba887823b59b36ada3f9cfed64f1d9f5c0a0fd Mon Sep 17 00:00:00 2001
+From e352d538fbb7598a1156dc0c11867899f47b1359 Mon Sep 17 00:00:00 2001
 From: Dikshita Agarwal <quic_dikshita@quicinc.com>
 Date: Tue, 27 Aug 2024 15:35:31 +0530
-Subject: [PATCH 06/29] FROMLIST: media: iris: introduce iris core state
+Subject: FROMLIST: media: iris: introduce iris core state
  management with shared queues
 
-Introduce core state management for iris driver with
-necessary queues needed for host firmware communication.
+Introduce core state management for iris driver with necessary queues
+needed for host firmware communication.
 
 There are 3 types of queues:
 Command queue - driver to write any command to firmware.
@@ -15,9 +15,8 @@ Initialize and configire shared queues during probe.
 
 Different states for core:
 IRIS_CORE_DEINIT - default state.
-IRIS_CORE_INIT - core state with core initialized. FW loaded and
-HW brought out of reset, shared queues established between host
-driver and firmware.
+IRIS_CORE_INIT - core state with core initialized. FW loaded and HW
+brought out of reset, shared queues established between host driver and firmware.
 IRIS_CORE_ERROR - error state.
       -----------
            |
@@ -35,28 +34,28 @@ IRIS_CORE_ERROR - error state.
  |  INIT  |-->|  ERROR  |
  -----------   ----------.
 
+Change-Id: I19e0fdbac0a171986dbe0c7ee34bc553a02fc08f
 Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
-Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-6-c5fdbbe65e70@quicinc.com/]
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-4-c5eaa4e9ab9e@quicinc.com/]
 ---
  drivers/media/platform/qcom/iris/Makefile     |   4 +-
  drivers/media/platform/qcom/iris/iris_core.c  |  46 +++++
  drivers/media/platform/qcom/iris/iris_core.h  |  23 +++
- .../media/platform/qcom/iris/iris_hfi_queue.c | 126 +++++++++++++
+ .../media/platform/qcom/iris/iris_hfi_queue.c | 123 ++++++++++++
  .../media/platform/qcom/iris/iris_hfi_queue.h | 175 ++++++++++++++++++
  .../platform/qcom/iris/iris_platform_common.h |   1 +
- .../platform/qcom/iris/iris_platform_sm8250.c |   1 +
  .../platform/qcom/iris/iris_platform_sm8550.c |   1 +
  drivers/media/platform/qcom/iris/iris_probe.c |  20 ++
  drivers/media/platform/qcom/iris/iris_state.h |  41 ++++
  drivers/media/platform/qcom/iris/iris_vidc.c  |   6 +
- 11 files changed, 443 insertions(+), 1 deletion(-)
+ 10 files changed, 439 insertions(+), 1 deletion(-)
  create mode 100644 drivers/media/platform/qcom/iris/iris_core.c
  create mode 100644 drivers/media/platform/qcom/iris/iris_hfi_queue.c
  create mode 100644 drivers/media/platform/qcom/iris/iris_hfi_queue.h
  create mode 100644 drivers/media/platform/qcom/iris/iris_state.h
 
 diff --git a/drivers/media/platform/qcom/iris/Makefile b/drivers/media/platform/qcom/iris/Makefile
-index dcc393a3780a..48d54e53a576 100644
+index 6de584090a3a..93711f108a77 100644
 --- a/drivers/media/platform/qcom/iris/Makefile
 +++ b/drivers/media/platform/qcom/iris/Makefile
 @@ -1,5 +1,7 @@
@@ -65,9 +64,9 @@ index dcc393a3780a..48d54e53a576 100644
 +             iris_hfi_gen1_command.o \
               iris_hfi_gen2_command.o \
 +             iris_hfi_queue.o \
-              iris_platform_sm8250.o \
               iris_platform_sm8550.o \
               iris_probe.o \
+              iris_vidc.o \
 diff --git a/drivers/media/platform/qcom/iris/iris_core.c b/drivers/media/platform/qcom/iris/iris_core.c
 new file mode 100644
 index 000000000000..360a54909ef6
@@ -121,21 +120,20 @@ index 000000000000..360a54909ef6
 +	return ret;
 +}
 diff --git a/drivers/media/platform/qcom/iris/iris_core.h b/drivers/media/platform/qcom/iris/iris_core.h
-index 14489bd4474c..13c5932f9110 100644
+index 73c835bb6589..5fd11c3f99c5 100644
 --- a/drivers/media/platform/qcom/iris/iris_core.h
 +++ b/drivers/media/platform/qcom/iris/iris_core.h
-@@ -9,8 +9,10 @@
+@@ -9,7 +9,9 @@
  #include <linux/types.h>
  #include <media/v4l2-device.h>
  
 +#include "iris_hfi_queue.h"
  #include "iris_platform_common.h"
- #include "iris_resources.h"
 +#include "iris_state.h"
  
- /**
-  * struct iris_core - holds core parameters valid for all instances
-@@ -29,6 +31,15 @@
+ struct icc_info {
+ 	const char		*name;
+@@ -34,6 +36,15 @@ struct icc_info {
   * @clk_count: count of iris clocks
   * @resets: table of iris reset clocks
   * @iris_platform_data: a structure for platform data
@@ -151,7 +149,7 @@ index 14489bd4474c..13c5932f9110 100644
   */
  
  struct iris_core {
-@@ -46,6 +57,18 @@ struct iris_core {
+@@ -51,6 +62,18 @@ struct iris_core {
  	u32					clk_count;
  	struct reset_control_bulk_data		*resets;
  	const struct iris_platform_data		*iris_platform_data;
@@ -172,10 +170,10 @@ index 14489bd4474c..13c5932f9110 100644
  #endif
 diff --git a/drivers/media/platform/qcom/iris/iris_hfi_queue.c b/drivers/media/platform/qcom/iris/iris_hfi_queue.c
 new file mode 100644
-index 000000000000..11938880b8cd
+index 000000000000..bb7e0d747f0f
 --- /dev/null
 +++ b/drivers/media/platform/qcom/iris/iris_hfi_queue.c
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,123 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
@@ -213,12 +211,9 @@ index 000000000000..11938880b8cd
 +static void
 +iris_hfi_queue_init(struct iris_core *core, u32 queue_id, struct iris_iface_q_info *iface_q)
 +{
-+	struct iris_hfi_queue_table_header *q_tbl_hdr;
-+	unsigned int offset = 0;
++	struct iris_hfi_queue_table_header *q_tbl_hdr = core->iface_q_table_vaddr;
++	u32 offset = sizeof(*q_tbl_hdr) + (queue_id * IFACEQ_QUEUE_SIZE);
 +
-+	q_tbl_hdr = core->iface_q_table_vaddr;
-+
-+	offset = sizeof(*q_tbl_hdr) + (queue_id * IFACEQ_QUEUE_SIZE);
 +	iface_q->device_addr = core->iface_q_table_daddr + offset;
 +	iface_q->kernel_vaddr =
 +			(void *)((char *)core->iface_q_table_vaddr + offset);
@@ -484,10 +479,10 @@ index 000000000000..54994bb776f1
 +
 +#endif
 diff --git a/drivers/media/platform/qcom/iris/iris_platform_common.h b/drivers/media/platform/qcom/iris/iris_platform_common.h
-index daa6a74b376f..5287fdf913bc 100644
+index b3a2903698ff..dac64ec4bf03 100644
 --- a/drivers/media/platform/qcom/iris/iris_platform_common.h
 +++ b/drivers/media/platform/qcom/iris/iris_platform_common.h
-@@ -32,6 +32,7 @@ struct iris_platform_data {
+@@ -31,6 +31,7 @@ struct iris_platform_data {
  	unsigned int clk_tbl_size;
  	const char * const *clk_rst_tbl;
  	unsigned int clk_rst_tbl_size;
@@ -495,31 +490,21 @@ index daa6a74b376f..5287fdf913bc 100644
  };
  
  #endif
-diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8250.c b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
-index 5d4211a93bc1..664cb2b359a3 100644
---- a/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
-+++ b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
-@@ -37,4 +37,5 @@ struct iris_platform_data sm8250_data = {
- 	.opp_pd_tbl_size = ARRAY_SIZE(sm8250_opp_pd_table),
- 	.clk_tbl = sm8250_clk_table,
- 	.clk_tbl_size = ARRAY_SIZE(sm8250_clk_table),
-+	.dma_mask = GENMASK(31, 29) - 1,
- };
 diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
-index e0a3a162c55f..0db832b099ac 100644
+index dba8d3c22ce5..9b305b8e2110 100644
 --- a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
 +++ b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
-@@ -37,4 +37,5 @@ struct iris_platform_data sm8550_data = {
+@@ -36,4 +36,5 @@ struct iris_platform_data sm8550_data = {
  	.opp_pd_tbl_size = ARRAY_SIZE(sm8550_opp_pd_table),
  	.clk_tbl = sm8550_clk_table,
  	.clk_tbl_size = ARRAY_SIZE(sm8550_clk_table),
 +	.dma_mask = GENMASK(31, 29) - 1,
  };
 diff --git a/drivers/media/platform/qcom/iris/iris_probe.c b/drivers/media/platform/qcom/iris/iris_probe.c
-index fdf9f12c7728..64bac287d3a8 100644
+index 99113522ee0c..81400034f3da 100644
 --- a/drivers/media/platform/qcom/iris/iris_probe.c
 +++ b/drivers/media/platform/qcom/iris/iris_probe.c
-@@ -47,15 +47,21 @@ static void iris_remove(struct platform_device *pdev)
+@@ -168,15 +168,21 @@ static void iris_remove(struct platform_device *pdev)
  	if (!core)
  		return;
  
@@ -541,7 +526,7 @@ index fdf9f12c7728..64bac287d3a8 100644
  	int ret;
  
  	core = devm_kzalloc(&pdev->dev, sizeof(*core), GFP_KERNEL);
-@@ -63,6 +69,9 @@ static int iris_probe(struct platform_device *pdev)
+@@ -184,6 +190,9 @@ static int iris_probe(struct platform_device *pdev)
  		return -ENOMEM;
  	core->dev = dev;
  
@@ -551,7 +536,7 @@ index fdf9f12c7728..64bac287d3a8 100644
  	core->reg_base = devm_platform_ioremap_resource(pdev, 0);
  	if (IS_ERR(core->reg_base))
  		return PTR_ERR(core->reg_base);
-@@ -95,8 +104,19 @@ static int iris_probe(struct platform_device *pdev)
+@@ -209,8 +218,19 @@ static int iris_probe(struct platform_device *pdev)
  
  	platform_set_drvdata(pdev, core);
  
@@ -562,7 +547,7 @@ index fdf9f12c7728..64bac287d3a8 100644
 +		goto err_vdev_unreg;
 +
 +	dma_set_max_seg_size(&pdev->dev, DMA_BIT_MASK(32));
-+	dma_set_seg_boundary(&pdev->dev, DMA_BIT_MASK(64));
++	dma_set_seg_boundary(&pdev->dev, DMA_BIT_MASK(32));
 +
  	return 0;
  
@@ -619,11 +604,11 @@ index 000000000000..a0bfee98578a
 +
 +#endif
 diff --git a/drivers/media/platform/qcom/iris/iris_vidc.c b/drivers/media/platform/qcom/iris/iris_vidc.c
-index 24a6d744deaf..a5c4e73ae531 100644
+index e91d661c6280..5dd0ccbaa2fb 100644
 --- a/drivers/media/platform/qcom/iris/iris_vidc.c
 +++ b/drivers/media/platform/qcom/iris/iris_vidc.c
-@@ -96,6 +96,12 @@ int iris_open(struct file *filp)
- 	struct iris_inst *inst = NULL;
+@@ -81,6 +81,12 @@ int iris_open(struct file *filp)
+ 	struct iris_inst *inst;
  	int ret;
  
 +	ret = iris_core_init(core);

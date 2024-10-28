@@ -1,61 +1,56 @@
-From dfbec2a01b7777181eb096a2cacc3f0a0a1a2ba9 Mon Sep 17 00:00:00 2001
+From 67bd0de4be70d319c022962f1320415a45c1af33 Mon Sep 17 00:00:00 2001
 From: Dikshita Agarwal <quic_dikshita@quicinc.com>
 Date: Tue, 27 Aug 2024 15:35:35 +0530
-Subject: [PATCH 10/29] FROMLIST: media: iris: implement power management
+Subject: FROMLIST: media: iris: implement power management
 
-Implement runtime power management for iris including
-platform specific power on/off sequence.
+Implement runtime power management for iris including platform specific
+power on/off sequence.
 
+Change-Id: I8fb1f77d32a3199c5b98cf37631e7382a2ee4b2c
 Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
-Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-10-c5fdbbe65e70@quicinc.com/]
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-8-c5eaa4e9ab9e@quicinc.com/]
 ---
  drivers/media/platform/qcom/iris/Makefile     |   3 +
- drivers/media/platform/qcom/iris/iris_core.c  |  16 +-
- drivers/media/platform/qcom/iris/iris_core.h  |   5 +
+ drivers/media/platform/qcom/iris/iris_core.c  |  15 +-
+ drivers/media/platform/qcom/iris/iris_core.h  |   4 +
  .../media/platform/qcom/iris/iris_firmware.c  |   5 +
  .../media/platform/qcom/iris/iris_firmware.h  |   1 +
- .../platform/qcom/iris/iris_hfi_common.c      |  72 ++++-
+ .../platform/qcom/iris/iris_hfi_common.c      |  62 +++++
  .../platform/qcom/iris/iris_hfi_common.h      |   3 +
  .../qcom/iris/iris_hfi_gen1_command.c         |  11 +
  .../qcom/iris/iris_hfi_gen1_defines.h         |   5 +
- .../qcom/iris/iris_hfi_gen2_command.c         |  20 ++
+ .../qcom/iris/iris_hfi_gen2_command.c         |  18 ++
  .../qcom/iris/iris_hfi_gen2_defines.h         |   1 +
  .../platform/qcom/iris/iris_hfi_gen2_packet.c |  13 +
  .../platform/qcom/iris/iris_hfi_gen2_packet.h |   1 +
- .../media/platform/qcom/iris/iris_hfi_queue.c |  20 +-
+ .../media/platform/qcom/iris/iris_hfi_queue.c |  18 ++
  .../platform/qcom/iris/iris_platform_common.h |  14 +
- .../platform/qcom/iris/iris_platform_sm8250.c |   9 +
  .../platform/qcom/iris/iris_platform_sm8550.c |   9 +
- drivers/media/platform/qcom/iris/iris_power.c |  35 +++
- .../iris/{iris_firmware.h => iris_power.h}    |   8 +-
- drivers/media/platform/qcom/iris/iris_probe.c |  66 ++++-
- .../media/platform/qcom/iris/iris_resources.c | 167 ++++++++++++
- .../media/platform/qcom/iris/iris_resources.h |   8 +
+ drivers/media/platform/qcom/iris/iris_probe.c |  53 ++++
+ .../media/platform/qcom/iris/iris_resources.c | 131 ++++++++++
+ .../media/platform/qcom/iris/iris_resources.h |  18 ++
  drivers/media/platform/qcom/iris/iris_vidc.c  |   8 +
  drivers/media/platform/qcom/iris/iris_vpu2.c  |  11 +
- drivers/media/platform/qcom/iris/iris_vpu3.c  |  79 ++++++
- .../platform/qcom/iris/iris_vpu_common.c      | 250 +++++++++++++++++-
+ drivers/media/platform/qcom/iris/iris_vpu3.c  |  84 ++++++
+ .../platform/qcom/iris/iris_vpu_common.c      | 242 +++++++++++++++++-
  .../platform/qcom/iris/iris_vpu_common.h      |  11 +
  .../qcom/iris/iris_vpu_register_defines.h     |  17 ++
- 28 files changed, 852 insertions(+), 16 deletions(-)
- create mode 100644 drivers/media/platform/qcom/iris/iris_power.c
- copy drivers/media/platform/qcom/iris/{iris_firmware.h => iris_power.h} (53%)
+ 25 files changed, 754 insertions(+), 4 deletions(-)
+ create mode 100644 drivers/media/platform/qcom/iris/iris_resources.c
+ create mode 100644 drivers/media/platform/qcom/iris/iris_resources.h
  create mode 100644 drivers/media/platform/qcom/iris/iris_vpu2.c
  create mode 100644 drivers/media/platform/qcom/iris/iris_vpu3.c
  create mode 100644 drivers/media/platform/qcom/iris/iris_vpu_register_defines.h
 
 diff --git a/drivers/media/platform/qcom/iris/Makefile b/drivers/media/platform/qcom/iris/Makefile
-index d1f0b933df3d..b0447af45891 100644
+index 76ca5287c49f..a5f290a8c4af 100644
 --- a/drivers/media/platform/qcom/iris/Makefile
 +++ b/drivers/media/platform/qcom/iris/Makefile
-@@ -9,10 +9,13 @@ iris-objs += iris_core.o \
+@@ -9,7 +9,10 @@ iris-objs += iris_core.o \
               iris_hfi_queue.o \
-              iris_platform_sm8250.o \
               iris_platform_sm8550.o \
-+             iris_power.o \
               iris_probe.o \
-              iris_resources.o \
-              iris_state.o \
++             iris_resources.o \
               iris_vidc.o \
 +             iris_vpu2.o \
 +             iris_vpu3.o \
@@ -63,10 +58,10 @@ index d1f0b933df3d..b0447af45891 100644
  
  obj-$(CONFIG_VIDEO_QCOM_IRIS) += iris.o
 diff --git a/drivers/media/platform/qcom/iris/iris_core.c b/drivers/media/platform/qcom/iris/iris_core.c
-index 92458d7f1e36..34847fb36aa0 100644
+index 7e19bdd0a19b..0fa0a3b549a2 100644
 --- a/drivers/media/platform/qcom/iris/iris_core.c
 +++ b/drivers/media/platform/qcom/iris/iris_core.c
-@@ -3,18 +3,26 @@
+@@ -3,6 +3,8 @@
   * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
   */
  
@@ -74,9 +69,8 @@ index 92458d7f1e36..34847fb36aa0 100644
 +
  #include "iris_core.h"
  #include "iris_firmware.h"
-+#include "iris_power.h"
  #include "iris_state.h"
- #include "iris_vpu_common.h"
+@@ -10,11 +12,16 @@
  
  void iris_core_deinit(struct iris_core *core)
  {
@@ -84,7 +78,7 @@ index 92458d7f1e36..34847fb36aa0 100644
 +
  	mutex_lock(&core->lock);
  	iris_fw_unload(core);
-+	iris_power_off(core);
++	iris_vpu_power_off(core);
  	iris_hfi_queues_deinit(core);
  	core->state = IRIS_CORE_DEINIT;
  	mutex_unlock(&core->lock);
@@ -93,12 +87,12 @@ index 92458d7f1e36..34847fb36aa0 100644
  }
  
  static int iris_wait_for_system_response(struct iris_core *core)
-@@ -56,10 +64,14 @@ int iris_core_init(struct iris_core *core)
+@@ -54,10 +61,14 @@ int iris_core_init(struct iris_core *core)
  	if (ret)
  		goto error;
  
 -	ret = iris_fw_load(core);
-+	ret = iris_power_on(core);
++	ret = iris_vpu_power_on(core);
  	if (ret)
  		goto error_queue_deinit;
  
@@ -109,20 +103,20 @@ index 92458d7f1e36..34847fb36aa0 100644
  	ret = iris_vpu_boot_firmware(core);
  	if (ret)
  		goto error_unload_fw;
-@@ -74,6 +86,8 @@ int iris_core_init(struct iris_core *core)
+@@ -72,6 +83,8 @@ int iris_core_init(struct iris_core *core)
  
  error_unload_fw:
  	iris_fw_unload(core);
 +error_power_off:
-+	iris_power_off(core);
++	iris_vpu_power_off(core);
  error_queue_deinit:
  	iris_hfi_queues_deinit(core);
  error:
 diff --git a/drivers/media/platform/qcom/iris/iris_core.h b/drivers/media/platform/qcom/iris/iris_core.h
-index 409f9822807d..09a6904c7bb1 100644
+index 6c4d0bc0c36b..ae3523aa6a9b 100644
 --- a/drivers/media/platform/qcom/iris/iris_core.h
 +++ b/drivers/media/platform/qcom/iris/iris_core.h
-@@ -7,6 +7,7 @@
+@@ -7,11 +7,13 @@
  #define _IRIS_CORE_H_
  
  #include <linux/types.h>
@@ -130,31 +124,35 @@ index 409f9822807d..09a6904c7bb1 100644
  #include <media/v4l2-device.h>
  
  #include "iris_hfi_common.h"
-@@ -47,6 +48,8 @@
+ #include "iris_hfi_queue.h"
+ #include "iris_platform_common.h"
++#include "iris_resources.h"
+ #include "iris_state.h"
+ 
+ struct icc_info {
+@@ -52,6 +54,7 @@ struct icc_info {
   * @response_packet: a pointer to response packet from fw to driver
   * @header_id: id of packet header
   * @packet_id: id of packet
-+ * @power_enabled: a boolean to check if power is on or off
 + * @power: a structure for clock and bw information
   * @hfi_ops: iris hfi command ops
   * @hfi_response_ops: iris hfi response ops
   * @core_init_done: structure of signal completion for system response
-@@ -81,6 +84,8 @@ struct iris_core {
+@@ -86,6 +89,7 @@ struct iris_core {
  	u8					*response_packet;
  	u32					header_id;
  	u32					packet_id;
-+	bool					power_enabled;
 +	struct iris_core_power			power;
  	const struct iris_hfi_command_ops	*hfi_ops;
  	const struct iris_hfi_response_ops	*hfi_response_ops;
  	struct completion			core_init_done;
 diff --git a/drivers/media/platform/qcom/iris/iris_firmware.c b/drivers/media/platform/qcom/iris/iris_firmware.c
-index 55bbcc798f4c..b6c779ec13bb 100644
+index 58a0f532b862..9c3a1ee66e23 100644
 --- a/drivers/media/platform/qcom/iris/iris_firmware.c
 +++ b/drivers/media/platform/qcom/iris/iris_firmware.c
-@@ -144,3 +144,8 @@ int iris_fw_unload(struct iris_core *core)
- 
- 	return ret;
+@@ -106,3 +106,8 @@ int iris_fw_unload(struct iris_core *core)
+ {
+ 	return qcom_scm_pas_shutdown(core->iris_platform_data->pas_id);
  }
 +
 +int iris_set_hw_state(struct iris_core *core, bool resume)
@@ -173,10 +171,10 @@ index 8d4f6b7f75c5..1550916c92a1 100644
  
  #endif
 diff --git a/drivers/media/platform/qcom/iris/iris_hfi_common.c b/drivers/media/platform/qcom/iris/iris_hfi_common.c
-index a5a28029d8d1..bf9ec678ff90 100644
+index a19b988c9a88..29f56c2bf74c 100644
 --- a/drivers/media/platform/qcom/iris/iris_hfi_common.c
 +++ b/drivers/media/platform/qcom/iris/iris_hfi_common.c
-@@ -3,8 +3,12 @@
+@@ -3,6 +3,9 @@
   * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
   */
  
@@ -185,20 +183,16 @@ index a5a28029d8d1..bf9ec678ff90 100644
 +#include "iris_firmware.h"
  #include "iris_core.h"
  #include "iris_hfi_common.h"
-+#include "iris_power.h"
  #include "iris_vpu_common.h"
+@@ -38,6 +41,7 @@ irqreturn_t iris_hfi_isr_handler(int irq, void *data)
+ 		return IRQ_NONE;
  
- int iris_hfi_core_init(struct iris_core *core)
-@@ -42,7 +46,7 @@ irqreturn_t iris_hfi_isr_handler(int irq, void *data)
- 		mutex_unlock(&core->lock);
- 		goto exit;
- 	}
--
+ 	mutex_lock(&core->lock);
 +	pm_runtime_mark_last_busy(core->dev);
  	iris_vpu_clear_interrupt(core);
  	mutex_unlock(&core->lock);
  
-@@ -54,3 +58,69 @@ irqreturn_t iris_hfi_isr_handler(int irq, void *data)
+@@ -48,3 +52,61 @@ irqreturn_t iris_hfi_isr_handler(int irq, void *data)
  
  	return IRQ_HANDLED;
  }
@@ -207,41 +201,33 @@ index a5a28029d8d1..bf9ec678ff90 100644
 +{
 +	int ret;
 +
-+	if (!mutex_is_locked(&core->lock))
-+		return -EINVAL;
-+
-+	if (core->state != IRIS_CORE_INIT)
-+		return -EINVAL;
-+
-+	if (!core->power_enabled) {
-+		dev_err(core->dev, "power not enabled\n");
-+		return 0;
-+	}
-+
 +	ret = iris_vpu_prepare_pc(core);
 +	if (ret) {
-+		dev_err(core->dev, "prepare pc ret %d\n", ret);
 +		pm_runtime_mark_last_busy(core->dev);
-+		return -EAGAIN;
++		ret = -EAGAIN;
++		goto error;
 +	}
 +
 +	ret = iris_set_hw_state(core, false);
 +	if (ret)
-+		return ret;
++		goto error;
 +
-+	iris_power_off(core);
++	iris_vpu_power_off(core);
 +
 +	return 0;
++
++error:
++	dev_err(core->dev, "failed to suspend\n");
++
++	return ret;
 +}
 +
 +int iris_hfi_pm_resume(struct iris_core *core)
 +{
-+	const struct iris_hfi_command_ops *ops;
++	const struct iris_hfi_command_ops *ops = core->hfi_ops;
 +	int ret;
 +
-+	ops = core->hfi_ops;
-+
-+	ret = iris_power_on(core);
++	ret = iris_vpu_power_on(core);
 +	if (ret)
 +		goto error;
 +
@@ -262,7 +248,7 @@ index a5a28029d8d1..bf9ec678ff90 100644
 +err_suspend_hw:
 +	iris_set_hw_state(core, false);
 +err_power_off:
-+	iris_power_off(core);
++	iris_vpu_power_off(core);
 +error:
 +	dev_err(core->dev, "failed to resume\n");
 +
@@ -290,7 +276,7 @@ index c3d5b899cf60..e050b1ae90fe 100644
  irqreturn_t iris_hfi_isr(int irq, void *data);
  irqreturn_t iris_hfi_isr_handler(int irq, void *data);
 diff --git a/drivers/media/platform/qcom/iris/iris_hfi_gen1_command.c b/drivers/media/platform/qcom/iris/iris_hfi_gen1_command.c
-index 8f045ef56163..e778ae33b953 100644
+index 07007d8812ba..b2e76d1dcbf7 100644
 --- a/drivers/media/platform/qcom/iris/iris_hfi_gen1_command.c
 +++ b/drivers/media/platform/qcom/iris/iris_hfi_gen1_command.c
 @@ -56,10 +56,21 @@ static int iris_hfi_gen1_sys_interframe_powercollapse(struct iris_core *core)
@@ -339,21 +325,19 @@ index 5c07d6a29863..991d5a5dc792 100644
  	struct hfi_pkt_hdr hdr;
  	u32 event_id;
 diff --git a/drivers/media/platform/qcom/iris/iris_hfi_gen2_command.c b/drivers/media/platform/qcom/iris/iris_hfi_gen2_command.c
-index 807266858d93..0871c0bdea90 100644
+index 5eaebe170214..f8cb1177ef54 100644
 --- a/drivers/media/platform/qcom/iris/iris_hfi_gen2_command.c
 +++ b/drivers/media/platform/qcom/iris/iris_hfi_gen2_command.c
-@@ -66,10 +66,30 @@ static int iris_hfi_gen2_sys_interframe_powercollapse(struct iris_core *core)
+@@ -68,10 +68,28 @@ static int iris_hfi_gen2_sys_interframe_powercollapse(struct iris_core *core)
  	return ret;
  }
  
 +static int iris_hfi_gen2_sys_pc_prep(struct iris_core *core)
 +{
 +	struct iris_hfi_header *hdr;
-+	u32 packet_size;
 +	int ret;
 +
-+	packet_size = sizeof(*hdr) + sizeof(struct iris_hfi_packet);
-+	hdr = kzalloc(packet_size, GFP_KERNEL);
++	hdr = kzalloc(SYS_NO_PAYLOAD_PKT_SIZE, GFP_KERNEL);
 +	if (!hdr)
 +		return -ENOMEM;
 +
@@ -386,10 +370,10 @@ index 3e3e4ddfe21f..4104479c7251 100644
  
  #define HFI_PROP_BEGIN				0x03000000
 diff --git a/drivers/media/platform/qcom/iris/iris_hfi_gen2_packet.c b/drivers/media/platform/qcom/iris/iris_hfi_gen2_packet.c
-index 8266eae5ff94..9ea26328a300 100644
+index 986013aa62df..510d44408b41 100644
 --- a/drivers/media/platform/qcom/iris/iris_hfi_gen2_packet.c
 +++ b/drivers/media/platform/qcom/iris/iris_hfi_gen2_packet.c
-@@ -162,3 +162,16 @@ void iris_hfi_gen2_packet_sys_interframe_powercollapse(struct iris_core *core,
+@@ -159,3 +159,16 @@ void iris_hfi_gen2_packet_sys_interframe_powercollapse(struct iris_core *core,
  				    &payload,
  				    sizeof(u32));
  }
@@ -418,7 +402,7 @@ index eba109efeb76..163295783b7d 100644
  
  #endif
 diff --git a/drivers/media/platform/qcom/iris/iris_hfi_queue.c b/drivers/media/platform/qcom/iris/iris_hfi_queue.c
-index b24d4640fea9..3a511d5e5cfc 100644
+index 136b1862c53f..9195715c5d5a 100644
 --- a/drivers/media/platform/qcom/iris/iris_hfi_queue.c
 +++ b/drivers/media/platform/qcom/iris/iris_hfi_queue.c
 @@ -3,6 +3,8 @@
@@ -430,7 +414,7 @@ index b24d4640fea9..3a511d5e5cfc 100644
  #include "iris_core.h"
  #include "iris_hfi_queue.h"
  #include "iris_vpu_common.h"
-@@ -145,13 +147,27 @@ int iris_hfi_queue_cmd_write(struct iris_core *core, void *pkt, u32 pkt_size)
+@@ -128,10 +130,26 @@ int iris_hfi_queue_cmd_write(struct iris_core *core, void *pkt, u32 pkt_size)
  {
  	int ret;
  
@@ -440,10 +424,7 @@ index b24d4640fea9..3a511d5e5cfc 100644
 +
  	mutex_lock(&core->lock);
  	ret = iris_hfi_queue_cmd_write_locked(core, pkt, pkt_size);
--	if (ret)
 +	if (ret) {
- 		dev_err(core->dev, "iris_hfi_queue_cmd_write_locked failed with %d\n", ret);
--
 +		mutex_unlock(&core->lock);
 +		goto exit;
 +	}
@@ -461,18 +442,18 @@ index b24d4640fea9..3a511d5e5cfc 100644
  }
  
 diff --git a/drivers/media/platform/qcom/iris/iris_platform_common.h b/drivers/media/platform/qcom/iris/iris_platform_common.h
-index 4577977f9f8c..899a696a931d 100644
+index e188f6407934..ff11d28e853b 100644
 --- a/drivers/media/platform/qcom/iris/iris_platform_common.h
 +++ b/drivers/media/platform/qcom/iris/iris_platform_common.h
-@@ -8,6 +8,7 @@
+@@ -10,6 +10,7 @@ struct iris_core;
  
  #define IRIS_PAS_ID				9
  #define HW_RESPONSE_TIMEOUT_VALUE               (1000) /* milliseconds */
 +#define AUTOSUSPEND_DELAY_VALUE			(HW_RESPONSE_TIMEOUT_VALUE + 500) /* milliseconds */
  
  extern struct iris_platform_data sm8550_data;
- extern struct iris_platform_data sm8250_data;
-@@ -40,10 +41,22 @@ struct ubwc_config_data {
+ 
+@@ -41,10 +42,22 @@ struct ubwc_config_data {
  	u32	bank_spreading;
  };
  
@@ -495,7 +476,7 @@ index 4577977f9f8c..899a696a931d 100644
  	const struct icc_info *icc_tbl;
  	unsigned int icc_tbl_size;
  	const char * const *pmdomain_tbl;
-@@ -61,6 +74,7 @@ struct iris_platform_data {
+@@ -62,6 +75,7 @@ struct iris_platform_data {
  	u32 core_arch;
  	u32 hw_response_timeout;
  	struct ubwc_config_data *ubwc_config;
@@ -503,46 +484,14 @@ index 4577977f9f8c..899a696a931d 100644
  };
  
  #endif
-diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8250.c b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
-index b83665a9c5a2..1adbafa373a5 100644
---- a/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
-+++ b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
-@@ -7,6 +7,12 @@
- #include "iris_platform_common.h"
- #include "iris_resources.h"
- #include "iris_hfi_gen1.h"
-+#include "iris_vpu_common.h"
-+
-+static void iris_set_sm8250_preset_registers(struct iris_core *core)
-+{
-+	writel(0x0, core->reg_base + 0xB0088);
-+}
- 
- static const struct icc_info sm8250_icc_table[] = {
- 	{ "cpu-cfg",    1000, 1000     },
-@@ -36,6 +42,8 @@ struct iris_platform_data sm8250_data = {
- 	.get_instance = iris_hfi_gen1_get_instance,
- 	.init_hfi_command_ops = &iris_hfi_gen1_command_ops_init,
- 	.init_hfi_response_ops = iris_hfi_gen1_response_ops_init,
-+	.vpu_ops = &iris_vpu2_ops,
-+	.set_preset_registers = iris_set_sm8250_preset_registers,
- 	.icc_tbl = sm8250_icc_table,
- 	.icc_tbl_size = ARRAY_SIZE(sm8250_icc_table),
- 	.clk_rst_tbl = sm8250_clk_reset_table,
-@@ -51,4 +59,5 @@ struct iris_platform_data sm8250_data = {
- 	.pas_id = IRIS_PAS_ID,
- 	.tz_cp_config_data = &tz_cp_config_sm8250,
- 	.hw_response_timeout = HW_RESPONSE_TIMEOUT_VALUE,
-+	.num_vpp_pipe = 4,
- };
 diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
-index 91bfc0fa0989..950ccdccde31 100644
+index b749d355e8ad..b4c730c58558 100644
 --- a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
 +++ b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
-@@ -7,9 +7,15 @@
+@@ -6,9 +6,15 @@
+ #include "iris_core.h"
  #include "iris_hfi_gen2.h"
  #include "iris_platform_common.h"
- #include "iris_resources.h"
 +#include "iris_vpu_common.h"
  
  #define VIDEO_ARCH_LX 1
@@ -555,7 +504,7 @@ index 91bfc0fa0989..950ccdccde31 100644
  static const struct icc_info sm8550_icc_table[] = {
  	{ "cpu-cfg",    1000, 1000     },
  	{ "video-mem",  1000, 15000000 },
-@@ -48,6 +54,8 @@ struct iris_platform_data sm8550_data = {
+@@ -47,6 +53,8 @@ struct iris_platform_data sm8550_data = {
  	.get_instance = iris_hfi_gen2_get_instance,
  	.init_hfi_command_ops = iris_hfi_gen2_command_ops_init,
  	.init_hfi_response_ops = iris_hfi_gen2_response_ops_init,
@@ -564,166 +513,64 @@ index 91bfc0fa0989..950ccdccde31 100644
  	.icc_tbl = sm8550_icc_table,
  	.icc_tbl_size = ARRAY_SIZE(sm8550_icc_table),
  	.clk_rst_tbl = sm8550_clk_reset_table,
-@@ -65,4 +73,5 @@ struct iris_platform_data sm8550_data = {
+@@ -64,4 +72,5 @@ struct iris_platform_data sm8550_data = {
  	.core_arch = VIDEO_ARCH_LX,
  	.hw_response_timeout = HW_RESPONSE_TIMEOUT_VALUE,
  	.ubwc_config = &ubwc_config_sm8550,
 +	.num_vpp_pipe = 4,
  };
-diff --git a/drivers/media/platform/qcom/iris/iris_power.c b/drivers/media/platform/qcom/iris/iris_power.c
-new file mode 100644
-index 000000000000..e697c27c8a8a
---- /dev/null
-+++ b/drivers/media/platform/qcom/iris/iris_power.c
-@@ -0,0 +1,35 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
-+ */
-+
-+#include "iris_core.h"
-+#include "iris_power.h"
-+#include "iris_vpu_common.h"
-+
-+void iris_power_off(struct iris_core *core)
-+{
-+	if (!core->power_enabled)
-+		return;
-+
-+	iris_vpu_power_off(core);
-+	core->power_enabled = false;
-+}
-+
-+int iris_power_on(struct iris_core *core)
-+{
-+	int ret;
-+
-+	if (core->power_enabled)
-+		return 0;
-+
-+	ret = iris_vpu_power_on(core);
-+	if (ret) {
-+		dev_err(core->dev, "failed to power on, err: %d\n", ret);
-+		return ret;
-+	}
-+
-+	core->power_enabled = true;
-+
-+	return ret;
-+}
-diff --git a/drivers/media/platform/qcom/iris/iris_firmware.h b/drivers/media/platform/qcom/iris/iris_power.h
-similarity index 53%
-copy from drivers/media/platform/qcom/iris/iris_firmware.h
-copy to drivers/media/platform/qcom/iris/iris_power.h
-index 8d4f6b7f75c5..ff9b6be3b086 100644
---- a/drivers/media/platform/qcom/iris/iris_firmware.h
-+++ b/drivers/media/platform/qcom/iris/iris_power.h
-@@ -3,12 +3,12 @@
-  * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
-  */
- 
--#ifndef _IRIS_FIRMWARE_H_
--#define _IRIS_FIRMWARE_H_
-+#ifndef _IRIS_POWER_H_
-+#define _IRIS_POWER_H_
- 
- struct iris_core;
- 
--int iris_fw_load(struct iris_core *core);
--int iris_fw_unload(struct iris_core *core);
-+int iris_power_on(struct iris_core *core);
-+void iris_power_off(struct iris_core *core);
- 
- #endif
 diff --git a/drivers/media/platform/qcom/iris/iris_probe.c b/drivers/media/platform/qcom/iris/iris_probe.c
-index ecf1a50be63b..3222e9116551 100644
+index 027009d84c2b..e6995af1e3a6 100644
 --- a/drivers/media/platform/qcom/iris/iris_probe.c
 +++ b/drivers/media/platform/qcom/iris/iris_probe.c
-@@ -4,6 +4,7 @@
-  */
- 
+@@ -8,6 +8,7 @@
  #include <linux/module.h>
+ #include <linux/pm_domain.h>
+ #include <linux/pm_opp.h>
 +#include <linux/pm_runtime.h>
+ #include <linux/reset.h>
  
  #include "iris_core.h"
- #include "iris_vidc.h"
-@@ -111,17 +112,25 @@ static int iris_probe(struct platform_device *pdev)
- 	if (core->irq < 0)
- 		return core->irq;
+@@ -253,6 +254,12 @@ static int iris_probe(struct platform_device *pdev)
+ 	dma_set_max_seg_size(&pdev->dev, DMA_BIT_MASK(32));
+ 	dma_set_seg_boundary(&pdev->dev, DMA_BIT_MASK(32));
  
 +	pm_runtime_set_autosuspend_delay(core->dev, AUTOSUSPEND_DELAY_VALUE);
 +	pm_runtime_use_autosuspend(core->dev);
 +	ret = devm_pm_runtime_enable(core->dev);
-+	if (ret) {
-+		dev_err(core->dev, "failed to enable runtime pm\n");
-+		goto err_runtime_disable;
-+	}
++	if (ret)
++		goto err_vdev_unreg;
 +
- 	ret = iris_init_isr(core);
- 	if (ret) {
- 		dev_err_probe(core->dev, ret, "Failed to init isr\n");
--		return ret;
-+		goto err_runtime_disable;
- 	}
+ 	return 0;
  
- 	core->iris_platform_data = of_device_get_match_data(core->dev);
- 	if (!core->iris_platform_data) {
- 		ret = -ENODEV;
- 		dev_err_probe(core->dev, ret, "init platform failed\n");
--		return ret;
-+		goto err_runtime_disable;
- 	}
+ err_vdev_unreg:
+@@ -263,6 +270,51 @@ static int iris_probe(struct platform_device *pdev)
+ 	return ret;
+ }
  
- 	iris_init_ops(core);
-@@ -131,12 +140,12 @@ static int iris_probe(struct platform_device *pdev)
- 	ret = iris_init_resources(core);
- 	if (ret) {
- 		dev_err_probe(core->dev, ret, "init resource failed\n");
--		return ret;
-+		goto err_runtime_disable;
- 	}
- 
- 	ret = v4l2_device_register(dev, &core->v4l2_dev);
- 	if (ret)
--		return ret;
-+		goto err_runtime_disable;
- 
- 	ret = iris_register_video_device(core);
- 	if (ret)
-@@ -159,10 +168,58 @@ static int iris_probe(struct platform_device *pdev)
- 	video_unregister_device(core->vdev_dec);
- err_v4l2_unreg:
- 	v4l2_device_unregister(&core->v4l2_dev);
-+err_runtime_disable:
-+	pm_runtime_set_suspended(core->dev);
-+
-+	return ret;
-+}
-+
 +static int iris_pm_suspend(struct device *dev)
 +{
 +	struct iris_core *core;
 +	int ret;
 +
-+	if (!dev || !dev->driver)
-+		return 0;
-+
 +	core = dev_get_drvdata(dev);
 +
 +	mutex_lock(&core->lock);
++	if (core->state != IRIS_CORE_INIT)
++		goto exit;
++
 +	ret = iris_hfi_pm_suspend(core);
++
++exit:
 +	mutex_unlock(&core->lock);
- 
- 	return ret;
- }
- 
++
++	return ret;
++}
++
 +static int iris_pm_resume(struct device *dev)
 +{
 +	struct iris_core *core;
 +	int ret = 0;
-+
-+	if (!dev || !dev->driver)
-+		return 0;
 +
 +	core = dev_get_drvdata(dev);
 +
@@ -749,7 +596,7 @@ index ecf1a50be63b..3222e9116551 100644
  static const struct of_device_id iris_dt_match[] = {
  	{
  		.compatible = "qcom,sm8550-iris",
-@@ -182,6 +239,7 @@ static struct platform_driver qcom_iris_driver = {
+@@ -278,6 +330,7 @@ static struct platform_driver qcom_iris_driver = {
  	.driver = {
  		.name = "qcom-iris",
  		.of_match_table = iris_dt_match,
@@ -758,28 +605,28 @@ index ecf1a50be63b..3222e9116551 100644
  };
  
 diff --git a/drivers/media/platform/qcom/iris/iris_resources.c b/drivers/media/platform/qcom/iris/iris_resources.c
-index 57c6f9f3449b..eb3052acd426 100644
---- a/drivers/media/platform/qcom/iris/iris_resources.c
+new file mode 100644
+index 000000000000..cf32f268b703
+--- /dev/null
 +++ b/drivers/media/platform/qcom/iris/iris_resources.c
-@@ -7,11 +7,14 @@
- #include <linux/interconnect.h>
- #include <linux/pm_domain.h>
- #include <linux/pm_opp.h>
+@@ -0,0 +1,131 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#include <linux/clk.h>
++#include <linux/interconnect.h>
++#include <linux/pm_domain.h>
++#include <linux/pm_opp.h>
 +#include <linux/pm_runtime.h>
- #include <linux/reset.h>
- 
- #include "iris_core.h"
- #include "iris_resources.h"
- 
++#include <linux/reset.h>
++
++#include "iris_core.h"
++#include "iris_resources.h"
++
 +#define BW_THRESHOLD 50000
 +
- static int iris_init_icc(struct iris_core *core)
- {
- 	const struct icc_info *icc_tbl;
-@@ -39,6 +42,57 @@ static int iris_init_icc(struct iris_core *core)
- 	return ret;
- }
- 
 +int iris_set_icc_bw(struct iris_core *core, unsigned long icc_bw)
 +{
 +	unsigned long bw_kbps = 0, bw_prev = 0;
@@ -806,16 +653,12 @@ index 57c6f9f3449b..eb3052acd426 100644
 +		}
 +	}
 +
-+	ret = icc_bulk_set_bw(core->icc_count, core->icc_tbl);
-+	if (ret)
-+		dev_err(core->dev, "failed to unset icc bw\n");
-+
-+	return ret;
++	return icc_bulk_set_bw(core->icc_count, core->icc_tbl);
 +}
 +
 +int iris_unset_icc_bw(struct iris_core *core)
 +{
-+	int ret, i;
++	u32 i;
 +
 +	core->power.icc_bw = 0;
 +
@@ -824,45 +667,14 @@ index 57c6f9f3449b..eb3052acd426 100644
 +		core->icc_tbl[i].peak_bw = 0;
 +	}
 +
-+	ret = icc_bulk_set_bw(core->icc_count, core->icc_tbl);
-+	if (ret)
-+		dev_err(core->dev, "failed to unset icc bw\n");
-+
-+	return ret;
++	return icc_bulk_set_bw(core->icc_count, core->icc_tbl);
 +}
 +
- static int iris_pd_get(struct iris_core *core)
- {
- 	int ret;
-@@ -73,6 +127,19 @@ static int iris_opp_pd_get(struct iris_core *core)
- 	return 0;
- }
- 
-+int iris_opp_set_rate(struct iris_core *core, u64 freq)
-+{
-+	int ret;
-+
-+	ret = dev_pm_opp_set_rate(core->dev, freq);
-+	if (ret) {
-+		dev_err(core->dev, "failed to set rate\n");
-+		return ret;
-+	}
-+
-+	return ret;
-+}
-+
- static int iris_init_power_domains(struct iris_core *core)
- {
- 	const struct platform_clk_data *clk_tbl;
-@@ -107,6 +174,36 @@ static int iris_init_power_domains(struct iris_core *core)
- 	return ret;
- }
- 
 +int iris_enable_power_domains(struct iris_core *core, struct device *pd_dev)
 +{
 +	int ret;
 +
-+	ret = iris_opp_set_rate(core, ULONG_MAX);
++	ret = dev_pm_opp_set_rate(core->dev, ULONG_MAX);
 +	if (ret)
 +		return ret;
 +
@@ -877,29 +689,19 @@ index 57c6f9f3449b..eb3052acd426 100644
 +{
 +	int ret;
 +
-+	ret = iris_opp_set_rate(core, 0);
++	ret = dev_pm_opp_set_rate(core->dev, 0);
 +	if (ret)
 +		return ret;
 +
-+	ret = pm_runtime_put_sync(pd_dev);
-+	if (ret)
-+		return ret;
++	pm_runtime_put_sync(pd_dev);
 +
-+	return ret;
++	return 0;
 +}
 +
- static int iris_init_clocks(struct iris_core *core)
- {
- 	int ret;
-@@ -122,6 +219,62 @@ static int iris_init_clocks(struct iris_core *core)
- 	return 0;
- }
- 
 +static struct clk *iris_get_clk_by_type(struct iris_core *core, enum platform_clk_type clk_type)
 +{
 +	const struct platform_clk_data *clk_tbl;
-+	u32 clk_cnt;
-+	int i, j;
++	u32 clk_cnt, i, j;
 +
 +	clk_tbl = core->iris_platform_data->clk_tbl;
 +	clk_cnt = core->iris_platform_data->clk_tbl_size;
@@ -919,21 +721,12 @@ index 57c6f9f3449b..eb3052acd426 100644
 +int iris_prepare_enable_clock(struct iris_core *core, enum platform_clk_type clk_type)
 +{
 +	struct clk *clock;
-+	int ret = 0;
 +
 +	clock = iris_get_clk_by_type(core, clk_type);
-+	if (!clock) {
-+		dev_err(core->dev, "failed to get clk: %d\n", clk_type);
++	if (!clock)
 +		return -EINVAL;
-+	}
 +
-+	ret = clk_prepare_enable(clock);
-+	if (ret) {
-+		dev_err(core->dev, "failed to enable clock %d\n", clk_type);
-+		return ret;
-+	}
-+
-+	return ret;
++	return clk_prepare_enable(clock);
 +}
 +
 +int iris_disable_unprepare_clock(struct iris_core *core, enum platform_clk_type clk_type)
@@ -941,61 +734,39 @@ index 57c6f9f3449b..eb3052acd426 100644
 +	struct clk *clock;
 +
 +	clock = iris_get_clk_by_type(core, clk_type);
-+	if (!clock) {
-+		dev_err(core->dev, "failed to get clk: %d\n", clk_type);
++	if (!clock)
 +		return -EINVAL;
-+	}
 +
 +	clk_disable_unprepare(clock);
 +
 +	return 0;
 +}
-+
- static int iris_init_resets(struct iris_core *core)
- {
- 	const char * const *rst_tbl;
-@@ -149,6 +302,20 @@ static int iris_init_resets(struct iris_core *core)
- 	return 0;
- }
- 
-+int iris_reset_ahb2axi_bridge(struct iris_core *core)
-+{
-+	u32 rst_tbl_size;
-+	int ret;
-+
-+	rst_tbl_size = core->iris_platform_data->clk_rst_tbl_size;
-+
-+	ret = reset_control_bulk_reset(rst_tbl_size, core->resets);
-+	if (ret)
-+		dev_err(core->dev, "failed to toggle resets: %d\n", ret);
-+
-+	return ret;
-+}
-+
- int iris_init_resources(struct iris_core *core)
- {
- 	int ret;
 diff --git a/drivers/media/platform/qcom/iris/iris_resources.h b/drivers/media/platform/qcom/iris/iris_resources.h
-index b0217399030a..a13d8307cb2c 100644
---- a/drivers/media/platform/qcom/iris/iris_resources.h
+new file mode 100644
+index 000000000000..af32b310a0aa
+--- /dev/null
 +++ b/drivers/media/platform/qcom/iris/iris_resources.h
-@@ -14,6 +14,14 @@ struct icc_info {
- 	u32			bw_max_kbps;
- };
- 
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#ifndef _IRIS_RESOURCES_H_
++#define _IRIS_RESOURCES_H_
++
++struct iris_core;
++
 +int iris_enable_power_domains(struct iris_core *core, struct device *pd_dev);
 +int iris_disable_power_domains(struct iris_core *core, struct device *pd_dev);
 +int iris_unset_icc_bw(struct iris_core *core);
 +int iris_set_icc_bw(struct iris_core *core, unsigned long icc_bw);
-+int iris_reset_ahb2axi_bridge(struct iris_core *core);
-+int iris_opp_set_rate(struct iris_core *core, u64 freq);
 +int iris_disable_unprepare_clock(struct iris_core *core, enum platform_clk_type clk_type);
 +int iris_prepare_enable_clock(struct iris_core *core, enum platform_clk_type clk_type);
- int iris_init_resources(struct iris_core *core);
- 
- #endif
++
++#endif
 diff --git a/drivers/media/platform/qcom/iris/iris_vidc.c b/drivers/media/platform/qcom/iris/iris_vidc.c
-index a5c4e73ae531..bc0a3232214b 100644
+index 5dd0ccbaa2fb..b8654e73f516 100644
 --- a/drivers/media/platform/qcom/iris/iris_vidc.c
 +++ b/drivers/media/platform/qcom/iris/iris_vidc.c
 @@ -3,6 +3,7 @@
@@ -1006,8 +777,8 @@ index a5c4e73ae531..bc0a3232214b 100644
  #include <media/v4l2-ioctl.h>
  #include <media/v4l2-mem2mem.h>
  
-@@ -96,12 +97,19 @@ int iris_open(struct file *filp)
- 	struct iris_inst *inst = NULL;
+@@ -81,12 +82,19 @@ int iris_open(struct file *filp)
+ 	struct iris_inst *inst;
  	int ret;
  
 +	ret = pm_runtime_resume_and_get(core->dev);
@@ -1045,10 +816,10 @@ index 000000000000..bd8427411576
 +};
 diff --git a/drivers/media/platform/qcom/iris/iris_vpu3.c b/drivers/media/platform/qcom/iris/iris_vpu3.c
 new file mode 100644
-index 000000000000..414b8ec67b33
+index 000000000000..10599f1fa789
 --- /dev/null
 +++ b/drivers/media/platform/qcom/iris/iris_vpu3.c
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,84 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
@@ -1063,17 +834,22 @@ index 000000000000..414b8ec67b33
 +#define AON_MVP_NOC_RESET			0x0001F000
 +
 +#define WRAPPER_CORE_CLOCK_CONFIG		(WRAPPER_BASE_OFFS + 0x88)
++#define CORE_CLK_RUN				0x0
 +
 +#define CPU_CS_AHB_BRIDGE_SYNC_RESET		(CPU_CS_BASE_OFFS + 0x160)
++#define CORE_BRIDGE_SW_RESET			BIT(0)
++#define CORE_BRIDGE_HW_RESET_DISABLE		BIT(1)
 +
 +#define AON_WRAPPER_MVP_NOC_RESET_REQ		(AON_MVP_NOC_RESET + 0x000)
++#define VIDEO_NOC_RESET_REQ			(BIT(0) | BIT(1))
++
 +#define AON_WRAPPER_MVP_NOC_RESET_ACK		(AON_MVP_NOC_RESET + 0x004)
 +
 +#define VCODEC_SS_IDLE_STATUSN			(VCODEC_BASE_OFFS + 0x70)
 +
 +static bool iris_vpu3_hw_power_collapsed(struct iris_core *core)
 +{
-+	u32 value = 0, pwr_status = 0;
++	u32 value, pwr_status;
 +
 +	value = readl(core->reg_base + WRAPPER_CORE_POWER_STATUS);
 +	pwr_status = value & BIT(1);
@@ -1083,9 +859,8 @@ index 000000000000..414b8ec67b33
 +
 +static void iris_vpu3_power_off_hardware(struct iris_core *core)
 +{
-+	u32 reg_val = 0;
-+	u32 value = 0;
-+	int ret, i;
++	u32 reg_val = 0, value, i;
++	int ret;
 +
 +	if (iris_vpu3_hw_power_collapsed(core))
 +		goto disable_power;
@@ -1094,7 +869,7 @@ index 000000000000..414b8ec67b33
 +
 +	value = readl(core->reg_base + WRAPPER_CORE_CLOCK_CONFIG);
 +	if (value)
-+		writel(0, core->reg_base + WRAPPER_CORE_CLOCK_CONFIG);
++		writel(CORE_CLK_RUN, core->reg_base + WRAPPER_CORE_CLOCK_CONFIG);
 +
 +	for (i = 0; i < core->iris_platform_data->num_vpp_pipe; i++) {
 +		ret = readl_poll_timeout(core->reg_base + VCODEC_SS_IDLE_STATUSN + 4 * i,
@@ -1103,7 +878,7 @@ index 000000000000..414b8ec67b33
 +			goto disable_power;
 +	}
 +
-+	writel(0x3, core->reg_base + AON_WRAPPER_MVP_NOC_RESET_REQ);
++	writel(VIDEO_NOC_RESET_REQ, core->reg_base + AON_WRAPPER_MVP_NOC_RESET_REQ);
 +
 +	ret = readl_poll_timeout(core->reg_base + AON_WRAPPER_MVP_NOC_RESET_ACK,
 +				 reg_val, reg_val & 0x3, 200, 2000);
@@ -1117,8 +892,9 @@ index 000000000000..414b8ec67b33
 +	if (ret)
 +		goto disable_power;
 +
-+	writel(0x3, core->reg_base + CPU_CS_AHB_BRIDGE_SYNC_RESET);
-+	writel(0x2, core->reg_base + CPU_CS_AHB_BRIDGE_SYNC_RESET);
++	writel(CORE_BRIDGE_SW_RESET | CORE_BRIDGE_HW_RESET_DISABLE,
++	       core->reg_base + CPU_CS_AHB_BRIDGE_SYNC_RESET);
++	writel(CORE_BRIDGE_HW_RESET_DISABLE, core->reg_base + CPU_CS_AHB_BRIDGE_SYNC_RESET);
 +	writel(0x0, core->reg_base + CPU_CS_AHB_BRIDGE_SYNC_RESET);
 +
 +disable_power:
@@ -1129,10 +905,15 @@ index 000000000000..414b8ec67b33
 +	.power_off_hw = iris_vpu3_power_off_hardware,
 +};
 diff --git a/drivers/media/platform/qcom/iris/iris_vpu_common.c b/drivers/media/platform/qcom/iris/iris_vpu_common.c
-index 5930cf105a87..23e4afe24761 100644
+index f271068cd838..fe9896d66848 100644
 --- a/drivers/media/platform/qcom/iris/iris_vpu_common.c
 +++ b/drivers/media/platform/qcom/iris/iris_vpu_common.c
-@@ -7,10 +7,11 @@
+@@ -4,13 +4,16 @@
+  */
+ 
+ #include <linux/iopoll.h>
++#include <linux/pm_opp.h>
++#include <linux/reset.h>
  
  #include "iris_core.h"
  #include "iris_vpu_common.h"
@@ -1146,29 +927,32 @@ index 5930cf105a87..23e4afe24761 100644
  #define CPU_IC_BASE_OFFS			(CPU_BASE_OFFS)
  
  #define CPU_CS_A2HSOFTINTCLR			(CPU_CS_BASE_OFFS + 0x1C)
-@@ -18,7 +19,9 @@
- #define CTRL_INIT				(CPU_CS_BASE_OFFS + 0x48)
- #define CTRL_STATUS				(CPU_CS_BASE_OFFS + 0x4C)
+@@ -21,6 +24,7 @@
  
-+#define CTRL_INIT_IDLE_MSG_BMSK			0x40000000
+ #define CTRL_INIT_IDLE_MSG_BMSK			0x40000000
  #define CTRL_ERROR_STATUS__M			0xfe
 +#define CTRL_STATUS_PC_READY			0x100
  
  #define QTBL_INFO				(CPU_CS_BASE_OFFS + 0x50)
- #define QTBL_ADDR				(CPU_CS_BASE_OFFS + 0x54)
-@@ -33,11 +36,35 @@
+ #define QTBL_ENABLE				BIT(0)
+@@ -35,15 +39,47 @@
+ #define HOST2XTENSA_INTR_ENABLE			BIT(0)
+ 
+ #define CPU_CS_X2RPMH				(CPU_CS_BASE_OFFS + 0x168)
++#define MSK_SIGNAL_FROM_TENSILICA		BIT(0)
++#define MSK_CORE_POWER_ON			BIT(1)
+ 
  #define CPU_IC_SOFTINT				(CPU_IC_BASE_OFFS + 0x150)
  #define CPU_IC_SOFTINT_H2A_SHFT			0x0
  
 -#define WRAPPER_BASE_OFFS			0x000B0000
  #define WRAPPER_INTR_STATUS			(WRAPPER_BASE_OFFS + 0x0C)
- #define WRAPPER_INTR_STATUS_A2HWD_BMSK		0x8
- #define WRAPPER_INTR_STATUS_A2H_BMSK		0x4
--#define CTRL_INIT_IDLE_MSG_BMSK			0x40000000
-+
+ #define WRAPPER_INTR_STATUS_A2HWD_BMSK		BIT(3)
+ #define WRAPPER_INTR_STATUS_A2H_BMSK		BIT(2)
+ 
 +#define WRAPPER_INTR_MASK			(WRAPPER_BASE_OFFS + 0x10)
-+#define WRAPPER_INTR_MASK_A2HWD_BMSK		0x8
-+#define WRAPPER_INTR_MASK_A2HCPU_BMSK		0x4
++#define WRAPPER_INTR_MASK_A2HWD_BMSK		BIT(3)
++#define WRAPPER_INTR_MASK_A2HCPU_BMSK		BIT(2)
 +
 +#define WRAPPER_DEBUG_BRIDGE_LPI_CONTROL	(WRAPPER_BASE_OFFS + 0x54)
 +#define WRAPPER_DEBUG_BRIDGE_LPI_STATUS		(WRAPPER_BASE_OFFS + 0x58)
@@ -1177,9 +961,15 @@ index 5930cf105a87..23e4afe24761 100644
 +
 +#define WRAPPER_TZ_CPU_STATUS			(WRAPPER_TZ_BASE_OFFS + 0x10)
 +#define WRAPPER_TZ_CTL_AXI_CLOCK_CONFIG		(WRAPPER_TZ_BASE_OFFS + 0x14)
++#define CTL_AXI_CLK_HALT			BIT(0)
++#define CTL_CLK_HALT				BIT(1)
++
 +#define WRAPPER_TZ_QNS4PDXFIFO_RESET		(WRAPPER_TZ_BASE_OFFS + 0x18)
++#define RESET_HIGH				BIT(0)
 +
 +#define AON_WRAPPER_MVP_NOC_LPI_CONTROL		(AON_BASE_OFFS)
++#define REQ_POWER_DOWN_PREP			BIT(0)
++
 +#define AON_WRAPPER_MVP_NOC_LPI_STATUS		(AON_BASE_OFFS + 0x4)
 +
 +static void iris_vpu_interrupt_init(struct iris_core *core)
@@ -1194,16 +984,15 @@ index 5930cf105a87..23e4afe24761 100644
  
  static void iris_vpu_setup_ucregion_memory_map(struct iris_core *core)
  {
-@@ -127,3 +154,218 @@ int iris_vpu_watchdog(struct iris_core *core, u32 intr_status)
+@@ -131,3 +167,203 @@ int iris_vpu_watchdog(struct iris_core *core, u32 intr_status)
  
  	return 0;
  }
 +
 +int iris_vpu_prepare_pc(struct iris_core *core)
 +{
-+	u32 wfi_status = 0, idle_status = 0, pc_ready = 0;
-+	u32 ctrl_status = 0;
-+	int val = 0;
++	u32 wfi_status, idle_status, pc_ready;
++	u32 ctrl_status, val = 0;
 +	int ret;
 +
 +	ctrl_status = readl(core->reg_base + CTRL_STATUS);
@@ -1218,10 +1007,8 @@ index 5930cf105a87..23e4afe24761 100644
 +		goto skip_power_off;
 +
 +	ret = core->hfi_ops->sys_pc_prep(core);
-+	if (ret) {
-+		dev_err(core->dev, "failed to prepare iris for power off\n");
++	if (ret)
 +		goto skip_power_off;
-+	}
 +
 +	ret = readl_poll_timeout(core->reg_base + CTRL_STATUS, val,
 +				 val & CTRL_STATUS_PC_READY, 250, 2500);
@@ -1247,19 +1034,19 @@ index 5930cf105a87..23e4afe24761 100644
 +
 +static int iris_vpu_power_off_controller(struct iris_core *core)
 +{
-+	int val = 0;
++	u32 val = 0;
 +	int ret;
 +
-+	writel(0x3, core->reg_base + CPU_CS_X2RPMH);
++	writel(MSK_SIGNAL_FROM_TENSILICA | MSK_CORE_POWER_ON, core->reg_base + CPU_CS_X2RPMH);
 +
-+	writel(0x1, core->reg_base + AON_WRAPPER_MVP_NOC_LPI_CONTROL);
++	writel(REQ_POWER_DOWN_PREP, core->reg_base + AON_WRAPPER_MVP_NOC_LPI_CONTROL);
 +
 +	ret = readl_poll_timeout(core->reg_base + AON_WRAPPER_MVP_NOC_LPI_STATUS,
 +				 val, val & BIT(0), 200, 2000);
 +	if (ret)
 +		goto disable_power;
 +
-+	writel(0x1, core->reg_base + WRAPPER_IRIS_CPU_NOC_LPI_CONTROL);
++	writel(REQ_POWER_DOWN_PREP, core->reg_base + WRAPPER_IRIS_CPU_NOC_LPI_CONTROL);
 +
 +	ret = readl_poll_timeout(core->reg_base + WRAPPER_IRIS_CPU_NOC_LPI_STATUS,
 +				 val, val & BIT(0), 200, 2000);
@@ -1273,8 +1060,9 @@ index 5930cf105a87..23e4afe24761 100644
 +	if (ret)
 +		goto disable_power;
 +
-+	writel(0x3, core->reg_base + WRAPPER_TZ_CTL_AXI_CLOCK_CONFIG);
-+	writel(0x1, core->reg_base + WRAPPER_TZ_QNS4PDXFIFO_RESET);
++	writel(CTL_AXI_CLK_HALT | CTL_CLK_HALT,
++	       core->reg_base + WRAPPER_TZ_CTL_AXI_CLOCK_CONFIG);
++	writel(RESET_HIGH, core->reg_base + WRAPPER_TZ_QNS4PDXFIFO_RESET);
 +	writel(0x0, core->reg_base + WRAPPER_TZ_QNS4PDXFIFO_RESET);
 +	writel(0x0, core->reg_base + WRAPPER_TZ_CTL_AXI_CLOCK_CONFIG);
 +
@@ -1295,29 +1083,25 @@ index 5930cf105a87..23e4afe24761 100644
 +
 +void iris_vpu_power_off(struct iris_core *core)
 +{
-+	if (!core->power_enabled)
-+		return;
-+
-+	iris_opp_set_rate(core, 0);
++	dev_pm_opp_set_rate(core->dev, 0);
 +	core->iris_platform_data->vpu_ops->power_off_hw(core);
 +	iris_vpu_power_off_controller(core);
 +	iris_unset_icc_bw(core);
 +
 +	if (!iris_vpu_watchdog(core, core->intr_status))
 +		disable_irq_nosync(core->irq);
-+
-+	core->power_enabled = false;
 +}
 +
 +static int iris_vpu_power_on_controller(struct iris_core *core)
 +{
++	u32 rst_tbl_size = core->iris_platform_data->clk_rst_tbl_size;
 +	int ret;
 +
 +	ret = iris_enable_power_domains(core, core->pmdomain_tbl->pd_devs[IRIS_CTRL_POWER_DOMAIN]);
 +	if (ret)
 +		return ret;
 +
-+	ret = iris_reset_ahb2axi_bridge(core);
++	ret = reset_control_bulk_reset(rst_tbl_size, core->resets);
 +	if (ret)
 +		goto err_disable_power;
 +
@@ -1367,14 +1151,8 @@ index 5930cf105a87..23e4afe24761 100644
 +
 +int iris_vpu_power_on(struct iris_core *core)
 +{
-+	u32 freq = 0;
++	u32 freq;
 +	int ret;
-+
-+	if (core->power_enabled)
-+		return 0;
-+
-+	if (core->state != IRIS_CORE_INIT)
-+		return -EINVAL;
 +
 +	ret = iris_set_icc_bw(core, INT_MAX);
 +	if (ret)
@@ -1388,12 +1166,10 @@ index 5930cf105a87..23e4afe24761 100644
 +	if (ret)
 +		goto err_power_off_ctrl;
 +
-+	core->power_enabled = true;
-+
 +	freq = core->power.clk_freq ? core->power.clk_freq :
 +				      (u32)ULONG_MAX;
 +
-+	iris_opp_set_rate(core, freq);
++	dev_pm_opp_set_rate(core->dev, freq);
 +
 +	core->iris_platform_data->set_preset_registers(core);
 +
@@ -1404,12 +1180,11 @@ index 5930cf105a87..23e4afe24761 100644
 +	return 0;
 +
 +err_power_off_ctrl:
-+	dev_err(core->dev, "power on failed\n");
 +	iris_vpu_power_off_controller(core);
 +err_unvote_icc:
 +	iris_unset_icc_bw(core);
 +err:
-+	core->power_enabled = false;
++	dev_err(core->dev, "power on failed\n");
 +
 +	return ret;
 +}

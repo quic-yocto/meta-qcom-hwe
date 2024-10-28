@@ -1,23 +1,24 @@
-From 2211fad84c6150dd3aee96517122cd82bfe6879b Mon Sep 17 00:00:00 2001
+From a56f4846b5df4d1efccf7be961d09fe97c02366b Mon Sep 17 00:00:00 2001
 From: Vedang Nagar <quic_vnagar@quicinc.com>
 Date: Tue, 27 Aug 2024 15:35:54 +0530
-Subject: [PATCH 29/29] FROMLIST: media: iris: add check to allow sub states
+Subject: FROMLIST: media: iris: add check to allow sub states
  transitions
 
-Based on state machine design, add allow checks to
-transition from one sub-state to another sub-states.
+Based on state machine design, add allow checks to transition from one
+sub-state to another sub-states.
 
+Change-Id: I353abb71c99bfd6e6e33573507f62df08e86d89f
 Signed-off-by: Vedang Nagar <quic_vnagar@quicinc.com>
 Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
-Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-29-c5fdbbe65e70@quicinc.com/]
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-26-c5eaa4e9ab9e@quicinc.com/]
 ---
  .../qcom/iris/iris_hfi_gen1_command.c         | 12 +++++-
- drivers/media/platform/qcom/iris/iris_state.c | 42 +++++++++++++++++++
- drivers/media/platform/qcom/iris/iris_state.h |  1 +
+ drivers/media/platform/qcom/iris/iris_state.c | 40 +++++++++++++++++++
+ drivers/media/platform/qcom/iris/iris_state.h |  3 ++
  3 files changed, 54 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/media/platform/qcom/iris/iris_hfi_gen1_command.c b/drivers/media/platform/qcom/iris/iris_hfi_gen1_command.c
-index 17333768afa2..2f3e40368cce 100644
+index ef65a1301a79..255fe152888e 100644
 --- a/drivers/media/platform/qcom/iris/iris_hfi_gen1_command.c
 +++ b/drivers/media/platform/qcom/iris/iris_hfi_gen1_command.c
 @@ -135,6 +135,9 @@ static int iris_hfi_gen1_session_start(struct iris_inst *inst, u32 plane)
@@ -54,14 +55,14 @@ index 17333768afa2..2f3e40368cce 100644
  					 VB2_BUF_STATE_ERROR);
  		iris_helper_buffers_done(inst, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE,
 diff --git a/drivers/media/platform/qcom/iris/iris_state.c b/drivers/media/platform/qcom/iris/iris_state.c
-index 1c7437bc808b..ab7dc768ef25 100644
+index f12306e735ec..5976e926c83d 100644
 --- a/drivers/media/platform/qcom/iris/iris_state.c
 +++ b/drivers/media/platform/qcom/iris/iris_state.c
-@@ -165,6 +165,45 @@ int iris_inst_state_change_streamoff(struct iris_inst *inst, u32 plane)
+@@ -105,6 +105,43 @@ int iris_inst_state_change_streamoff(struct iris_inst *inst, u32 plane)
  	return iris_inst_change_state(inst, new_state);
  }
  
-+static int iris_inst_allow_sub_state(struct iris_inst *inst, enum iris_inst_sub_state sub_state)
++static bool iris_inst_allow_sub_state(struct iris_inst *inst, enum iris_inst_sub_state sub_state)
 +{
 +	if (!sub_state)
 +		return true;
@@ -70,40 +71,38 @@ index 1c7437bc808b..ab7dc768ef25 100644
 +	case IRIS_INST_INIT:
 +		if (sub_state & IRIS_INST_SUB_LOAD_RESOURCES)
 +			return true;
-+		break;
++		return false;
 +	case IRIS_INST_INPUT_STREAMING:
 +		if (sub_state & (IRIS_INST_SUB_FIRST_IPSC | IRIS_INST_SUB_DRC |
 +			IRIS_INST_SUB_DRAIN | IRIS_INST_SUB_INPUT_PAUSE))
 +			return true;
-+		break;
++		return false;
 +	case IRIS_INST_OUTPUT_STREAMING:
 +		if (sub_state & (IRIS_INST_SUB_DRC_LAST |
 +			IRIS_INST_SUB_DRAIN_LAST | IRIS_INST_SUB_OUTPUT_PAUSE))
 +			return true;
-+		break;
++		return false;
 +	case IRIS_INST_STREAMING:
 +		if (sub_state & (IRIS_INST_SUB_DRC | IRIS_INST_SUB_DRAIN |
 +			IRIS_INST_SUB_DRC_LAST | IRIS_INST_SUB_DRAIN_LAST |
 +			IRIS_INST_SUB_INPUT_PAUSE | IRIS_INST_SUB_OUTPUT_PAUSE))
 +			return true;
-+		break;
++		return false;
 +	case IRIS_INST_DEINIT:
 +		if (sub_state & (IRIS_INST_SUB_DRC | IRIS_INST_SUB_DRAIN |
 +			IRIS_INST_SUB_DRC_LAST | IRIS_INST_SUB_DRAIN_LAST |
 +			IRIS_INST_SUB_INPUT_PAUSE | IRIS_INST_SUB_OUTPUT_PAUSE))
 +			return true;
-+		break;
++		return false;
 +	default:
 +		return false;
 +	}
-+
-+	return false;
 +}
 +
  int iris_inst_change_sub_state(struct iris_inst *inst,
  			       enum iris_inst_sub_state clear_sub_state,
  			       enum iris_inst_sub_state set_sub_state)
-@@ -184,6 +223,9 @@ int iris_inst_change_sub_state(struct iris_inst *inst,
+@@ -124,6 +161,9 @@ int iris_inst_change_sub_state(struct iris_inst *inst,
  
  	prev_sub_state = inst->sub_state;
  
@@ -114,17 +113,26 @@ index 1c7437bc808b..ab7dc768ef25 100644
  	inst->sub_state &= ~clear_sub_state;
  
 diff --git a/drivers/media/platform/qcom/iris/iris_state.h b/drivers/media/platform/qcom/iris/iris_state.h
-index 9516425fcfa7..f60dc18ca30e 100644
+index 4bdd55af4f30..77b344096618 100644
 --- a/drivers/media/platform/qcom/iris/iris_state.h
 +++ b/drivers/media/platform/qcom/iris/iris_state.h
-@@ -124,6 +124,7 @@ enum iris_inst_sub_state {
+@@ -113,6 +113,8 @@ enum iris_inst_state {
+  * IRIS_INST_SUB_OUTPUT_PAUSE: last buffer is received form firmware as part
+  *                             of drc sequence. This indicates that
+  *                             firmware is paused to process any further output frames.
++ * IRIS_INST_SUB_LOAD_RESOURCES: indicates all the resources have been loaded by the
++ *                               firmware and it is ready for processing.
+  */
+ enum iris_inst_sub_state {
+ 	IRIS_INST_SUB_FIRST_IPSC	= BIT(0),
+@@ -122,6 +124,7 @@ enum iris_inst_sub_state {
  	IRIS_INST_SUB_DRAIN_LAST	= BIT(4),
  	IRIS_INST_SUB_INPUT_PAUSE	= BIT(5),
  	IRIS_INST_SUB_OUTPUT_PAUSE	= BIT(6),
 +	IRIS_INST_SUB_LOAD_RESOURCES	= BIT(7),
  };
  
- void iris_change_core_state(struct iris_core *core,
+ int iris_inst_change_state(struct iris_inst *inst,
 -- 
 2.34.1
 

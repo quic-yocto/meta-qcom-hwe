@@ -1,45 +1,76 @@
-From aa61049c6994f0193bf9370e6ad9bf7a430b8edc Mon Sep 17 00:00:00 2001
+From e5e087236a4d4844474434e23e88d0d67c628873 Mon Sep 17 00:00:00 2001
 From: Vedang Nagar <quic_vnagar@quicinc.com>
 Date: Tue, 27 Aug 2024 15:35:39 +0530
-Subject: [PATCH 14/29] FROMLIST: media: iris: implement enum_fmt and
+Subject: FROMLIST: media: iris: implement enum_fmt and
  enum_frameintervals ioctls
 
-Implement enum_fmt and enum_frameintervals ioctls in the
-driver with necessary hooks.
+Implement enum_fmt and enum_frameintervals ioctls with necessary hooks.
 
+Change-Id: I7986d653c3aca7536c3ce717e366eb14434a63a7
 Signed-off-by: Vedang Nagar <quic_vnagar@quicinc.com>
 Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
-Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-14-c5fdbbe65e70@quicinc.com/]
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-12-c5eaa4e9ab9e@quicinc.com/]
 ---
- drivers/media/platform/qcom/iris/iris_vdec.c | 22 ++++++++
- drivers/media/platform/qcom/iris/iris_vdec.h |  1 +
- drivers/media/platform/qcom/iris/iris_vidc.c | 57 ++++++++++++++++++++
- 3 files changed, 80 insertions(+)
+ .../platform/qcom/iris/iris_platform_common.h |  4 ++
+ .../platform/qcom/iris/iris_platform_sm8550.c |  4 ++
+ drivers/media/platform/qcom/iris/iris_vdec.c  | 21 ++++++++++
+ drivers/media/platform/qcom/iris/iris_vdec.h  |  1 +
+ drivers/media/platform/qcom/iris/iris_vidc.c  | 39 +++++++++++++++++++
+ 5 files changed, 69 insertions(+)
 
+diff --git a/drivers/media/platform/qcom/iris/iris_platform_common.h b/drivers/media/platform/qcom/iris/iris_platform_common.h
+index e345667dfbf2..54a2d723797b 100644
+--- a/drivers/media/platform/qcom/iris/iris_platform_common.h
++++ b/drivers/media/platform/qcom/iris/iris_platform_common.h
+@@ -43,6 +43,10 @@ struct ubwc_config_data {
+ };
+ 
+ struct platform_inst_caps {
++	u32 min_frame_width;
++	u32 max_frame_width;
++	u32 min_frame_height;
++	u32 max_frame_height;
+ 	u32 max_mbpf;
+ };
+ struct iris_core_power {
+diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
+index bc4769732aad..37c0130d7059 100644
+--- a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
++++ b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
+@@ -11,6 +11,10 @@
+ #define VIDEO_ARCH_LX 1
+ 
+ static struct platform_inst_caps platform_inst_cap_sm8550 = {
++	.min_frame_width = 96,
++	.max_frame_width = 8192,
++	.min_frame_height = 96,
++	.max_frame_height = 8192,
+ 	.max_mbpf = (8192 * 4352) / 256,
+ };
+ 
 diff --git a/drivers/media/platform/qcom/iris/iris_vdec.c b/drivers/media/platform/qcom/iris/iris_vdec.c
-index fd04f56b405d..a38903eefa1c 100644
+index e807decdda2b..fd0f1ebc33e8 100644
 --- a/drivers/media/platform/qcom/iris/iris_vdec.c
 +++ b/drivers/media/platform/qcom/iris/iris_vdec.c
-@@ -60,6 +60,28 @@ void iris_vdec_inst_deinit(struct iris_inst *inst)
+@@ -60,6 +60,27 @@ void iris_vdec_inst_deinit(struct iris_inst *inst)
  	kfree(inst->fmt_src);
  }
  
 +int iris_vdec_enum_fmt(struct iris_inst *inst, struct v4l2_fmtdesc *f)
 +{
-+	if (f->index)
-+		return -EINVAL;
-+
-+	if (V4L2_TYPE_IS_OUTPUT(f->type)) {
++	switch (f->type) {
++	case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
 +		f->pixelformat = V4L2_PIX_FMT_H264;
 +		f->flags = V4L2_FMT_FLAG_COMPRESSED | V4L2_FMT_FLAG_DYN_RESOLUTION;
 +		strscpy(f->description, "codec", sizeof(f->description));
-+	} else if (V4L2_TYPE_IS_CAPTURE(f->type)) {
++		break;
++	case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
 +		f->pixelformat = V4L2_PIX_FMT_NV12;
 +		strscpy(f->description, "colorformat", sizeof(f->description));
-+	}
-+
-+	if (!f->pixelformat)
++		break;
++	default:
 +		return -EINVAL;
++	}
 +
 +	memset(f->reserved, 0, sizeof(f->reserved));
 +
@@ -62,85 +93,60 @@ index 4f2557d15ca2..eb8a1121ae92 100644
  int iris_vdec_s_fmt(struct iris_inst *inst, struct v4l2_format *f);
  
 diff --git a/drivers/media/platform/qcom/iris/iris_vidc.c b/drivers/media/platform/qcom/iris/iris_vidc.c
-index e09c0a156387..488be6afd999 100644
+index 481fa0a7b7f3..1d6c5e8fafb4 100644
 --- a/drivers/media/platform/qcom/iris/iris_vidc.c
 +++ b/drivers/media/platform/qcom/iris/iris_vidc.c
-@@ -15,6 +15,10 @@
- 
- #define IRIS_DRV_NAME "iris_driver"
- #define IRIS_BUS_NAME "platform:iris_icc"
-+#define MIN_FRAME_WIDTH 128
-+#define MAX_FRAME_WIDTH 8192
-+#define MIN_FRAME_HEIGHT 128
-+#define MAX_FRAME_HEIGHT 8192
- #define STEP_WIDTH 1
- #define STEP_HEIGHT 1
- 
-@@ -255,6 +259,22 @@ int iris_close(struct file *filp)
+@@ -214,6 +214,16 @@ int iris_close(struct file *filp)
  	return 0;
  }
  
 +static int iris_enum_fmt(struct file *filp, void *fh, struct v4l2_fmtdesc *f)
 +{
-+	struct iris_inst *inst;
-+	int ret;
++	struct iris_inst *inst = iris_get_inst(filp, NULL);
 +
-+	inst = iris_get_inst(filp, fh);
-+	if (!inst)
++	if (f->index)
 +		return -EINVAL;
 +
-+	mutex_lock(&inst->lock);
-+	ret = iris_vdec_enum_fmt(inst, f);
-+	mutex_unlock(&inst->lock);
-+
-+	return ret;
++	return iris_vdec_enum_fmt(inst, f);
 +}
 +
  static int iris_try_fmt_vid_mplane(struct file *filp, void *fh, struct v4l2_format *f)
  {
- 	struct iris_inst *inst;
-@@ -309,6 +329,40 @@ static int iris_g_fmt_vid_mplane(struct file *filp, void *fh, struct v4l2_format
+ 	struct iris_inst *inst = iris_get_inst(filp, NULL);
+@@ -256,6 +266,32 @@ static int iris_g_fmt_vid_mplane(struct file *filp, void *fh, struct v4l2_format
  	return ret;
  }
  
 +static int iris_enum_framesizes(struct file *filp, void *fh,
 +				struct v4l2_frmsizeenum *fsize)
 +{
-+	struct iris_inst *inst;
-+	int ret = 0;
-+
-+	inst = iris_get_inst(filp, fh);
-+	if (!inst || !fsize)
-+		return -EINVAL;
++	struct iris_inst *inst = iris_get_inst(filp, NULL);
++	struct platform_inst_caps *caps;
 +
 +	if (fsize->index)
 +		return -EINVAL;
 +
-+	mutex_lock(&inst->lock);
 +	if (fsize->pixel_format != V4L2_PIX_FMT_H264 &&
-+	    fsize->pixel_format != V4L2_PIX_FMT_NV12) {
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
++	    fsize->pixel_format != V4L2_PIX_FMT_NV12)
++		return -EINVAL;
++
++	caps = inst->core->iris_platform_data->inst_caps;
 +
 +	fsize->type = V4L2_FRMSIZE_TYPE_STEPWISE;
-+	fsize->stepwise.min_width = MIN_FRAME_WIDTH;
-+	fsize->stepwise.max_width = MAX_FRAME_WIDTH;
++	fsize->stepwise.min_width = caps->min_frame_width;
++	fsize->stepwise.max_width = caps->max_frame_width;
 +	fsize->stepwise.step_width = STEP_WIDTH;
-+	fsize->stepwise.min_height = MIN_FRAME_HEIGHT;
-+	fsize->stepwise.max_height = MAX_FRAME_HEIGHT;
++	fsize->stepwise.min_height = caps->min_frame_height;
++	fsize->stepwise.max_height = caps->max_frame_height;
 +	fsize->stepwise.step_height = STEP_HEIGHT;
 +
-+unlock:
-+	mutex_unlock(&inst->lock);
-+
-+	return ret;
++	return 0;
 +}
 +
  static int iris_g_selection(struct file *filp, void *fh, struct v4l2_selection *s)
  {
- 	struct iris_inst *inst;
-@@ -362,12 +416,15 @@ static const struct vb2_ops iris_vb2_ops = {
+ 	struct iris_inst *inst = iris_get_inst(filp, NULL);
+@@ -298,12 +334,15 @@ static const struct vb2_ops iris_vb2_ops = {
  };
  
  static const struct v4l2_ioctl_ops iris_v4l2_ioctl_ops = {

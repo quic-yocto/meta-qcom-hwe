@@ -1,23 +1,23 @@
-From 1da5bdbfa4d6489089777c70196a10d56eca8001 Mon Sep 17 00:00:00 2001
+From 2b159f7cf7a86636a956d0539821f517cc399787 Mon Sep 17 00:00:00 2001
 From: Vedang Nagar <quic_vnagar@quicinc.com>
 Date: Tue, 27 Aug 2024 15:35:45 +0530
-Subject: [PATCH 20/29] FROMLIST: media: iris: subscribe parameters and
+Subject: FROMLIST: media: iris: subscribe parameters and
  properties to firmware for hfi_gen2
 
-For hfi_gen2, subscribe for different bitstream parameters to
-firmware to get notified for change in any of the subscribed
-parameters.
+For hfi_gen2, subscribe for different bitstream parameters to firmware,
+to get notified for change in any of the subscribed parameters.
 
+Change-Id: I0f9cc55b8d386f8b9aecca30938290109ec89268
 Signed-off-by: Vedang Nagar <quic_vnagar@quicinc.com>
 Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
-Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-20-c5fdbbe65e70@quicinc.com/]
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-18-c5eaa4e9ab9e@quicinc.com/]
 ---
  .../media/platform/qcom/iris/iris_hfi_gen2.h  |   6 +
- .../qcom/iris/iris_hfi_gen2_command.c         | 179 ++++++++++++++++++
+ .../qcom/iris/iris_hfi_gen2_command.c         | 174 ++++++++++++++++++
  .../qcom/iris/iris_hfi_gen2_defines.h         |   9 +
  .../platform/qcom/iris/iris_platform_common.h |   4 +
  .../platform/qcom/iris/iris_platform_sm8550.c |  13 ++
- 5 files changed, 211 insertions(+)
+ 5 files changed, 206 insertions(+)
 
 diff --git a/drivers/media/platform/qcom/iris/iris_hfi_gen2.h b/drivers/media/platform/qcom/iris/iris_hfi_gen2.h
 index 8170c1fef569..5fbbab844025 100644
@@ -43,10 +43,10 @@ index 8170c1fef569..5fbbab844025 100644
  
  void iris_hfi_gen2_command_ops_init(struct iris_core *core);
 diff --git a/drivers/media/platform/qcom/iris/iris_hfi_gen2_command.c b/drivers/media/platform/qcom/iris/iris_hfi_gen2_command.c
-index e50f00021f6d..791b535a3584 100644
+index 0845b75aafe9..dddaa074cae1 100644
 --- a/drivers/media/platform/qcom/iris/iris_hfi_gen2_command.c
 +++ b/drivers/media/platform/qcom/iris/iris_hfi_gen2_command.c
-@@ -472,6 +472,9 @@ static int iris_hfi_gen2_session_open(struct iris_inst *inst)
+@@ -437,6 +437,9 @@ static int iris_hfi_gen2_session_open(struct iris_inst *inst)
  	if (inst->state != IRIS_INST_DEINIT)
  		return -EALREADY;
  
@@ -56,7 +56,7 @@ index e50f00021f6d..791b535a3584 100644
  	inst_hfi_gen2->packet = kzalloc(4096, GFP_KERNEL);
  	if (!inst_hfi_gen2->packet)
  		return -ENOMEM;
-@@ -536,9 +539,185 @@ static int iris_hfi_gen2_session_close(struct iris_inst *inst)
+@@ -501,9 +504,180 @@ static int iris_hfi_gen2_session_close(struct iris_inst *inst)
  	return ret;
  }
  
@@ -86,12 +86,11 @@ index e50f00021f6d..791b535a3584 100644
 +	struct hfi_subscription_params subsc_params;
 +	u32 prop_type, payload_size, payload_type;
 +	struct iris_core *core = inst->core;
-+	const u32 *change_param = NULL;
-+	u32 change_param_size = 0;
++	const u32 *change_param;
++	u32 change_param_size;
 +	u32 payload[32] = {0};
-+	u32 hfi_port = 0;
++	u32 hfi_port = 0, i;
 +	int ret;
-+	u32 i;
 +
 +	if ((V4L2_TYPE_IS_OUTPUT(plane) && inst_hfi_gen2->ipsc_properties_set) ||
 +	    (V4L2_TYPE_IS_CAPTURE(plane) && inst_hfi_gen2->opsc_properties_set)) {
@@ -101,9 +100,6 @@ index e50f00021f6d..791b535a3584 100644
 +
 +	change_param = core->iris_platform_data->input_config_params;
 +	change_param_size = core->iris_platform_data->input_config_params_size;
-+
-+	if (!change_param || !change_param_size)
-+		return -EINVAL;
 +
 +	payload[0] = HFI_MODE_PORT_SETTINGS_CHANGE;
 +
@@ -195,16 +191,15 @@ index e50f00021f6d..791b535a3584 100644
 +		inst_hfi_gen2->opsc_properties_set = true;
 +	}
 +
-+	return ret;
++	return 0;
 +}
 +
 +static int iris_hfi_gen2_subscribe_property(struct iris_inst *inst, u32 plane)
 +{
 +	struct iris_core *core = inst->core;
-+	const u32 *subcribe_prop = NULL;
-+	u32 subscribe_prop_size = 0;
++	u32 subscribe_prop_size, i;
++	const u32 *subcribe_prop;
 +	u32 payload[32] = {0};
-+	u32 i;
 +
 +	payload[0] = HFI_MODE_PROPERTY;
 +
@@ -284,10 +279,10 @@ index b5b232d31ad8..92c44841c67d 100644
  	HFI_COLOR_FMT_OPAQUE			= 0,
  	HFI_COLOR_FMT_NV12			= 1,
 diff --git a/drivers/media/platform/qcom/iris/iris_platform_common.h b/drivers/media/platform/qcom/iris/iris_platform_common.h
-index 20422bdca6d4..5a01391845c6 100644
+index c54eb2a491b0..914283802219 100644
 --- a/drivers/media/platform/qcom/iris/iris_platform_common.h
 +++ b/drivers/media/platform/qcom/iris/iris_platform_common.h
-@@ -159,6 +159,10 @@ struct iris_platform_data {
+@@ -147,6 +147,10 @@ struct iris_platform_data {
  	unsigned int input_config_params_size;
  	const u32 *output_config_params;
  	unsigned int output_config_params_size;
@@ -299,10 +294,10 @@ index 20422bdca6d4..5a01391845c6 100644
  
  #endif
 diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
-index 7be803ea867d..fccee5309d81 100644
+index 4b7372805d69..0f1eb530b232 100644
 --- a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
 +++ b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
-@@ -207,6 +207,15 @@ static const u32 sm8550_vdec_output_config_params[] = {
+@@ -183,6 +183,15 @@ static const u32 sm8550_vdec_output_config_params[] = {
  	HFI_PROP_LINEAR_STRIDE_SCANLINE,
  };
  
@@ -318,7 +313,7 @@ index 7be803ea867d..fccee5309d81 100644
  struct iris_platform_data sm8550_data = {
  	.get_instance = iris_hfi_gen2_get_instance,
  	.init_hfi_command_ops = iris_hfi_gen2_command_ops_init,
-@@ -244,4 +253,8 @@ struct iris_platform_data sm8550_data = {
+@@ -219,4 +228,8 @@ struct iris_platform_data sm8550_data = {
  		sm8550_vdec_output_config_params,
  	.output_config_params_size =
  		ARRAY_SIZE(sm8550_vdec_output_config_params),

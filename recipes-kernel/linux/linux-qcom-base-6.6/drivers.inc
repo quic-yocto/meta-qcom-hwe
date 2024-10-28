@@ -24,33 +24,32 @@ SRC_URI:append = " \
     file://qcs9100/0001-BACKPORT-FROMLIST-clk-qcom-Add-support-for-Video-clo.patch \
     file://qcs9100/0002-BACKPORT-FROMLIST-clk-qcom-Add-support-for-Camera-Cl.patch \
     file://qcs9100/0003-BACKPORT-FROMLIST-clk-qcom-Add-support-for-Display-c.patch \
-    file://qcs9100/0003-FROMLIST-media-iris-add-platform-driver-for-iris-vid.patch \
-    file://qcs9100/0004-FROMLIST-media-iris-initialize-power-resources.patch \
-    file://qcs9100/0005-FROMLIST-media-iris-implement-iris-v4l2-file-ops.patch \
-    file://qcs9100/0006-FROMLIST-media-iris-introduce-iris-core-state-manage.patch \
-    file://qcs9100/0007-FROMLIST-media-iris-implement-video-firmware-load-un.patch \
-    file://qcs9100/0008-FROMLIST-media-iris-implement-boot-sequence-of-the-f.patch \
-    file://qcs9100/0009-FROMLIST-media-iris-introduce-Host-firmware-interfac.patch \
-    file://qcs9100/0010-FROMLIST-media-iris-implement-power-management.patch \
-    file://qcs9100/0011-FROMLIST-media-iris-implement-reqbuf-ioctl-with-vb2_.patch \
-    file://qcs9100/0012-FROMLIST-media-iris-implement-s_fmt-g_fmt-and-try_fm.patch \
-    file://qcs9100/0013-FROMLIST-media-iris-implement-g_selection-ioctl.patch \
-    file://qcs9100/0014-FROMLIST-media-iris-implement-enum_fmt-and-enum_fram.patch \
-    file://qcs9100/0015-FROMLIST-media-iris-implement-subscribe_event-and-un.patch \
-    file://qcs9100/0016-FROMLIST-media-iris-implement-iris-v4l2_ctrl_ops-and.patch \
-    file://qcs9100/0017-FROMLIST-media-iris-implement-query_cap-query_ctrl-a.patch\
-    file://qcs9100/0018-FROMLIST-media-iris-implement-vb2-streaming-ops.patch \
-    file://qcs9100/0019-FROMLIST-media-iris-implement-set-properties-to-firm.patch \
-    file://qcs9100/0020-FROMLIST-media-iris-subscribe-parameters-and-propert.patch \
-    file://qcs9100/0021-FROMLIST-media-iris-allocate-initialize-and-queue-in.patch \
-    file://qcs9100/0022-FROMLIST-media-iris-implement-vb2-ops-for-buf_queue-.patch \
-    file://qcs9100/0023-FROMLIST-media-iris-add-support-for-dynamic-resoluti.patch \
-    file://qcs9100/0024-FROMLIST-media-iris-handle-streamoff-on-from-client-.patch\
-    file://qcs9100/0025-FROMLIST-media-iris-add-support-for-drain-sequence.patch\
-    file://qcs9100/0026-FROMLIST-media-iris-add-check-whether-the-video-sess.patch \
-    file://qcs9100/0027-FROMLIST-media-iris-implement-power-scaling-for-vpu2.patch \
-    file://qcs9100/0028-FROMLIST-media-iris-add-allow-checks-for-v4l2-ioctls.patch \
-    file://qcs9100/0029-FROMLIST-media-iris-add-check-to-allow-sub-states-tr.patch \
+    file://common/0002-FROMLIST-media-iris-add-platform-driver-for-iris-vid.patch \
+    file://common/0003-FROMLIST-media-iris-implement-iris-v4l2-file-ops.patch \
+    file://common/0004-FROMLIST-media-iris-introduce-iris-core-state-manage.patch \
+    file://common/0005-FROMLIST-media-iris-implement-video-firmware-load-un.patch \
+    file://common/0006-FROMLIST-media-iris-implement-boot-sequence-of-the-f.patch \
+    file://common/0007-FROMLIST-media-iris-introduce-host-firmware-interfac.patch \
+    file://common/0008-FROMLIST-media-iris-implement-power-management.patch \
+    file://common/0009-FROMLIST-media-iris-implement-reqbuf-ioctl-with-vb2_.patch \
+    file://common/0010-FROMLIST-media-iris-implement-s_fmt-g_fmt-and-try_fm.patch \
+    file://common/0011-FROMLIST-media-iris-implement-g_selection-ioctl.patch \
+    file://common/0012-FROMLIST-media-iris-implement-enum_fmt-and-enum_fram.patch \
+    file://common/0013-FROMLIST-media-iris-implement-subscribe_event-and-un.patch \
+    file://common/0014-FROMLIST-media-iris-implement-iris-v4l2_ctrl_ops.patch \
+    file://common/0015-FROMLIST-media-iris-implement-query_cap-query_ctrl-a.patch \
+    file://common/0016-FROMLIST-media-iris-implement-vb2-streaming-ops.patch \
+    file://common/0017-FROMLIST-media-iris-implement-set-properties-to-firm.patch \
+    file://common/0018-FROMLIST-media-iris-subscribe-parameters-and-propert.patch \
+    file://common/0019-FROMLIST-media-iris-allocate-initialize-and-queue-in.patch \
+    file://common/0020-FROMLIST-media-iris-implement-vb2-ops-for-buf_queue-.patch \
+    file://common/0021-FROMLIST-media-iris-add-support-for-dynamic-resoluti.patch \
+    file://common/0022-FROMLIST-media-iris-handle-streamoff-on-from-client-.patch \
+    file://common/0023-FROMLIST-media-iris-add-support-for-drain-sequence.patch \
+    file://common/0024-FROMLIST-media-iris-add-check-whether-the-video-sess.patch \
+    file://common/0025-FROMLIST-media-iris-implement-power-scaling-for-vpu2.patch \
+    file://common/0026-FROMLIST-media-iris-add-check-to-allow-sub-states-tr.patch \
+    file://common/0027-FROMLIST-media-iris-enable-video-driver-probe-of-SM8.patch \
     file://qcs9100/0004-QCLINUX-Revert-FROMLIST-remoteproc-qcom_q6v5_pas-Add.patch \
     file://qcs9100/0003-BACKPORT-remoteproc-qcom_q6v5_pas-Add-support-for-SA.patch \
     file://qcs9100/0004-UPSTREAM-misc-fastrpc-Add-support-for-cdsp1-remotepr.patch \

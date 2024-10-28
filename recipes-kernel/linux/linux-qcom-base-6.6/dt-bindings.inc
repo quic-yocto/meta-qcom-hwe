@@ -15,7 +15,7 @@ SRC_URI:append = " \
     file://qcs9100/0001-FROMLIST-dt-bindings-clock-qcom-Add-SA8775P-video-cl.patch \
     file://qcs9100/0002-FROMLIST-dt-bindings-clock-qcom-Add-SA8775P-camera-clock-cont.patch \
     file://qcs9100/0003-FROMLIST-dt-bindings-clock-qcom-Add-SA8775P-display-clock-con.patch \
-    file://qcs9100/0001-FROMLIST-dt-bindings-media-Add-sm8550-dt-schema.patch \
+    file://common/0001-FROMLIST-dt-bindings-media-Add-video-support-for-QCO.patch \
     file://qcs9100/0005-QCLINUX-Revert-FROMLIST-dt-bindings-mailbox-qcom-ipc.patch \
     file://qcs9100/0001-UPSTREAM-dt-bindings-misc-qcom-fastrpc-increase-the-.patch \
     file://qcs9100/0002-UPSTREAM-dt-bindings-mailbox-qcom-ipcc-Add-GPDSP0-an.patch \

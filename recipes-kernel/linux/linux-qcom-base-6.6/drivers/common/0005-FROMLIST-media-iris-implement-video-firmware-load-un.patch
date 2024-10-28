@@ -1,30 +1,30 @@
-From 674ac25677e5788c9b08ee9acfd9af4e4a2a2119 Mon Sep 17 00:00:00 2001
+From 17869a96ae2b7cc3fdf9681c2f8d664e2f4fc0f4 Mon Sep 17 00:00:00 2001
 From: Dikshita Agarwal <quic_dikshita@quicinc.com>
 Date: Tue, 27 Aug 2024 15:35:32 +0530
-Subject: [PATCH 07/29] FROMLIST: media: iris: implement video firmware
+Subject: FROMLIST: media: iris: implement video firmware
  load/unload
 
-Load/unload firmware in memory via mdt loader.
-Firmware is loaded as part of core initialization
-and unloaded as part of core de-initialization.
+Load/unload firmware in memory via mdt loader. Firmware is loaded as
+part of core initialization and unloaded as part of core
+de-initialization.
 
+Change-Id: Icf8f5a7a8954012cda3340eba6a31df4ef8d2e22
 Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
-Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-7-c5fdbbe65e70@quicinc.com/]
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-5-c5eaa4e9ab9e@quicinc.com/]
 ---
  drivers/media/platform/qcom/iris/Kconfig      |   2 +
  drivers/media/platform/qcom/iris/Makefile     |   1 +
- drivers/media/platform/qcom/iris/iris_core.c  |   8 +
- .../media/platform/qcom/iris/iris_firmware.c  | 146 ++++++++++++++++++
- .../media/platform/qcom/iris/iris_firmware.h  |  14 ++
+ drivers/media/platform/qcom/iris/iris_core.c  |   8 ++
+ .../media/platform/qcom/iris/iris_firmware.c  | 108 ++++++++++++++++++
+ .../media/platform/qcom/iris/iris_firmware.h  |  14 +++
  .../platform/qcom/iris/iris_platform_common.h |  12 ++
- .../platform/qcom/iris/iris_platform_sm8250.c |  10 ++
  .../platform/qcom/iris/iris_platform_sm8550.c |  10 ++
- 8 files changed, 203 insertions(+)
+ 7 files changed, 155 insertions(+)
  create mode 100644 drivers/media/platform/qcom/iris/iris_firmware.c
  create mode 100644 drivers/media/platform/qcom/iris/iris_firmware.h
 
 diff --git a/drivers/media/platform/qcom/iris/Kconfig b/drivers/media/platform/qcom/iris/Kconfig
-index 4b757bb8adf3..ea518760c65c 100644
+index 8debddec87a5..f92cc7fe9378 100644
 --- a/drivers/media/platform/qcom/iris/Kconfig
 +++ b/drivers/media/platform/qcom/iris/Kconfig
 @@ -3,6 +3,8 @@ config VIDEO_QCOM_IRIS
@@ -34,10 +34,10 @@ index 4b757bb8adf3..ea518760c65c 100644
 +        select QCOM_MDT_LOADER if ARCH_QCOM
 +        select QCOM_SCM
          help
-           This is a V4L2 driver for Qualcomm Iris video accelerator
+           This is a V4L2 driver for Qualcomm iris video accelerator
            hardware. It accelerates decoding operations on various
 diff --git a/drivers/media/platform/qcom/iris/Makefile b/drivers/media/platform/qcom/iris/Makefile
-index 48d54e53a576..ddd4c994a0b9 100644
+index 93711f108a77..6906caa2c481 100644
 --- a/drivers/media/platform/qcom/iris/Makefile
 +++ b/drivers/media/platform/qcom/iris/Makefile
 @@ -1,4 +1,5 @@
@@ -83,10 +83,10 @@ index 360a54909ef6..8c7d53c57086 100644
  exit:
 diff --git a/drivers/media/platform/qcom/iris/iris_firmware.c b/drivers/media/platform/qcom/iris/iris_firmware.c
 new file mode 100644
-index 000000000000..55bbcc798f4c
+index 000000000000..58a0f532b862
 --- /dev/null
 +++ b/drivers/media/platform/qcom/iris/iris_firmware.c
-@@ -0,0 +1,146 @@
+@@ -0,0 +1,108 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
@@ -103,45 +103,21 @@ index 000000000000..55bbcc798f4c
 +
 +#define MAX_FIRMWARE_NAME_SIZE	128
 +
-+static int iris_protect_cp_mem(struct iris_core *core)
-+{
-+	struct tz_cp_config *cp_config;
-+	int ret;
-+
-+	cp_config = core->iris_platform_data->tz_cp_config_data;
-+
-+	ret = qcom_scm_mem_protect_video_var(cp_config->cp_start,
-+					     cp_config->cp_size,
-+					     cp_config->cp_nonpixel_start,
-+					     cp_config->cp_nonpixel_size);
-+	if (ret)
-+		dev_err(core->dev, "failed to protect memory(%d)\n", ret);
-+
-+	return ret;
-+}
-+
 +static int iris_load_fw_to_memory(struct iris_core *core, const char *fw_name)
 +{
++	u32 pas_id = core->iris_platform_data->pas_id;
 +	const struct firmware *firmware = NULL;
-+	struct device_node *node = NULL;
++	struct device *dev = core->dev;
 +	struct reserved_mem *rmem;
-+	phys_addr_t mem_phys = 0;
-+	void *mem_virt = NULL;
-+	size_t res_size = 0;
-+	ssize_t fw_size = 0;
-+	struct device *dev;
-+	int pas_id = 0;
++	struct device_node *node;
++	phys_addr_t mem_phys;
++	size_t res_size;
++	ssize_t fw_size;
++	void *mem_virt;
 +	int ret;
-+
-+	if (!fw_name || !(*fw_name) || !core)
-+		return -EINVAL;
-+
-+	dev = core->dev;
 +
 +	if (strlen(fw_name) >= MAX_FIRMWARE_NAME_SIZE - 4)
 +		return -EINVAL;
-+
-+	pas_id = core->iris_platform_data->pas_id;
 +
 +	node = of_parse_phandle(dev->of_node, "memory-region", 0);
 +	if (!node)
@@ -157,40 +133,27 @@ index 000000000000..55bbcc798f4c
 +	res_size = rmem->size;
 +
 +	ret = request_firmware(&firmware, fw_name, dev);
-+	if (ret) {
-+		dev_err(core->dev, "failed to request fw \"%s\", error %d\n",
-+			fw_name, ret);
++	if (ret)
 +		goto err_put_node;
-+	}
 +
 +	fw_size = qcom_mdt_get_size(firmware);
 +	if (fw_size < 0 || res_size < (size_t)fw_size) {
 +		ret = -EINVAL;
-+		dev_err(core->dev, "out of bound fw image fw size: %ld, res_size: %lu\n",
-+			fw_size, res_size);
 +		goto err_release_fw;
 +	}
 +
 +	mem_virt = memremap(mem_phys, res_size, MEMREMAP_WC);
-+	if (!mem_virt) {
-+		dev_err(core->dev, "failed to remap fw memory phys %pa[p]\n",
-+			&mem_phys);
++	if (!mem_virt)
 +		goto err_release_fw;
-+	}
 +
 +	ret = qcom_mdt_load(dev, firmware, fw_name,
 +			    pas_id, mem_virt, mem_phys, res_size, NULL);
-+	if (ret) {
-+		dev_err(core->dev, "error %d loading fw \"%s\"\n",
-+			ret, fw_name);
++	if (ret)
 +		goto err_mem_unmap;
-+	}
++
 +	ret = qcom_scm_pas_auth_and_reset(pas_id);
-+	if (ret) {
-+		dev_err(core->dev, "error %d authenticating fw \"%s\"\n",
-+			ret, fw_name);
++	if (ret)
 +		goto err_mem_unmap;
-+	}
 +
 +	return ret;
 +
@@ -200,11 +163,13 @@ index 000000000000..55bbcc798f4c
 +	release_firmware(firmware);
 +err_put_node:
 +	of_node_put(node);
++
 +	return ret;
 +}
 +
 +int iris_fw_load(struct iris_core *core)
 +{
++	struct tz_cp_config *cp_config = core->iris_platform_data->tz_cp_config_data;
 +	int ret;
 +
 +	ret = iris_load_fw_to_memory(core, core->iris_platform_data->fwname);
@@ -213,7 +178,10 @@ index 000000000000..55bbcc798f4c
 +		return -ENOMEM;
 +	}
 +
-+	ret = iris_protect_cp_mem(core);
++	ret = qcom_scm_mem_protect_video_var(cp_config->cp_start,
++					     cp_config->cp_size,
++					     cp_config->cp_nonpixel_start,
++					     cp_config->cp_nonpixel_size);
 +	if (ret) {
 +		dev_err(core->dev, "protect memory failed\n");
 +		qcom_scm_pas_shutdown(core->iris_platform_data->pas_id);
@@ -225,13 +193,7 @@ index 000000000000..55bbcc798f4c
 +
 +int iris_fw_unload(struct iris_core *core)
 +{
-+	int ret;
-+
-+	ret = qcom_scm_pas_shutdown(core->iris_platform_data->pas_id);
-+	if (ret)
-+		dev_err(core->dev, "firmware unload failed with ret %d\n", ret);
-+
-+	return ret;
++	return qcom_scm_pas_shutdown(core->iris_platform_data->pas_id);
 +}
 diff --git a/drivers/media/platform/qcom/iris/iris_firmware.h b/drivers/media/platform/qcom/iris/iris_firmware.h
 new file mode 100644
@@ -254,7 +216,7 @@ index 000000000000..8d4f6b7f75c5
 +
 +#endif
 diff --git a/drivers/media/platform/qcom/iris/iris_platform_common.h b/drivers/media/platform/qcom/iris/iris_platform_common.h
-index 5287fdf913bc..9c919367f9d7 100644
+index dac64ec4bf03..04bef37b7b77 100644
 --- a/drivers/media/platform/qcom/iris/iris_platform_common.h
 +++ b/drivers/media/platform/qcom/iris/iris_platform_common.h
 @@ -6,6 +6,8 @@
@@ -264,9 +226,9 @@ index 5287fdf913bc..9c919367f9d7 100644
 +#define IRIS_PAS_ID				9
 +
  extern struct iris_platform_data sm8550_data;
- extern struct iris_platform_data sm8250_data;
  
-@@ -20,6 +22,13 @@ struct platform_clk_data {
+ enum platform_clk_type {
+@@ -19,6 +21,13 @@ struct platform_clk_data {
  	const char *clk_name;
  };
  
@@ -280,7 +242,7 @@ index 5287fdf913bc..9c919367f9d7 100644
  struct iris_platform_data {
  	struct iris_inst *(*get_instance)(void);
  	const struct icc_info *icc_tbl;
-@@ -33,6 +42,9 @@ struct iris_platform_data {
+@@ -32,6 +41,9 @@ struct iris_platform_data {
  	const char * const *clk_rst_tbl;
  	unsigned int clk_rst_tbl_size;
  	u64 dma_mask;
@@ -290,37 +252,11 @@ index 5287fdf913bc..9c919367f9d7 100644
  };
  
  #endif
-diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8250.c b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
-index 664cb2b359a3..36bcb1b851ed 100644
---- a/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
-+++ b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
-@@ -25,6 +25,13 @@ static const struct platform_clk_data sm8250_clk_table[] = {
- 	{IRIS_HW_CLK,   "vcodec0_core" },
- };
- 
-+static struct tz_cp_config tz_cp_config_sm8250 = {
-+	.cp_start = 0,
-+	.cp_size = 0x25800000,
-+	.cp_nonpixel_start = 0x01000000,
-+	.cp_nonpixel_size = 0x24800000,
-+};
-+
- struct iris_platform_data sm8250_data = {
- 	.get_instance = iris_hfi_gen1_get_instance,
- 	.icc_tbl = sm8250_icc_table,
-@@ -38,4 +45,7 @@ struct iris_platform_data sm8250_data = {
- 	.clk_tbl = sm8250_clk_table,
- 	.clk_tbl_size = ARRAY_SIZE(sm8250_clk_table),
- 	.dma_mask = GENMASK(31, 29) - 1,
-+	.fwname = "qcom/vpu/vpu20_p4.mbn",
-+	.pas_id = IRIS_PAS_ID,
-+	.tz_cp_config_data = &tz_cp_config_sm8250,
- };
 diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
-index 0db832b099ac..1bb34c3e6e18 100644
+index 9b305b8e2110..96d9d6e816a0 100644
 --- a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
 +++ b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
-@@ -25,6 +25,13 @@ static const struct platform_clk_data sm8550_clk_table[] = {
+@@ -24,6 +24,13 @@ static const struct platform_clk_data sm8550_clk_table[] = {
  	{IRIS_HW_CLK,   "vcodec0_core" },
  };
  
@@ -334,7 +270,7 @@ index 0db832b099ac..1bb34c3e6e18 100644
  struct iris_platform_data sm8550_data = {
  	.get_instance = iris_hfi_gen2_get_instance,
  	.icc_tbl = sm8550_icc_table,
-@@ -38,4 +45,7 @@ struct iris_platform_data sm8550_data = {
+@@ -37,4 +44,7 @@ struct iris_platform_data sm8550_data = {
  	.clk_tbl = sm8550_clk_table,
  	.clk_tbl_size = ARRAY_SIZE(sm8550_clk_table),
  	.dma_mask = GENMASK(31, 29) - 1,

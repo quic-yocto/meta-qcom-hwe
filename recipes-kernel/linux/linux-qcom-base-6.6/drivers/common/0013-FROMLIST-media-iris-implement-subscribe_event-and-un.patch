@@ -1,21 +1,22 @@
-From 43e7095471316cd609da8c55a349eb9bb68de712 Mon Sep 17 00:00:00 2001
+From f0f232aa53aa93189316b348967d6e13650d7fe1 Mon Sep 17 00:00:00 2001
 From: Vedang Nagar <quic_vnagar@quicinc.com>
 Date: Tue, 27 Aug 2024 15:35:40 +0530
-Subject: [PATCH 15/29] FROMLIST: media: iris: implement subscribe_event and
+Subject: FROMLIST: media: iris: implement subscribe_event and
  unsubscribe_event ioctls
 
-Implement subscribe_event and unsubscribe_event ioctls in the
-driver with necessary hooks.
+Implement subscribe_event and unsubscribe_event iocts with necessary
+hooks.
 
+Change-Id: I7c660b69b8832f52a77527467d7234bc3f21ee18
 Signed-off-by: Vedang Nagar <quic_vnagar@quicinc.com>
 Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
-Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-15-c5fdbbe65e70@quicinc.com/]
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-13-c5eaa4e9ab9e@quicinc.com/]
 ---
  .../media/platform/qcom/iris/iris_instance.h  |  2 ++
- drivers/media/platform/qcom/iris/iris_vdec.c  | 26 ++++++++++++++++
+ drivers/media/platform/qcom/iris/iris_vdec.c  | 26 +++++++++++++++++++
  drivers/media/platform/qcom/iris/iris_vdec.h  |  1 +
- drivers/media/platform/qcom/iris/iris_vidc.c  | 31 +++++++++++++++++++
- 4 files changed, 60 insertions(+)
+ drivers/media/platform/qcom/iris/iris_vidc.c  | 17 ++++++++++++
+ 4 files changed, 46 insertions(+)
 
 diff --git a/drivers/media/platform/qcom/iris/iris_instance.h b/drivers/media/platform/qcom/iris/iris_instance.h
 index bb43119af352..d28b8fd7ec2f 100644
@@ -38,7 +39,7 @@ index bb43119af352..d28b8fd7ec2f 100644
  
  #endif
 diff --git a/drivers/media/platform/qcom/iris/iris_vdec.c b/drivers/media/platform/qcom/iris/iris_vdec.c
-index a38903eefa1c..29c7e229c148 100644
+index fd0f1ebc33e8..c4eeba5ed6da 100644
 --- a/drivers/media/platform/qcom/iris/iris_vdec.c
 +++ b/drivers/media/platform/qcom/iris/iris_vdec.c
 @@ -3,6 +3,7 @@
@@ -57,9 +58,9 @@ index a38903eefa1c..29c7e229c148 100644
  
  void iris_vdec_inst_init(struct iris_inst *inst)
  {
-@@ -207,3 +209,27 @@ int iris_vdec_s_fmt(struct iris_inst *inst, struct v4l2_format *f)
+@@ -208,3 +210,27 @@ int iris_vdec_s_fmt(struct iris_inst *inst, struct v4l2_format *f)
  
- 	return ret;
+ 	return 0;
  }
 +
 +int iris_vdec_subscribe_event(struct iris_inst *inst, const struct v4l2_event_subscription *sub)
@@ -97,7 +98,7 @@ index eb8a1121ae92..707fff34bf4d 100644
  
  #endif
 diff --git a/drivers/media/platform/qcom/iris/iris_vidc.c b/drivers/media/platform/qcom/iris/iris_vidc.c
-index 488be6afd999..141704512b3c 100644
+index 1d6c5e8fafb4..8068c06c1f11 100644
 --- a/drivers/media/platform/qcom/iris/iris_vidc.c
 +++ b/drivers/media/platform/qcom/iris/iris_vidc.c
 @@ -4,6 +4,7 @@
@@ -108,42 +109,28 @@ index 488be6afd999..141704512b3c 100644
  #include <media/v4l2-ioctl.h>
  #include <media/v4l2-mem2mem.h>
  
-@@ -402,6 +403,34 @@ static int iris_g_selection(struct file *filp, void *fh, struct v4l2_selection *
- 	return ret;
+@@ -320,6 +321,20 @@ static int iris_g_selection(struct file *filp, void *fh, struct v4l2_selection *
+ 	return 0;
  }
  
 +static int iris_subscribe_event(struct v4l2_fh *fh, const struct v4l2_event_subscription *sub)
 +{
-+	struct iris_inst *inst;
-+	int ret;
++	struct iris_inst *inst = container_of(fh, struct iris_inst, fh);
 +
-+	inst = container_of(fh, struct iris_inst, fh);
-+
-+	mutex_lock(&inst->lock);
-+	ret = iris_vdec_subscribe_event(inst, sub);
-+	mutex_unlock(&inst->lock);
-+
-+	return ret;
++	return iris_vdec_subscribe_event(inst, sub);
 +}
 +
 +static int iris_unsubscribe_event(struct v4l2_fh *fh, const struct v4l2_event_subscription *sub)
 +{
-+	struct iris_inst *inst;
-+	int ret;
++	struct iris_inst *inst = container_of(fh, struct iris_inst, fh);
 +
-+	inst = container_of(fh, struct iris_inst, fh);
-+
-+	mutex_lock(&inst->lock);
-+	ret = v4l2_event_unsubscribe(&inst->fh, sub);
-+	mutex_unlock(&inst->lock);
-+
-+	return ret;
++	return v4l2_event_unsubscribe(&inst->fh, sub);
 +}
 +
  static struct v4l2_file_operations iris_v4l2_file_ops = {
  	.owner                          = THIS_MODULE,
  	.open                           = iris_open,
-@@ -427,6 +456,8 @@ static const struct v4l2_ioctl_ops iris_v4l2_ioctl_ops = {
+@@ -345,6 +360,8 @@ static const struct v4l2_ioctl_ops iris_v4l2_ioctl_ops = {
  	.vidioc_enum_framesizes         = iris_enum_framesizes,
  	.vidioc_reqbufs                 = v4l2_m2m_ioctl_reqbufs,
  	.vidioc_g_selection             = iris_g_selection,
