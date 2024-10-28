@@ -165,4 +165,5 @@ SRC_URI:append = " \
     file://qcs8300/0001-UPSTREAM-phy-qcom-qmp-Add-qmp-configuration-for-QCS8.patch \
     file://qcs8300/0002-UPSTREAM-phy-qcom-qmp-usb-simplify-clock-handling.patch \
     file://qcs8300/0003-UPSTREAM-phy-qcom-qmp-usb-rework-reset-handling.patch \
+    file://common/0004-FROMLIST-firmware-psci-Read-and-use-vendor-reset-typ.patch \
     "

@@ -1,0 +1,58 @@
+From 50c6e1698481579b854536b0ac6f80267af6954e Mon Sep 17 00:00:00 2001
+From: Elliot Berman <quic_eberman@quicinc.com>
+Date: Thu, 7 Nov 2024 15:38:30 -0800
+Subject: [PATCH] FROMLIST: arm64: dts: qcom: sa8775p-ride: Add PSCI
+ SYSTEM_RESET2 types
+
+sa8775p-ride firmware supports vendor-defined SYSTEM_RESET2 types.
+Describe the reset types: "bootloader" will cause device to reboot and
+stop in the bootloader's fastboot mode. "edl" will cause device to
+reboot into "emergency download mode", which permits loading images via
+the Firehose protocol.
+
+Change-Id: I0116179e889929de92084e9f4ad6b1bb4d820712
+Co-developed-by: Shivendra Pratap <quic_spratap@quicinc.com>
+Signed-off-by: Shivendra Pratap <quic_spratap@quicinc.com>
+Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Link: https://lore.kernel.org/all/20241107-arm-psci-system_reset2-vendor-reboots-v8-6-e8715fa65cb5@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241107-arm-psci-system_reset2-vendor-reboots-v8-6-e8715fa65cb5@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dtsi | 7 +++++++
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi      | 2 +-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dtsi b/arch/arm64/boot/dts/qcom/sa8775p-ride.dtsi
+index e6fdbbf3654b..acbb5f1e373a 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dtsi
+@@ -631,6 +631,13 @@ &pmm8654au_3_gpios {
+ 			  "GNSS_BOOT_MODE";
+ };
+ 
++&psci {
++	reset-types {
++		mode-bootloader = <0x10001 0x2>;
++		mode-edl = <0 0x1>;
++	};
++};
++
+ &qupv3_id_1 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index b8d6185939be..f1f15e213937 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -408,7 +408,7 @@ pmu {
+ 		interrupts = <GIC_PPI 7 IRQ_TYPE_LEVEL_HIGH>;
+ 	};
+ 
+-	psci {
++	psci: psci {
+ 		compatible = "arm,psci-1.0";
+ 		method = "smc";
+ 
+-- 
+2.46.0
+
