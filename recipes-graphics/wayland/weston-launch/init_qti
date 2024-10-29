@@ -128,7 +128,8 @@ case "$1" in
 
         if [ -f /sys/devices/soc0/soc_id ]; then
             soc_id=`cat /sys/devices/soc0/soc_id`
-            if [ "$soc_id" == 497 ] || [ "$soc_id" == 498 ]; then
+            if [ "$soc_id" == 497 ] || [ "$soc_id" == 498 ] ||
+                    [ "$soc_id" == 575 ] || [ "$soc_id" == 576 ]; then
                         weston --tty=2 --idle-time=0 --log=/tmp/weston.log --config=/etc/xdg/weston/weston.ini \
                         --continue-without-input &
             fi
