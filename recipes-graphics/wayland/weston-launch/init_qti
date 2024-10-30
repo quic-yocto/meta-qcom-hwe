@@ -138,7 +138,7 @@ case "$1" in
         if [ -f /sys/devices/soc0/soc_id ]; then
             soc_id=`cat /sys/devices/soc0/soc_id`
             if [ "$soc_id" == 534 ] || [ "$soc_id" == 667 ] || [ "$soc_id" == 606 ] ||
-                    [ "$soc_id" == 674 ] || [ "$soc_id" == 675 ]; then
+                    [ "$soc_id" == 674 ] || [ "$soc_id" == 675 ] || [ "$soc_id" == 676 ]; then
                         weston --tty=2 --idle-time=0 --log=/tmp/weston.log --backend=drm-backend.so \
                         --continue-without-input &
             fi
