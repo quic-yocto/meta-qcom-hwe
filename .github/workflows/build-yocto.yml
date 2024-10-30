@@ -68,4 +68,4 @@ jobs:
           export SSTATE_DIR=${CACHE_DIR}/sstate-cache
           export KAS_WORK_DIR=$PWD/../kas
           mkdir $KAS_WORK_DIR
-          kas build ci/mirror.yml:ci/${{ matrix.machine }}.yml
+          kas build ci/${{ matrix.machine }}.yml
