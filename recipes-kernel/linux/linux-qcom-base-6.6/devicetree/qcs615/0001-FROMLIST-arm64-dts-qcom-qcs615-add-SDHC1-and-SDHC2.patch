@@ -1,0 +1,246 @@
+From 4ae297f5978692aa32a974ae88d30eda1a707333 Mon Sep 17 00:00:00 2001
+From: Yuanjie Yang <quic_yuanjiey@quicinc.com>
+Date: Tue, 29 Oct 2024 11:41:57 +0800
+Subject: [PATCH] FROMLIST: arm64: dts: qcom: qcs615: add SDHC1 and SDHC2
+
+Add SDHC1 and SDHC2 support to the QCS615 Ride platform. The SDHC1
+and SDHC2 of QCS615 are derived from SM6115. Include the relevant
+binding documents accordingly. Additionally, configure SDHC1-related
+and SDHC2-related opp, power, and interconnect settings in the device
+tree.
+
+Signed-off-by: Yuanjie Yang <quic_yuanjiey@quicinc.com>
+Link: https://lore.kernel.org/linux-arm-msm/20241023092708.604195-1-quic_yuanjiey@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20241023092708.604195-3-quic_yuanjiey@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 200 +++++++++++++++++++++++++++
+ 1 file changed, 200 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index cfe1b856a37b..575e4ed8ea1b 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -26,6 +26,8 @@ aliases {
+ 		i2c5 = &i2c5;
+ 		i2c6 = &i2c6;
+ 		i2c7 = &i2c7;
++		mmc0 = &sdhc_1;
++		mmc1 = &sdhc_2;
+ 		spi2 = &spi2;
+ 		spi4 = &spi4;
+ 		spi6 = &spi6;
+@@ -461,6 +463,65 @@ qfprom: efuse@780000 {
+ 			#size-cells = <1>;
+ 		};
+ 
++		sdhc_1: mmc@7c4000 {
++			compatible = "qcom,qcs615-sdhci", "qcom,sdhci-msm-v5";
++			reg = <0x0 0x7c4000 0x0 0x1000>,
++			      <0x0 0x7c5000 0x0 0x1000>;
++			reg-names = "hc",
++				    "cqhci";
++
++			interrupts = <GIC_SPI 641 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 644 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "hc_irq",
++					  "pwr_irq";
++
++			clocks = <&gcc GCC_SDCC1_AHB_CLK>,
++				 <&gcc GCC_SDCC1_APPS_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK>,
++				 <&gcc GCC_SDCC1_ICE_CORE_CLK>;
++			clock-names = "iface",
++				      "core",
++				      "xo",
++				      "ice";
++
++			resets = <&gcc GCC_SDCC1_BCR>;
++
++			power-domains = <&rpmhpd RPMHPD_CX>;
++			operating-points-v2 = <&sdhc1_opp_table>;
++			iommus = <&apps_smmu 0x02c0 0x0>;
++			interconnects = <&aggre1_noc MASTER_SDCC_1 QCOM_ICC_TAG_ALWAYS
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ALWAYS>,
++					<&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ALWAYS
++					 &config_noc SLAVE_SDCC_1 QCOM_ICC_TAG_ALWAYS>;
++			interconnect-names = "sdhc-ddr",
++					     "cpu-sdhc";
++
++			bus-width = <8>;
++			qcom,dll-config = <0x000f642c>;
++			qcom,ddr-config = <0x80040868>;
++			supports-cqe;
++			dma-coherent;
++			mmc-ddr-1_8v;
++			mmc-hs200-1_8v;
++			mmc-hs400-1_8v;
++			mmc-hs400-enhanced-strobe;
++			status = "disabled";
++
++			sdhc1_opp_table: opp-table {
++				compatible = "operating-points-v2";
++
++				opp-100000000 {
++					opp-hz = /bits/ 64 <100000000>;
++					required-opps = <&rpmhpd_opp_svs>;
++				};
++
++				opp-384000000 {
++					opp-hz = /bits/ 64 <384000000>;
++					required-opps = <&rpmhpd_opp_nom>;
++				};
++			};
++		};
++
+ 		gpi_dma0: qcom,gpi-dma@800000  {
+ 			compatible = "qcom,sdm845-gpi-dma";
+ 			reg = <0x0 0x800000 0x0 0x60000>;
+@@ -1192,6 +1253,145 @@ qup_uart7_rx: qup-uart7-rx-state {
+ 				pins = "gpio13";
+ 				function = "qup1";
+ 			};
++
++			sdc1_state_on: sdc1-on-state {
++				clk-pins {
++					pins = "sdc1_clk";
++					bias-disable;
++					drive-strength = <16>;
++				};
++
++				cmd-pins {
++					pins = "sdc1_cmd";
++					bias-pull-up;
++					drive-strength = <10>;
++				};
++
++				data-pins {
++					pins = "sdc1_data";
++					bias-pull-up;
++					drive-strength = <10>;
++				};
++
++				rclk-pins {
++					pins = "sdc1_rclk";
++					bias-pull-down;
++				};
++			};
++
++			sdc1_state_off: sdc1-off-state {
++				clk-pins {
++					pins = "sdc1_clk";
++					bias-disable;
++					drive-strength = <2>;
++				};
++
++				cmd-pins {
++					pins = "sdc1_cmd";
++					bias-pull-up;
++					drive-strength = <2>;
++				};
++
++				data-pins {
++					pins = "sdc1_data";
++					bias-pull-up;
++					drive-strength = <2>;
++				};
++
++				rclk-pins {
++					pins = "sdc1_rclk";
++					bias-pull-down;
++				};
++			};
++
++			sdc2_state_on: sdc2-on-state {
++				clk-pins {
++					pins = "sdc2_clk";
++					bias-disable;
++					drive-strength = <16>;
++				};
++
++				cmd-pins {
++					pins = "sdc2_cmd";
++					bias-pull-up;
++					drive-strength = <10>;
++				};
++
++				data-pins {
++					pins = "sdc2_data";
++					bias-pull-up;
++					drive-strength = <10>;
++				};
++			};
++
++			sdc2_state_off: sdc2-off-state {
++				clk-pins {
++					pins = "sdc2_clk";
++					bias-disable;
++					drive-strength = <2>;
++				};
++
++				cmd-pins {
++					pins = "sdc2_cmd";
++					bias-pull-up;
++					drive-strength = <2>;
++				};
++
++				data-pins {
++					pins = "sdc2_data";
++					bias-pull-up;
++					drive-strength = <2>;
++				};
++			};
++		};
++
++		sdhc_2: mmc@8804000 {
++			compatible = "qcom,qcs615-sdhci","qcom,sdhci-msm-v5";
++			reg = <0x0 0x8804000 0x0 0x1000>;
++			reg-names = "hc";
++
++			interrupts = <GIC_SPI 204 IRQ_TYPE_LEVEL_HIGH>,
++				     <GIC_SPI 222 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "hc_irq",
++					  "pwr_irq";
++
++			clocks = <&gcc GCC_SDCC2_AHB_CLK>,
++				 <&gcc GCC_SDCC2_APPS_CLK>,
++				 <&rpmhcc RPMH_CXO_CLK>;
++			clock-names = "iface",
++				      "core",
++				      "xo";
++
++			power-domains = <&rpmhpd RPMHPD_CX>;
++			operating-points-v2 = <&sdhc2_opp_table>;
++			iommus = <&apps_smmu 0x02a0 0x0>;
++			resets = <&gcc GCC_SDCC2_BCR>;
++			interconnects = <&aggre1_noc MASTER_SDCC_2 QCOM_ICC_TAG_ALWAYS
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ALWAYS>,
++					<&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ALWAYS
++					 &config_noc SLAVE_SDCC_2 QCOM_ICC_TAG_ALWAYS>;
++			interconnect-names = "sdhc-ddr",
++					     "cpu-sdhc";
++
++			bus-width = <4>;
++			qcom,dll-config = <0x0007642c>;
++			qcom,ddr-config = <0x80040868>;
++			dma-coherent;
++			status = "disabled";
++
++			sdhc2_opp_table: opp-table {
++				compatible = "operating-points-v2";
++
++				opp-100000000 {
++					opp-hz = /bits/ 64 <100000000>;
++					required-opps = <&rpmhpd_opp_low_svs>;
++				};
++
++				opp-202000000 {
++					opp-hz = /bits/ 64 <202000000>;
++					required-opps = <&rpmhpd_opp_nom>;
++				};
++			};
+ 		};
+ 
+ 		dc_noc: interconnect@9160000 {
+-- 
+2.34.1
+

@@ -76,4 +76,5 @@ SRC_URI:append = " \
     file://qcs615/0001-FROMLIST-dt-bindings-phy-Add-QMP-UFS-PHY-comptible-f.patch \
     file://qcs615/0002-FROMLIST-dt-bindings-ufs-qcom-Add-UFS-Host-Controlle.patch \
     file://qcs615/0002-FROMLIST-dt-bindings-net-qcom-ethqos-add-description.patch \
+    file://qcs615/0001-BACKPORT-dt-bindings-mmc-Add-sdhci-compatible-for-QCS615.patch \
     "

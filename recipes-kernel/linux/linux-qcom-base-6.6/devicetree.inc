@@ -73,6 +73,7 @@ SRC_URI:append = " \
     file://qcs615/0001-FROMLIST-arm64-dts-qcom-qcs615-Add-QUPv3-configurati.patch \
     file://qcs615/0003-FROMLIST-arm64-dts-qcom-qcs615-add-UFS-node.patch \
     file://qcs615/0003-FROMLIST-arm64-dts-qcom-qcs615-add-ethernet-node.patch \
+    file://qcs615/0001-FROMLIST-arm64-dts-qcom-qcs615-add-SDHC1-and-SDHC2.patch \
     "
 
 # qcs615 board dts patches
@@ -81,6 +82,7 @@ SRC_URI:append = " \
     file://addons/0001-QCLINUX-arm64-dts-qcom-qcs615-ride-add-board-id-and-.patch \
     file://qcs615/0004-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-UFS-node.patch \
     file://qcs615/0004-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-ethernet-.patch \
+    file://qcs615/0002-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-SDHC1-and-SDHC2.patch\
     "
 # qcs8300 dtsi patches
 SRC_URI:append = " \
