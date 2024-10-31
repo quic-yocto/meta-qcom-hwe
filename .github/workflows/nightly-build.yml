@@ -7,31 +7,5 @@ on:
   - cron: "23 1 * * *"   # daily job - pick a random "minute"  - top of hour can be busy in github
 
 jobs:
-  compile:
-    if: github.repository == 'quic-yocto/meta-qcom-hwe'
-    strategy:
-      fail-fast: true
-      matrix:
-        machine:
-          - qcm6490-idp
-          - qcs6490-rb3gen2-core-kit
-          - sa8775p-ride-sx
-    runs-on: [self-hosted, x86]
-    name: ${{ matrix.machine }}/poky/systemd
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Kas build
-        run: |
-          # TODO - if the default branch becomes 'main', we can combine this
-          # workflow into build-yocto.yml
-          git checkout main
-          export DL_DIR=/srv/gh-runners/quic-yocto/downloads
-          export SSTATE_DIR=/srv/gh-runners/quic-yocto/sstate-cache
-          mkdir -p $DL_DIR
-          mkdir -p $SSTATE_DIR
-          mkdir build
-          cd build
-          kas build ../ci/${{ matrix.machine }}.yml
+  nightly:
+    uses: ./.github/workflows/build-yocto.yml
