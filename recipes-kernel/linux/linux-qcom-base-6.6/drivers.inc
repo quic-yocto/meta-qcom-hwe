@@ -161,4 +161,5 @@ SRC_URI:append = " \
     file://qcs9100/0001-FROMLIST-wifi-ath11k-Fix-unexpected-return-buffer-ma.patch \
     file://qcs9100/0001-PENDING-media-iris-add-compatible-string-for-sa8775p.patch \
     file://qcs9100/0003-QCLINUX-media-iris-add-support-for-GDSC-switch-and-P.patch \
+    file://qcs9100/0001-FROMLIST-drm-msm-a6xx-Add-support-for-A663.patch \
     "
