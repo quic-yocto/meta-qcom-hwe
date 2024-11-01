@@ -1,0 +1,30 @@
+From a7c014ced25bc5aa9940a57521b84f00cf298fed Mon Sep 17 00:00:00 2001
+From: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Date: Wed, 7 Aug 2024 14:52:30 +0530
+Subject: [PATCH 1/7] FROMLIST: dt-bindings: phy: Add eDP PHY compatible for
+ sa8775p
+
+Add compatible string for the supported eDP PHY on sa8775p platform.
+
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+Signed-off-by: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241018070706.28980-2-quic_mukhopad@quicinc.com/]
+---
+ Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml
+index 4e15d90d08b0..293fb6a9b1c3 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,edp-phy.yaml
+@@ -17,6 +17,7 @@ description:
+ properties:
+   compatible:
+     enum:
++      - qcom,sa8775p-edp-phy
+       - qcom,sc7280-edp-phy
+       - qcom,sc8180x-edp-phy
+       - qcom,sc8280xp-dp-phy
+-- 
+2.17.1
+

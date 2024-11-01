@@ -81,4 +81,6 @@ SRC_URI:append = " \
     file://qcs9100/0002-UPSTREAM-dt-bindings-display-msm-Document-the-DPU-fo.patch \
     file://qcs9100/0003-FROMLIST-dt-bindings-display-msm-Document-MDSS-on-SA.patch \
     file://qcs9100/0004-FROMLIST-dt-bindings-display-msm-Document-the-DPU-fo.patch \
+    file://qcs9100/0001-FROMLIST-dt-bindings-phy-Add-eDP-PHY-compatible-for-.patch \
+    file://qcs9100/0004-FROMLIST-dt-bindings-display-msm-dp-controller-docum.patch \
     "

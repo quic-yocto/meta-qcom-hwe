@@ -153,4 +153,7 @@ SRC_URI:append = " \
     file://qcs615/0010-FROMLIST-phy-qcom-qusb2-Add-support-for-QCS615.patch \
     file://qcs9100/0005-FROMLIST-BACKPORT-drm-msm-mdss-Add-SA8775P-support.patch \
     file://qcs9100/0006-FROMLIST-BACKPORT-drm-msm-dpu-Add-SA8775P-support.patch \
+    file://qcs9100/0002-FROMLIST-phy-qcom-edp-Introduce-aux_cfg-array-for-ve.patch \
+    file://qcs9100/0003-FROMLIST-phy-qcom-edp-Add-support-for-eDP-PHY-on-SA8.patch \
+    file://qcs9100/0005-FROMLIST-BACKPORT-drm-msm-dp-Add-DisplayPort-controller-for-S.patch \
     "

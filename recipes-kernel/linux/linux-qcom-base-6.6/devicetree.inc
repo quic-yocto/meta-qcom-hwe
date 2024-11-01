@@ -42,6 +42,7 @@ SRC_URI:append = " \
     file://qcs9100/0003-FROMGIT-arm64-dts-qcom-sa8775p-ride-enable-pmm8654au.patch \
     file://qcs9100/0001-arm64-dts-qcom-sa8775p-Add-new-memory-map-updates-to.patch \
     file://qcs9100/0007-FROMLIST-arm64-dts-qcom-sa8775p-add-display-dt-nodes.patch \
+    file://qcs9100/0006-FROMLIST-arm64-dts-qcom-sa8775p-add-DisplayPort-devi.patch \
     "
 # qcs9100 board dts patches
 SRC_URI:append = " \
@@ -63,6 +64,7 @@ SRC_URI:append = " \
     file://qcs9100/0007-FROMGIT-arm64-dts-qcom-sa8775p-ride-r3-add-new-board.patch \
     file://qcs9100/0010-FROMLIST-arm64-dts-qcom-qcs9100-Add-support-for-the-.patch \
     file://qcs9100/0011-QCLINUX-arm64-dts-qcom-Add-Modify-board-id-and-msm-i.patch \
+    file://qcs9100/0007-FROMLIST-arm64-dts-qcom-sa8775p-ride-Enable-Display-.patch \
     "
 
 # qcs615 dtsi patches
