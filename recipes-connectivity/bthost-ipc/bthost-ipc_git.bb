@@ -19,12 +19,23 @@ SRC_URI = "${QCOM_BLUETOOTH_SRC};branch=${QCOM_BLUETOOTH_SRCBRANCH};rev=${QCOM_B
            ${QCOM_SYSTEM_BT_SRC};branch=${QCOM_SYSTEM_BT_SRCBRANCH};rev=${QCOM_SYSTEM_BT_SRCDEV};destsuffix=bluetooth/stack/system/btaudio_a2dp_hw/include"
 
 BT_SOURCE = "${WORKDIR}/bluetooth"
+
 S = "${BT_SOURCE}/bt_audio/bthost_ipc"
 
 EXTRA_OEMAKE += 'BT_SOURCE=${BT_SOURCE}'
 
 EXTRA_OECONF = "--with-glib"
+
 SOLIBS = ".so"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
+
 FILES_SOLIBSDEV = ""
+INSANE_SKIP:${PN} = "dev-so"
+
+FILES:${PN} += "/usr/lib/libbthost_if.so.* /usr/lib/libbthost_if_sink.so.* /usr/lib/libbthost_if*.so"
+
+do_install:append() {
+        cd  ${D}/${libdir}/ && ln -sf libbthost_if.so.1.0.0 libbthost_if.so
+        cd  ${D}/${libdir}/ && ln -sf libbthost_if_sink.so.1.0.0 libbthost_if_sink.so
+}

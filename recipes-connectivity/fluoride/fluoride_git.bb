@@ -64,8 +64,8 @@ do_install:append() {
 
 	install -d ${D}${sysconfdir}/bluetooth/
 
-	cd  ${D}/${libdir}/ && ln -s libbluetoothdefault.so.0 bluetooth.default.so
-	cd  ${D}/${libdir}/ && ln -s libaudioa2dpdefault.so.0 audio.a2dp.default.so
+	cd  ${D}/${libdir}/ && ln -s libbluetoothdefault.so bluetooth.default.so
+	cd  ${D}/${libdir}/ && ln -s libaudioa2dpdefault.so audio.a2dp.default.so
 
 	if [ -f ${S}/stack/system/bt/conf/auto_pair_devlist.conf ]; then
 	   install -m 0660 ${S}/stack/system/bt/conf/auto_pair_devlist.conf ${D}${sysconfdir}/bluetooth/
