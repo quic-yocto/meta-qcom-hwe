@@ -26,6 +26,7 @@ SRC_URI:append:qcom = " file://0001-Setting-default-values-in-main.conf.patch \
                         file://0016-client-Allow-gatt.select-attribute-to-work-with-local-attributes.patch \
                         file://0017-client-Invalidate-scan-filter-on-scan-command.patch \
                         file://0018-device-Remove-device-after-all-bearers-are-disconnec.patch \
+                        file://0019-device-only-use-the-address-type-selection-algorithm.patch \
                         file://qca_set_bdaddr.service \
                         file://qca_set_bdaddr.sh \
                         file://0019-UPSTREAM-Fix-triggering-disconnect_timeout.patch \
