@@ -70,3 +70,10 @@ systemd_backlight_dir_read(mount_t)
 
 #allow graceful shutdown
 access_systemd_units(mount_t)
+
+#TODO: Need to clean/remove this post fixing the permission issue
+# Mount is expected to run only by root user
+# where treated as trusted server and running in permissive
+# for not going fwd will move out of permissive
+# issue is systemd-tmpfs is triggering this for it management
+permissive mount_t;
