@@ -45,6 +45,8 @@ SRC_URI:append = " \
     file://qcs9100/0006-FROMLIST-arm64-dts-qcom-sa8775p-add-DisplayPort-devi.patch \
     file://qcs9100/0002-PENDING-arm64-dts-qcom-iris-video-driver-for-sa8775p.patch \
     file://qcs9100/0003-FROMLIST-arm64-dts-qcom-sa8775p-Add-gpu-and-gmu-node.patch \
+    file://qcs9100/0001-UPSTREAM-arm64-dts-qcom-sa8775p-add-CPU-idle-states.patch \
+    file://qcs9100/0002-FROMLIST-arm64-dts-qcom-sa8775p-Add-CPUs-to-psci-pow.patch \
     "
 # qcs9100 board dts patches
 SRC_URI:append = " \

@@ -1,0 +1,153 @@
+From b0ee8f5bec2c857216717701fe4e6e9c854c3054 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Wed, 7 Aug 2024 15:31:43 +0200
+Subject: [PATCH 1/1] UPSTREAM: arm64: dts: qcom: sa8775p: add CPU idle states
+
+Add CPU idle-state nodes and power-domains to the .dtsi for SA8775P.
+
+Change-Id: Iace115353afed77cb47566a5ec9af3e5e0bc3384
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Link: https://lore.kernel.org/r/20240807-sa8775p-idle-states-v1-1-f2b5fcdfa0b0@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Signed-off-by: Maulik Shah <quic_mkshah@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 4f79d0deae37c298bbce5142937080ff5cc61a25]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 115 ++++++++++++++++++++++++++
+ 1 file changed, 115 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index d4f2bd38a29a..a9bbc2d6b943 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -221,6 +221,48 @@
+ 				};
+ 			};
+ 		};
++
++		idle-states {
++			entry-method = "psci";
++
++			GOLD_CPU_SLEEP_0: cpu-sleep-0 {
++				compatible = "arm,idle-state";
++				idle-state-name = "gold-power-collapse";
++				arm,psci-suspend-param = <0x40000003>;
++				entry-latency-us = <549>;
++				exit-latency-us = <901>;
++				min-residency-us = <1774>;
++				local-timer-stop;
++			};
++
++			GOLD_RAIL_CPU_SLEEP_0: cpu-sleep-1 {
++				compatible = "arm,idle-state";
++				idle-state-name = "gold-rail-power-collapse";
++				arm,psci-suspend-param = <0x40000004>;
++				entry-latency-us = <702>;
++				exit-latency-us = <1061>;
++				min-residency-us = <4488>;
++				local-timer-stop;
++			};
++		};
++
++		domain-idle-states {
++			CLUSTER_SLEEP_GOLD: cluster-sleep-0 {
++				compatible = "domain-idle-state";
++				arm,psci-suspend-param = <0x41000044>;
++				entry-latency-us = <2752>;
++				exit-latency-us = <3048>;
++				min-residency-us = <6118>;
++			};
++
++			CLUSTER_SLEEP_APSS_RSC_PC: cluster-sleep-1 {
++				compatible = "domain-idle-state";
++				arm,psci-suspend-param = <0x42000144>;
++				entry-latency-us = <3263>;
++				exit-latency-us = <6562>;
++				min-residency-us = <9987>;
++			};
++		};
+ 	};
+ 
+ 	dummy-sink {
+@@ -351,6 +393,79 @@
+ 	psci {
+ 		compatible = "arm,psci-1.0";
+ 		method = "smc";
++
++		CPU_PD0: power-domain-cpu0 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_0_PD>;
++			domain-idle-states = <&GOLD_CPU_SLEEP_0>,
++					     <&GOLD_RAIL_CPU_SLEEP_0>;
++		};
++
++		CPU_PD1: power-domain-cpu1 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_0_PD>;
++			domain-idle-states = <&GOLD_CPU_SLEEP_0>,
++					     <&GOLD_RAIL_CPU_SLEEP_0>;
++		};
++
++		CPU_PD2: power-domain-cpu2 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_0_PD>;
++			domain-idle-states = <&GOLD_CPU_SLEEP_0>,
++					     <&GOLD_RAIL_CPU_SLEEP_0>;
++		};
++
++		CPU_PD3: power-domain-cpu3 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_0_PD>;
++			domain-idle-states = <&GOLD_CPU_SLEEP_0>,
++					     <&GOLD_RAIL_CPU_SLEEP_0>;
++		};
++
++		CPU_PD4: power-domain-cpu4 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_1_PD>;
++			domain-idle-states = <&GOLD_CPU_SLEEP_0>,
++					     <&GOLD_RAIL_CPU_SLEEP_0>;
++		};
++
++		CPU_PD5: power-domain-cpu5 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_1_PD>;
++			domain-idle-states = <&GOLD_CPU_SLEEP_0>,
++					     <&GOLD_RAIL_CPU_SLEEP_0>;
++		};
++
++		CPU_PD6: power-domain-cpu6 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_1_PD>;
++			domain-idle-states = <&GOLD_CPU_SLEEP_0>,
++					     <&GOLD_RAIL_CPU_SLEEP_0>;
++		};
++
++		CPU_PD7: power-domain-cpu7 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_1_PD>;
++			domain-idle-states = <&GOLD_CPU_SLEEP_0>,
++					     <&GOLD_RAIL_CPU_SLEEP_0>;
++		};
++
++		CLUSTER_0_PD: power-domain-cluster0 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_2_PD>;
++			domain-idle-states = <&CLUSTER_SLEEP_GOLD>;
++		};
++
++		CLUSTER_1_PD: power-domain-cluster1 {
++			#power-domain-cells = <0>;
++			power-domains = <&CLUSTER_2_PD>;
++			domain-idle-states = <&CLUSTER_SLEEP_GOLD>;
++		};
++
++		CLUSTER_2_PD: power-domain-cluster2 {
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_SLEEP_APSS_RSC_PC>;
++		};
+ 	};
+ 
+ 	reserved-memory {
+-- 
+2.22.0
+
