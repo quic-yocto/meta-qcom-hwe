@@ -94,3 +94,7 @@ jobs:
           (( retries == i )) && { echo 'Failed to publish artifacts'; exit 1; }
 
           echo Image available at: ${url}
+
+      - name: Clear out the generated SBOM files
+        run: |
+          find $TOPDIR -name "*.spdx" -type f -delete

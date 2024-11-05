@@ -16,3 +16,6 @@ CMD="$CMD --dependency `pwd`/poky/meta `pwd`/meta-qcom"
 CMD="$CMD --no-auto-dependency"
 
 exec kas shell $TOPDIR/ci/base.yml --command "$CMD"
+
+# Clear out the generated SBOM files
+find $TOPDIR -name "*.spdx" -type f -delete

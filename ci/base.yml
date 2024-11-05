@@ -31,3 +31,8 @@ local_conf_header:
     INHERIT += "rm_work"
 
 machine: unset
+
+post_build_filter:
+  sbom_cleanup: |
+    # Clear out the generated SBOM files
+    find $TOPDIR -name "*.spdx" -type f -delete
