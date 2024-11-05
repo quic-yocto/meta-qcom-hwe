@@ -49,6 +49,8 @@ Please follow the instructions below for a KAS-based build. The KAS tool offers 
 	```
 For a manual build without KAS, refer to the [Yocto Project Quick Build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html).
 
+Note: To avoid issues with accessing the poky upstream repository, use the GitHub mirror for poky by updating the `ci/base.yml` file to reference `https://github.com/yoctoproject/poky`.
+
 ## Contributing
 
 Please submit any patches against the `meta-qcom-hwe` layer (branch **main**) by using the GitHub pull-request feature. Fork the repo, create a branch, do the work, rebase from upstream, and create the pull request.
