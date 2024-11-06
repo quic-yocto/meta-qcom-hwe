@@ -57,28 +57,30 @@ do_compile() {
     ukify_cmd="$ukify_cmd --uname ${KERNEL_VERSION}"
 
     # Kernel cmdline
-    cmdline=""
-    if [ -n "${QCOM_BOOTIMG_ROOTFS}" ]; then
-        cmdline="$cmdline root=${QCOM_BOOTIMG_ROOTFS} rw rootwait"
-    fi
+    if ! echo "${DISTRO_FEATURES}" | grep -q 'sota'; then
+        cmdline=""
+        if [ -n "${QCOM_BOOTIMG_ROOTFS}" ]; then
+            cmdline="$cmdline root=${QCOM_BOOTIMG_ROOTFS} rw rootwait"
+        fi
 
-    if [ ! -z "${SERIAL_CONSOLES}" ]; then
-        tmp="${SERIAL_CONSOLES}"
-        console=""
-        for entry in $tmp ; do
-            baudrate=`echo $entry | sed 's/\;.*//'`
-            tty=`echo $entry | sed -e 's/^[0-9]*\;//' -e 's/\;.*//'`
-            console="$tty","$baudrate"n8
-        done
-        cmdline="$cmdline console=$console"
-    fi
+        if [ ! -z "${SERIAL_CONSOLES}" ]; then
+            tmp="${SERIAL_CONSOLES}"
+            console=""
+            for entry in $tmp ; do
+                baudrate=`echo $entry | sed 's/\;.*//'`
+                tty=`echo $entry | sed -e 's/^[0-9]*\;//' -e 's/\;.*//'`
+                console="$tty","$baudrate"n8
+            done
+            cmdline="$cmdline console=$console"
+        fi
 
-    if [ -n "${KERNEL_CMDLINE_EXTRA}" ]; then
-        cmdline="$cmdline ${KERNEL_CMDLINE_EXTRA}"
-    fi
+        if [ -n "${KERNEL_CMDLINE_EXTRA}" ]; then
+            cmdline="$cmdline ${KERNEL_CMDLINE_EXTRA}"
+        fi
 
-    printf '%s' "$cmdline" > ${B}/cmdline
-    ukify_cmd="$ukify_cmd --cmdline @${B}/cmdline"
+        printf '%s' "$cmdline" > ${B}/cmdline
+        ukify_cmd="$ukify_cmd --cmdline @${B}/cmdline"
+    fi
 
     # Architecture
     ukify_cmd="$ukify_cmd --efi-arch ${EFI_ARCH}"
