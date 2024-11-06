@@ -155,4 +155,7 @@ SRC_URI:append = " \
     file://qcs9100/0002-FROMLIST-phy-qcom-edp-Introduce-aux_cfg-array-for-ve.patch \
     file://qcs9100/0003-FROMLIST-phy-qcom-edp-Add-support-for-eDP-PHY-on-SA8.patch \
     file://qcs9100/0005-FROMLIST-BACKPORT-drm-msm-dp-Add-DisplayPort-controller-for-S.patch \
+    file://common/0002-FROMGIT-soc-qcom-llcc-Updating-the-macro-name.patch \
+    file://common/0003-FROMGIT-soc-qcom-llcc-add-support-for-SAR2130P-and-S.patch \
+    file://qcs8300/0004-BACKPORT-soc-qcom-llcc-Add-LLCC-configuration-for-th.patch \
     "

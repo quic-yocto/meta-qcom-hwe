@@ -90,6 +90,8 @@ SRC_URI:append = " \
 # qcs8300 dtsi patches
 SRC_URI:append = " \
     file://qcs8300/0025-FROMLIST-arm64-dts-qcom-add-initial-support-for-QCS8.patch \
+    file://qcs8300/0005-FROMLIST-arm64-dts-qcom-qcs8300-Add-LLCC-support-for.patch \
+    file://qcs8300/0006-FROMLIST-arm64-dts-qcom-qcs8300-Add-PMU-support-for-.patch \
 	"
 
 # qcs8300 board dts patches

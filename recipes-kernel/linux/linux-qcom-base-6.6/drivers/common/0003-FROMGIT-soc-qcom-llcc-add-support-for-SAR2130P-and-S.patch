@@ -1,0 +1,74 @@
+From 2b2b5c023a451fcefeec39a54065271b225eb544 Mon Sep 17 00:00:00 2001
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Sat, 26 Oct 2024 18:43:33 +0300
+Subject: [PATCH 3/6] FROMGIT: soc: qcom: llcc: add support for SAR2130P and
+ SAR1130P
+
+Implement necessary support for the LLCC control on the SAR1130P and
+SAR2130P platforms. These two platforms use different ATTR1_MAX_CAP
+shift and also require manual override for num_banks.
+
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Link: https://lore.kernel.org/r/20241026-sar2130p-llcc-v3-3-2a58fa1b4d12@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+[Only bringing in the changes to use different ATTR1_MAX_CAP shift and manual
+override for num_banks]
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux.git 1685f685ff8036c74c3b5e9006ec7ceda5bafefa]
+
+Change-Id: I26c77eec1c0bf48b474b07cd9db7f606e04a1ea5
+---
+ drivers/soc/qcom/llcc-qcom.c | 22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/soc/qcom/llcc-qcom.c b/drivers/soc/qcom/llcc-qcom.c
+index b15adf4077f7..6e48a7790c40 100644
+--- a/drivers/soc/qcom/llcc-qcom.c
++++ b/drivers/soc/qcom/llcc-qcom.c
+@@ -121,6 +121,8 @@ struct qcom_llcc_config {
+ 	const struct llcc_slice_config *sct_data;
+ 	const u32 *reg_offset;
+ 	const struct llcc_edac_reg_offset *edac_reg_offset;
++	u32 max_cap_shift; /* instead of ATTR1_MAX_CAP_SHIFT */
++	u32 num_banks;
+ 	int size;
+ 	bool need_llcc_cfg;
+ 	bool no_edac;
+@@ -899,7 +901,10 @@ static int _qcom_llcc_cfg_program(const struct llcc_slice_config *config,
+ 	 */
+ 	max_cap_cacheline = max_cap_cacheline / drv_data->num_banks;
+ 	max_cap_cacheline >>= CACHE_LINE_SIZE_SHIFT;
+-	attr1_val |= max_cap_cacheline << ATTR1_MAX_CAP_SHIFT;
++	if (cfg->max_cap_shift)
++		attr1_val |= max_cap_cacheline << cfg->max_cap_shift;
++	else
++		attr1_val |= max_cap_cacheline << ATTR1_MAX_CAP_SHIFT;
+ 
+ 	attr1_cfg = LLCC_TRP_ATTR1_CFGn(config->slice_id);
+ 
+@@ -1115,12 +1120,17 @@ static int qcom_llcc_probe(struct platform_device *pdev)
+ 	}
+ 	cfg = &cfgs->llcc_config[0];
+ 
+-	ret = regmap_read(regmap, cfg->reg_offset[LLCC_COMMON_STATUS0], &num_banks);
+-	if (ret)
+-		goto err;
++	if (cfg->num_banks) {
++		num_banks = cfg->num_banks;
++	} else {
++		ret = regmap_read(regmap, cfg->reg_offset[LLCC_COMMON_STATUS0], &num_banks);
++		if (ret)
++			goto err;
++
++		num_banks &= LLCC_LB_CNT_MASK;
++		num_banks >>= LLCC_LB_CNT_SHIFT;
++	}
+ 
+-	num_banks &= LLCC_LB_CNT_MASK;
+-	num_banks >>= LLCC_LB_CNT_SHIFT;
+ 	drv_data->num_banks = num_banks;
+ 
+ 	drv_data->regmaps = devm_kcalloc(dev, num_banks, sizeof(*drv_data->regmaps), GFP_KERNEL);
+-- 
+2.46.0
+

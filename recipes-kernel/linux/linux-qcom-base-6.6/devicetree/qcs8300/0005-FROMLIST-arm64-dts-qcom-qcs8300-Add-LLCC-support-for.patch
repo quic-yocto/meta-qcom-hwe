@@ -1,0 +1,46 @@
+From 8a0e182fa2aa6222b9c27e51141684bc40fe773d Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Thu, 31 Oct 2024 15:14:38 +0800
+Subject: [PATCH 5/6] FROMLIST: arm64: dts: qcom: qcs8300: Add LLCC support for
+ QCS8300
+
+Add Last Level Cache Controller node on the QCS8300 platform.
+
+Change-Id: Id43cf39c61c3115f13f2b205d5daaa75186eecee
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Link: https://lore.kernel.org/all/20241031-qcs8300_llcc-v3-3-bb56952cb83b@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241031-qcs8300_llcc-v3-3-bb56952cb83b@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs8300.dtsi | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs8300.dtsi b/arch/arm64/boot/dts/qcom/qcs8300.dtsi
+index 2c35f96c3f28..811c926c94f4 100644
+--- a/arch/arm64/boot/dts/qcom/qcs8300.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs8300.dtsi
+@@ -882,6 +882,21 @@ gem_noc: interconnect@9100000 {
+ 			qcom,bcm-voters = <&apps_bcm_voter>;
+ 		};
+ 
++		llcc: system-cache-controller@9200000 {
++			compatible = "qcom,qcs8300-llcc";
++			reg = <0x0 0x09200000 0x0 0x80000>,
++			      <0x0 0x09300000 0x0 0x80000>,
++			      <0x0 0x09400000 0x0 0x80000>,
++			      <0x0 0x09500000 0x0 0x80000>,
++			      <0x0 0x09a00000 0x0 0x80000>;
++			reg-names = "llcc0_base",
++				    "llcc1_base",
++				    "llcc2_base",
++				    "llcc3_base",
++				    "llcc_broadcast_base";
++			interrupts = <GIC_SPI 582 IRQ_TYPE_LEVEL_HIGH>;
++		};
++
+ 		pdc: interrupt-controller@b220000 {
+ 			compatible = "qcom,qcs8300-pdc", "qcom,pdc";
+ 			reg = <0x0 0xb220000 0x0 0x30000>,
+-- 
+2.46.0
+
