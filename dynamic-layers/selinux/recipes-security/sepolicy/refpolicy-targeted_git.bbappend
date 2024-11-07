@@ -128,7 +128,7 @@ EOF
         rm -rf ${D}${QCOM_STORE_ROOT}/final
 }
 
-COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs8300"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs8300|qcs615"
 
 def get_machine(d):
     need_machine = (d.getVar('COMPATIBLE_MACHINE') or "").split("|")
@@ -147,6 +147,7 @@ def test_modules_list(d):
         'qcm6490': ['qcm6490_test', 'qcs9100_test'],
         'qcs9100': ['qcm6490_test', 'qcs9100_test'],
         'qcs8300': ['qcm6490_test', 'qcs9100_test'],
+        'qcs615':  ['qcm6490_test', 'qcs9100_test'],
         'qcm8550': ['qcm8550_test'],
         'qcs8550': ['qcs8550_test'],
     }
@@ -163,6 +164,7 @@ def target_modules_list(d):
         'qcm6490': ['qcm6490', 'qcs9100'],
         'qcs9100': ['qcm6490', 'qcs9100'],
         'qcs8300': ['qcm6490', 'qcs9100'],
+        'qcs615':  ['qcm6490', 'qcs9100'],
         'qcm8550': ['qcm8550'],
         'qcs8550': ['qcs8550'],
     }
