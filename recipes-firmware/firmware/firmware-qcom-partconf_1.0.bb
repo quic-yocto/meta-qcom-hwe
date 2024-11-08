@@ -33,9 +33,10 @@ python do_install() {
 
     firmware_install(d, fw_file, fw_path)
 
-    # Remove all files except partition.conf
+    # Remove all files except partition xmls.
     for item in os.listdir(d.getVar('D')):
-        if item == 'partition.xml':
+        name, ext = os.path.splitext(item)
+        if name.startswith('partition') and ext == '.xml':
             continue
         else:
             os.remove(os.path.join(d.getVar('D'), item))
@@ -53,7 +54,7 @@ PACKAGE_ARCH = "${SOC_ARCH}"
 
 PACKAGES += "${PN}-copyright"
 
-FILES:${PN} += "/partition.xml"
+FILES:${PN} += "/*.xml"
 FILES:${PN}-copyright += "/Qualcomm-Technologies-Inc.-Proprietary"
 
 INSANE_SKIP:${PN} = "arch"

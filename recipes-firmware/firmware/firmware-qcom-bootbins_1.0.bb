@@ -33,9 +33,10 @@ python do_install() {
 
     firmware_install(d, fw_file, fw_path)
 
-    # Remove partition.conf
+    # Remove partition xmls.
     for item in os.listdir(d.getVar('D')):
-        if item == 'partition.xml':
+        name, ext = os.path.splitext(item)
+        if name.startswith('partition') and ext == '.xml':
             os.remove(os.path.join(d.getVar('D'), item))
 
 }
