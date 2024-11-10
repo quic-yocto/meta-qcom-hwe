@@ -1,8 +1,0 @@
-[Unit]
-Before=local-fs.target
-
-[Mount]
-What=/dev/disk/by-partlabel/overlay
-Where=/mnt/overlay
-Type=ext4
-Options=inlinecrypt
