@@ -3,7 +3,7 @@ inherit qprebuilt pkgconfig systemd
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
-DESCRIPTION = "adsprpc daemon."
+SUMMARY = "FastRPC user space libraries and daemons needed to offload to DSPs"
 
 DEPENDS += "dspservices-headers qcom-libdmabufheap"
 
@@ -41,6 +41,7 @@ PACKAGE_ARCH    ?= "${MACHINE_ARCH}"
 
 INSANE_SKIP:${PN} += "already-stripped"
 INSANE_SKIP:${PN} += "installed-vs-shipped"
+INSANE_SKIP:${PN} += "dev-so"
 
 SYSTEMD_SERVICE:${PN} = " adsprpcd.service cdsprpcd.service"
 SYSTEMD_SERVICE:${PN}:append:qcs9100 = " cdsp1rpcd.service"
