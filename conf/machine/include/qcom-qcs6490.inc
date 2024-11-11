@@ -8,3 +8,5 @@ DEFAULTTUNE = "armv8-2a-crypto"
 require conf/machine/include/arm/arch-armv8-2a.inc
 
 KERNEL_CMDLINE_EXTRA ?= "pcie_pme=nomsi earlycon"
+
+EXTRA_IMAGEDEPENDS += "firmware-qcom-boot-qcs6490"
