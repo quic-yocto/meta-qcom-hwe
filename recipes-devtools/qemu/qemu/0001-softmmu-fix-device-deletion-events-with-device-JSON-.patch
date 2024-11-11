@@ -1,0 +1,118 @@
+From 093f830fda571426179eea433362b52a9b2c7adf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Daniel=20P=2E=20Berrang=C3=A9?= <berrange@redhat.com>
+Date: Wed, 5 Jan 2022 12:38:47 +0000
+Subject: [PATCH] softmmu: fix device deletion events with -device JSON syntax
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The -device JSON syntax impl leaks a reference on the created
+DeviceState instance. As a result when you hot-unplug the
+device, the device_finalize method won't be called and thus
+it will fail to emit the required DEVICE_DELETED event.
+
+A 'json-cli' feature was previously added against the
+'device_add' QMP command QAPI schema to indicated to mgmt
+apps that -device supported JSON syntax. Given the hotplug
+bug that feature flag is not usable for its purpose, so
+we add a new 'json-cli-hotplug' feature to indicate the
+-device supports JSON without breaking hotplug.
+
+Fixes: 5dacda5167560b3af8eadbce5814f60ba44b467e
+Resolves: https://gitlab.com/qemu-project/qemu/-/issues/802
+Signed-off-by: Daniel P. Berrangé <berrange@redhat.com>
+Message-Id: <20220105123847.4047954-2-berrange@redhat.com>
+Reviewed-by: Laurent Vivier <lvivier@redhat.com>
+Tested-by: Ján Tomko <jtomko@redhat.com>
+Reviewed-by: Thomas Huth <thuth@redhat.com>
+Signed-off-by: Kevin Wolf <kwolf@redhat.com>
+Pavankumar Kondeti <quic_pkondeti@quicinc.com>
+Upstream-Status: Backport [https://gitlab.com/qemu-project/qemu/-/commit/64b4529a432507ee84a924be69a03432639e87ba]
+---
+ qapi/qdev.json                 |  5 ++++-
+ softmmu/vl.c                   |  4 +++-
+ tests/qtest/device-plug-test.c | 19 +++++++++++++++++++
+ 3 files changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/qapi/qdev.json b/qapi/qdev.json
+index 69656b14df2a..26cd10106b27 100644
+--- a/qapi/qdev.json
++++ b/qapi/qdev.json
+@@ -44,6 +44,9 @@
+ # @json-cli: If present, the "-device" command line option supports JSON
+ #            syntax with a structure identical to the arguments of this
+ #            command.
++# @json-cli-hotplug: If present, the "-device" command line option supports JSON
++#                    syntax without the reference counting leak that broke
++#                    hot-unplug
+ #
+ # Notes:
+ #
+@@ -74,7 +77,7 @@
+ { 'command': 'device_add',
+   'data': {'driver': 'str', '*bus': 'str', '*id': 'str'},
+   'gen': false, # so we can get the additional arguments
+-  'features': ['json-cli'] }
++  'features': ['json-cli', 'json-cli-hotplug'] }
+ 
+ ##
+ # @device_del:
+diff --git a/softmmu/vl.c b/softmmu/vl.c
+index 620a1f1367e2..fec6c3725fe2 100644
+--- a/softmmu/vl.c
++++ b/softmmu/vl.c
+@@ -2681,6 +2681,7 @@ static void qemu_create_cli_devices(void)
+     qemu_opts_foreach(qemu_find_opts("device"),
+                       device_init_func, NULL, &error_fatal);
+     QTAILQ_FOREACH(opt, &device_opts, next) {
++        DeviceState *dev;
+         loc_push_restore(&opt->loc);
+         /*
+          * TODO Eventually we should call qmp_device_add() here to make sure it
+@@ -2689,7 +2690,8 @@ static void qemu_create_cli_devices(void)
+          * from the start, so call qdev_device_add_from_qdict() directly for
+          * now.
+          */
+-        qdev_device_add_from_qdict(opt->opts, true, &error_fatal);
++        dev = qdev_device_add_from_qdict(opt->opts, true, &error_fatal);
++        object_unref(OBJECT(dev));
+         loc_pop(&opt->loc);
+     }
+     rom_reset_order_override();
+diff --git a/tests/qtest/device-plug-test.c b/tests/qtest/device-plug-test.c
+index 559d47727af3..ad79bd4c143c 100644
+--- a/tests/qtest/device-plug-test.c
++++ b/tests/qtest/device-plug-test.c
+@@ -77,6 +77,23 @@ static void test_pci_unplug_request(void)
+     qtest_quit(qtest);
+ }
+ 
++static void test_pci_unplug_json_request(void)
++{
++    QTestState *qtest = qtest_initf(
++        "-device '{\"driver\": \"virtio-mouse-pci\", \"id\": \"dev0\"}'");
++
++    /*
++     * Request device removal. As the guest is not running, the request won't
++     * be processed. However during system reset, the removal will be
++     * handled, removing the device.
++     */
++    device_del(qtest, "dev0");
++    system_reset(qtest);
++    wait_device_deleted_event(qtest, "dev0");
++
++    qtest_quit(qtest);
++}
++
+ static void test_ccw_unplug(void)
+ {
+     QTestState *qtest = qtest_initf("-device virtio-balloon-ccw,id=dev0");
+@@ -145,6 +162,8 @@ int main(int argc, char **argv)
+      */
+     qtest_add_func("/device-plug/pci-unplug-request",
+                    test_pci_unplug_request);
++    qtest_add_func("/device-plug/pci-unplug-json-request",
++                   test_pci_unplug_json_request);
+ 
+     if (!strcmp(arch, "s390x")) {
+         qtest_add_func("/device-plug/ccw-unplug",
