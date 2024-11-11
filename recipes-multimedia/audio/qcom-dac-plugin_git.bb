@@ -14,6 +14,8 @@ SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/audio-u
 
 S = "${WORKDIR}/audio/opensource/audio-utils/audio-plugins/dac_plugin"
 
+EXTRA_OECONF:append:qcs8300 = " --enable-qcs8300=yes "
+
 DEPENDS = "qcom-audio-plugin-headers"
 
 SOLIBS = ".so"
