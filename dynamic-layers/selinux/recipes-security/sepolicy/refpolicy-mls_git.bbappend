@@ -43,7 +43,6 @@ SRC_URI:append:qcom = " file://apps/ \
             file://services/ \
             file://system/ \
             file://admin/ \
-            file://target/ \
             file://files/ \
 "
 
@@ -159,23 +158,6 @@ def test_modules_list(d):
     else:
         return None
 
-def target_modules_list(d):
-    machine = get_machine(d)
-
-    target_to_policy_map = {
-        'qcm6490': ['qcm6490', 'qcs9100'],
-        'qcs9100': ['qcm6490', 'qcs9100'],
-        'qcs8300': ['qcm6490', 'qcs9100'],
-        'qcs615':  ['qcm6490', 'qcs9100'],
-        'qcm8550': ['qcm8550'],
-        'qcs8550': ['qcs8550'],
-    }
-
-    if machine in target_to_policy_map:
-        return target_to_policy_map[machine]
-    else:
-        return None
-
 def copy_target_policies(src_path, dest_path, src_folder, dest_folder, d):
     import shutil
     import os
@@ -185,8 +167,6 @@ def copy_target_policies(src_path, dest_path, src_folder, dest_folder, d):
         test_modules = test_modules_list(d)
         if test_modules:
             policy_modules += test_modules
-    else:
-        policy_modules = target_modules_list(d)
 
     if policy_modules is None:
         return
@@ -211,7 +191,6 @@ def append_policy_file(src_path, dst_path):
 
 def copy_policies(src_path, dst_path, dir_list, d):
     import shutil
-    copy_target_policies(src_path, dst_path, "target", "kernel", d)
 
     if d.getVar("ENABLE_TEST_SEPOLICY") is 'y':
         copy_target_policies(src_path, dst_path, "test", "apps", d)
