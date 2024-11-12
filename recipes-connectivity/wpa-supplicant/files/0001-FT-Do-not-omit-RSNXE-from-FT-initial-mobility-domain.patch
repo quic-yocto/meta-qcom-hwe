@@ -1,0 +1,46 @@
+From ea2ff4b3f4dd32ca085a7c32c8ae3746a5469322 Mon Sep 17 00:00:00 2001
+From: Jouni Malinen <quic_jouni@quicinc.com>
+Date: Fri, 27 Sep 2024 22:59:22 +0300
+Subject: [PATCH] UPSTREAM: FT: Do not omit RSNXE from FT initial mobility domain association
+
+The special case for having to omit the RSNXE from Reassociation Request
+frames applies only for FT protocol. This was incorrectly applied to all
+cases using FT, i.e., both the initial mobility domain association and
+FT protocol. This should not have changed behavior for the initial
+mobility domain association regardless of whether Association Request
+frame or Reassociation Request frame is used.
+
+Fix the conditions for omitting the RSNXE to apply only when actually
+going through FT protocol.
+
+Fixes: 6140cca8191e ("FT: Omit RSNXE from FT protocol Reassociation Request when needed")
+Signed-off-by: Jouni Malinen <quic_jouni@quicinc.com>
+Upstream-Status: UPSTREAM [git://w1.fi/srv/git/hostap.git ea2ff4b3f4dd32ca085a7c32c8ae3746a5469322]
+---
+ wpa_supplicant/sme.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/wpa_supplicant/sme.c b/wpa_supplicant/sme.c
+index 818ddca83..b7faf53e3 100644
+--- a/wpa_supplicant/sme.c
++++ b/wpa_supplicant/sme.c
+@@ -813,7 +813,6 @@ static void sme_send_authentication(struct wpa_supplicant *wpa_s,
+ 		wpa_dbg(wpa_s, MSG_DEBUG, "SME: FT mobility domain %02x%02x",
+ 			md[0], md[1]);
+ 
+-		omit_rsnxe = !wpa_bss_get_rsnxe(wpa_s, bss, ssid, false);
+ 		if (wpa_s->sme.assoc_req_ie_len + 5 <
+ 		    sizeof(wpa_s->sme.assoc_req_ie)) {
+ 			struct rsn_mdie *mdie;
+@@ -833,6 +832,8 @@ static void sme_send_authentication(struct wpa_supplicant *wpa_s,
+ 		    wpa_sm_has_ft_keys(wpa_s->wpa, md)) {
+ 			wpa_dbg(wpa_s, MSG_DEBUG, "SME: Trying to use FT "
+ 				"over-the-air");
++			omit_rsnxe = !wpa_bss_get_rsnxe(wpa_s, bss, ssid,
++							false);
+ 			params.auth_alg = WPA_AUTH_ALG_FT;
+ 			params.ie = wpa_s->sme.ft_ies;
+ 			params.ie_len = wpa_s->sme.ft_ies_len;
+-- 
+2.17.1
+
