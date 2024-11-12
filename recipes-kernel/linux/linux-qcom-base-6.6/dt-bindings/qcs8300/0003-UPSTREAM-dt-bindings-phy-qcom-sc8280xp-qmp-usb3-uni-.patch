@@ -1,0 +1,39 @@
+From 326922163ee63c15d8c17eded24958e65929392c Mon Sep 17 00:00:00 2001
+From: Krishna Kurapati <quic_kriskura@quicinc.com>
+Date: Wed, 30 Oct 2024 14:46:06 +0530
+Subject: [PATCH 3/3] UPSTREAM: dt-bindings: phy: qcom,sc8280xp-qmp-usb3-uni:
+ Add QCS8300 compatible
+
+Update dt-bindings to add QCS8300 to QMP Uni Phy list.
+
+Change-Id: Ib00f00248ebf90abd5802dd51f236cdeda6ec426
+Signed-off-by: Krishna Kurapati <quic_kriskura@quicinc.com>
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Upstream-Status: Backport [https://lore.kernel.org/all/20241009195348.2649368-4-quic_kriskura@quicinc.com]
+---
+ .../devicetree/bindings/phy/qcom,sc8280xp-qmp-usb3-uni-phy.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-usb3-uni-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-usb3-uni-phy.yaml
+index 0c6aaba0bf54..0214091fbe40 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-usb3-uni-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-usb3-uni-phy.yaml
+@@ -20,6 +20,7 @@ properties:
+       - qcom,ipq8074-qmp-usb3-phy
+       - qcom,ipq9574-qmp-usb3-phy
+       - qcom,msm8996-qmp-usb3-phy
++      - qcom,qcs8300-qmp-usb3-uni-phy
+       - qcom,sa8775p-qmp-usb3-uni-phy
+       - qcom,sc8280xp-qmp-usb3-uni-phy
+       - qcom,sdm845-qmp-usb3-uni-phy
+@@ -106,6 +107,7 @@ allOf:
+         compatible:
+           contains:
+             enum:
++              - qcom,qcs8300-qmp-usb3-uni-phy
+               - qcom,sa8775p-qmp-usb3-uni-phy
+               - qcom,sc8280xp-qmp-usb3-uni-phy
+               - qcom,sm8150-qmp-usb3-uni-phy
+-- 
+2.34.1
+

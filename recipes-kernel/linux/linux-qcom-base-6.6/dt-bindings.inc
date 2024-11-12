@@ -85,4 +85,7 @@ SRC_URI:append = " \
     file://qcs9100/0004-FROMLIST-dt-bindings-display-msm-dp-controller-docum.patch \
     file://qcs8300/0001-UPSTREAM-dt-bindings-cache-qcom-llcc-Document-the-QC.patch \
     file://qcs9100/0002-FROMLIST-dt-bindings-display-msm-gmu-Add-Adreno-663-.patch \
+    file://qcs8300/0001-UPSTREAM-dt-bindings-usb-qcom-dwc3-Add-QCS8300-to-US.patch \
+    file://qcs8300/0002-UPSTREAM-dt-bindings-phy-qcom-usb-snps-femto-v2-Add-.patch \
+    file://qcs8300/0003-UPSTREAM-dt-bindings-phy-qcom-sc8280xp-qmp-usb3-uni-.patch \
     "

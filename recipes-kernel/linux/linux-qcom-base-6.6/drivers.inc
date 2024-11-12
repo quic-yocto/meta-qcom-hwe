@@ -162,4 +162,7 @@ SRC_URI:append = " \
     file://qcs9100/0001-PENDING-media-iris-add-compatible-string-for-sa8775p.patch \
     file://qcs9100/0003-QCLINUX-media-iris-add-support-for-GDSC-switch-and-P.patch \
     file://qcs9100/0001-FROMLIST-drm-msm-a6xx-Add-support-for-A663.patch \
+    file://qcs8300/0001-UPSTREAM-phy-qcom-qmp-Add-qmp-configuration-for-QCS8.patch \
+    file://qcs8300/0002-UPSTREAM-phy-qcom-qmp-usb-simplify-clock-handling.patch \
+    file://qcs8300/0003-UPSTREAM-phy-qcom-qmp-usb-rework-reset-handling.patch \
     "
