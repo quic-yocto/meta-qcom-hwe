@@ -1,4 +1,4 @@
-From 6c5670c981b42b112c09c9fd65ec6809c22f65a6 Mon Sep 17 00:00:00 2001
+From aae7a4a133ed63a6ddb13be245aecf73fd193c8d Mon Sep 17 00:00:00 2001
 From: Satyam Gupta <quic_satygupt@quicinc.com>
 Date: Wed, 4 Sep 2024 17:14:00 +0530
 Subject: [PATCH 1/3] PENDING: media: iris: add compatible string for sa8775p
@@ -15,10 +15,10 @@ Upstream-Status: Pending
  2 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/media/platform/qcom/iris/iris_core.h b/drivers/media/platform/qcom/iris/iris_core.h
-index 657d26a0fa2e..24e25af71305 100644
+index 70e0dbc7c457..48a0c5c25bc1 100644
 --- a/drivers/media/platform/qcom/iris/iris_core.h
 +++ b/drivers/media/platform/qcom/iris/iris_core.h
-@@ -77,7 +77,7 @@ struct iris_core {
+@@ -82,7 +82,7 @@ struct iris_core {
  	struct clk_bulk_data			*clock_tbl;
  	u32					clk_count;
  	struct reset_control_bulk_data		*resets;
@@ -28,12 +28,12 @@ index 657d26a0fa2e..24e25af71305 100644
  	dma_addr_t				iface_q_table_daddr;
  	dma_addr_t				sfr_daddr;
 diff --git a/drivers/media/platform/qcom/iris/iris_probe.c b/drivers/media/platform/qcom/iris/iris_probe.c
-index 319851c50ccd..d98191d6c6bd 100644
+index a2aadd48926f..e7e087168d71 100644
 --- a/drivers/media/platform/qcom/iris/iris_probe.c
 +++ b/drivers/media/platform/qcom/iris/iris_probe.c
-@@ -136,6 +136,10 @@ static int iris_probe(struct platform_device *pdev)
- 		goto err_runtime_disable;
- 	}
+@@ -230,6 +230,10 @@ static int iris_probe(struct platform_device *pdev)
+ 
+ 	disable_irq_nosync(core->irq);
  
 +	if (of_device_is_compatible(core->dev->of_node, "qcom,sa8775p-iris")) {
 +		core->iris_platform_data->fwname = "qcom/vpu/vpu30_p4_s6.mbn";
@@ -42,7 +42,7 @@ index 319851c50ccd..d98191d6c6bd 100644
  	iris_init_ops(core);
  	core->iris_platform_data->init_hfi_command_ops(core);
  	core->iris_platform_data->init_hfi_response_ops(core);
-@@ -230,6 +234,10 @@ static const struct dev_pm_ops iris_pm_ops = {
+@@ -321,6 +325,10 @@ static const struct dev_pm_ops iris_pm_ops = {
  };
  
  static const struct of_device_id iris_dt_match[] = {
@@ -54,5 +54,5 @@ index 319851c50ccd..d98191d6c6bd 100644
  		.compatible = "qcom,sm8550-iris",
  		.data = &sm8550_data,
 -- 
-2.34.1
+2.25.1
 

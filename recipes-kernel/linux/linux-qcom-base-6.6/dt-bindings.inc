@@ -32,6 +32,7 @@ SRC_URI:append = " \
     file://qcs9100/0002-FROMGIT-regulator-dt-bindings-qcom-qca6390-pmu-fix-t.patch \
     file://qcs9100/0003-FROMGIT-regulator-dt-bindings-qcom-qca6390-pmu-docum.patch \
     file://qcs9100/0004-FROMGIT-regulator-dt-bindings-qcom-qca6390-pmu-docum.patch \
+    file://qcs9100/0001-FROMGIT-dt-bindings-crypto-qcom-qce-document-the-SA8.patch \
     file://qcs615/0001-FROMLIST-dt-bindings-nvmem-qfprom-Add-compatible-for.patch \
     file://qcs615/0002-FROMLIST-dt-bindings-mfd-qcom-tcsr-Add-compatible-fo.patch \
     file://qcs615/0003-FROMLIST-dt-bindings-watchdog-Document-Qualcomm-QCS6.patch \
