@@ -1,6 +1,6 @@
 # meta-qcom-hwe
 
-![merge main](https://github.com/quic-yocto/meta-qcom-hwe/actions/workflows/merge-main.yml/badge.svg?branch=main)
+[![Build Yocto](https://github.com/quic-yocto/meta-qcom-hwe/actions/workflows/build-yocto.yml/badge.svg?event=push)](https://github.com/quic-yocto/meta-qcom-hwe/actions/workflows/build-yocto.yml)[![Nightly Build](https://github.com/quic-yocto/meta-qcom-hwe/actions/workflows/nightly-build.yml/badge.svg)](https://github.com/quic-yocto/meta-qcom-hwe/actions/workflows/nightly-build.yml)
 
 ## Introduction
 
