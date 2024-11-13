@@ -35,8 +35,3 @@ RDEPENDS:${PN}:append:qcom-custom-bsp = "\
 	qcom-wlan-tools \
 	qcom-ath11k-fwtest \
 	"
-
-RDEPENDS:${PN}:append:qcom-custom-bsp:qcm6490 = "\
-	qcom-ath6kl-utils-cld \
-	qcom-ftm-cld \
-"
