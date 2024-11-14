@@ -6,6 +6,8 @@
 # prebuilt package instead of fetching and compiling the source.
 #
 
+require conf/machine/include/qcom-prebuilts.inc
+
 python qprebuilt_do_unpack() {
     src_uri = (d.getVar('SRC_URI') or "").split()
     if len(src_uri) == 0:

@@ -10,7 +10,6 @@ MACHINEOVERRIDES =. "qcom-${QCOM_SELECTED_BSP}-bsp:"
 
 # Set prebuilt pkgs default arch
 PBT_ARCH ?= "${SOC_ARCH}"
-require conf/machine/include/qcom-prebuilts.inc
 
 # Provider for Graphics Library.
 # qcom-base-bsp uses 'mesa' as GL provider

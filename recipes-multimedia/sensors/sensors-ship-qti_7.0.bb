@@ -7,7 +7,9 @@ DESCRIPTION = "Sensors-ship Library"
 
 DEPENDS += "glib-2.0 property-vault syslog-plumber qmi-framework diag protobuf fastrpc"
 
-SRC_URI[qcm6490.sha256sum] = "441165f64d06d2b10a76e1acd85be79a90c9771defcf8b540645fdf629239b8c"
+QCM6490_SHA256SUM = "441165f64d06d2b10a76e1acd85be79a90c9771defcf8b540645fdf629239b8c"
+
+SRC_URI[qcm6490.sha256sum] = "${QCM6490_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

@@ -9,7 +9,9 @@ DEPENDS += "syslog-plumber glib-2.0 gbm property-vault camxapi-kt fastrpc qcom-a
 
 RDEPENDS:${PN} += "cameradlkm"
 
-SRC_URI[qcm6490.sha256sum] = "1db1f9019e8c811da53f8fe32b39865b453b50f29b3bbc6aee734108a6760489"
+QCM6490_SHA256SUM = "1db1f9019e8c811da53f8fe32b39865b453b50f29b3bbc6aee734108a6760489"
+
+SRC_URI[qcm6490.sha256sum] = "${QCM6490_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

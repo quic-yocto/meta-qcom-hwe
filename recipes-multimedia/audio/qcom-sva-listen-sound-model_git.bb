@@ -9,7 +9,9 @@ DEPENDS += "qcom-sva-statereorder qcom-sva-listen-sound-model-headers qcom-sva-c
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "3d0b2daf0a53c40baac01b3b1e35875310bcaa2518450c14a984f9a0a700d15f"
+ARMV8_SHA256SUM = "3d0b2daf0a53c40baac01b3b1e35875310bcaa2518450c14a984f9a0a700d15f"
+
+SRC_URI[armv8-2a.sha256sum] = "${ARMV8_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

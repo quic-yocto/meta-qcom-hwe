@@ -7,7 +7,9 @@ DESCRIPTION = "libsdmextension Library"
 
 DEPENDS += "display-hal-linux jsoncpp glib-2.0 display-color-linux property-vault libdrm openssl linux-kernel-qcom-headers syslog-plumber"
 
-SRC_URI[qcm6490.sha256sum] = "917ce9f1c2b4019108ea21b1b8a904b5ed6a98b2728feba9ac2f9ba78c58bd55"
+QCM6490_CHKSUM = "917ce9f1c2b4019108ea21b1b8a904b5ed6a98b2728feba9ac2f9ba78c58bd55"
+
+SRC_URI[qcm6490.sha256sum] = "${QCM6490_CHKSUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 

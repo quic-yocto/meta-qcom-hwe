@@ -7,6 +7,8 @@ DESCRIPTION = "sva-listen-sound-model"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "8965e8eafc386f25345a964713d6a5998c912646a58b78f4ee6bc71ab63b23ff"
+ARMV8_SHA256SUM = "8965e8eafc386f25345a964713d6a5998c912646a58b78f4ee6bc71ab63b23ff"
+
+SRC_URI[armv8-2a.sha256sum] = "${ARMV8_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
