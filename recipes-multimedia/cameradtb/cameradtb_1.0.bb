@@ -19,7 +19,7 @@ DTC := "${KBUILD_OUTPUT}/scripts/dtc/dtc"
 KERNEL_INCLUDE := "${STAGING_KERNEL_DIR}/include/"
 
 COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs6490|qcs8300"
-BOARD_NAME = "idp|core|vision"
+BOARD_NAME = "idp|core|vision|ride"
 
 python get_soc_family() {
     need_machine = d.getVar('COMPATIBLE_MACHINE')
@@ -56,7 +56,9 @@ do_compile() {
             oe_runmake ${EXTRA_OEMAKE} qcm5430-camera-rb3
         fi
     elif [ "${SOC_FAM}" = "qcs9100" ]; then
+        if [ "${BOARD}" = "ride" ]; then
             oe_runmake ${EXTRA_OEMAKE} qcs9100-camera
+        fi
     elif [ "${SOC_FAM}" = "qcs8300" ]; then
             oe_runmake ${EXTRA_OEMAKE} qcs8300-camera
     else
