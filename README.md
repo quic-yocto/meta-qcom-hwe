@@ -70,7 +70,7 @@ Branch **kirkstone** is not open for direct contributions, please raise an issue
 * Naveen Kumar <quic_kumarn@quicinc.com>
 * Sourabh Banerjee <quic_sbanerje@quicinc.com>
 * Viswanath Kraleti <quic_vkraleti@quicinc.com>
-* Ricardo Salveti <quic_rsalveti@quicinc.com>
+* Ricardo Salveti <ricardo.salveti@oss.qualcomm.com>
 * Nicolas Dechesne <nicolas.dechesne@oss.qualcomm.com>
 
 ## License
