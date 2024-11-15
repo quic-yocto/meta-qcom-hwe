@@ -46,4 +46,5 @@
 #
 
 # Automount partitions
-KERNEL=="mmcblk1p1", SUBSYSTEM=="block", ACTION=="add", RUN+="/bin/sh -c 'systemd-mount --no-block /dev/%k /mnt/sdcard'"
+ACTION=="add|change", KERNEL=="mmcblk1p1", SUBSYSTEM=="block", RUN+="/bin/systemctl start sdcard-mount.service"
+ACTION=="remove", KERNEL=="mmcblk1p1", SUBSYSTEM=="block", RUN+="/bin/systemctl stop sdcard-mount.service"
