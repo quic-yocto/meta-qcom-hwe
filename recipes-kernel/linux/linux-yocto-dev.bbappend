@@ -5,7 +5,7 @@ FILESEXTRAPATHS:prepend:qcom := "${THISDIR}/${PN}:"
 
 SRC_URI:append:qcom = " \
     file://qcm6490-board-dts/0001-FROMLIST-arm64-dts-qcom-qcm6490-idp-Update-protected.patch \
-    file://qcm6490-board-dts/0001-PENDING-arm64-dts-qcom-qcm6490-Add-UFS-nodes-for-IDP.patch \
+    file://qcm6490-board-dts/0001-arm64-dts-qcom-qcm6490-idp-Add-UFS-nodes.patch \
     file://qcm6490-board-dts/0001-arm64-dts-qcom-sc7280-don-t-enable-GPU-on-unsupporte.patch \
     file://qcm6490-drivers/0001-firmware-qcom-scm-Introduce-CP_SMMU_APERTURE_ID.patch \
     file://qcm6490-drivers/0002-drm-msm-adreno-Setup-SMMU-aparture-for-per-process-p.patch \
