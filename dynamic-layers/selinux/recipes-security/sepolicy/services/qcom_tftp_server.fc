@@ -7,6 +7,9 @@
 # TFTP files
 /var/lib/persist/rfs(/.*)?            gen_context(system_u:object_r:qcom_rfs_persist_t,s0)
 /var/lib/persist/hlos_rfs(/.*)?       gen_context(system_u:object_r:qcom_rfs_persist_t,s0)
+/etc/persist/rfs(/.*)?            gen_context(system_u:object_r:qcom_rfs_persist_t,s0)
+/etc/persist/hlos_rfs(/.*)?       gen_context(system_u:object_r:qcom_rfs_persist_t,s0)
 
 # TFTP PD dump files
 /var/pddump(/.*)?            gen_context(system_u:object_r:qcom_rfs_persist_t,s0)
+/etc/pddump(/.*)?            gen_context(system_u:object_r:qcom_rfs_persist_t,s0)

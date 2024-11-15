@@ -62,3 +62,6 @@ dev_node(qcom_gpu_device_t)
 type qcom_weston_socket_dev_t;
 dev_node(qcom_weston_socket_dev_t)
 
+type qcom_gunyah_device_t;
+dev_node(qcom_gunyah_device_t)
+

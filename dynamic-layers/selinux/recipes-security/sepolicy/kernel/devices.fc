@@ -30,6 +30,7 @@
 /dev/tmc_etf0    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
 /dev/tmc_etr0    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
 /dev/tmc_etr1    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
+/dev/stm0    -c            gen_context(system_u:object_r:qcom_coresight_device_t,s0)
 
 #Audio driver nodes
 /dev/dma_heap/qcom,audio-ml   -c gen_context(system_u:object_r:qcom_audioml_heap_device_t,s0)
@@ -59,4 +60,8 @@
 /dev/kgsl-3d0   -c gen_context(system_u:object_r:qcom_gpu_device_t,s0)
 
 /dev/socket/weston      -d gen_context(system_u:object_r:qcom_weston_socket_dev_t,s0)
+
+
+#gunyah dev node
+/dev/gunyah   -c gen_context(system_u:object_r:qcom_gunyah_device_t,s0)
 

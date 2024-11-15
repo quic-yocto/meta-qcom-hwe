@@ -1,0 +1,29 @@
+From 5db5cda9d6cfa5649fe902de5a3a1f31466cbebd Mon Sep 17 00:00:00 2001
+From: Abhilasha Manna <quic_amanna@quicinc.com>
+Date: Tue, 20 Aug 2024 15:44:43 +0530
+Subject: [PATCH] PENDING: file_contexts.subs_dist : Set aliases for /var/lib/selinux.
+
+The files in /etc/selinux/policy-store should have same policy
+applied as the corresponding files in the/var/lib/selinux.
+
+Signed-off-by: Abhilasha Manna <quic_amanna@quicinc.com>
+Upstream-Status: Inappropriate [OS-Tree requirement]
+---
+ config/file_contexts.subs_dist | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/config/file_contexts.subs_dist b/config/file_contexts.subs_dist
+index f80499ebf..a3e41351e 100644
+--- a/config/file_contexts.subs_dist
++++ b/config/file_contexts.subs_dist
+@@ -49,3 +49,7 @@
+ # The genhomedircon.py will expand /root home directory to /home/root
+ # Add an aliase for it
+ /root /home/root
++
++#move /var/lib/selinux to /etc/selinux/policy-store
++#selinux aliases
++/etc/selinux/policy-store /var/lib/selinux
+-- 
+2.17.1
+

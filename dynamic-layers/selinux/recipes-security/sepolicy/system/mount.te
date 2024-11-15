@@ -58,8 +58,7 @@ corecmd_exec_bin(mount_t)
 permissive mount_t;
 
 # connecting property-vault service
-qcom_mount_property_vault_to_var(mount_t)
-qcom_connect_property_vault_to_var(mount_t)
+qcom_connect_property_vault_to_etc(mount_t)
 
 qcom_manage_perf_data_files(mount_t)
 qcom_perfhal_read_config(mount_t)

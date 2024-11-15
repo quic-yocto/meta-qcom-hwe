@@ -1,0 +1,32 @@
+From 7da4a95e755703a4be880b0857e126d13159391c Mon Sep 17 00:00:00 2001
+From: Abhilasha Manna <quic_amanna@quicinc.com>
+Date: Wed, 14 Aug 2024 14:01:19 +0530
+Subject: [PATCH] QCLINUX: libsemanage: Modify store-root path.
+
+Modify store root path to "/etc/selinux/policy-store".
+
+Signed-off-by: Abhilasha Manna <quic_amanna@quicinc.com>
+Upstream-Status: Inappropriate [OS-Tree requirement]
+---
+ src/semanage.conf | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/semanage.conf b/src/semanage.conf
+index dc8d46b8..b57260fc 100644
+--- a/src/semanage.conf
++++ b/src/semanage.conf
+@@ -36,6 +36,11 @@ module-store = direct
+ # version is necessary.
+ #policy-version = 19
+ 
++
++#change store-root = "/etc/selinux/policy-store"
++store-root = "/etc/selinux/policy-store"
++
++
+ # By default, semanage will generate policies for the SELinux target.
+ # To build policies for Xen, uncomment the following line.
+ #target-platform = xen
+-- 
+2.17.1
+
