@@ -1,0 +1,94 @@
+From 94d5ffab9d5ebc9caeab310f9d2eb36a65d7d3a9 Mon Sep 17 00:00:00 2001
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Sat, 7 Sep 2024 15:51:25 +0300
+Subject: [PATCH] arm64: dts: qcom: sc7280: don't enable GPU on unsupported
+ devices
+
+On SC7280 and derivative platforms GPU by default requires a signed
+binary, a660_zap.mbn. Disable GPU by default and enable it only when
+the binary is actually available (QCM6490-IDP, RB3gen2). ChromeOS
+devices do not use TrustZone, so GPU can be enabled by default in
+sc7280-chrome-common.dtsi. FairPhone5 and SHIFTphone8 DTS already
+enable GPU (even though it wasn't required beforehand).
+
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Reviewed-by: Konrad Dybcio <konradybcio@kernel.org>
+Link: https://lore.kernel.org/r/20240907-rb3g2-fixes-v1-2-eb9da98e9f80@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [6.13]
+---
+ arch/arm64/boot/dts/qcom/qcm6490-idp.dts           | 8 ++++++++
+ arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts       | 8 ++++++++
+ arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi | 4 ++++
+ arch/arm64/boot/dts/qcom/sc7280.dtsi               | 2 ++
+ 4 files changed, 22 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcm6490-idp.dts b/arch/arm64/boot/dts/qcom/qcm6490-idp.dts
+index 84c45419cb8d..c4cfafb3ec15 100644
+--- a/arch/arm64/boot/dts/qcom/qcm6490-idp.dts
++++ b/arch/arm64/boot/dts/qcom/qcm6490-idp.dts
+@@ -499,6 +499,14 @@ vreg_bob_3p296: bob {
+ 	};
+ };
+ 
++&gpu {
++	status = "okay";
++};
++
++&gpu_zap_shader {
++	firmware-name = "qcom/qcm6490/a660_zap.mbn";
++};
++
+ &mdss {
+ 	status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+index 5d0167fbc709..00b755779608 100644
+--- a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
++++ b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+@@ -557,6 +557,14 @@ &gpi_dma1 {
+ 	status = "okay";
+ };
+ 
++&gpu {
++	status = "okay";
++};
++
++&gpu_zap_shader {
++	firmware-name = "qcom/qcs6490/a660_zap.mbn";
++};
++
+ &i2c0 {
+ 	clock-frequency = <400000>;
+ 	status = "okay";
+diff --git a/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi b/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
+index cecb3e89f7f7..eb5e32035d93 100644
+--- a/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
++++ b/arch/arm64/boot/dts/qcom/sc7280-chrome-common.dtsi
+@@ -56,6 +56,10 @@ &CLUSTER_PD {
+ 	domain-idle-states = <&CLUSTER_SLEEP_0>;
+ };
+ 
++&gpu {
++	status = "okay";
++};
++
+ &lpass_aon {
+ 	status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/qcom/sc7280.dtsi b/arch/arm64/boot/dts/qcom/sc7280.dtsi
+index 3d8410683402..fbdc9c19242c 100644
+--- a/arch/arm64/boot/dts/qcom/sc7280.dtsi
++++ b/arch/arm64/boot/dts/qcom/sc7280.dtsi
+@@ -2823,6 +2823,8 @@ gpu: gpu@3d00000 {
+ 			nvmem-cells = <&gpu_speed_bin>;
+ 			nvmem-cell-names = "speed_bin";
+ 
++			status = "disabled";
++
+ 			gpu_zap_shader: zap-shader {
+ 				memory-region = <&gpu_zap_mem>;
+ 			};
+-- 
+2.39.5
+
