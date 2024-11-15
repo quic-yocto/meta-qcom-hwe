@@ -92,4 +92,5 @@ SRC_URI:append = " \
     file://common/0001-dt-bindings-power-reset-ref-reboot-mode-in-syscon-re.patch \
     file://common/0002-BACKPORT-dt-bindings-power-reset-Convert-mode-.-prop.patch \
     file://common/0003-FROMLIST-dt-bindings-arm-Document-reboot-mode-magic.patch \
+    file://qcs8300/0001-FROMLIST-dt-bindings-watchdog-Document-Qualcomm-QCS8.patch \
     "

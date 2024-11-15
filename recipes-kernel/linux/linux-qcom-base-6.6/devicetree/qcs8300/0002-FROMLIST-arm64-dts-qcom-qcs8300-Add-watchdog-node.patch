@@ -1,0 +1,37 @@
+From 6ce0630cf6c2b27453d11e6e0e6ed1379eaa6bf8 Mon Sep 17 00:00:00 2001
+From: Xin Liu <quic_liuxin@quicinc.com>
+Date: Tue, 29 Oct 2024 11:12:21 +0800
+Subject: [PATCH 2/3] FROMLIST: arm64: dts: qcom: qcs8300: Add watchdog node
+
+Add the watchdog node for QCS8300 SoC.
+
+Change-Id: I52aa0e928776311adf13b043fd9a3e6be907e539
+Signed-off-by: Xin Liu <quic_liuxin@quicinc.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+[Added node label for watchdog node]
+Link:https://lore.kernel.org/all/20241029031222.1653123-3-quic_liuxin@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241029031222.1653123-3-quic_liuxin@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs8300.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs8300.dtsi b/arch/arm64/boot/dts/qcom/qcs8300.dtsi
+index 23f4234d2d77..985b67e4775f 100644
+--- a/arch/arm64/boot/dts/qcom/qcs8300.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs8300.dtsi
+@@ -1159,6 +1159,12 @@ intc: interrupt-controller@17a00000 {
+ 			redistributor-stride = <0x0 0x20000>;
+ 		};
+ 
++		watchdog: watchdog@17c10000 {
++			compatible = "qcom,apss-wdt-qcs8300", "qcom,kpss-wdt";
++			reg = <0x0 0x17c10000 0x0 0x1000>;
++			interrupts = <GIC_SPI 0 IRQ_TYPE_EDGE_RISING>;
++		};
++
+ 		memtimer: timer@17c20000 {
+ 			compatible = "arm,armv7-timer-mem";
+ 			reg = <0x0 0x17c20000 0x0 0x1000>;
+-- 
+2.46.0
+
