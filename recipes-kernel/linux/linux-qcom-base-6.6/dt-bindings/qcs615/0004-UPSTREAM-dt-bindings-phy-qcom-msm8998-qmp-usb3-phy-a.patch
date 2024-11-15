@@ -1,0 +1,57 @@
+From fc521176a6be67ef75924b0468a3a118746c8057 Mon Sep 17 00:00:00 2001
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Wed, 17 Jan 2024 16:04:23 +0200
+Subject: [PATCH] UPSTREAM: dt-bindings: phy: qcom,msm8998-qmp-usb3-phy: add
+ TCSR registers
+
+The QMP USB PHYs on msm8998, qcm2290 and some other platforms don't have
+the PCS_MISC_CLAMP_ENABLE register. Instead they need to toggle the
+register in the TCSR space. Declare the registers accessible through the
+TCSR space.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20240117-usbc-phy-vls-clamp-v2-2-a950c223f10f@linaro.org
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git f2b2f86a8bd19feb70649abf8a63d639f4c838d8]
+---
+ .../bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml       | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml
+index da5d4cbca24c..140843347d1e 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml
+@@ -55,6 +55,14 @@ properties:
+       Flag the PHY as possible handler of USB Type-C orientation switching
+     type: boolean
+ 
++  qcom,tcsr-reg:
++    $ref: /schemas/types.yaml#/definitions/phandle-array
++    items:
++      - items:
++          - description: phandle to TCSR hardware block
++          - description: offset of the VLS CLAMP register
++    description: Clamp register present in the TCSR
++
+   ports:
+     $ref: /schemas/graph.yaml#/properties/ports
+     properties:
+@@ -78,6 +86,7 @@ required:
+   - "#clock-cells"
+   - clock-output-names
+   - "#phy-cells"
++  - qcom,tcsr-reg
+ 
+ allOf:
+   - if:
+@@ -148,6 +157,8 @@ examples:
+ 
+       orientation-switch;
+ 
++      qcom,tcsr-reg = <&tcsr_regs_1 0x6b244>;
++
+       ports {
+         #address-cells = <1>;
+         #size-cells = <0>;
+-- 

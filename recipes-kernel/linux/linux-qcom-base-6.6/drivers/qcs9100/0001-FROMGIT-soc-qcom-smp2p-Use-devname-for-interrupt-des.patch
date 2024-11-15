@@ -1,0 +1,79 @@
+From 8f8806ba9727d5fefcf40f2b8bcb089881ed11d3 Mon Sep 17 00:00:00 2001
+From: Chris Lew <quic_clew@quicinc.com>
+Date: Thu, 27 Jun 2024 16:18:30 +0530
+Subject: [PATCH 1/2] FROMGIT: soc: qcom: smp2p: Use devname for interrupt
+ descriptions
+
+When using /proc/interrupts to collect statistics on smp2p interrupt
+counts, it is hard to distinguish the different instances of smp2p from
+each other. For example to debug a processor boot issue, the ready and
+handover interrupts are checked for sanity to ensure the firmware
+reached a specific initialization stage.
+
+Remove "smp2p" string from the irq request so that the irq will default
+to the device name. Add an .irq_print_chip() callback to print the irq
+chip name as the device name. These two changes allow for a unique name
+to be used in /proc/interrupts as shown below.
+
+/ # cat /proc/interrupts | grep smp2p
+ 18:  ...      ipcc 196610 Edge      smp2p-adsp
+ 20:  ...      ipcc 131074 Edge      smp2p-modem
+170:  ...  smp2p-modem   1 Edge      q6v5 ready
+178:  ...  smp2p-adsp   1 Edge      q6v5 ready.
+
+Signed-off-by: Chris Lew <quic_clew@quicinc.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Link: https://lore.kernel.org/r/20240627104831.4176799-2-quic_sudeepgo@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Signed-off-by: Sudeepgoud Patil <quic_sudeepgo@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/remoteproc/linux.git e49380c155940cb47e291a4b3fcb7fdffee6aa4d]
+
+---
+ drivers/soc/qcom/smp2p.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/soc/qcom/smp2p.c b/drivers/soc/qcom/smp2p.c
+index e9c8030d50ee..eb62d61ba043 100644
+--- a/drivers/soc/qcom/smp2p.c
++++ b/drivers/soc/qcom/smp2p.c
+@@ -16,6 +16,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_wakeirq.h>
+ #include <linux/regmap.h>
++#include <linux/seq_file.h>
+ #include <linux/soc/qcom/smem.h>
+ #include <linux/soc/qcom/smem_state.h>
+ #include <linux/spinlock.h>
+@@ -351,11 +352,19 @@ static int smp2p_set_irq_type(struct irq_data *irqd, unsigned int type)
+ 	return 0;
+ }
+ 
++static void smp2p_irq_print_chip(struct irq_data *irqd, struct seq_file *p)
++{
++	struct smp2p_entry *entry = irq_data_get_irq_chip_data(irqd);
++
++	seq_printf(p, " %8s", dev_name(entry->smp2p->dev));
++}
++
+ static struct irq_chip smp2p_irq_chip = {
+ 	.name           = "smp2p",
+ 	.irq_mask       = smp2p_mask_irq,
+ 	.irq_unmask     = smp2p_unmask_irq,
+ 	.irq_set_type	= smp2p_set_irq_type,
++	.irq_print_chip = smp2p_irq_print_chip,
+ };
+ 
+ static int smp2p_irq_map(struct irq_domain *d,
+@@ -615,7 +624,7 @@ static int qcom_smp2p_probe(struct platform_device *pdev)
+ 	ret = devm_request_threaded_irq(&pdev->dev, irq,
+ 					NULL, qcom_smp2p_intr,
+ 					IRQF_ONESHOT,
+-					"smp2p", (void *)smp2p);
++					NULL, (void *)smp2p);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to request interrupt\n");
+ 		goto unwind_interfaces;
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
+

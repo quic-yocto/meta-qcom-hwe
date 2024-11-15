@@ -1,0 +1,36 @@
+From 9f32cb2c95e286b55aa67460fdb6383cd6327978 Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Wed, 11 Sep 2024 15:44:25 +0800
+Subject: [PATCH 07/17] FROMGIT: dt-bindings: mfd: qcom,tcsr: Add compatible
+ for QCS8300
+
+Document the qcom,qcs8300-tcsr compatible, tcsr will provide various
+control and status functions for their peripherals.
+
+Change-Id: Icdcc03f9a8cee5cd7e783e2b442423b6917120be
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/r/20240911-qcs8300_tcsr_binding-v2-1-66eb5336b8d1@quicinc.com
+Signed-off-by: Lee Jones <lee@kernel.org>
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Git-commit: 8a595a2c0c34e2b1c30d58640243d904c443b24b
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 8a595a2c0c34e2b1c30d58640243d904c443b24b]
+---
+ Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml b/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
+index 6e2359ad8ba9..701c9e8c3f3a 100644
+--- a/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
++++ b/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
+@@ -21,6 +21,7 @@ properties:
+           - qcom,msm8998-tcsr
+           - qcom,qcs404-tcsr
+           - qcom,qcs615-tcsr
++          - qcom,qcs8300-tcsr
+           - qcom,sa8775p-tcsr
+           - qcom,sc7180-tcsr
+           - qcom,sc7280-tcsr
+-- 
+2.46.0
+

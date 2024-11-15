@@ -1,0 +1,47 @@
+From 42747f1e0e298c9c3ec9760867b2262b929bf3be Mon Sep 17 00:00:00 2001
+From: Tengfei Fan <quic_tengfan@quicinc.com>
+Date: Wed, 11 Sep 2024 19:10:57 +0800
+Subject: [PATCH 09/11] FROMLIST: BACKPORT: dt-bindings: arm: qcom: Document
+ qcs9100-ride and qcs9100-ride Rev3
+
+Document qcs9100-ride and qcs9100-ride Rev3 is based on QCS9100 SoC.
+
+QCS9100 is a IoT version of SA8775p, hence use the latter's compatible
+string as fallback.
+
+Signed-off-by: Tengfei Fan <quic_tengfan@quicinc.com>
+Link: https://lore.kernel.org/all/20240911-add_qcs9100_support-v2-3-e43a71ceb017@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240911-add_qcs9100_support-v2-3-e43a71ceb017@quicinc.com/]
+---
+ Documentation/devicetree/bindings/arm/qcom.yaml | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index b9f82001a042..f64e22d80897 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -51,6 +51,7 @@ description: |
+         qcs404
+         qcm2290
+         qcm6490
++        qcs9100
+         qdu1000
+         qrb2210
+         qrb4210
+@@ -886,6 +887,13 @@ properties:
+               - qcom,sa8775p-ride-r3
+           - const: qcom,sa8775p
+ 
++      - items:
++          - enum:
++              - qcom,qcs9100-ride
++              - qcom,qcs9100-ride-r3
++          - const: qcom,qcs9100
++          - const: qcom,sa8775p
++
+       - items:
+           - enum:
+               - google,cheza
+-- 
+2.34.1
+

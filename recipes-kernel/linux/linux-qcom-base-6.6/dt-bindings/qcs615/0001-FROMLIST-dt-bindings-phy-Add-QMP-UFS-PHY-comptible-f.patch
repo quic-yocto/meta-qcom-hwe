@@ -1,0 +1,39 @@
+From bfa392f1e062ec4bb4a282dfb451d6a1321660ef Mon Sep 17 00:00:00 2001
+From: Xin Liu <quic_liuxin@quicinc.com>
+Date: Thu, 24 Oct 2024 19:42:53 +0800
+Subject: [PATCH 1/4] FROMLIST: dt-bindings: phy: Add QMP UFS PHY comptible for
+ QCS615
+
+From: Sayali Lokhande <quic_sayalil@quicinc.com>
+
+Document the QMP UFS PHY compatible for Qualcomm QCS615 to support physical
+layer functionality for UFS found on the SoC. Use fallback to indicate the
+compatibility of the QMP UFS PHY on the QCS615 with that on the SM6115.
+
+Signed-off-by: Sayali Lokhande <quic_sayalil@quicinc.com>
+Signed-off-by: Xin Liu <quic_liuxin@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/linux-arm-msm/20241017042300.872963-2-quic_liuxin@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20241017042300.872963-2-quic_liuxin@quicinc.com/]
+---
+ .../devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml    | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml
+index 3bad4a231817..c07d3431044e 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml
+@@ -20,6 +20,10 @@ properties:
+           - enum:
+               - qcom,qcs8300-qmp-ufs-phy
+           - const: qcom,sa8775p-qmp-ufs-phy
++      - items:
++          - enum:
++              - qcom,qcs615-qmp-ufs-phy
++          - const: qcom,sm6115-qmp-ufs-phy
+       - enum:
+           - qcom,msm8996-qmp-ufs-phy
+           - qcom,msm8998-qmp-ufs-phy
+-- 
+2.34.1
+

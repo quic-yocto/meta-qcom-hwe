@@ -1,0 +1,80 @@
+From 200a51d5abbc0d6d09616a11408c0b49515eb52a Mon Sep 17 00:00:00 2001
+From: Shivendra Pratap <quic_spratap@quicinc.com>
+Date: Mon, 30 Sep 2024 00:42:27 +0530
+Subject: [PATCH 11/11] QCLINUX: arm64: dts: qcom: Add/Modify board-id and
+ msm-id for V1,v2 and V3
+
+Add/Modify qcom,board-id and qcom,msm-id in dts file for V1, V2
+and V3 Ride boards.
+
+1. Add Major Version as 1 for QAM and ADP platforms for
+V1 and V2(Eth 1G).
+2. Add Major version as 2 for QAM platform for V3(Eth 2.5G).
+3. Remove qcom,msm-id of qcs9100 from sa8775p boards.
+4. Add qcom,msm-id of qcs9100 for qcs9100 boards.
+
+Signed-off-by: Shivendra Pratap <quic_spratap@quicinc.com>
+Upstream-Status: Inappropriate [Other]
+---
+ arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts | 2 ++
+ arch/arm64/boot/dts/qcom/qcs9100-ride.dts    | 2 ++
+ arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts | 2 ++
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts    | 7 +++----
+ 4 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts b/arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts
+index 759d1ec694b2..bdfc0d3f2f4d 100644
+--- a/arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts
++++ b/arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts
+@@ -8,4 +8,6 @@
+ / {
+ 	model = "Qualcomm QCS9100 Ride Rev3";
+ 	compatible = "qcom,qcs9100-ride-r3", "qcom,qcs9100", "qcom,sa8775p";
++	qcom,msm-id = <667 0x10000>, <667 0x20000>;
++	qcom,board-id = <0x20025 1>;
+ };
+diff --git a/arch/arm64/boot/dts/qcom/qcs9100-ride.dts b/arch/arm64/boot/dts/qcom/qcs9100-ride.dts
+index 979462dfec30..1ce3bd5b6efb 100644
+--- a/arch/arm64/boot/dts/qcom/qcs9100-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs9100-ride.dts
+@@ -8,4 +8,6 @@
+ / {
+ 	model = "Qualcomm QCS9100 Ride";
+ 	compatible = "qcom,qcs9100-ride", "qcom,qcs9100", "qcom,sa8775p";
++	qcom,msm-id = <667 0x10000>, <667 0x20000>;
++	qcom,board-id = <0x10019 0>, <0x10025 1>;
+ };
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts
+index ae065ae92478..9083a510ce05 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts
+@@ -10,6 +10,8 @@
+ / {
+ 	model = "Qualcomm SA8775P Ride Rev3";
+ 	compatible = "qcom,sa8775p-ride-r3", "qcom,sa8775p";
++	qcom,msm-id = <533 0x10000>, <534 0x10000>, <534 0x20000>;
++	qcom,board-id = <0x20025 1>;
+ };
+ 
+ &ethernet0 {
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index 284651ac2516..36210345807b 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -9,10 +9,9 @@
+ 
+ / {
+ 	model = "Qualcomm SA8775P Ride";
+-	compatible = "qcom,sa8775p-ride", "qcom,sa8775p", "qcom,qcs9100";
+-	qcom,msm-id = <533 0x10000>, <534 0x10000>, <534 0x20000>,
+-		      <667 0x10000>, <667 0x20000>;
+-	qcom,board-id = <0x19 0>, <0x25 1>;
++	compatible = "qcom,sa8775p-ride", "qcom,sa8775p";
++	qcom,msm-id = <533 0x10000>, <534 0x10000>, <534 0x20000>;
++	qcom,board-id = <0x10019 0>, <0x10025 1>;
+ };
+ 
+ &ethernet0 {
+-- 
+2.34.1
+

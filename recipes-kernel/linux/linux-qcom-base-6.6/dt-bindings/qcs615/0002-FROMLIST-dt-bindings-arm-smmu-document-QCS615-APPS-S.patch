@@ -1,0 +1,38 @@
+From 7617695ff9162b4c971075ebc5116586be5b9b16 Mon Sep 17 00:00:00 2001
+From: Qingqing Zhou <quic_qqzhou@quicinc.com>
+Date: Thu, 10 Oct 2024 12:17:39 +0530
+Subject: [PATCH 2/5] FROMLIST: dt-bindings: arm-smmu: document QCS615 APPS
+ SMMU
+
+Add the compatible for Qualcomm QCS615 APPS SMMU.
+
+Signed-off-by: Qingqing Zhou <quic_qqzhou@quicinc.com>
+Link: https://lore.kernel.org/all/20241015081603.30643-3-quic_qqzhou@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241015081603.30643-3-quic_qqzhou@quicinc.com/]
+---
+ Documentation/devicetree/bindings/iommu/arm,smmu.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/iommu/arm,smmu.yaml b/Documentation/devicetree/bindings/iommu/arm,smmu.yaml
+index b1b2cf81b42f..0695e8603f9d 100644
+--- a/Documentation/devicetree/bindings/iommu/arm,smmu.yaml
++++ b/Documentation/devicetree/bindings/iommu/arm,smmu.yaml
+@@ -36,6 +36,7 @@ properties:
+         items:
+           - enum:
+               - qcom,qcm2290-smmu-500
++              - qcom,qcs615-smmu-500
+               - qcom,qdu1000-smmu-500
+               - qcom,sa8775p-smmu-500
+               - qcom,sc7180-smmu-500
+@@ -461,6 +462,7 @@ allOf:
+               - marvell,ap806-smmu-500
+               - nvidia,smmu-500
+               - qcom,qcm2290-smmu-500
++              - qcom,qcs615-smmu-500
+               - qcom,qdu1000-smmu-500
+               - qcom,sc7180-smmu-500
+               - qcom,sc8180x-smmu-500
+-- 
+2.17.1
+

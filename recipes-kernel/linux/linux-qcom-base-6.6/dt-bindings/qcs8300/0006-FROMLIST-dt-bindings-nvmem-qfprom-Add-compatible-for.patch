@@ -1,0 +1,33 @@
+From a8d4a9668cc8bcdb2ee4852807c611f0e94a91bf Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Wed, 11 Sep 2024 15:34:33 +0800
+Subject: [PATCH 06/17] FROMLIST: dt-bindings: nvmem: qfprom: Add compatible
+ for QCS8300
+
+Document QFPROM compatible for Qualcomm QCS8300. It provides access
+functions for QFPROM data to rest of the drivers via nvmem interface.
+
+Change-Id: I48b1a5f91182843c354d024bfabd6907243265c4
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/all/20240911-qcs8300_qfprom_binding-v2-1-d39226887493@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240911-qcs8300_qfprom_binding-v2-1-d39226887493@quicinc.com/]
+---
+ Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml b/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml
+index d30c2de27595..e01a21979bea 100644
+--- a/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml
++++ b/Documentation/devicetree/bindings/nvmem/qcom,qfprom.yaml
+@@ -32,6 +32,7 @@ properties:
+           - qcom,qcm2290-qfprom
+           - qcom,qcs404-qfprom
+           - qcom,qcs615-qfprom
++          - qcom,qcs8300-qfprom
+           - qcom,sc7180-qfprom
+           - qcom,sc7280-qfprom
+           - qcom,sdm630-qfprom
+-- 
+2.46.0
+

@@ -1,0 +1,112 @@
+From 2ec86fb8298ab884985ed99a83e844431674e563 Mon Sep 17 00:00:00 2001
+From: Qingqing Zhou <quic_qqzhou@quicinc.com>
+Date: Thu, 10 Oct 2024 12:26:25 +0530
+Subject: [PATCH 4/5] FROMLIST: arm64: dts: qcom: qcs615: add the APPS SMMU
+ node
+
+Add the APPS SMMU node for QCS615 platform. Add the dma-ranges
+to limit DMA address range to 36bit width to align with system
+architecture.
+
+Signed-off-by: Qingqing Zhou <quic_qqzhou@quicinc.com>
+Link: https://lore.kernel.org/all/20241015081603.30643-5-quic_qqzhou@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241015081603.30643-5-quic_qqzhou@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 74 ++++++++++++++++++++++++++++
+ 1 file changed, 74 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index 027c5125f36b..fcba83fca7cf 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -379,6 +379,7 @@
+ 	soc: soc@0 {
+ 		compatible = "simple-bus";
+ 		ranges = <0 0 0 0 0x10 0>;
++		dma-ranges = <0 0 0 0 0x10 0>;
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
+ 
+@@ -524,6 +525,79 @@
+ 			reg = <0x0 0x0c3f0000 0x0 0x400>;
+ 		};
+ 
++		apps_smmu: iommu@15000000 {
++			compatible = "qcom,qcs615-smmu-500", "qcom,smmu-500", "arm,mmu-500";
++			reg = <0x0 0x15000000 0x0 0x80000>;
++			#iommu-cells = <2>;
++			#global-interrupts = <1>;
++
++			interrupts = <GIC_SPI 65 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 181 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 182 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 183 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 185 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 186 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 187 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 188 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 189 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 191 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 192 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 315 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 316 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 317 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 318 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 319 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 320 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 321 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 322 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 323 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 324 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 325 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 326 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 327 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 328 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 329 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 330 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 331 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 332 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 333 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 334 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 335 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 336 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 337 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 338 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 339 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 340 IRQ_TYPE_LEVEL_HIGH>,
++					<GIC_SPI 341 IRQ_TYPE_LEVEL_HIGH>;
++		};
++
+ 		intc: interrupt-controller@17a00000 {
+ 			compatible = "arm,gic-v3";
+ 			reg = <0x0 0x17a00000 0x0 0x10000>,     /* GICD */
+-- 
+2.17.1
+

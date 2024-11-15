@@ -1,0 +1,28 @@
+From 0e6e15b81e8fe2f664e751598b16f52a22670d48 Mon Sep 17 00:00:00 2001
+From: Krishna Kurapati <quic_kriskura@quicinc.com>
+Date: Mon, 14 Oct 2024 14:14:29 +0530
+Subject: [PATCH] FROMLIST: dt-bindings: phy: qcom,qusb2: Add bindings for
+ QCS615
+
+Update dt-bindings to add QCS615 to QUSB2 Phy list.
+
+Signed-off-by: Krishna Kurapati <quic_kriskura@quicinc.com>
+Link: https://lore.kernel.org/all/20241014084432.3310114-3-quic_kriskura@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241014084432.3310114-3-quic_kriskura@quicinc.com/]
+---
+ Documentation/devicetree/bindings/phy/qcom,qusb2-phy.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,qusb2-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,qusb2-phy.yaml
+index 95eecbaef05c..4aed4b5d65ec 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,qusb2-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,qusb2-phy.yaml
+@@ -25,6 +25,7 @@ properties:
+               - qcom,msm8996-qusb2-phy
+               - qcom,msm8998-qusb2-phy
+               - qcom,qcm2290-qusb2-phy
++              - qcom,qcs615-qusb2-phy
+               - qcom,sdm660-qusb2-phy
+               - qcom,sm4250-qusb2-phy
+               - qcom,sm6115-qusb2-phy
+-- 

@@ -1,0 +1,35 @@
+From a0d282572969c00754e3efbd0f87d6bb44e22876 Mon Sep 17 00:00:00 2001
+From: Subramanian Ananthanarayanan <quic_skananth@quicinc.com>
+Date: Fri, 6 Sep 2024 10:52:27 +0530
+Subject: [PATCH 1/1] BACKPORT: PCI: Add ACS quirk for Qualcomm SA8775P
+
+The Qualcomm SA8775P root ports don't advertise an ACS capability, but they
+do provide ACS-like features to disable peer transactions and validate bus
+numbers in requests.
+
+Add an ACS quirk for the SA8775P.
+
+Change-Id: I2a2671e02659a65e7b0ea4c6b8957fd6e9716dbc
+Link: https://lore.kernel.org/linux-pci/20240906052228.1829485-1-quic_skananth@quicinc.com/
+Signed-off-by: Subramanian Ananthanarayanan <quic_skananth@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git 026f84d3fa62d215b11cbeb5a5d97df941e93b5c]
+---
+ drivers/pci/quirks.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index ec4277d7835b..0a5c6d48ac14 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -5063,6 +5063,8 @@ static const struct pci_dev_acs_enabled {
+ 	/* QCOM QDF2xxx root ports */
+ 	{ PCI_VENDOR_ID_QCOM, 0x0400, pci_quirk_qcom_rp_acs },
+ 	{ PCI_VENDOR_ID_QCOM, 0x0401, pci_quirk_qcom_rp_acs },
++	/* QCOM SA8775P root port */
++	{ PCI_VENDOR_ID_QCOM, 0x0115, pci_quirk_qcom_rp_acs },
+ 	/* HXT SD4800 root ports. The ACS design is same as QCOM QDF2xxx */
+ 	{ PCI_VENDOR_ID_HXT, 0x0401, pci_quirk_qcom_rp_acs },
+ 	/* Intel PCH root ports */
+-- 
+2.34.1
+

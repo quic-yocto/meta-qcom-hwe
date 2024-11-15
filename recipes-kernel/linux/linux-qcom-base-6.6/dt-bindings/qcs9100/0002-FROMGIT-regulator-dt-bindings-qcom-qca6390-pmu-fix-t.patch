@@ -1,0 +1,33 @@
+From 823f2223b00e2c4d9a4b92f05facdf170e3ced46 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Tue, 13 Aug 2024 20:58:25 +0200
+Subject: [PATCH 2/4] FROMGIT: regulator: dt-bindings: qcom,qca6390-pmu: fix
+ the description for bt-enable-gpios
+
+The Bluetooth module is obviously not an ath11k so drop the word.
+
+Fixes: b5cb34c93bd4 ("regulator: dt-bindings: describe the PMU module of the QCA6390 package")
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Link: https://patch.msgid.link/20240813185827.154779-1-brgl@bgdev.pl
+Signed-off-by: Mark Brown <broonie@kernel.org>
+Upstream-status: Backport [https://patch.msgid.link/20240813185827.154779-1-brgl@bgdev.pl d275e9918cc01d27ab511e5dbf2aafc1e782628e ]
+---
+ .../devicetree/bindings/regulator/qcom,qca6390-pmu.yaml         | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml b/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml
+index 3aaa9653419a..ce7771f9fa36 100644
+--- a/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml
++++ b/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml
+@@ -65,7 +65,7 @@ properties:
+ 
+   bt-enable-gpios:
+     maxItems: 1
+-    description: GPIO line enabling the ATH11K Bluetooth module supplied by the PMU
++    description: GPIO line enabling the Bluetooth module supplied by the PMU
+ 
+   clocks:
+     maxItems: 1
+-- 
+2.34.1
+

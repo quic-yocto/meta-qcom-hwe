@@ -1,0 +1,47 @@
+From 8b0a837d748c5fc0e98465f59af28a22f6b1d0b3 Mon Sep 17 00:00:00 2001
+From: Xin Liu <quic_liuxin@quicinc.com>
+Date: Thu, 24 Oct 2024 19:48:00 +0800
+Subject: [PATCH 4/4] FROMLIST: arm64: dts: qcom: qcs615-ride: Enable UFS node
+
+From: Sayali Lokhande <quic_sayalil@quicinc.com>
+
+Enable UFS on the Qualcomm QCS615 Ride platform.
+
+Signed-off-by: Sayali Lokhande <quic_sayalil@quicinc.com>
+Signed-off-by: Xin Liu <quic_liuxin@quicinc.com>
+Link: https://lore.kernel.org/linux-arm-msm/20241017042300.872963-5-quic_liuxin@quicinc.com/
+Upstream-Status: Submitted[https://lore.kernel.org/linux-arm-msm/20241017042300.872963-5-quic_liuxin@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615-ride.dts | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615-ride.dts b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+index 7114c280e934..a2af36b7608c 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+@@ -218,6 +218,22 @@ &uart0 {
+ 	status = "okay";
+ };
+ 
++&ufs_mem_hc {
++	vcc-supply = <&vreg_l17a>;
++	vcc-max-microamp = <600000>;
++	vccq2-supply = <&vreg_s4a>;
++	vccq2-max-microamp = <600000>;
++
++	status = "okay";
++};
++
++&ufs_mem_phy {
++	vdda-phy-supply = <&vreg_l5a>;
++	vdda-pll-supply = <&vreg_l12a>;
++
++	status = "okay";
++};
++
+ &watchdog {
+ 	clocks = <&sleep_clk>;
+ };
+-- 
+2.34.1
+

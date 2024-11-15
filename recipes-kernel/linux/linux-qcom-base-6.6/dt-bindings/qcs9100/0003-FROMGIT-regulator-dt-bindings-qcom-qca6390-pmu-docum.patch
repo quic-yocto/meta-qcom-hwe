@@ -1,0 +1,53 @@
+From 1977cdbd958a72da62c25cd373256af7dc13a279 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Tue, 13 Aug 2024 20:58:26 +0200
+Subject: [PATCH 3/4] FROMGIT: regulator: dt-bindings: qcom,qca6390-pmu:
+ document WCN6855
+
+Add description of the PMU of the WCN6855 model.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Link: https://patch.msgid.link/20240813185827.154779-2-brgl@bgdev.pl
+Signed-off-by: Mark Brown <broonie@kernel.org>
+Upstream-status: Backport [ https://patch.msgid.link/20240813185827.154779-2-brgl@bgdev.pl 2416d2f87be431d98b2b05137fcd1f4da9a83894 ]
+---
+ .../bindings/regulator/qcom,qca6390-pmu.yaml     | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml b/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml
+index ce7771f9fa36..6677939dd957 100644
+--- a/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml
++++ b/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml
+@@ -18,6 +18,7 @@ properties:
+   compatible:
+     enum:
+       - qcom,qca6390-pmu
++      - qcom,wcn6855-pmu
+       - qcom,wcn7850-pmu
+ 
+   vdd-supply:
+@@ -104,6 +105,21 @@ allOf:
+         - vddpcie1p3-supply
+         - vddpcie1p9-supply
+         - vddio-supply
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: qcom,wcn6855-pmu
++    then:
++      required:
++        - vddio-supply
++        - vddaon-supply
++        - vddpmu-supply
++        - vddrfa0p95-supply
++        - vddrfa1p3-supply
++        - vddrfa1p9-supply
++        - vddpcie1p3-supply
++        - vddpcie1p9-supply
+   - if:
+       properties:
+         compatible:
+-- 
+2.34.1
+

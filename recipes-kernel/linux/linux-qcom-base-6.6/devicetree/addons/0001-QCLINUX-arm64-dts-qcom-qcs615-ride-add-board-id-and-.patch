@@ -1,0 +1,32 @@
+From ab7bd68a022d0b02e8d0f8ffb0202974dedf7e19 Mon Sep 17 00:00:00 2001
+From: lijuang <quic_lijuang@quicinc.com>
+Date: Fri, 27 Sep 2024 10:51:20 +0800
+Subject: [PATCH] QCLINUX: arm64: dts: qcom: qcs615-ride: add board id and msm
+ id support
+
+Add board id and msm id for qcs615 platform for supporting pick
+correct DTB
+
+Change-Id: Ib88d0c900a8dd0995b252a47fd1686ae9e36259c
+Signed-off-by: Lijuan Gao <quic_lijuang@quicinc.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/qcs615-ride.dts | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615-ride.dts b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+index 4ef969a6af15..68609f71f533 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+@@ -10,6 +10,8 @@ / {
+ 	model = "Qualcomm Technologies, Inc. QCS615 Ride";
+ 	compatible = "qcom,qcs615-ride", "qcom,qcs615";
+ 	chassis-type = "embedded";
++	qcom,msm-id = <377 0x0>, <380 0>, <384 0x0>, <680 0x0>;
++	qcom,board-id = <0x03010019 0>, <0x03020019 0>, <0x10019 0>, <0x20019 0>;
+ 
+ 	aliases {
+ 		serial0 = &uart0;
+-- 
+2.46.0
+

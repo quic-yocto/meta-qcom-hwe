@@ -1,0 +1,42 @@
+From 123a3b7ada0c667a305af245e2105b549701783f Mon Sep 17 00:00:00 2001
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Fri, 26 Jan 2024 01:22:40 +0200
+Subject: [PATCH] UPSTREAM: phy: qcom: qmp-usbc: drop has_pwrdn_delay handling
+
+None of the PHYs supported by the USBC driver need power down delay.
+Drop corresponding flag and code.
+
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20240126-phy-qmp-merge-common-v2-6-a463d0b57836@linaro.org
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git fe3ec7600a16649812bf73f058e991429ccc28fb]
+Signed-off-by: Song Xue <quic_songxue@quicinc.com>
+---
+ drivers/phy/qualcomm/phy-qcom-qmp-usbc.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c b/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
+index d316a541f628..5cbc5fd529eb 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
+@@ -315,9 +315,6 @@ struct qmp_phy_cfg {
+ 
+ 	/* array of registers with different offsets */
+ 	const unsigned int *regs;
+-
+-	/* true, if PHY needs delay after POWER_DOWN */
+-	bool has_pwrdn_delay;
+ };
+ 
+ struct qmp_usbc {
+@@ -546,9 +543,6 @@ static int qmp_usbc_power_on(struct phy *phy)
+ 
+ 	qmp_configure(qmp->pcs, cfg->pcs_tbl, cfg->pcs_tbl_num);
+ 
+-	if (cfg->has_pwrdn_delay)
+-		usleep_range(10, 20);
+-
+ 	/* Pull PHY out of reset state */
+ 	qphy_clrbits(qmp->pcs, cfg->regs[QPHY_SW_RESET], SW_RESET);
+ 
+-- 

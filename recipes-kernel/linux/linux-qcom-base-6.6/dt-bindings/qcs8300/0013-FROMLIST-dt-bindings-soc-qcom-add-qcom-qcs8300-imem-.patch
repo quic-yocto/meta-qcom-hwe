@@ -1,0 +1,33 @@
+From 4334c19694e37c1f121478b83b71ad3e944b32a4 Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Wed, 11 Sep 2024 16:03:17 +0800
+Subject: [PATCH 12/17] FROMLIST: dt-bindings: soc: qcom: add qcom,qcs8300-imem
+ compatible
+
+Document qcom,qcs8300-imem compatible. It has child node for debug
+purpose.
+
+Change-Id: Ica8ba4736a2e83705479737cb78f89c1e1fbf894
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/all/20240911-qcs8300_binding-v2-3-de8641b3eaa1@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240911-qcs8300_binding-v2-3-de8641b3eaa1@quicinc.com/]
+---
+ Documentation/devicetree/bindings/sram/qcom,imem.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/sram/qcom,imem.yaml b/Documentation/devicetree/bindings/sram/qcom,imem.yaml
+index 8025a852bc9c..dfdbe6fc47f7 100644
+--- a/Documentation/devicetree/bindings/sram/qcom,imem.yaml
++++ b/Documentation/devicetree/bindings/sram/qcom,imem.yaml
+@@ -21,6 +21,7 @@ properties:
+           - qcom,msm8226-imem
+           - qcom,msm8974-imem
+           - qcom,qcs404-imem
++          - qcom,qcs8300-imem
+           - qcom,qdu1000-imem
+           - qcom,sc7180-imem
+           - qcom,sc7280-imem
+-- 
+2.46.0
+

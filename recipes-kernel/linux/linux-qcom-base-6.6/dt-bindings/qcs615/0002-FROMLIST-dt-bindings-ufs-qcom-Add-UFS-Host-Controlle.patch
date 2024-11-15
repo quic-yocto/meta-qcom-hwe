@@ -1,0 +1,43 @@
+From 37c01fddc2d9f8613aef7a5a8886a4555ececb2f Mon Sep 17 00:00:00 2001
+From: Xin Liu <quic_liuxin@quicinc.com>
+Date: Thu, 24 Oct 2024 19:45:43 +0800
+Subject: [PATCH 2/4] FROMLIST: dt-bindings: ufs: qcom: Add UFS Host Controller
+ for QCS615
+
+From: Sayali Lokhande <quic_sayalil@quicinc.com>
+
+Document the Universal Flash Storage(UFS) Host Controller on the Qualcomm
+QCS615 Platform.
+
+Signed-off-by: Sayali Lokhande <quic_sayalil@quicinc.com>
+Signed-off-by: Xin Liu <quic_liuxin@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/linux-arm-msm/20241017042300.872963-3-quic_liuxin@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20241017042300.872963-3-quic_liuxin@quicinc.com/]
+---
+ Documentation/devicetree/bindings/ufs/qcom,ufs.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/ufs/qcom,ufs.yaml b/Documentation/devicetree/bindings/ufs/qcom,ufs.yaml
+index 87a00a649320..a0c0640af325 100644
+--- a/Documentation/devicetree/bindings/ufs/qcom,ufs.yaml
++++ b/Documentation/devicetree/bindings/ufs/qcom,ufs.yaml
+@@ -26,6 +26,7 @@ properties:
+           - qcom,msm8994-ufshc
+           - qcom,msm8996-ufshc
+           - qcom,msm8998-ufshc
++          - qcom,qcs615-ufshc
+           - qcom,qcs8300-ufshc
+           - qcom,sa8775p-ufshc
+           - qcom,sc8280xp-ufshc
+@@ -212,6 +213,7 @@ allOf:
+         compatible:
+           contains:
+             enum:
++              - qcom,qcs615-ufshc
+               - qcom,sm6115-ufshc
+     then:
+       properties:
+-- 
+2.34.1
+
