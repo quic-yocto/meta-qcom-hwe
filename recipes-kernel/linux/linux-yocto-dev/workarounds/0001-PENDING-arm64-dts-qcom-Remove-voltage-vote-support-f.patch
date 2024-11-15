@@ -14,7 +14,7 @@ for UFS rails.
 Signed-off-by: Umang Chheda <quic_uchheda@quicinc.com>
 Signed-off-by: Salendarsingh Gaud <quic_sgaud@quicinc.com>
 Signed-off-by: Atul Dhudase <quic_adhudase@quicinc.com>
-Upstream-Status: Pending
+Upstream-Status: Denied [https://lore.kernel.org/linux-arm-msm/jid5coqe4tpsafbi2haem6ye4vrpwyymkepduxkporfxzdi6cx@bfbodoxoq67l/]
 ---
  arch/arm64/boot/dts/qcom/qcm6490-idp.dts | 14 ++++++++++++++
  1 file changed, 14 insertions(+)
