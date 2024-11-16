@@ -1,0 +1,273 @@
+From 3e008277959fd2d73377fb549aa931a5cff61899 Mon Sep 17 00:00:00 2001
+From: Krishna Kurapati <quic_kriskura@quicinc.com>
+Date: Wed, 27 Dec 2023 14:49:50 +0530
+Subject: [PATCH] BACKPORT: dt-bindings: usb: dwc3: Clean up hs_phy_irq in
+ binding
+
+The high speed related interrupts present on QC targets are as follows:
+
+1. dp/dm irq's
+These IRQ's directly reflect changes on the DP/DM pads of the SoC. These
+are used as wakeup interrupts only on SoCs with non-QUSB2 targets with
+exception of SDM670/SDM845/SM6350.
+
+2. qusb2_phy irq
+SoCs with QUSB2 PHY do not have separate DP/DM IRQs and expose only a
+single IRQ whose behavior can be modified by the QUSB2PHY_INTR_CTRL
+register. The required DPSE/DMSE configuration is done in
+QUSB2PHY_INTR_CTRL register of phy address space.
+
+3. hs_phy_irq
+This is completely different from the above two and is present on all
+targets with exception of a few IPQ ones. The interrupt is not enabled by
+default and its functionality is mutually exclusive of qusb2_phy on QUSB
+targets and DP/DM on femto phy targets.
+
+The DTs of several QUSB2 PHY based SoCs incorrectly define "hs_phy_irq"
+when they should have been "qusb2_phy_irq". On Femto phy targets, the
+"hs_phy_irq" mentioned is either the actual "hs_phy_irq" or "pwr_event",
+neither of which would never be triggered directly are non-functional
+currently. The implementation tries to clean up this issue by addressing
+the discrepencies involved and fixing the hs_phy_irq's in respective DT's.
+
+Classify SoC's into four groups based on whether qusb2_phy interrupt
+or {dp/dm}_hs_phy_irq is used for wakeup in high speed and whether the
+SoCs have hs_phy_irq present in them or not. The ss_phy_irq is optional
+interrupt because there are mutliple SoC's which either support only High
+Speed or there are multiple controllers within same Soc and the secondary
+controller is High Speed only capable.
+
+This breaks ABI on targets running older kernels, but since the interrupt
+definitions are given wrong on many targets and to establish proper rules
+for usage of DWC3 interrupts on Qualcomm platforms, DT binding update is
+necessary. The bindings put pwr_event as the first interrupt and ss_phy as
+the last. Since all SoCs have the pwr_event (HS) interrupt, but not all
+controllers have the SS PHY interrupt, this would prevent, to some extent,
+expressing that the SS PHY is optional by keeping it last in the binding
+schema and making sure that minItems = maxItems - 1.
+
+No new targets have been added to schema. Only the existing ones have been
+re-ordered.
+
+Signed-off-by: Krishna Kurapati <quic_kriskura@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/r/20231227091951.685-2-quic_kriskura@quicinc.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 53c6d854be4e93fa21b80bd40e3a666c3961e82c]
+---
+ .../devicetree/bindings/usb/qcom,dwc3.yaml    | 139 ++++++++----------
+ 1 file changed, 61 insertions(+), 78 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+index cdccb51ef14a..cd648f98b718 100644
+--- a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
++++ b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+@@ -95,12 +95,29 @@ properties:
+       - const: apps-usb
+ 
+   interrupts:
+-    minItems: 1
+-    maxItems: 4
++    description: |
++      Different types of interrupts are used based on HS PHY used on target:
++        - pwr_event: Used for wakeup based on other power events.
++        - hs_phY_irq: Apart from DP/DM/QUSB2 PHY interrupts, there is
++                       hs_phy_irq which is not triggered by default and its
++                       functionality is mutually exclusive to that of
++                       {dp/dm}_hs_phy_irq and qusb2_phy_irq.
++        - qusb2_phy: SoCs with QUSB2 PHY do not have separate DP/DM IRQs and
++                      expose only a single IRQ whose behavior can be modified
++                      by the QUSB2PHY_INTR_CTRL register. The required DPSE/
++                      DMSE configuration is done in QUSB2PHY_INTR_CTRL register
++                      of PHY address space.
++        - {dp/dm}_hs_phy_irq: These IRQ's directly reflect changes on the DP/
++                               DM pads of the SoC. These are used for wakeup
++                               only on SoCs with non-QUSB2 targets with
++                               exception of SDM670/SDM845/SM6350.
++        - ss_phy_irq: Used for remote wakeup in Super Speed mode of operation.
++    minItems: 2
++    maxItems: 5
+ 
+   interrupt-names:
+-    minItems: 1
+-    maxItems: 4
++    minItems: 2
++    maxItems: 5
+ 
+   qcom,select-utmi-as-pipe-clk:
+     description:
+@@ -352,58 +369,19 @@ allOf:
+         compatible:
+           contains:
+             enum:
+-              - qcom,ipq4019-dwc3
+               - qcom,ipq6018-dwc3
+-              - qcom,ipq8064-dwc3
+               - qcom,ipq8074-dwc3
+-              - qcom,msm8994-dwc3
+-              - qcom,qcs404-dwc3
+-              - qcom,sc7180-dwc3
+-              - qcom,sdm670-dwc3
+-              - qcom,sdm845-dwc3
+-              - qcom,sdx55-dwc3
+-              - qcom,sdx65-dwc3
+-              - qcom,sm4250-dwc3
+-              - qcom,sm6350-dwc3
+-              - qcom,sm8150-dwc3
+-              - qcom,sm8250-dwc3
+-              - qcom,sm8350-dwc3
+-              - qcom,sm8450-dwc3
+-              - qcom,sm8550-dwc3
+-    then:
+-      properties:
+-        interrupts:
+-          items:
+-            - description: The interrupt that is asserted
+-                when a wakeup event is received on USB2 bus.
+-            - description: The interrupt that is asserted
+-                when a wakeup event is received on USB3 bus.
+-            - description: Wakeup event on DM line.
+-            - description: Wakeup event on DP line.
+-        interrupt-names:
+-          items:
+-            - const: hs_phy_irq
+-            - const: ss_phy_irq
+-            - const: dm_hs_phy_irq
+-            - const: dp_hs_phy_irq
+-
+-  - if:
+-      properties:
+-        compatible:
+-          contains:
+-            enum:
+               - qcom,msm8953-dwc3
+-              - qcom,msm8996-dwc3
+               - qcom,msm8998-dwc3
+-              - qcom,sm6115-dwc3
+-              - qcom,sm6125-dwc3
+     then:
+       properties:
+         interrupts:
+-          maxItems: 2
++          minItems: 2
++          maxItems: 3
+         interrupt-names:
+           items:
+-            - const: hs_phy_irq
++            - const: pwr_event
++            - const: qusb2_phy
+             - const: ss_phy_irq
+ 
+   - if:
+@@ -411,36 +389,21 @@ allOf:
+         compatible:
+           contains:
+             enum:
+-              - qcom,ipq5332-dwc3
++              - qcom,msm8996-dwc3
++              - qcom,qcs404-dwc3
+               - qcom,sdm660-dwc3
+-    then:
+-      properties:
+-        interrupts:
+-          minItems: 1
+-          maxItems: 2
+-        interrupt-names:
+-          minItems: 1
+-          items:
+-            - const: hs_phy_irq
+-            - const: ss_phy_irq
+-
+-  - if:
+-      properties:
+-        compatible:
+-          contains:
+-            enum:
+-              - qcom,sc7280-dwc3
++              - qcom,sm6115-dwc3
++              - qcom,sm6125-dwc3
+     then:
+       properties:
+         interrupts:
+           minItems: 3
+           maxItems: 4
+         interrupt-names:
+-          minItems: 3
+           items:
++            - const: pwr_event
++            - const: qusb2_phy
+             - const: hs_phy_irq
+-            - const: dp_hs_phy_irq
+-            - const: dm_hs_phy_irq
+             - const: ss_phy_irq
+ 
+   - if:
+@@ -448,7 +411,7 @@ allOf:
+         compatible:
+           contains:
+             enum:
+-              - qcom,sc8280xp-dwc3
++              - qcom,ipq5332-dwc3
+     then:
+       properties:
+         interrupts:
+@@ -465,16 +428,35 @@ allOf:
+         compatible:
+           contains:
+             enum:
++              - qcom,ipq4019-dwc3
++              - qcom,ipq8064-dwc3
++              - qcom,msm8994-dwc3
+               - qcom,sa8775p-dwc3
++              - qcom,sc7180-dwc3
++              - qcom,sc7280-dwc3
++              - qcom,sc8280xp-dwc3
++              - qcom,sdm670-dwc3
++              - qcom,sdm845-dwc3
++              - qcom,sdx55-dwc3
++              - qcom,sdx65-dwc3
++              - qcom,sdx75-dwc3
++              - qcom,sm4250-dwc3
++              - qcom,sm6350-dwc3
++              - qcom,sm8150-dwc3
++              - qcom,sm8250-dwc3
++              - qcom,sm8350-dwc3
++              - qcom,sm8450-dwc3
++              - qcom,sm8550-dwc3
++              - qcom,sm8650-dwc3
+     then:
+       properties:
+         interrupts:
+-          minItems: 3
+-          maxItems: 4
++          minItems: 4
++          maxItems: 5
+         interrupt-names:
+-          minItems: 3
+           items:
+             - const: pwr_event
++            - const: hs_phy_irq
+             - const: dp_hs_phy_irq
+             - const: dm_hs_phy_irq
+             - const: ss_phy_irq
+@@ -512,12 +494,13 @@ examples:
+                           <&gcc GCC_USB30_PRIM_MASTER_CLK>;
+             assigned-clock-rates = <19200000>, <150000000>;
+ 
+-            interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH>,
+-                         <GIC_SPI 486 IRQ_TYPE_LEVEL_HIGH>,
+-                         <GIC_SPI 488 IRQ_TYPE_LEVEL_HIGH>,
+-                         <GIC_SPI 489 IRQ_TYPE_LEVEL_HIGH>;
+-            interrupt-names = "hs_phy_irq", "ss_phy_irq",
+-                          "dm_hs_phy_irq", "dp_hs_phy_irq";
++            interrupts = <GIC_SPI 130 IRQ_TYPE_LEVEL_HIGH>,
++                         <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH>,
++                         <GIC_SPI 489 IRQ_TYPE_EDGE_BOTH>,
++                         <GIC_SPI 488 IRQ_TYPE_EDGE_BOTH>,
++                         <GIC_SPI 486 IRQ_TYPE_LEVEL_HIGH>;
++            interrupt-names = "pwr_event", "hs_phy_irq",
++                          "dp_hs_phy_irq", "dm_hs_phy_irq", "ss_phy_irq";
+ 
+             power-domains = <&gcc USB30_PRIM_GDSC>;
+ 
+-- 

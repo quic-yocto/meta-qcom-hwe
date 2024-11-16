@@ -1,0 +1,48 @@
+From f0f7ddcf9233b969f07b2aa206ce57bfef2e4348 Mon Sep 17 00:00:00 2001
+From: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Date: Wed, 7 Aug 2024 14:42:34 +0530
+Subject: [PATCH] FROMLIST: BACKPORT: drm/msm/dp: drm/msm/dp: Add DisplayPort
+ controller for SA8775P
+
+The Qualcomm SA8775P platform comes with 2 DisplayPort controllers
+for each mdss, having different base offsets than the previous
+SoCs. The support for all 4 DPTX have been added here, and
+validation of only MDSS0 DPTX0 and DPTX1 have been conducted.
+
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241018070706.28980-6-quic_mukhopad@quicinc.com/]
+---
+ drivers/gpu/drm/msm/dp/dp_display.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/gpu/drm/msm/dp/dp_display.c b/drivers/gpu/drm/msm/dp/dp_display.c
+index 60ac8e02a364..9a1040ffa3fe 100644
+--- a/drivers/gpu/drm/msm/dp/dp_display.c
++++ b/drivers/gpu/drm/msm/dp/dp_display.c
+@@ -129,6 +129,14 @@ struct msm_dp_desc {
+ 	bool wide_bus_en;
+ };
+ 
++static const struct msm_dp_desc sa8775p_dp_descs[] = {
++	{ .io_start = 0x0af54000, .id = MSM_DP_CONTROLLER_0, .wide_bus_en = true },
++	{ .io_start = 0x0af5c000, .id = MSM_DP_CONTROLLER_1, .wide_bus_en = true },
++	{ .io_start = 0x22154000, .id = MSM_DP_CONTROLLER_2, .wide_bus_en = true },
++	{ .io_start = 0x2215c000, .id = MSM_DP_CONTROLLER_3, .wide_bus_en = true },
++	{}
++};
++
+ static const struct msm_dp_desc sc7180_dp_descs[] = {
+ 	{ .io_start = 0x0ae90000, .id = MSM_DP_CONTROLLER_0, .connector_type = DRM_MODE_CONNECTOR_DisplayPort },
+ 	{}
+@@ -178,6 +186,7 @@ static const struct msm_dp_desc sm8650_dp_descs[] = {
+ };
+ 
+ static const struct of_device_id dp_dt_match[] = {
++	{ .compatible = "qcom,sa8775p-dp", .data = &sa8775p_dp_descs },
+ 	{ .compatible = "qcom,sc7180-dp", .data = &sc7180_dp_descs },
+ 	{ .compatible = "qcom,sc7280-dp", .data = &sc7280_dp_descs },
+ 	{ .compatible = "qcom,sc7280-edp", .data = &sc7280_dp_descs },
+-- 
+2.17.1
+

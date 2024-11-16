@@ -1,0 +1,44 @@
+From 028094c3416ddbad62b7bdcbeb6267a9a1a0997b Mon Sep 17 00:00:00 2001
+From: lijuang <quic_lijuang@quicinc.com>
+Date: Wed, 16 Oct 2024 17:35:58 +0800
+Subject: [PATCH] FROMGIT: pmdomain: qcom: rpmhpd: Add qcs615 power domains
+
+Add support for power domains exposed by RPMh on the qcs615 platform.
+Only CX/CX_AO are exposed by RPMh. Consumers such as VDD_MX, EBI, LPI_
+MX and LPI_CX will share the power domains.
+
+Signed-off-by: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Link: https://lore.kernel.org/r/20240927-add_qcs615_qcs8300_powerdomains_driver_support-v2-4-18c030ad7b68@quicinc.com
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git ba84ca67acd5b9eb428a88065c288e10eab84413]
+---
+ drivers/pmdomain/qcom/rpmhpd.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhpd.c
+index efca30c185a1..9ed79a2ff9c2 100644
+--- a/drivers/pmdomain/qcom/rpmhpd.c
++++ b/drivers/pmdomain/qcom/rpmhpd.c
+@@ -546,7 +546,19 @@ static const struct rpmhpd_desc sc8280xp_desc = {
+ 	.num_pds = ARRAY_SIZE(sc8280xp_rpmhpds),
+ };
+ 
++/* QCS615 RPMH powerdomains */
++static struct rpmhpd *qcs615_rpmhpds[] = {
++	[RPMHPD_CX] = &cx,
++	[RPMHPD_CX_AO] = &cx_ao,
++};
++
++static const struct rpmhpd_desc qcs615_desc = {
++	.rpmhpds = qcs615_rpmhpds,
++	.num_pds = ARRAY_SIZE(qcs615_rpmhpds),
++};
++
+ static const struct of_device_id rpmhpd_match_table[] = {
++	{ .compatible = "qcom,qcs615-rpmhpd", .data = &qcs615_desc },
+ 	{ .compatible = "qcom,qdu1000-rpmhpd", .data = &qdu1000_desc },
+ 	{ .compatible = "qcom,sa8155p-rpmhpd", .data = &sa8155p_desc },
+ 	{ .compatible = "qcom,sa8540p-rpmhpd", .data = &sa8540p_desc },
+-- 
+2.46.0
+

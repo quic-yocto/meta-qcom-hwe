@@ -1,0 +1,45 @@
+From 77ac9539f6dd52b40561cc98af1ac467d21a77c9 Mon Sep 17 00:00:00 2001
+From: Yijie Yang <quic_yijiyang@quicinc.com>
+Date: Mon, 11 Nov 2024 14:10:09 +0800
+Subject: [PATCH] PENDING: dt-bindings: net: snps,dwmac: add description for
+ qcs615
+
+Add the necessary compatible entries for qcs615 to ensure its validation.
+
+Signed-off-by: Yijie Yang <quic_yijiyang@quicinc.com>
+Upstream-Status: Pending
+---
+ Documentation/devicetree/bindings/net/snps,dwmac.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/net/snps,dwmac.yaml b/Documentation/devicetree/bindings/net/snps,dwmac.yaml
+index 5c2769dc689a..f35f7702a12c 100644
+--- a/Documentation/devicetree/bindings/net/snps,dwmac.yaml
++++ b/Documentation/devicetree/bindings/net/snps,dwmac.yaml
+@@ -67,6 +67,7 @@ properties:
+         - loongson,ls2k-dwmac
+         - loongson,ls7a-dwmac
+         - qcom,qcs404-ethqos
++        - qcom,qcs615-ethqos
+         - qcom,sa8775p-ethqos
+         - qcom,sc8280xp-ethqos
+         - qcom,sm8150-ethqos
+@@ -588,6 +589,7 @@ allOf:
+               - ingenic,x1600-mac
+               - ingenic,x1830-mac
+               - ingenic,x2000-mac
++              - qcom,qcs615-ethqos
+               - qcom,sa8775p-ethqos
+               - qcom,sc8280xp-ethqos
+               - snps,dwmac-3.50a
+@@ -645,6 +647,7 @@ allOf:
+               - ingenic,x1830-mac
+               - ingenic,x2000-mac
+               - qcom,qcs404-ethqos
++              - qcom,qcs615-ethqos
+               - qcom,sa8775p-ethqos
+               - qcom,sc8280xp-ethqos
+               - qcom,sm8150-ethqos
+-- 
+2.34.1
+

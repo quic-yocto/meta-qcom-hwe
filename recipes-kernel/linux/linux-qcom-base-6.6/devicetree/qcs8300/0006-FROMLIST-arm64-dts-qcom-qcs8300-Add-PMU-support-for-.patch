@@ -1,0 +1,41 @@
+From 18e2e7edd34cf7b79a57d683a77a6b78c1b3d19c Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Fri, 1 Nov 2024 14:44:46 +0800
+Subject: [PATCH 6/6] FROMLIST: arm64: dts: qcom: qcs8300: Add PMU support for
+ QCS8300
+
+Add Performance Monitoring Unit(PMU) nodes on the QCS8300 platform.
+
+Change-Id: I9f40b0209aedd61b59fc168dfb7792a067c5248b
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Link: https://lore.kernel.org/all/20241101-qcs8300_pmu-v1-1-3f3d744a3482@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241101-qcs8300_pmu-v1-1-3f3d744a3482@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs8300.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs8300.dtsi b/arch/arm64/boot/dts/qcom/qcs8300.dtsi
+index 811c926c94f4..9f979b506f19 100644
+--- a/arch/arm64/boot/dts/qcom/qcs8300.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs8300.dtsi
+@@ -302,6 +302,16 @@ mc_virt: interconnect-1 {
+ 		qcom,bcm-voters = <&apps_bcm_voter>;
+ 	};
+ 
++	pmu-a55 {
++		compatible = "arm,cortex-a55-pmu";
++		interrupts = <GIC_PPI 7 IRQ_TYPE_LEVEL_LOW>;
++	};
++
++	pmu-a78 {
++		compatible = "arm,cortex-a78-pmu";
++		interrupts = <GIC_PPI 7 IRQ_TYPE_LEVEL_LOW>;
++	};
++
+ 	psci {
+ 		compatible = "arm,psci-1.0";
+ 		method = "smc";
+-- 
+2.46.0
+

@@ -1,0 +1,35 @@
+From 6b0cf19b2c8139b0224350ab8a93a13c9bd31931 Mon Sep 17 00:00:00 2001
+From: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Date: Fri, 27 Sep 2024 19:59:13 +0800
+Subject: [PATCH 08/17] FROMGIT: dt-bindings: power: qcom,rpmpd: document
+ qcs8300 RPMh power domains
+
+Add compatible string for the RPMh power domains on qcs8300 platform.
+
+Change-Id: I439f042665b3969c8388f5c2f920bbde86c851a6
+Signed-off-by: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/r/20240927-add_qcs615_qcs8300_powerdomains_driver_support-v2-1-18c030ad7b68@quicinc.com
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Git-commit: 4138d1aeaf37a15d5d23896f552f02b55691d40a
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 4138d1aeaf37a15d5d23896f552f02b55691d40a]
+---
+ Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+index bbf5fd117866..185d6cf862bf 100644
+--- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
++++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+@@ -29,6 +29,7 @@ properties:
+       - qcom,qcm2290-rpmpd
+       - qcom,qcs404-rpmpd
+       - qcom,qcs615-rpmhpd
++      - qcom,qcs8300-rpmhpd
+       - qcom,qdu1000-rpmhpd
+       - qcom,sa8155p-rpmhpd
+       - qcom,sa8540p-rpmhpd
+-- 
+2.46.0
+

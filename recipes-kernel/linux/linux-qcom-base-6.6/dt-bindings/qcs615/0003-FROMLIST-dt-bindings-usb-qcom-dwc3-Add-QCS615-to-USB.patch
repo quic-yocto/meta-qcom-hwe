@@ -1,0 +1,50 @@
+From 1af9b51ea7aa39435cba8f2e67fe6e327b97b63e Mon Sep 17 00:00:00 2001
+From: Krishna Kurapati <quic_kriskura@quicinc.com>
+Date: Mon, 14 Oct 2024 14:14:28 +0530
+Subject: [PATCH] FROMLIST: dt-bindings: usb: qcom,dwc3: Add QCS615 to USB DWC3
+ bindings
+
+Update dt-bindings to add primary controller of QCS615 to USB
+DWC3 controller list.
+
+Although this controller has a QUSB2 Phy, it belongs to a
+generation of SoCs like SDM670/SDM845/SM6350 where DP/DM is
+used for wakeup instead of qusb2_phy interrupt.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Krishna Kurapati <quic_kriskura@quicinc.com>
+Link: https://lore.kernel.org/all/20241014084432.3310114-2-quic_kriskura@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241014084432.3310114-2-quic_kriskura@quicinc.com/]
+---
+ Documentation/devicetree/bindings/usb/qcom,dwc3.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+index cd648f98b718..74555e314888 100644
+--- a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
++++ b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+@@ -25,6 +25,7 @@ properties:
+           - qcom,msm8998-dwc3
+           - qcom,qcm2290-dwc3
+           - qcom,qcs404-dwc3
++          - qcom,qcs615-dwc3
+           - qcom,sa8775p-dwc3
+           - qcom,sc7180-dwc3
+           - qcom,sc7280-dwc3
+@@ -324,6 +325,7 @@ allOf:
+           contains:
+             enum:
+               - qcom,qcm2290-dwc3
++              - qcom,qcs615-dwc3
+               - qcom,sm6115-dwc3
+               - qcom,sm6125-dwc3
+               - qcom,sm8150-dwc3
+@@ -431,6 +433,7 @@ allOf:
+               - qcom,ipq4019-dwc3
+               - qcom,ipq8064-dwc3
+               - qcom,msm8994-dwc3
++              - qcom,qcs615-dwc3
+               - qcom,sa8775p-dwc3
+               - qcom,sc7180-dwc3
+               - qcom,sc7280-dwc3
+-- 

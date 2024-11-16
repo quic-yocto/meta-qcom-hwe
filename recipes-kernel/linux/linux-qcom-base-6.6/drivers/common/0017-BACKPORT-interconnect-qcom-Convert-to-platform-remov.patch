@@ -1,0 +1,279 @@
+From e8a9c5e665648ecc2cd2fd11567dc86c2ea3d970 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Date: Sun, 15 Oct 2023 15:59:56 +0200
+Subject: [PATCH 17/26] BACKPORT: interconnect: qcom: Convert to platform
+ remove callback returning void
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is ignored (apart
+from emitting a warning) and this typically results in resource leaks.
+To improve here there is a quest to make the remove callback return
+void. In the first step of this quest all drivers are converted to
+.remove_new() which already returns void. Eventually after all drivers
+are converted, .remove_new() will be renamed to .remove().
+
+Several drivers use qcom_icc_rpmh_remove() as remove callback which
+returns zero unconditionally. Make it return void and use .remove_new in
+the drivers. There is no change in behaviour.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Link: https://lore.kernel.org/r/20231015135955.1537751-2-u.kleine-koenig@pengutronix.de
+Signed-off-by: Georgi Djakov <djakov@kernel.org>
+Git-repo: https://github.com/torvalds/linux.git
+Git-commit: c8fd5a37340f9dfb02f7c340d7b602bd2f7ec449
+Upstream-Status: Backport [https://github.com/torvalds/linux.git c8fd5a37340f9dfb02f7c340d7b602bd2f7ec449]
+---
+ drivers/interconnect/qcom/icc-rpmh.c | 4 +---
+ drivers/interconnect/qcom/icc-rpmh.h | 2 +-
+ drivers/interconnect/qcom/qdu1000.c  | 2 +-
+ drivers/interconnect/qcom/sa8775p.c  | 2 +-
+ drivers/interconnect/qcom/sc7180.c   | 2 +-
+ drivers/interconnect/qcom/sc7280.c   | 2 +-
+ drivers/interconnect/qcom/sc8180x.c  | 2 +-
+ drivers/interconnect/qcom/sc8280xp.c | 2 +-
+ drivers/interconnect/qcom/sdm845.c   | 2 +-
+ drivers/interconnect/qcom/sdx55.c    | 2 +-
+ drivers/interconnect/qcom/sdx65.c    | 2 +-
+ drivers/interconnect/qcom/sm6350.c   | 2 +-
+ drivers/interconnect/qcom/sm8150.c   | 2 +-
+ drivers/interconnect/qcom/sm8250.c   | 2 +-
+ drivers/interconnect/qcom/sm8350.c   | 2 +-
+ drivers/interconnect/qcom/sm8450.c   | 2 +-
+ drivers/interconnect/qcom/sm8550.c   | 2 +-
+ 17 files changed, 17 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
+index b9f27ce3b607..c1aa265c1f4e 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.c
++++ b/drivers/interconnect/qcom/icc-rpmh.c
+@@ -253,14 +253,12 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ }
+ EXPORT_SYMBOL_GPL(qcom_icc_rpmh_probe);
+ 
+-int qcom_icc_rpmh_remove(struct platform_device *pdev)
++void qcom_icc_rpmh_remove(struct platform_device *pdev)
+ {
+ 	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+ 
+ 	icc_provider_deregister(&qp->provider);
+ 	icc_nodes_remove(&qp->provider);
+-
+-	return 0;
+ }
+ EXPORT_SYMBOL_GPL(qcom_icc_rpmh_remove);
+ 
+diff --git a/drivers/interconnect/qcom/icc-rpmh.h b/drivers/interconnect/qcom/icc-rpmh.h
+index 5f0af8b1fc43..2de29460e808 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.h
++++ b/drivers/interconnect/qcom/icc-rpmh.h
+@@ -126,6 +126,6 @@ int qcom_icc_set(struct icc_node *src, struct icc_node *dst);
+ int qcom_icc_bcm_init(struct qcom_icc_bcm *bcm, struct device *dev);
+ void qcom_icc_pre_aggregate(struct icc_node *node);
+ int qcom_icc_rpmh_probe(struct platform_device *pdev);
+-int qcom_icc_rpmh_remove(struct platform_device *pdev);
++void qcom_icc_rpmh_remove(struct platform_device *pdev);
+ 
+ #endif
+diff --git a/drivers/interconnect/qcom/qdu1000.c b/drivers/interconnect/qcom/qdu1000.c
+index a7392eb73d4a..9cb477d2bdfe 100644
+--- a/drivers/interconnect/qcom/qdu1000.c
++++ b/drivers/interconnect/qcom/qdu1000.c
+@@ -1046,7 +1046,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qnoc_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-qdu1000",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sa8775p.c b/drivers/interconnect/qcom/sa8775p.c
+index ef1b5e326089..dd6281db08ad 100644
+--- a/drivers/interconnect/qcom/sa8775p.c
++++ b/drivers/interconnect/qcom/sa8775p.c
+@@ -2519,7 +2519,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sa8775p",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sc7180.c b/drivers/interconnect/qcom/sc7180.c
+index af2be1543840..34a1d163d6e1 100644
+--- a/drivers/interconnect/qcom/sc7180.c
++++ b/drivers/interconnect/qcom/sc7180.c
+@@ -1807,7 +1807,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sc7180",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sc7280.c b/drivers/interconnect/qcom/sc7280.c
+index a626dbc71999..7d33694368e8 100644
+--- a/drivers/interconnect/qcom/sc7280.c
++++ b/drivers/interconnect/qcom/sc7280.c
+@@ -1835,7 +1835,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sc7280",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sc8180x.c b/drivers/interconnect/qcom/sc8180x.c
+index a741badaa966..03d626776ba1 100644
+--- a/drivers/interconnect/qcom/sc8180x.c
++++ b/drivers/interconnect/qcom/sc8180x.c
+@@ -1889,7 +1889,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sc8180x",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sc8280xp.c b/drivers/interconnect/qcom/sc8280xp.c
+index 0270f6c64481..7acd152bf0dd 100644
+--- a/drivers/interconnect/qcom/sc8280xp.c
++++ b/drivers/interconnect/qcom/sc8280xp.c
+@@ -2391,7 +2391,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sc8280xp",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
+index 855802be93fe..584800ac871a 100644
+--- a/drivers/interconnect/qcom/sdm845.c
++++ b/drivers/interconnect/qcom/sdm845.c
+@@ -1802,7 +1802,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sdm845",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sdx55.c b/drivers/interconnect/qcom/sdx55.c
+index 4117db046fa0..e97f28b8d2b2 100644
+--- a/drivers/interconnect/qcom/sdx55.c
++++ b/drivers/interconnect/qcom/sdx55.c
+@@ -913,7 +913,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sdx55",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sdx65.c b/drivers/interconnect/qcom/sdx65.c
+index d3a6c6c148e5..2f3f5479d8a5 100644
+--- a/drivers/interconnect/qcom/sdx65.c
++++ b/drivers/interconnect/qcom/sdx65.c
+@@ -897,7 +897,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sdx65",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sm6350.c b/drivers/interconnect/qcom/sm6350.c
+index f41d7e19ba26..20923e8e6110 100644
+--- a/drivers/interconnect/qcom/sm6350.c
++++ b/drivers/interconnect/qcom/sm6350.c
+@@ -1702,7 +1702,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sm6350",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sm8150.c b/drivers/interconnect/qcom/sm8150.c
+index edfe824cad35..f29b77556a79 100644
+--- a/drivers/interconnect/qcom/sm8150.c
++++ b/drivers/interconnect/qcom/sm8150.c
+@@ -1864,7 +1864,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sm8150",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sm8250.c b/drivers/interconnect/qcom/sm8250.c
+index 2a2f56b99373..02d40eea0d69 100644
+--- a/drivers/interconnect/qcom/sm8250.c
++++ b/drivers/interconnect/qcom/sm8250.c
+@@ -1991,7 +1991,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sm8250",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sm8350.c b/drivers/interconnect/qcom/sm8350.c
+index 562322d4fc3c..b321c3009acb 100644
+--- a/drivers/interconnect/qcom/sm8350.c
++++ b/drivers/interconnect/qcom/sm8350.c
+@@ -1961,7 +1961,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sm8350",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sm8450.c b/drivers/interconnect/qcom/sm8450.c
+index eb7e17df32ba..b3cd0087377c 100644
+--- a/drivers/interconnect/qcom/sm8450.c
++++ b/drivers/interconnect/qcom/sm8450.c
+@@ -1884,7 +1884,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sm8450",
+ 		.of_match_table = qnoc_of_match,
+diff --git a/drivers/interconnect/qcom/sm8550.c b/drivers/interconnect/qcom/sm8550.c
+index 16b2dfd794b4..fc22cecf650f 100644
+--- a/drivers/interconnect/qcom/sm8550.c
++++ b/drivers/interconnect/qcom/sm8550.c
+@@ -2219,7 +2219,7 @@ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+ 	.probe = qcom_icc_rpmh_probe,
+-	.remove = qcom_icc_rpmh_remove,
++	.remove_new = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sm8550",
+ 		.of_match_table = qnoc_of_match,
+-- 
+2.46.0
+

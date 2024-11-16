@@ -1,0 +1,132 @@
+From 5043f6b50fa69370b4fd61cd34f6eb77111f3d11 Mon Sep 17 00:00:00 2001
+From: Li Liu <quic_lliu6@quicinc.com>
+Date: Tue, 15 Oct 2024 14:27:26 +0800
+Subject: [PATCH 6/9] FROMLIST: drm/msm/dsi: Add support for QCS615
+
+Add support for DSI 2.3.1 (block used on QCS615).
+Add phy configuration for QCS615
+
+Change-Id: I9478ee9a048fde1db65703791795224d1c83b2b3
+Signed-off-by: Li Liu <quic_lliu6@quicinc.com>
+Signed-off-by: Fange Zhang <quic_fangez@quicinc.com>
+Link: https://lore.kernel.org/all/20241113-add-display-support-for-qcs615-platform-v2-6-2873eb6fb869@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241113-add-display-support-for-qcs615-platform-v2-6-2873eb6fb869@quicinc.com/]
+---
+ drivers/gpu/drm/msm/dsi/dsi_cfg.c          | 17 +++++++++++++++++
+ drivers/gpu/drm/msm/dsi/dsi_cfg.h          |  1 +
+ drivers/gpu/drm/msm/dsi/phy/dsi_phy.c      |  2 ++
+ drivers/gpu/drm/msm/dsi/phy/dsi_phy.h      |  1 +
+ drivers/gpu/drm/msm/dsi/phy/dsi_phy_14nm.c | 21 +++++++++++++++++++++
+ 5 files changed, 42 insertions(+)
+
+diff --git a/drivers/gpu/drm/msm/dsi/dsi_cfg.c b/drivers/gpu/drm/msm/dsi/dsi_cfg.c
+index 1f98ff74ceb0..2dd1e1227b28 100644
+--- a/drivers/gpu/drm/msm/dsi/dsi_cfg.c
++++ b/drivers/gpu/drm/msm/dsi/dsi_cfg.c
+@@ -206,6 +206,21 @@ static const struct msm_dsi_config sc7280_dsi_cfg = {
+ 	},
+ };
+ 
++static const struct regulator_bulk_data qcs615_dsi_regulators[] = {
++	{ .supply = "vdda", .init_load_uA = 21800 },
++};
++
++static const struct msm_dsi_config qcs615_dsi_cfg = {
++	.io_offset = DSI_6G_REG_SHIFT,
++	.regulator_data = qcs615_dsi_regulators,
++	.num_regulators = ARRAY_SIZE(qcs615_dsi_regulators),
++	.bus_clk_names = dsi_v2_4_clk_names,
++	.num_bus_clks = ARRAY_SIZE(dsi_v2_4_clk_names),
++	.io_start = {
++		{ 0xae94000 },
++	},
++};
++
+ static const struct msm_dsi_host_cfg_ops msm_dsi_v2_host_ops = {
+ 	.link_clk_set_rate = dsi_link_clk_set_rate_v2,
+ 	.link_clk_enable = dsi_link_clk_enable_v2,
+@@ -271,6 +286,8 @@ static const struct msm_dsi_cfg_handler dsi_cfg_handlers[] = {
+ 		&sdm845_dsi_cfg, &msm_dsi_6g_v2_host_ops},
+ 	{MSM_DSI_VER_MAJOR_6G, MSM_DSI_6G_VER_MINOR_V2_3_0,
+ 		&sdm845_dsi_cfg, &msm_dsi_6g_v2_host_ops},
++	{MSM_DSI_VER_MAJOR_6G, MSM_DSI_6G_VER_MINOR_V2_3_1,
++		&qcs615_dsi_cfg, &msm_dsi_6g_v2_host_ops},
+ 	{MSM_DSI_VER_MAJOR_6G, MSM_DSI_6G_VER_MINOR_V2_4_0,
+ 		&sdm845_dsi_cfg, &msm_dsi_6g_v2_host_ops},
+ 	{MSM_DSI_VER_MAJOR_6G, MSM_DSI_6G_VER_MINOR_V2_4_1,
+diff --git a/drivers/gpu/drm/msm/dsi/dsi_cfg.h b/drivers/gpu/drm/msm/dsi/dsi_cfg.h
+index 43f0dd74edb6..84db18d7f578 100644
+--- a/drivers/gpu/drm/msm/dsi/dsi_cfg.h
++++ b/drivers/gpu/drm/msm/dsi/dsi_cfg.h
+@@ -23,6 +23,7 @@
+ #define MSM_DSI_6G_VER_MINOR_V2_2_0	0x20000000
+ #define MSM_DSI_6G_VER_MINOR_V2_2_1	0x20020001
+ #define MSM_DSI_6G_VER_MINOR_V2_3_0	0x20030000
++#define MSM_DSI_6G_VER_MINOR_V2_3_1	0x20030001
+ #define MSM_DSI_6G_VER_MINOR_V2_4_0	0x20040000
+ #define MSM_DSI_6G_VER_MINOR_V2_4_1	0x20040001
+ #define MSM_DSI_6G_VER_MINOR_V2_5_0	0x20050000
+diff --git a/drivers/gpu/drm/msm/dsi/phy/dsi_phy.c b/drivers/gpu/drm/msm/dsi/phy/dsi_phy.c
+index e49ebd9f6326..0fa63da86bc8 100644
+--- a/drivers/gpu/drm/msm/dsi/phy/dsi_phy.c
++++ b/drivers/gpu/drm/msm/dsi/phy/dsi_phy.c
+@@ -559,6 +559,8 @@ static const struct of_device_id dsi_phy_dt_match[] = {
+ 	  .data = &dsi_phy_14nm_cfgs },
+ 	{ .compatible = "qcom,dsi-phy-14nm-2290",
+ 	  .data = &dsi_phy_14nm_2290_cfgs },
++	{ .compatible = "qcom,dsi-phy-14nm-615",
++	  .data = &dsi_phy_14nm_615_cfgs },
+ 	{ .compatible = "qcom,dsi-phy-14nm-660",
+ 	  .data = &dsi_phy_14nm_660_cfgs },
+ 	{ .compatible = "qcom,dsi-phy-14nm-8953",
+diff --git a/drivers/gpu/drm/msm/dsi/phy/dsi_phy.h b/drivers/gpu/drm/msm/dsi/phy/dsi_phy.h
+index 8b640d174785..14d37877f2f8 100644
+--- a/drivers/gpu/drm/msm/dsi/phy/dsi_phy.h
++++ b/drivers/gpu/drm/msm/dsi/phy/dsi_phy.h
+@@ -50,6 +50,7 @@ extern const struct msm_dsi_phy_cfg dsi_phy_28nm_8226_cfgs;
+ extern const struct msm_dsi_phy_cfg dsi_phy_28nm_8960_cfgs;
+ extern const struct msm_dsi_phy_cfg dsi_phy_20nm_cfgs;
+ extern const struct msm_dsi_phy_cfg dsi_phy_14nm_cfgs;
++extern const struct msm_dsi_phy_cfg dsi_phy_14nm_615_cfgs;
+ extern const struct msm_dsi_phy_cfg dsi_phy_14nm_660_cfgs;
+ extern const struct msm_dsi_phy_cfg dsi_phy_14nm_2290_cfgs;
+ extern const struct msm_dsi_phy_cfg dsi_phy_14nm_8953_cfgs;
+diff --git a/drivers/gpu/drm/msm/dsi/phy/dsi_phy_14nm.c b/drivers/gpu/drm/msm/dsi/phy/dsi_phy_14nm.c
+index 31deda1c664a..5571e7a47b4f 100644
+--- a/drivers/gpu/drm/msm/dsi/phy/dsi_phy_14nm.c
++++ b/drivers/gpu/drm/msm/dsi/phy/dsi_phy_14nm.c
+@@ -1034,6 +1034,10 @@ static const struct regulator_bulk_data dsi_phy_14nm_73p4mA_regulators[] = {
+ 	{ .supply = "vcca", .init_load_uA = 73400 },
+ };
+ 
++static const struct regulator_bulk_data dsi_phy_14nm_36mA_regulators[] = {
++	{ .supply = "vdda", .init_load_uA = 36000 },
++};
++
+ const struct msm_dsi_phy_cfg dsi_phy_14nm_cfgs = {
+ 	.has_phy_lane = true,
+ 	.regulator_data = dsi_phy_14nm_17mA_regulators,
+@@ -1099,3 +1103,20 @@ const struct msm_dsi_phy_cfg dsi_phy_14nm_2290_cfgs = {
+ 	.io_start = { 0x5e94400 },
+ 	.num_dsi_phy = 1,
+ };
++
++const struct msm_dsi_phy_cfg dsi_phy_14nm_615_cfgs = {
++	.has_phy_lane = true,
++	.regulator_data = dsi_phy_14nm_36mA_regulators,
++	.num_regulators = ARRAY_SIZE(dsi_phy_14nm_36mA_regulators),
++	.ops = {
++		.enable = dsi_14nm_phy_enable,
++		.disable = dsi_14nm_phy_disable,
++		.pll_init = dsi_pll_14nm_init,
++		.save_pll_state = dsi_14nm_pll_save_state,
++		.restore_pll_state = dsi_14nm_pll_restore_state,
++	},
++	.min_pll_rate = VCO_MIN_RATE,
++	.max_pll_rate = VCO_MAX_RATE,
++	.io_start = { 0xae94400 },
++	.num_dsi_phy = 1,
++};
+-- 
+2.34.1
+

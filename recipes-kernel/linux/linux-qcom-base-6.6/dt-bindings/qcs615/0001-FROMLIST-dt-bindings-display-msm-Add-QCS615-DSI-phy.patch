@@ -1,0 +1,31 @@
+From 166170a679b037543089180ebf14096fc974e48a Mon Sep 17 00:00:00 2001
+From: Li Liu <quic_lliu6@quicinc.com>
+Date: Thu, 10 Oct 2024 16:22:45 +0800
+Subject: [PATCH 1/9] FROMLIST: dt-bindings: display/msm: Add QCS615 DSI phy
+
+QCS615 platform uses the 14nm DSI PHY driver.
+
+Change-Id: I9084b8b534cd5dc14b6f3404369a6e83be31b36d
+Signed-off-by: Li Liu <quic_lliu6@quicinc.com>
+Signed-off-by: Fange Zhang <quic_fangez@quicinc.com>
+Link: https://lore.kernel.org/all/20241113-add-display-support-for-qcs615-platform-v2-1-2873eb6fb869@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241113-add-display-support-for-qcs615-platform-v2-1-2873eb6fb869@quicinc.com/]
+---
+ Documentation/devicetree/bindings/display/msm/dsi-phy-14nm.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/display/msm/dsi-phy-14nm.yaml b/Documentation/devicetree/bindings/display/msm/dsi-phy-14nm.yaml
+index 52bbe132e6da..babd73cdc44f 100644
+--- a/Documentation/devicetree/bindings/display/msm/dsi-phy-14nm.yaml
++++ b/Documentation/devicetree/bindings/display/msm/dsi-phy-14nm.yaml
+@@ -17,6 +17,7 @@ properties:
+     enum:
+       - qcom,dsi-phy-14nm
+       - qcom,dsi-phy-14nm-2290
++      - qcom,dsi-phy-14nm-615
+       - qcom,dsi-phy-14nm-660
+       - qcom,dsi-phy-14nm-8953
+       - qcom,sm6125-dsi-phy-14nm
+-- 
+2.34.1
+

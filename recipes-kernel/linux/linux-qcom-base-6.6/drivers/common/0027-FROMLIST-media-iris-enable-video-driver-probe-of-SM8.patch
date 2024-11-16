@@ -1,0 +1,239 @@
+From dc23d6d3a6b0ca5cb28019169a33d45f0b2e7743 Mon Sep 17 00:00:00 2001
+From: Dikshita Agarwal <quic_dikshita@quicinc.com>
+Date: Tue, 8 Oct 2024 12:51:41 +0530
+Subject: FROMLIST: media: iris: enable video driver probe of
+ SM8250 SoC
+
+Initialize the platform data and enable video driver probe of SM8250
+SoC.
+
+Change-Id: I6ccbaa523de4478730518f7d00bda38e6a1deaf4
+Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-27-c5eaa4e9ab9e@quicinc.com/]
+---
+ drivers/media/platform/qcom/iris/Makefile     |   1 +
+ drivers/media/platform/qcom/iris/iris_ctrls.c |   4 +
+ .../platform/qcom/iris/iris_platform_common.h |   1 +
+ .../platform/qcom/iris/iris_platform_sm8250.c | 148 ++++++++++++++++++
+ drivers/media/platform/qcom/iris/iris_probe.c |   4 +
+ 5 files changed, 158 insertions(+)
+ create mode 100644 drivers/media/platform/qcom/iris/iris_platform_sm8250.c
+
+diff --git a/drivers/media/platform/qcom/iris/Makefile b/drivers/media/platform/qcom/iris/Makefile
+index ca31db847273..a746681e03cd 100644
+--- a/drivers/media/platform/qcom/iris/Makefile
++++ b/drivers/media/platform/qcom/iris/Makefile
+@@ -9,6 +9,7 @@ iris-objs += iris_buffer.o \
+              iris_hfi_gen2_packet.o \
+              iris_hfi_gen2_response.o \
+              iris_hfi_queue.o \
++             iris_platform_sm8250.o \
+              iris_platform_sm8550.o \
+              iris_power.o \
+              iris_probe.o \
+diff --git a/drivers/media/platform/qcom/iris/iris_ctrls.c b/drivers/media/platform/qcom/iris/iris_ctrls.c
+index 65d10c97e004..e4c064cbacdd 100644
+--- a/drivers/media/platform/qcom/iris/iris_ctrls.c
++++ b/drivers/media/platform/qcom/iris/iris_ctrls.c
+@@ -17,6 +17,8 @@ static inline bool iris_valid_cap_id(enum platform_inst_fw_cap_type cap_id)
+ static enum platform_inst_fw_cap_type iris_get_cap_id(u32 id)
+ {
+ 	switch (id) {
++	case V4L2_CID_MPEG_VIDEO_DECODER_MPEG4_DEBLOCK_FILTER:
++		return DEBLOCK;
+ 	case V4L2_CID_MPEG_VIDEO_H264_PROFILE:
+ 		return PROFILE;
+ 	case V4L2_CID_MPEG_VIDEO_H264_LEVEL:
+@@ -32,6 +34,8 @@ static u32 iris_get_v4l2_id(enum platform_inst_fw_cap_type cap_id)
+ 		return 0;
+ 
+ 	switch (cap_id) {
++	case DEBLOCK:
++		return V4L2_CID_MPEG_VIDEO_DECODER_MPEG4_DEBLOCK_FILTER;
+ 	case PROFILE:
+ 		return V4L2_CID_MPEG_VIDEO_H264_PROFILE;
+ 	case LEVEL:
+diff --git a/drivers/media/platform/qcom/iris/iris_platform_common.h b/drivers/media/platform/qcom/iris/iris_platform_common.h
+index c333a14f9c54..2a1b46b69efa 100644
+--- a/drivers/media/platform/qcom/iris/iris_platform_common.h
++++ b/drivers/media/platform/qcom/iris/iris_platform_common.h
+@@ -34,6 +34,7 @@ enum pipe_type {
+ };
+ 
+ extern struct iris_platform_data sm8550_data;
++extern struct iris_platform_data sm8250_data;
+ 
+ enum platform_clk_type {
+ 	IRIS_AXI_CLK,
+diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8250.c b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
+new file mode 100644
+index 000000000000..9ef2fcc1a0fd
+--- /dev/null
++++ b/drivers/media/platform/qcom/iris/iris_platform_sm8250.c
+@@ -0,0 +1,148 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#include "iris_core.h"
++#include "iris_ctrls.h"
++#include "iris_platform_common.h"
++#include "iris_resources.h"
++#include "iris_hfi_gen1.h"
++#include "iris_hfi_gen1_defines.h"
++#include "iris_vpu_common.h"
++
++static struct platform_inst_fw_cap inst_fw_cap_sm8250[] = {
++	{
++		.cap_id = PIPE,
++		.min = PIPE_1,
++		.max = PIPE_4,
++		.step_or_mask = 1,
++		.value = PIPE_4,
++		.hfi_id = HFI_PROPERTY_PARAM_WORK_ROUTE,
++		.set = iris_set_pipe,
++	},
++	{
++		.cap_id = STAGE,
++		.min = STAGE_1,
++		.max = STAGE_2,
++		.step_or_mask = 1,
++		.value = STAGE_2,
++		.hfi_id = HFI_PROPERTY_PARAM_WORK_MODE,
++		.set = iris_set_stage,
++	},
++	{
++		.cap_id = DEBLOCK,
++		.min = 0,
++		.max = 1,
++		.step_or_mask = 1,
++		.value = 0,
++		.hfi_id = HFI_PROPERTY_CONFIG_VDEC_POST_LOOP_DEBLOCKER,
++		.set = iris_set_u32,
++	},
++};
++
++static struct platform_inst_caps platform_inst_cap_sm8250 = {
++	.min_frame_width = 128,
++	.max_frame_width = 8192,
++	.min_frame_height = 128,
++	.max_frame_height = 8192,
++	.max_mbpf = 138240,
++	.mb_cycles_vsp = 25,
++	.mb_cycles_vpp = 200,
++};
++
++static void iris_set_sm8250_preset_registers(struct iris_core *core)
++{
++	writel(0x0, core->reg_base + 0xB0088);
++}
++
++static const struct icc_info sm8250_icc_table[] = {
++	{ "cpu-cfg",    1000, 1000     },
++	{ "video-mem",  1000, 15000000 },
++};
++
++static const char * const sm8250_clk_reset_table[] = { "bus", "core" };
++
++static const struct bw_info sm8250_bw_table_dec[] = {
++	{ ((4096 * 2160) / 256) * 60, 2403000 },
++	{ ((4096 * 2160) / 256) * 30, 1224000 },
++	{ ((1920 * 1080) / 256) * 60,  812000 },
++	{ ((1920 * 1080) / 256) * 30,  416000 },
++};
++
++static const char * const sm8250_pmdomain_table[] = { "venus", "vcodec0" };
++
++static const char * const sm8250_opp_pd_table[] = { "mx" };
++
++static const struct platform_clk_data sm8250_clk_table[] = {
++	{IRIS_AXI_CLK,  "iface"        },
++	{IRIS_CTRL_CLK, "core"         },
++	{IRIS_HW_CLK,   "vcodec0_core" },
++};
++
++static struct tz_cp_config tz_cp_config_sm8250 = {
++	.cp_start = 0,
++	.cp_size = 0x25800000,
++	.cp_nonpixel_start = 0x01000000,
++	.cp_nonpixel_size = 0x24800000,
++};
++
++static const u32 sm8250_vdec_input_config_param[] = {
++	HFI_PROPERTY_PARAM_FRAME_SIZE,
++	HFI_PROPERTY_CONFIG_VIDEOCORES_USAGE,
++	HFI_PROPERTY_PARAM_UNCOMPRESSED_FORMAT_SELECT,
++	HFI_PROPERTY_PARAM_UNCOMPRESSED_PLANE_ACTUAL_CONSTRAINTS_INFO,
++	HFI_PROPERTY_PARAM_BUFFER_COUNT_ACTUAL,
++	HFI_PROPERTY_PARAM_VDEC_MULTI_STREAM,
++	HFI_PROPERTY_PARAM_BUFFER_SIZE_ACTUAL,
++	HFI_PROPERTY_PARAM_BUFFER_ALLOC_MODE,
++};
++
++static const u32 sm8250_dec_ip_int_buf_tbl[] = {
++	BUF_BIN,
++	BUF_SCRATCH_1,
++};
++
++static const u32 sm8250_dec_op_int_buf_tbl[] = {
++	BUF_DPB,
++};
++
++struct iris_platform_data sm8250_data = {
++	.get_instance = iris_hfi_gen1_get_instance,
++	.init_hfi_command_ops = &iris_hfi_gen1_command_ops_init,
++	.init_hfi_response_ops = iris_hfi_gen1_response_ops_init,
++	.vpu_ops = &iris_vpu2_ops,
++	.set_preset_registers = iris_set_sm8250_preset_registers,
++	.icc_tbl = sm8250_icc_table,
++	.icc_tbl_size = ARRAY_SIZE(sm8250_icc_table),
++	.clk_rst_tbl = sm8250_clk_reset_table,
++	.clk_rst_tbl_size = ARRAY_SIZE(sm8250_clk_reset_table),
++	.bw_tbl_dec = sm8250_bw_table_dec,
++	.bw_tbl_dec_size = ARRAY_SIZE(sm8250_bw_table_dec),
++	.pmdomain_tbl = sm8250_pmdomain_table,
++	.pmdomain_tbl_size = ARRAY_SIZE(sm8250_pmdomain_table),
++	.opp_pd_tbl = sm8250_opp_pd_table,
++	.opp_pd_tbl_size = ARRAY_SIZE(sm8250_opp_pd_table),
++	.clk_tbl = sm8250_clk_table,
++	.clk_tbl_size = ARRAY_SIZE(sm8250_clk_table),
++	.dma_mask = GENMASK(31, 29) - 1,
++	.fwname = "qcom/vpu-1.0/venus.mbn",
++	.pas_id = IRIS_PAS_ID,
++	.inst_caps = &platform_inst_cap_sm8250,
++	.inst_fw_caps = inst_fw_cap_sm8250,
++	.inst_fw_caps_size = ARRAY_SIZE(inst_fw_cap_sm8250),
++	.tz_cp_config_data = &tz_cp_config_sm8250,
++	.hw_response_timeout = HW_RESPONSE_TIMEOUT_VALUE,
++	.num_vpp_pipe = 4,
++	.max_session_count = 16,
++	.max_core_mbpf = (8192 * 4352) / 256,
++	.input_config_params =
++		sm8250_vdec_input_config_param,
++	.input_config_params_size =
++		ARRAY_SIZE(sm8250_vdec_input_config_param),
++
++	.dec_ip_int_buf_tbl = sm8250_dec_ip_int_buf_tbl,
++	.dec_ip_int_buf_tbl_size = ARRAY_SIZE(sm8250_dec_ip_int_buf_tbl),
++	.dec_op_int_buf_tbl = sm8250_dec_op_int_buf_tbl,
++	.dec_op_int_buf_tbl_size = ARRAY_SIZE(sm8250_dec_op_int_buf_tbl),
++};
+diff --git a/drivers/media/platform/qcom/iris/iris_probe.c b/drivers/media/platform/qcom/iris/iris_probe.c
+index 86ef2e5c488e..a2aadd48926f 100644
+--- a/drivers/media/platform/qcom/iris/iris_probe.c
++++ b/drivers/media/platform/qcom/iris/iris_probe.c
+@@ -325,6 +325,10 @@ static const struct of_device_id iris_dt_match[] = {
+ 		.compatible = "qcom,sm8550-iris",
+ 		.data = &sm8550_data,
+ 	},
++	{
++		.compatible = "qcom,sm8250-venus",
++		.data = &sm8250_data,
++	},
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, iris_dt_match);
+-- 
+2.34.1
+

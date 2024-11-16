@@ -1,0 +1,33 @@
+From a64b0503d2a4209c49e30e9ff8eb040f4be576fa Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Thu, 27 Jun 2024 13:42:10 +0200
+Subject: [PATCH 02/11] FROMGIT: dt-bindings: arm: qcom: add sa8775p-ride Rev 3
+
+Document the compatible for revision 3 of the sa8775p-ride board.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/r/20240627114212.25400-2-brgl@bgdev.pl
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Git-commit: 9ca49bb26ef64ffd0edd1a037e0b00b8e32617dc
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 9ca49bb26ef64ffd0edd1a037e0b00b8e32617dc]
+---
+ Documentation/devicetree/bindings/arm/qcom.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index e4705f264e88..e35422f6baec 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -884,6 +884,7 @@ properties:
+       - items:
+           - enum:
+               - qcom,sa8775p-ride
++              - qcom,sa8775p-ride-r3
+           - const: qcom,sa8775p
+           - const: qcom,qcs9100
+ 
+-- 
+2.34.1
+

@@ -1,0 +1,46 @@
+From 6407724fadad60066dd8f75675d393d45e2d5f9a Mon Sep 17 00:00:00 2001
+From: Mahadevan <quic_mahap@quicinc.com>
+Date: Tue, 22 Oct 2024 14:45:35 +0530
+Subject: [PATCH 5/7] FROMLIST: BACKPORT: drm/msm: mdss: Add SA8775P support
+
+Add Mobile Display Subsystem (MDSS) support for the SA8775P platform.
+
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Mahadevan <quic_mahap@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241019-patchv3_1-v5-3-d2fb72c9a845@quicinc.com/]
+---
+ drivers/gpu/drm/msm/msm_mdss.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/drivers/gpu/drm/msm/msm_mdss.c b/drivers/gpu/drm/msm/msm_mdss.c
+index 21b62013d63c..9e83fac262d4 100644
+--- a/drivers/gpu/drm/msm/msm_mdss.c
++++ b/drivers/gpu/drm/msm/msm_mdss.c
+@@ -527,6 +527,16 @@ static const struct msm_mdss_data qcm2290_data = {
+ 	.reg_bus_bw = 76800,
+ };
+ 
++static const struct msm_mdss_data sa8775p_data = {
++	.ubwc_enc_version = UBWC_4_0,
++	.ubwc_dec_version = UBWC_4_0,
++	.ubwc_swizzle = 4,
++	.ubwc_static = 1,
++	.highest_bank_bit = 0,
++	.macrotile_mode = 1,
++	.reg_bus_bw = 74000,
++};
++
+ static const struct msm_mdss_data sc7180_data = {
+ 	.ubwc_enc_version = UBWC_2_0,
+ 	.ubwc_dec_version = UBWC_2_0,
+@@ -639,6 +649,7 @@ static const struct of_device_id mdss_dt_match[] = {
+ 	{ .compatible = "qcom,mdss" },
+ 	{ .compatible = "qcom,msm8998-mdss", .data = &msm8998_data },
+ 	{ .compatible = "qcom,qcm2290-mdss", .data = &qcm2290_data },
++	{ .compatible = "qcom,sa8775p-mdss", .data = &sa8775p_data},
+ 	{ .compatible = "qcom,sdm845-mdss", .data = &sdm845_data },
+ 	{ .compatible = "qcom,sc7180-mdss", .data = &sc7180_data },
+ 	{ .compatible = "qcom,sc7280-mdss", .data = &sc7280_data },
+-- 
+2.34.1
+

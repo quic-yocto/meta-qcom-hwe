@@ -1,0 +1,91 @@
+From 4b9a61840e7629eef613c8c5b48de579694cc397 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Thu, 27 Jun 2024 13:42:12 +0200
+Subject: [PATCH 07/11] FROMGIT: arm64: dts: qcom: sa8775p-ride-r3: add new
+ board file
+
+Revision 3 of the sa8775p-ride board uses a different PHY for the two
+ethernet ports and supports 2.5G speed. Create a new file for the board
+reflecting the changes.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Link: https://lore.kernel.org/r/20240627114212.25400-4-brgl@bgdev.pl
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Git-commit: 818c2676e5816dad5a77df5a1c0d99d0e160d0b1
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 818c2676e5816dad5a77df5a1c0d99d0e160d0b1]
+---
+ arch/arm64/boot/dts/qcom/Makefile            |  1 +
+ arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts | 47 ++++++++++++++++++++
+ 2 files changed, 48 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts
+
+diff --git a/arch/arm64/boot/dts/qcom/Makefile b/arch/arm64/boot/dts/qcom/Makefile
+index 28178644834a..47402ef6553a 100644
+--- a/arch/arm64/boot/dts/qcom/Makefile
++++ b/arch/arm64/boot/dts/qcom/Makefile
+@@ -95,6 +95,7 @@ dtb-$(CONFIG_ARCH_QCOM)	+= sa8155p-adp.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sa8295p-adp.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sa8540p-ride.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sa8775p-ride.dtb
++dtb-$(CONFIG_ARCH_QCOM)	+= sa8775p-ride-r3.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sc7180-acer-aspire1.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sc7180-idp.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sc7180-trogdor-coachz-r1.dtb
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts
+new file mode 100644
+index 000000000000..ae065ae92478
+--- /dev/null
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride-r3.dts
+@@ -0,0 +1,47 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) 2023, Linaro Limited
++ */
++
++/dts-v1/;
++
++#include "sa8775p-ride.dtsi"
++
++/ {
++	model = "Qualcomm SA8775P Ride Rev3";
++	compatible = "qcom,sa8775p-ride-r3", "qcom,sa8775p";
++};
++
++&ethernet0 {
++	phy-mode = "2500base-x";
++};
++
++&ethernet1 {
++	phy-mode = "2500base-x";
++};
++
++&mdio {
++	compatible = "snps,dwmac-mdio";
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	sgmii_phy0: phy@8 {
++		compatible = "ethernet-phy-id31c3.1c33";
++		reg = <0x8>;
++		device_type = "ethernet-phy";
++		interrupts-extended = <&tlmm 7 IRQ_TYPE_EDGE_FALLING>;
++		reset-gpios = <&pmm8654au_2_gpios 8 GPIO_ACTIVE_LOW>;
++		reset-assert-us = <11000>;
++		reset-deassert-us = <70000>;
++	};
++
++	sgmii_phy1: phy@0 {
++		compatible = "ethernet-phy-id31c3.1c33";
++		reg = <0x0>;
++		device_type = "ethernet-phy";
++		interrupts-extended = <&tlmm 26 IRQ_TYPE_EDGE_FALLING>;
++		reset-gpios = <&pmm8654au_2_gpios 9 GPIO_ACTIVE_LOW>;
++		reset-assert-us = <11000>;
++		reset-deassert-us = <70000>;
++	};
++};
+-- 
+2.34.1
+

@@ -1,0 +1,52 @@
+From 22096f43a43dc3dd8dac88236b9487b74a5901f9 Mon Sep 17 00:00:00 2001
+From: lijuang <quic_lijuang@quicinc.com>
+Date: Thu, 26 Sep 2024 20:55:56 +0800
+Subject: [PATCH 22/22] FROMLIST: arm64: defconfig: enable clock controller,
+ interconnect and pinctrl for QCS615
+
+Enable clock controller, interconnect and pinctrl for Qualcomm
+QCS615 platform to boot to UART console.
+
+The serial engine depends on gcc, interconnect and pinctrl. Since
+the serial console driver is only available as built-in, so these
+configs needs be built-in for the UART device to probe and register
+the console.
+
+Signed-off-by: Lijuan Gao <quic_lijuang@quicinc.com>
+Link: https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-7-e37617e91c62@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-7-e37617e91c62@quicinc.com/]
+---
+ arch/arm64/configs/defconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 19f27ebda396..e3834ed79fe3 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -587,6 +587,7 @@ CONFIG_PINCTRL_MSM8996=y
+ CONFIG_PINCTRL_MSM8998=y
+ CONFIG_PINCTRL_QCM2290=y
+ CONFIG_PINCTRL_QCS404=y
++CONFIG_PINCTRL_QCS615=y
+ CONFIG_PINCTRL_QDF2XXX=y
+ CONFIG_PINCTRL_QCOM_SPMI_PMIC=y
+ CONFIG_PINCTRL_QDU1000=y
+@@ -1223,6 +1224,7 @@ CONFIG_MSM_GCC_8998=y
+ CONFIG_QCM_GCC_2290=y
+ CONFIG_QCM_DISPCC_2290=m
+ CONFIG_QCS_GCC_404=y
++CONFIG_QCS_GCC_615=y
+ CONFIG_SA_GCC_8775P=y
+ CONFIG_SC_DISPCC_8280XP=m
+ CONFIG_SA_GPUCC_8775P=m
+@@ -1495,6 +1497,7 @@ CONFIG_INTERCONNECT_QCOM_MSM8996=m
+ CONFIG_INTERCONNECT_QCOM_OSM_L3=m
+ CONFIG_INTERCONNECT_QCOM_QCM2290=m
+ CONFIG_INTERCONNECT_QCOM_QCS404=m
++CONFIG_INTERCONNECT_QCOM_QCS615=y
+ CONFIG_INTERCONNECT_QCOM_SA8775P=y
+ CONFIG_INTERCONNECT_QCOM_SC7180=y
+ CONFIG_INTERCONNECT_QCOM_SC7280=y
+-- 
+2.46.0
+

@@ -1,0 +1,228 @@
+From 0cb0e0f9e8d473579e1f651e78317003b7f0a897 Mon Sep 17 00:00:00 2001
+From: Li Liu <quic_lliu6@quicinc.com>
+Date: Tue, 15 Oct 2024 10:30:03 +0800
+Subject: [PATCH] FROMLIST: arm64: dts: qcom: Add display support for QCS615
+
+Add display MDSS and DSI configuration for QCS615 SoC.
+
+Change-Id: Ie6b322193840187ac131e1c4fdf17cad936eb716
+Signed-off-by: Li Liu <quic_lliu6@quicinc.com>
+Signed-off-by: Fange Zhang <quic_fangez@quicinc.com>
+Link: https://lore.kernel.org/all/20241113-add-display-support-for-qcs615-platform-v2-7-2873eb6fb869@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241113-add-display-support-for-qcs615-platform-v2-7-2873eb6fb869@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 186 ++++++++++++++++++++++++++-
+ 1 file changed, 185 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index 481b80e89ce8..b3e70d6a9504 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -10,6 +10,7 @@
+ #include <dt-bindings/clock/qcom,qcs615-videocc.h>
+ #include <dt-bindings/clock/qcom,rpmh.h>
+ #include <dt-bindings/dma/qcom-gpi.h>
++#include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/interconnect/qcom,icc.h>
+ #include <dt-bindings/interconnect/qcom,qcs615-rpmh.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+@@ -1520,12 +1521,195 @@ camcc: clock-controller@ad00000 {
+ 			#power-domain-cells = <1>;
+ 		};
+ 
++		mdss: display-subsystem@ae00000 {
++			compatible = "qcom,qcs615-mdss";
++			reg = <0x0 0x0ae00000 0x0 0x1000>;
++			reg-names = "mdss";
++
++			interconnects = <&mmss_noc MASTER_MDP0 QCOM_ICC_TAG_ALWAYS
++					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ALWAYS>,
++					<&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &config_noc SLAVE_DISPLAY_CFG QCOM_ICC_TAG_ACTIVE_ONLY>;
++			interconnect-names = "mdp0-mem",
++					     "cpu-cfg";
++
++			power-domains = <&dispcc MDSS_CORE_GDSC>;
++
++			clocks = <&dispcc DISP_CC_MDSS_AHB_CLK>,
++				 <&gcc GCC_DISP_HF_AXI_CLK>,
++				 <&dispcc DISP_CC_MDSS_MDP_CLK>;
++
++			interrupts = <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-controller;
++			#interrupt-cells = <1>;
++
++			iommus = <&apps_smmu 0x800 0x0>;
++
++			#address-cells = <2>;
++			#size-cells = <2>;
++			ranges;
++
++			status = "disabled";
++
++			mdss_mdp: display-controller@ae01000 {
++				compatible = "qcom,qcs615-dpu";
++				reg = <0 0x0ae01000 0 0x8f000>,
++				      <0 0x0aeb0000 0 0x2008>;
++				reg-names = "mdp", "vbif";
++
++				clocks = <&dispcc DISP_CC_MDSS_AHB_CLK>,
++					 <&gcc GCC_DISP_HF_AXI_CLK>,
++					 <&dispcc DISP_CC_MDSS_MDP_CLK>,
++					 <&dispcc DISP_CC_MDSS_VSYNC_CLK>;
++				clock-names = "iface", "bus", "core", "vsync";
++
++				assigned-clocks = <&dispcc DISP_CC_MDSS_VSYNC_CLK>;
++				assigned-clock-rates = <19200000>;
++
++				operating-points-v2 = <&mdp_opp_table>;
++				power-domains = <&rpmhpd RPMHPD_CX>;
++
++				interrupt-parent = <&mdss>;
++				interrupts = <0>;
++
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++
++					port@0 {
++						reg = <0>;
++						dpu_intf0_out: endpoint {
++						};
++					};
++
++					port@1 {
++						reg = <1>;
++						dpu_intf1_out: endpoint {
++							remote-endpoint = <&mdss_dsi0_in>;
++						};
++					};
++				};
++
++				mdp_opp_table: opp-table {
++					compatible = "operating-points-v2";
++
++					opp-375000000 {
++						opp-hz = /bits/ 64 <375000000>;
++						required-opps = <&rpmhpd_opp_svs_l1>;
++					};
++
++					opp-500000000 {
++						opp-hz = /bits/ 64 <500000000>;
++						required-opps = <&rpmhpd_opp_nom>;
++					};
++
++					opp-575000000 {
++						opp-hz = /bits/ 64 <575000000>;
++						required-opps = <&rpmhpd_opp_turbo>;
++					};
++
++					opp-650000000 {
++						opp-hz = /bits/ 64 <650000000>;
++						required-opps = <&rpmhpd_opp_turbo_l1>;
++					};
++				};
++			};
++
++			mdss_dsi0: dsi@ae94000 {
++				compatible = "qcom,qcs615-dsi-ctrl", "qcom,mdss-dsi-ctrl";
++				reg = <0x0 0x0ae94000 0x0 0x400>;
++				reg-names = "dsi_ctrl";
++
++				interrupt-parent = <&mdss>;
++				interrupts = <4>;
++
++				clocks = <&dispcc DISP_CC_MDSS_BYTE0_CLK>,
++					 <&dispcc DISP_CC_MDSS_BYTE0_INTF_CLK>,
++					 <&dispcc DISP_CC_MDSS_PCLK0_CLK>,
++					 <&dispcc DISP_CC_MDSS_ESC0_CLK>,
++					 <&dispcc DISP_CC_MDSS_AHB_CLK>,
++					 <&gcc GCC_DISP_HF_AXI_CLK>;
++				clock-names = "byte",
++					      "byte_intf",
++					      "pixel",
++					      "core",
++					      "iface",
++					      "bus";
++
++				assigned-clocks = <&dispcc DISP_CC_MDSS_BYTE0_CLK_SRC>,
++						  <&dispcc DISP_CC_MDSS_PCLK0_CLK_SRC>;
++				assigned-clock-parents = <&mdss_dsi0_phy 0>,
++							 <&mdss_dsi0_phy 1>;
++
++				operating-points-v2 = <&dsi0_opp_table>;
++				power-domains = <&rpmhpd RPMHPD_CX>;
++
++				phys = <&mdss_dsi0_phy>;
++
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				status = "disabled";
++
++				dsi0_opp_table: opp-table {
++					compatible = "operating-points-v2";
++
++					opp-164000000 {
++						opp-hz = /bits/ 64 <164000000>;
++						required-opps = <&rpmhpd_opp_low_svs>;
++					};
++				};
++
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++
++					port@0 {
++						reg = <0>;
++						mdss_dsi0_in: endpoint {
++							remote-endpoint = <&dpu_intf1_out>;
++						};
++					};
++
++					port@1 {
++						reg = <1>;
++						mdss_dsi0_out: endpoint {
++						};
++					};
++				};
++			};
++
++			mdss_dsi0_phy: phy@ae94400 {
++				compatible = "qcom,dsi-phy-14nm-615";
++				reg = <0 0x0ae94400 0 0x100>,
++				      <0 0x0ae94500 0 0x300>,
++				      <0 0x0ae94800 0 0x188>;
++				reg-names = "dsi_phy",
++					    "dsi_phy_lane",
++					    "dsi_pll";
++
++				#clock-cells = <1>;
++				#phy-cells = <0>;
++
++				clocks = <&dispcc DISP_CC_MDSS_AHB_CLK>,
++					 <&rpmhcc RPMH_CXO_CLK>;
++				clock-names = "iface", "ref";
++
++				status = "disabled";
++			};
++		};
++
+ 		dispcc: clock-controller@af00000 {
+ 			compatible = "qcom,qcs615-dispcc";
+ 			reg = <0 0xaf00000 0 0x20000>;
+ 
+ 			clocks = <&rpmhcc RPMH_CXO_CLK>,
+-				 <&gcc GCC_DISP_GPLL0_DIV_CLK_SRC>;
++				 <&gcc GCC_DISP_GPLL0_DIV_CLK_SRC>,
++			         <&mdss_dsi0_phy 0>,
++			         <&mdss_dsi0_phy 1>,
++			         <0>,
++			         <0>,
++			         <0>;
+ 
+ 			#clock-cells = <1>;
+ 			#reset-cells = <1>;
+-- 
+2.47.0
+

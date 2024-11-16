@@ -1,0 +1,37 @@
+From 5df10d9efd3ed21633db92c73acea15ae782db83 Mon Sep 17 00:00:00 2001
+From: Krishna Kurapati <quic_kriskura@quicinc.com>
+Date: Mon, 14 Oct 2024 14:14:30 +0530
+Subject: [PATCH] FROMLIST: dt-bindings: phy: qcom,msm8998-qmp-usb3-phy: Add
+ support for QCS615
+
+Update dt-bindings to add QCS615 to QMP Phy list.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Krishna Kurapati <quic_kriskura@quicinc.com>
+Link: https://lore.kernel.org/all/20241014084432.3310114-4-quic_kriskura@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241014084432.3310114-4-quic_kriskura@quicinc.com/]
+---
+ .../devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml      | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml
+index f1f4e4f83352..1636285fbe53 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml
+@@ -18,6 +18,7 @@ properties:
+     enum:
+       - qcom,msm8998-qmp-usb3-phy
+       - qcom,qcm2290-qmp-usb3-phy
++      - qcom,qcs615-qmp-usb3-phy
+       - qcom,sdm660-qmp-usb3-phy
+       - qcom,sm6115-qmp-usb3-phy
+ 
+@@ -96,6 +97,7 @@ allOf:
+           contains:
+             enum:
+               - qcom,msm8998-qmp-usb3-phy
++              - qcom,qcs615-qmp-usb3-phy
+               - qcom,sdm660-qmp-usb3-phy
+     then:
+       properties:
+-- 

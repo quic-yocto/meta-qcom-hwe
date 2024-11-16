@@ -1,0 +1,59 @@
+From aa2b0dacf21b7655ae3e354568f04cccc5eac52e Mon Sep 17 00:00:00 2001
+From: haitao xu <quic_haitxu@quicinc.com>
+Date: Tue, 12 Nov 2024 18:07:20 +0800
+Subject: [PATCH] PENDING: arm64: gfx: qcom: qcs615: Add llc support for A612
+
+Add llc support for Adreno 612 found on qcs615 platform.
+
+Signed-off-by: haitao xu <quic_haitxu@quicinc.com>
+---
+ drivers/gpu/drm/msm/adreno/a6xx_gpu.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/msm/adreno/a6xx_gpu.c b/drivers/gpu/drm/msm/adreno/a6xx_gpu.c
+index 4cf9ffa9f404..65b980764537 100644
+--- a/drivers/gpu/drm/msm/adreno/a6xx_gpu.c
++++ b/drivers/gpu/drm/msm/adreno/a6xx_gpu.c
+@@ -1820,7 +1820,9 @@ static void a6xx_llc_activate(struct a6xx_gpu *a6xx_gpu)
+ static void a6xx_llc_slices_destroy(struct a6xx_gpu *a6xx_gpu)
+ {
+ 	/* No LLCC on non-RPMh (and by extension, non-GMU) SoCs */
+-	if (adreno_has_gmu_wrapper(&a6xx_gpu->base))
++	if (adreno_has_gmu_wrapper(&a6xx_gpu->base) &&
++	    IS_ERR_OR_NULL(a6xx_gpu->htw_llc_slice) &&
++	    IS_ERR_OR_NULL(a6xx_gpu->llc_slice))
+ 		return;
+ 
+ 	llcc_slice_putd(a6xx_gpu->llc_slice);
+@@ -1831,9 +1833,10 @@ static void a6xx_llc_slices_init(struct platform_device *pdev,
+ 		struct a6xx_gpu *a6xx_gpu)
+ {
+ 	struct device_node *phandle;
++	struct adreno_platform_config *config = pdev->dev.platform_data;
+ 
+ 	/* No LLCC on non-RPMh (and by extension, non-GMU) SoCs */
+-	if (adreno_has_gmu_wrapper(&a6xx_gpu->base))
++	if (adreno_has_gmu_wrapper(&a6xx_gpu->base) && !(config->info->chip_ids[0] == 0x06010200))
+ 		return;
+ 
+ 	/*
+@@ -1986,6 +1989,9 @@ static int a6xx_pm_resume(struct msm_gpu *gpu)
+ 
+ 	if (!ret)
+ 		msm_devfreq_resume(gpu);
++	
++	if (!(IS_ERR_OR_NULL(a6xx_gpu->llc_slice) || IS_ERR_OR_NULL(a6xx_gpu->htw_llc_slice)))
++		a6xx_llc_activate(a6xx_gpu);
+ 
+ 	return ret;
+ }
+@@ -2025,6 +2031,9 @@ static int a6xx_pm_suspend(struct msm_gpu *gpu)
+ 	int i;
+ 
+ 	trace_msm_gpu_suspend(0);
++	
++	if (!(IS_ERR_OR_NULL(a6xx_gpu->llc_slice) || IS_ERR_OR_NULL(a6xx_gpu->htw_llc_slice)))
++		a6xx_llc_deactivate(a6xx_gpu);
+ 
+ 	msm_devfreq_suspend(gpu);
+ 

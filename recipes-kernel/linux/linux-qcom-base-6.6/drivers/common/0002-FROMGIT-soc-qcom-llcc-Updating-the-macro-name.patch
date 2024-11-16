@@ -1,0 +1,48 @@
+From d81c39ae318524ef2a15c2241a37bf7f8ac91ee8 Mon Sep 17 00:00:00 2001
+From: Komal Bajaj <quic_kbajaj@quicinc.com>
+Date: Wed, 30 Aug 2023 16:26:53 +0530
+Subject: [PATCH 2/6] FROMGIT: soc: qcom: llcc: Updating the macro name
+
+Update macro name for LLCC_DRE to LLCC_ECC as per the latest specification.
+
+Change-Id: I5a26f164f16240914a38cdde7e9619b215746075
+Signed-off-by: Komal Bajaj <quic_kbajaj@quicinc.com>
+Reviewed-by: Mukesh Ojha <quic_mojha@quicinc.com>
+Acked-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Link: https://lore.kernel.org/r/20230830105654.28057-6-quic_kbajaj@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 0bc76be64e80b15b975345b6957a87a1893c34f2]
+---
+ drivers/soc/qcom/llcc-qcom.c       | 2 +-
+ include/linux/soc/qcom/llcc-qcom.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/soc/qcom/llcc-qcom.c b/drivers/soc/qcom/llcc-qcom.c
+index 1f3a18a04f85..b15adf4077f7 100644
+--- a/drivers/soc/qcom/llcc-qcom.c
++++ b/drivers/soc/qcom/llcc-qcom.c
+@@ -216,7 +216,7 @@ static const struct llcc_slice_config sc8280xp_data[] = {
+ 	{ LLCC_MMUHWT,   13, 1024, 1, 1, 0xfff, 0x0, 0, 0, 0, 0, 1, 0 },
+ 	{ LLCC_DISP,     16, 6144, 1, 1, 0xfff, 0x0, 0, 0, 0, 1, 0, 0 },
+ 	{ LLCC_AUDHW,    22, 2048, 1, 1, 0xfff, 0x0, 0, 0, 0, 1, 0, 0 },
+-	{ LLCC_DRE,      26, 1024, 1, 1, 0xfff, 0x0, 0, 0, 0, 1, 0, 0 },
++	{ LLCC_ECC,      26, 1024, 1, 1, 0xfff, 0x0, 0, 0, 0, 1, 0, 0 },
+ 	{ LLCC_CVP,      28, 512,  3, 1, 0xfff, 0x0, 0, 0, 0, 1, 0, 0 },
+ 	{ LLCC_APTCM,    30, 1024, 3, 1, 0x0,   0x1, 1, 0, 0, 1, 0, 0 },
+ 	{ LLCC_WRCACHE,  31, 1024, 1, 1, 0xfff, 0x0, 0, 0, 0, 0, 1, 0 },
+diff --git a/include/linux/soc/qcom/llcc-qcom.h b/include/linux/soc/qcom/llcc-qcom.h
+index 93417ba1ead4..1a886666bbb6 100644
+--- a/include/linux/soc/qcom/llcc-qcom.h
++++ b/include/linux/soc/qcom/llcc-qcom.h
+@@ -30,7 +30,7 @@
+ #define LLCC_NPU         23
+ #define LLCC_WLHW        24
+ #define LLCC_PIMEM       25
+-#define LLCC_DRE         26
++#define LLCC_ECC         26
+ #define LLCC_CVP         28
+ #define LLCC_MODPE       29
+ #define LLCC_APTCM       30
+-- 
+2.46.0
+

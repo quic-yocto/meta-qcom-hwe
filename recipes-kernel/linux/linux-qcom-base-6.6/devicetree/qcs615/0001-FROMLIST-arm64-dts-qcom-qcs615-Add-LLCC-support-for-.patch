@@ -1,0 +1,39 @@
+From 90e829098a12706de6b1e7b0881f1cf5d8701c45 Mon Sep 17 00:00:00 2001
+From: Song Xue <quic_songxue@quicinc.com>
+Date: Fri, 11 Oct 2024 18:41:05 +0800
+Subject: [PATCH 4/4] FROMLIST: arm64: dts: qcom: qcs615: Add LLCC support for
+ QCS615
+
+The QCS615 platform has LLCC(Last Level Cache Controller) as the system
+cache controller. It includes 1 LLCC instance and 1 LLCC broadcast
+interface.
+
+Add LLCC node support for the QCS615 platform.
+
+Signed-off-by: Song Xue <quic_songxue@quicinc.com>
+Link: https://lore.kernel.org/all/20241011-add_llcc_dts_node_for_qcs615-v1-1-e7aa45244c36@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241011-add_llcc_dts_node_for_qcs615-v1-1-e7aa45244c36@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index ac4c4c751da1..b718a4d2270d 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -495,6 +495,14 @@ dc_noc: interconnect@9160000 {
+ 			qcom,bcm-voters = <&apps_bcm_voter>;
+ 		};
+ 
++		llcc: system-cache-controller@9200000 {
++			compatible = "qcom,qcs615-llcc";
++			reg = <0x0 0x9200000 0x0 0x50000>,
++			      <0x0 0x9600000 0x0 0x50000>;
++			reg-names = "llcc0_base",
++				    "llcc_broadcast_base";
++		};
++
+ 		gem_noc: interconnect@9680000 {
+ 			reg = <0x0 0x9680000 0x0 0x3e200>;
+ 			compatible = "qcom,qcs615-gem-noc";
+-- 

@@ -1,0 +1,47 @@
+From ddeeba0765b63e1ced049840c2e5293d3f018aed Mon Sep 17 00:00:00 2001
+From: Yijie Yang <quic_yijiyang@quicinc.com>
+Date: Fri, 20 Sep 2024 16:46:07 +0800
+Subject: [PATCH 2/3] FROMLIST: dt-bindings: net: qcom,ethqos: add description
+ for qcs615
+
+Add compatible for the MAC controller on qcs615 platform.
+Since qcs615 shares the same EMAC as sm8150, so it fallback to that
+compatible.
+
+Signed-off-by: Yijie Yang <quic_yijiyang@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/all/20241017-schema-v2-1-2320f68dc126@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241017-schema-v2-1-2320f68dc126@quicinc.com/]
+---
+ .../devicetree/bindings/net/qcom,ethqos.yaml      | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/net/qcom,ethqos.yaml b/Documentation/devicetree/bindings/net/qcom,ethqos.yaml
+index 7bdb412a0185..53bbb14213a0 100644
+--- a/Documentation/devicetree/bindings/net/qcom,ethqos.yaml
++++ b/Documentation/devicetree/bindings/net/qcom,ethqos.yaml
+@@ -18,11 +18,16 @@ allOf:
+ 
+ properties:
+   compatible:
+-    enum:
+-      - qcom,qcs404-ethqos
+-      - qcom,sa8775p-ethqos
+-      - qcom,sc8280xp-ethqos
+-      - qcom,sm8150-ethqos
++    oneOf:
++      - items:
++          - enum:
++              - qcom,qcs615-ethqos
++          - const: qcom,sm8150-ethqos
++      - enum:
++          - qcom,qcs404-ethqos
++          - qcom,sa8775p-ethqos
++          - qcom,sc8280xp-ethqos
++          - qcom,sm8150-ethqos
+ 
+   reg:
+     maxItems: 2
+-- 
+2.34.1
+

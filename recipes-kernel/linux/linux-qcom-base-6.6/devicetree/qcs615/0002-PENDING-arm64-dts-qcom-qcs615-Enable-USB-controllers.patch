@@ -1,0 +1,50 @@
+From 4c3ba5b571cabdf2c57b81704818e9a35f00ba0d Mon Sep 17 00:00:00 2001
+From: Krishna Kurapati <quic_kriskura@quicinc.com>
+Date: Wed, 9 Oct 2024 16:31:37 +0800
+Subject: [PATCH 3/3] PENDING: arm64: dts: qcom: qcs615: Enable USB controllers
+ for QCS615
+
+Enable primary USB controllers for QCS615 on device mode.
+
+Change-Id: I3d901258969da7a3463ba5ce6c37121610f9dc37
+Signed-off-by: Krishna Kurapati <quic_kriskura@quicinc.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/qcs615-ride.dts | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615-ride.dts b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+index 9b9d49bceca7..db5f43885282 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+@@ -340,6 +340,27 @@ &ufs_mem_phy {
+ 	status = "okay";
+ };
+ 
++&usb_hsphy {
++	vdd-supply = <&vreg_l5a>;
++	vdda-pll-supply = <&vreg_l2a>;
++	vdda-phy-dpdm-supply = <&vreg_l13a>;
++	status = "okay";
++};
++
++&usb_qmpphy {
++	vdda-phy-supply = <&vreg_l5a>;
++	vdda-pll-supply = <&vreg_l12a>;
++	status = "okay";
++};
++
++&usb {
++	status = "okay";
++};
++
++&usb_dwc3 {
++	dr_mode = "peripheral";
++};
++
+ &watchdog {
+ 	clocks = <&sleep_clk>;
+ };
+-- 
+2.47.0.107.g34b6ce9b30
+

@@ -1,0 +1,65 @@
+From 0b65092ea5a3403d98ee089bbf33fdfb630d2961 Mon Sep 17 00:00:00 2001
+From: Vedang Nagar <quic_vnagar@quicinc.com>
+Date: Tue, 27 Aug 2024 15:35:38 +0530
+Subject: FROMLIST: media: iris: implement g_selection ioctl
+
+Implement g_selection ioctl in the driver with necessary hooks.
+
+Change-Id: I651298315fee2c06cd362a5b0d26bdececd425ac
+Signed-off-by: Vedang Nagar <quic_vnagar@quicinc.com>
+Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-11-c5eaa4e9ab9e@quicinc.com/]
+---
+ drivers/media/platform/qcom/iris/iris_vidc.c | 29 ++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+diff --git a/drivers/media/platform/qcom/iris/iris_vidc.c b/drivers/media/platform/qcom/iris/iris_vidc.c
+index 05146970189b..481fa0a7b7f3 100644
+--- a/drivers/media/platform/qcom/iris/iris_vidc.c
++++ b/drivers/media/platform/qcom/iris/iris_vidc.c
+@@ -256,6 +256,34 @@ static int iris_g_fmt_vid_mplane(struct file *filp, void *fh, struct v4l2_format
+ 	return ret;
+ }
+ 
++static int iris_g_selection(struct file *filp, void *fh, struct v4l2_selection *s)
++{
++	struct iris_inst *inst = iris_get_inst(filp, NULL);
++
++	if (s->type != V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE &&
++	    s->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
++		return -EINVAL;
++
++	switch (s->target) {
++	case V4L2_SEL_TGT_CROP_BOUNDS:
++	case V4L2_SEL_TGT_CROP_DEFAULT:
++	case V4L2_SEL_TGT_CROP:
++	case V4L2_SEL_TGT_COMPOSE_BOUNDS:
++	case V4L2_SEL_TGT_COMPOSE_PADDED:
++	case V4L2_SEL_TGT_COMPOSE_DEFAULT:
++	case V4L2_SEL_TGT_COMPOSE:
++		s->r.left = inst->crop.left;
++		s->r.top = inst->crop.top;
++		s->r.width = inst->crop.width;
++		s->r.height = inst->crop.height;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static struct v4l2_file_operations iris_v4l2_file_ops = {
+ 	.owner                          = THIS_MODULE,
+ 	.open                           = iris_open,
+@@ -277,6 +305,7 @@ static const struct v4l2_ioctl_ops iris_v4l2_ioctl_ops = {
+ 	.vidioc_g_fmt_vid_cap_mplane    = iris_g_fmt_vid_mplane,
+ 	.vidioc_g_fmt_vid_out_mplane    = iris_g_fmt_vid_mplane,
+ 	.vidioc_reqbufs                 = v4l2_m2m_ioctl_reqbufs,
++	.vidioc_g_selection             = iris_g_selection,
+ };
+ 
+ void iris_init_ops(struct iris_core *core)
+-- 
+2.34.1
+

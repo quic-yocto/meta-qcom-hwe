@@ -1,0 +1,61 @@
+From 0f36ad975267bbf3f6086d0ced53e5281ac05ce0 Mon Sep 17 00:00:00 2001
+From: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Date: Fri, 27 Sep 2024 19:59:14 +0800
+Subject: [PATCH] FROMGIT: pmdomain: qcom: rpmhpd: Add qcs8300 power domains
+
+Add support for the power domains exposed by RPMh on the qcs8300
+platform. MMCX depends on CX, so mark CX as the parent of MMCX.
+
+Change-Id: I2ca5b0167d14dc697b555b7f839ef912dda9836d
+Co-developed-by: Shazad Hussain <quic_shazhuss@quicinc.com>
+Signed-off-by: Shazad Hussain <quic_shazhuss@quicinc.com>
+Signed-off-by: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Link: https://lore.kernel.org/r/20240927-add_qcs615_qcs8300_powerdomains_driver_support-v2-2-18c030ad7b68@quicinc.com
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Git-commit: aaccaf7aa102c837053e095405e37d411b947349
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git aaccaf7aa102c837053e095405e37d411b947349]
+---
+ drivers/pmdomain/qcom/rpmhpd.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/drivers/pmdomain/qcom/rpmhpd.c b/drivers/pmdomain/qcom/rpmhpd.c
+index 9ed79a2ff9c2..fa4d405ea34a 100644
+--- a/drivers/pmdomain/qcom/rpmhpd.c
++++ b/drivers/pmdomain/qcom/rpmhpd.c
+@@ -557,8 +557,32 @@ static const struct rpmhpd_desc qcs615_desc = {
+ 	.num_pds = ARRAY_SIZE(qcs615_rpmhpds),
+ };
+ 
++/* QCS8300 RPMH power domains */
++static struct rpmhpd *qcs8300_rpmhpds[] = {
++	[RPMHPD_CX] = &cx,
++	[RPMHPD_CX_AO] = &cx_ao,
++	[RPMHPD_EBI] = &ebi,
++	[RPMHPD_GFX] = &gfx,
++	[RPMHPD_LCX] = &lcx,
++	[RPMHPD_LMX] = &lmx,
++	[RPMHPD_MMCX] = &mmcx_w_cx_parent,
++	[RPMHPD_MMCX_AO] = &mmcx_ao_w_cx_parent,
++	[RPMHPD_MXC] = &mxc,
++	[RPMHPD_MXC_AO] = &mxc_ao,
++	[RPMHPD_MX] = &mx,
++	[RPMHPD_MX_AO] = &mx_ao,
++	[RPMHPD_NSP0] = &nsp0,
++	[RPMHPD_NSP1] = &nsp1,
++};
++
++static const struct rpmhpd_desc qcs8300_desc = {
++	.rpmhpds = qcs8300_rpmhpds,
++	.num_pds = ARRAY_SIZE(qcs8300_rpmhpds),
++};
++
+ static const struct of_device_id rpmhpd_match_table[] = {
+ 	{ .compatible = "qcom,qcs615-rpmhpd", .data = &qcs615_desc },
++	{ .compatible = "qcom,qcs8300-rpmhpd", .data = &qcs8300_desc },
+ 	{ .compatible = "qcom,qdu1000-rpmhpd", .data = &qdu1000_desc },
+ 	{ .compatible = "qcom,sa8155p-rpmhpd", .data = &sa8155p_desc },
+ 	{ .compatible = "qcom,sa8540p-rpmhpd", .data = &sa8540p_desc },
+-- 
+2.46.0
+

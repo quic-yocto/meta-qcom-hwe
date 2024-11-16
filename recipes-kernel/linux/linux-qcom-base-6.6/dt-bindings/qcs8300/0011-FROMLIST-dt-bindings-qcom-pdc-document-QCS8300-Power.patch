@@ -1,0 +1,34 @@
+From 51915121dd27aca758c07d06df5e6b6c4b13bdb6 Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Wed, 11 Sep 2024 16:03:15 +0800
+Subject: [PATCH 10/17] FROMLIST: dt-bindings: qcom,pdc: document QCS8300 Power
+ Domain Controller
+
+Document Power Domain Controller for Qualcomm QCS8300. PDC is included
+in QCS8300 SoC. This controller acts as an interrupt controller, enabling
+the detection of interrupts when the GIC is non-operational.
+
+Change-Id: I4e9ea4c135a45d2a2e619b66d57fcf83986df9f6
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/all/20240911-qcs8300_binding-v2-1-de8641b3eaa1@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240911-qcs8300_binding-v2-1-de8641b3eaa1@quicinc.com/]
+---
+ .../devicetree/bindings/interrupt-controller/qcom,pdc.yaml       | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml b/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
+index 80787758ed67..4e344630a38a 100644
+--- a/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
++++ b/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
+@@ -27,6 +27,7 @@ properties:
+     items:
+       - enum:
+           - qcom,qcs615-pdc
++          - qcom,qcs8300-pdc
+           - qcom,qdu1000-pdc
+           - qcom,sa8775p-pdc
+           - qcom,sc7180-pdc
+-- 
+2.46.0
+

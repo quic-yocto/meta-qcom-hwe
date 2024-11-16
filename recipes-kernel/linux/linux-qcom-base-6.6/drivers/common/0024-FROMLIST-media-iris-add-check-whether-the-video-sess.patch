@@ -1,0 +1,169 @@
+From b2349ce400f71c9fb51be93e199a6e2735c0af6f Mon Sep 17 00:00:00 2001
+From: Vedang Nagar <quic_vnagar@quicinc.com>
+Date: Tue, 27 Aug 2024 15:35:51 +0530
+Subject: FROMLIST: media: iris: add check whether the video
+ session is supported or not
+
+Based on the hardware capabilities, add check to restrict whether the
+video session is supported or not by the hardware during start_streaming
+and queue_setup.
+
+Change-Id: I760924e82ddd61f4f69369590c26e37120b217da
+Signed-off-by: Vedang Nagar <quic_vnagar@quicinc.com>
+Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-24-c5eaa4e9ab9e@quicinc.com/]
+---
+ .../platform/qcom/iris/iris_platform_common.h |  1 +
+ .../platform/qcom/iris/iris_platform_sm8550.c |  1 +
+ drivers/media/platform/qcom/iris/iris_vb2.c   | 97 +++++++++++++++++++
+ 3 files changed, 99 insertions(+)
+
+diff --git a/drivers/media/platform/qcom/iris/iris_platform_common.h b/drivers/media/platform/qcom/iris/iris_platform_common.h
+index 090646aa80ff..eb329cd05174 100644
+--- a/drivers/media/platform/qcom/iris/iris_platform_common.h
++++ b/drivers/media/platform/qcom/iris/iris_platform_common.h
+@@ -144,6 +144,7 @@ struct iris_platform_data {
+ 	struct ubwc_config_data *ubwc_config;
+ 	u32 num_vpp_pipe;
+ 	u32 max_session_count;
++	u32 max_core_mbpf;
+ 	const u32 *input_config_params;
+ 	unsigned int input_config_params_size;
+ 	const u32 *output_config_params;
+diff --git a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
+index 2a45e605e140..68907ba6986f 100644
+--- a/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
++++ b/drivers/media/platform/qcom/iris/iris_platform_sm8550.c
+@@ -232,6 +232,7 @@ struct iris_platform_data sm8550_data = {
+ 	.ubwc_config = &ubwc_config_sm8550,
+ 	.num_vpp_pipe = 4,
+ 	.max_session_count = 16,
++	.max_core_mbpf = ((8192 * 4352) / 256) * 2,
+ 	.input_config_params =
+ 		sm8550_vdec_input_config_params,
+ 	.input_config_params_size =
+diff --git a/drivers/media/platform/qcom/iris/iris_vb2.c b/drivers/media/platform/qcom/iris/iris_vb2.c
+index 6d3e13b850c6..19ac300981c6 100644
+--- a/drivers/media/platform/qcom/iris/iris_vb2.c
++++ b/drivers/media/platform/qcom/iris/iris_vb2.c
+@@ -12,6 +12,95 @@
+ #include "iris_vb2.h"
+ #include "iris_vdec.h"
+ #include "iris_vpu_buffer.h"
++
++static int iris_check_core_mbpf(struct iris_inst *inst)
++{
++	struct iris_core *core = inst->core;
++	struct iris_inst *instance;
++	u32 total_mbpf = 0;
++
++	mutex_lock(&core->lock);
++	list_for_each_entry(instance, &core->instances, list)
++		total_mbpf += iris_get_mbpf(instance);
++	mutex_unlock(&core->lock);
++
++	if (total_mbpf > core->iris_platform_data->max_core_mbpf)
++		return -ENOMEM;
++
++	return 0;
++}
++
++static int iris_check_inst_mbpf(struct iris_inst *inst)
++{
++	struct platform_inst_caps *caps;
++	u32 mbpf, max_mbpf;
++
++	caps = inst->core->iris_platform_data->inst_caps;
++	max_mbpf = caps->max_mbpf;
++	mbpf = iris_get_mbpf(inst);
++	if (mbpf > max_mbpf)
++		return -ENOMEM;
++
++	return 0;
++}
++
++static int iris_check_resolution_supported(struct iris_inst *inst)
++{
++	u32 width, height, min_width, min_height, max_width, max_height;
++	struct platform_inst_caps *caps;
++
++	caps = inst->core->iris_platform_data->inst_caps;
++	width = inst->fmt_src->fmt.pix_mp.width;
++	height = inst->fmt_src->fmt.pix_mp.height;
++
++	min_width = caps->min_frame_width;
++	max_width = caps->max_frame_width;
++	min_height = caps->min_frame_height;
++	max_height = caps->max_frame_height;
++
++	if (!(min_width <= width && width <= max_width) ||
++	    !(min_height <= height && height <= max_height))
++		return -EINVAL;
++
++	return 0;
++}
++
++static int iris_check_session_supported(struct iris_inst *inst)
++{
++	struct iris_core *core = inst->core;
++	struct iris_inst *instance = NULL;
++	bool found = false;
++	int ret;
++
++	list_for_each_entry(instance, &core->instances, list) {
++		if (instance == inst)
++			found = true;
++	}
++
++	if (!found) {
++		ret = -EINVAL;
++		goto exit;
++	}
++
++	ret = iris_check_core_mbpf(inst);
++	if (ret)
++		goto exit;
++
++	ret = iris_check_inst_mbpf(inst);
++	if (ret)
++		goto exit;
++
++	ret = iris_check_resolution_supported(inst);
++	if (ret)
++		goto exit;
++
++	return 0;
++exit:
++	dev_err(inst->core->dev, "current session not supported(%d)\n", ret);
++
++	return ret;
++}
++
+ int iris_vb2_buf_init(struct vb2_buffer *vb2)
+ {
+ 	struct vb2_v4l2_buffer *vbuf = to_vb2_v4l2_buffer(vb2);
+@@ -58,6 +147,10 @@ int iris_vb2_queue_setup(struct vb2_queue *q,
+ 		goto unlock;
+ 	}
+ 
++	ret = iris_check_session_supported(inst);
++	if (ret)
++		goto unlock;
++
+ 	if (!inst->once_per_session_set) {
+ 		inst->once_per_session_set = true;
+ 
+@@ -122,6 +215,10 @@ int iris_vb2_start_streaming(struct vb2_queue *q, unsigned int count)
+ 	}
+ 
+ 
++	ret = iris_check_session_supported(inst);
++	if (ret)
++		goto error;
++
+ 	if (V4L2_TYPE_IS_OUTPUT(q->type))
+ 		ret = iris_vdec_streamon_input(inst);
+ 	else if (V4L2_TYPE_IS_CAPTURE(q->type))
+-- 
+2.34.1
+

@@ -1,0 +1,43 @@
+From 7933af6cc6ac8853bd26249ab31face419e4196a Mon Sep 17 00:00:00 2001
+From: lijuang <quic_lijuang@quicinc.com>
+Date: Wed, 16 Oct 2024 15:44:51 +0800
+Subject: [PATCH] FROMLIST: dt-bindings: arm: qcom: document QCS615 and the
+ reference board
+
+Document the QCS615 SoC and its reference board QCS615 RIDE.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Lijuan Gao <quic_lijuang@quicinc.com>
+Link: https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-1-e37617e91c62@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-1-e37617e91c62@quicinc.com/]
+---
+ Documentation/devicetree/bindings/arm/qcom.yaml | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index f64e22d80897..1a3194ed75a4 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -49,6 +49,7 @@ description: |
+         msm8996
+         msm8998
+         qcs404
++        qcs615
+         qcm2290
+         qcm6490
+         qcs9100
+@@ -870,6 +871,11 @@ properties:
+           - const: qcom,qcs404-evb
+           - const: qcom,qcs404
+ 
++      - items:
++          - enum:
++              - qcom,qcs615-ride
++          - const: qcom,qcs615
++
+       - items:
+           - enum:
+               - qcom,sa8155p-adp
+-- 
+2.46.0
+

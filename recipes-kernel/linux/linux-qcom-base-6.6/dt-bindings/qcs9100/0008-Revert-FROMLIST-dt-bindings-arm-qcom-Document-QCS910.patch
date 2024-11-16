@@ -1,0 +1,37 @@
+From 07c14945584468b1aad15393727424c89000cd8a Mon Sep 17 00:00:00 2001
+From: Shivendra Pratap <quic_spratap@quicinc.com>
+Date: Fri, 4 Oct 2024 17:53:37 +0530
+Subject: [PATCH 08/11] Revert "FROMLIST: dt-bindings: arm: qcom: Document
+ QCS9100 compatible"
+
+This reverts commit 994396177c1722354daca9798b3dbd70ae908893.
+
+Signed-off-by: Shivendra Pratap <quic_spratap@quicinc.com>
+Upstream-Status: Inappropriate [Revert]
+---
+ Documentation/devicetree/bindings/arm/qcom.yaml | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index e35422f6baec..b9f82001a042 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -49,7 +49,6 @@ description: |
+         msm8996
+         msm8998
+         qcs404
+-        qcs9100
+         qcm2290
+         qcm6490
+         qdu1000
+@@ -886,7 +885,6 @@ properties:
+               - qcom,sa8775p-ride
+               - qcom,sa8775p-ride-r3
+           - const: qcom,sa8775p
+-          - const: qcom,qcs9100
+ 
+       - items:
+           - enum:
+-- 
+2.34.1
+

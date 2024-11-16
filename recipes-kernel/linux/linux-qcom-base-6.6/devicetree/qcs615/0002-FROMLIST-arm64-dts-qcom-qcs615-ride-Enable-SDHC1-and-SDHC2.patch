@@ -1,0 +1,56 @@
+From 67ac5b4f6da3ee0fe5739d6ebd96995a15766df9 Mon Sep 17 00:00:00 2001
+From: Yuanjie Yang <quic_yuanjiey@quicinc.com>
+Date: Tue, 29 Oct 2024 11:39:51 +0800
+Subject: [PATCH] FROMLIST: arm64: dts: qcom: qcs615-ride: Enable SDHC1 and SDHC2
+
+Enable SDHC1 and SDHC2 on the Qualcomm QCS615 Ride platform.
+
+Signed-off-by: Yuanjie Yang <quic_yuanjiey@quicinc.com>
+Link: https://lore.kernel.org/linux-arm-msm/20241023092708.604195-1-quic_yuanjiey@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20241023092708.604195-4-quic_yuanjiey@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615-ride.dts | 28 ++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615-ride.dts b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+index 9b9d49bceca7..bc8822da57a7 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+@@ -269,6 +269,34 @@ &rpmhcc {
+ 	clocks = <&xo_board_clk>;
+ };
+ 
++&sdhc_1 {
++	pinctrl-0 = <&sdc1_state_on>;
++	pinctrl-1 = <&sdc1_state_off>;
++	pinctrl-names = "default", "sleep";
++
++	vmmc-supply = <&vreg_l17a>;
++	vqmmc-supply = <&vreg_s4a>;
++
++	non-removable;
++	no-sd;
++	no-sdio;
++
++	status = "okay";
++};
++
++&sdhc_2 {
++	pinctrl-0 = <&sdc2_state_on>;
++	pinctrl-1 = <&sdc2_state_off>;
++	pinctrl-names = "default", "sleep";
++
++	cd-gpios = <&tlmm 99 GPIO_ACTIVE_LOW>;
++
++	vmmc-supply = <&vreg_l10a>;
++	vqmmc-supply = <&vreg_s4a>;
++
++	status = "okay";
++};
++
+ &tlmm {
+ 	ethernet_defaults: ethernet-defaults-state {
+ 		mdc-pins {
+-- 
+2.34.1
+

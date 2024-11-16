@@ -1,0 +1,42 @@
+From 953aa2d41e99b300a654f355d347eb28ecc697a3 Mon Sep 17 00:00:00 2001
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Sat, 11 Nov 2023 15:19:53 +0100
+Subject: [PATCH] BACKPORT: dt-bindings: usb: qcom,dwc3: adjust number of
+ interrupts on SM6125
+
+Qualcomm SM6125 DWC3 USB controller comes with two interrupts (verified
+with downstream/vendor code of Trinket DTSI from Xiaomi Laurel device).
+Move the qcom,sm6125-dwc3 to appropriate place in allOf:if:then blocks
+constraining interrupts.
+
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Marijn Suijten <marijn.suijten@somainline.org>
+Link: https://lore.kernel.org/r/20231111141953.51841-1-krzysztof.kozlowski@linaro.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git d1dbd6987ee10f44a06c46bcfade69cdbb56a5cd]
+---
+ Documentation/devicetree/bindings/usb/qcom,dwc3.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+index 67591057f234..cdccb51ef14a 100644
+--- a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
++++ b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+@@ -364,7 +364,6 @@ allOf:
+               - qcom,sdx55-dwc3
+               - qcom,sdx65-dwc3
+               - qcom,sm4250-dwc3
+-              - qcom,sm6125-dwc3
+               - qcom,sm6350-dwc3
+               - qcom,sm8150-dwc3
+               - qcom,sm8250-dwc3
+@@ -397,6 +396,7 @@ allOf:
+               - qcom,msm8996-dwc3
+               - qcom,msm8998-dwc3
+               - qcom,sm6115-dwc3
++              - qcom,sm6125-dwc3
+     then:
+       properties:
+         interrupts:
+-- 

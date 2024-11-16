@@ -1,0 +1,329 @@
+From 8f5366b189fb8131ab02361f29dd9fb2bcd43b01 Mon Sep 17 00:00:00 2001
+From: Li Liu <quic_lliu6@quicinc.com>
+Date: Tue, 15 Oct 2024 12:50:26 +0800
+Subject: [PATCH 4/9] FROMLIST: drm/msm/dpu: Add QCS615 support
+
+Add definitions for the display hardware
+used on the Qualcomm QCS615 platform.
+
+Change-Id: Idac6b2c5009b147067c88fa5a8e61da7f932c93a
+Signed-off-by: Li Liu <quic_lliu6@quicinc.com>
+Signed-off-by: Fange Zhang <quic_fangez@quicinc.com>
+Link: https://lore.kernel.org/all/20241113-add-display-support-for-qcs615-platform-v2-4-2873eb6fb869@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241113-add-display-support-for-qcs615-platform-v2-4-2873eb6fb869@quicinc.com/]
+---
+ .../msm/disp/dpu1/catalog/dpu_5_3_qcs615.h    | 263 ++++++++++++++++++
+ .../gpu/drm/msm/disp/dpu1/dpu_hw_catalog.c    |   1 +
+ .../gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h    |   1 +
+ drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c       |   1 +
+ 4 files changed, 266 insertions(+)
+ create mode 100644 drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_3_qcs615.h
+
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_3_qcs615.h b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_3_qcs615.h
+new file mode 100644
+index 000000000000..6ad9bb787c27
+--- /dev/null
++++ b/drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_3_qcs615.h
+@@ -0,0 +1,263 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#ifndef _DPU_5_3_QCS615_H
++#define _DPU_5_3_QCS615_H
++
++static const struct dpu_caps qcs615_dpu_caps = {
++	.max_mixer_width = DEFAULT_DPU_OUTPUT_LINE_WIDTH,
++	.max_mixer_blendstages = 0x9,
++	.has_dim_layer = true,
++	.has_idle_pc = true,
++	.max_linewidth = 2160,
++	.pixel_ram_size = DEFAULT_PIXEL_RAM_SIZE,
++	.max_hdeci_exp = MAX_HORZ_DECIMATION,
++	.max_vdeci_exp = MAX_VERT_DECIMATION,
++};
++
++static const struct dpu_mdp_cfg qcs615_mdp = {
++	.name = "top_0",
++	.base = 0x0, .len = 0x45c,
++	.features = 0,
++	.clk_ctrls = {
++		[DPU_CLK_CTRL_VIG0] = { .reg_off = 0x2ac, .bit_off = 0 },
++		[DPU_CLK_CTRL_DMA0] = { .reg_off = 0x2ac, .bit_off = 8 },
++		[DPU_CLK_CTRL_DMA1] = { .reg_off = 0x2b4, .bit_off = 8 },
++		[DPU_CLK_CTRL_DMA2] = { .reg_off = 0x2bc, .bit_off = 8 },
++		[DPU_CLK_CTRL_DMA3] = { .reg_off = 0x2c4, .bit_off = 8 },
++	},
++};
++
++static const struct dpu_ctl_cfg qcs615_ctl[] = {
++	{
++		.name = "ctl_0", .id = CTL_0,
++		.base = 0x1000, .len = 0x1e0,
++		.features = BIT(DPU_CTL_ACTIVE_CFG),
++		.intr_start = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR2, 9),
++	}, {
++		.name = "ctl_1", .id = CTL_1,
++		.base = 0x1200, .len = 0x1e0,
++		.features = BIT(DPU_CTL_ACTIVE_CFG),
++		.intr_start = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR2, 10),
++	}, {
++		.name = "ctl_2", .id = CTL_2,
++		.base = 0x1400, .len = 0x1e0,
++		.features = BIT(DPU_CTL_ACTIVE_CFG),
++		.intr_start = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR2, 11),
++	}, {
++		.name = "ctl_3", .id = CTL_3,
++		.base = 0x1600, .len = 0x1e0,
++		.features = BIT(DPU_CTL_ACTIVE_CFG),
++		.intr_start = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR2, 12),
++	}, {
++		.name = "ctl_4", .id = CTL_4,
++		.base = 0x1800, .len = 0x1e0,
++		.features = BIT(DPU_CTL_ACTIVE_CFG),
++		.intr_start = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR2, 13),
++	}, {
++		.name = "ctl_5", .id = CTL_5,
++		.base = 0x1a00, .len = 0x1e0,
++		.features = BIT(DPU_CTL_ACTIVE_CFG),
++		.intr_start = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR2, 23),
++	},
++};
++
++static const struct dpu_sspp_cfg qcs615_sspp[] = {
++	{
++		.name = "sspp_0", .id = SSPP_VIG0,
++		.base = 0x4000, .len = 0x1f0,
++		.features = VIG_SDM845_MASK,
++		.sblk = &dpu_vig_sblk_qseed3_2_4,
++		.xin_id = 0,
++		.type = SSPP_TYPE_VIG,
++		.clk_ctrl = DPU_CLK_CTRL_VIG0,
++	}, {
++		.name = "sspp_8", .id = SSPP_DMA0,
++		.base = 0x24000, .len = 0x1f0,
++		.features = DMA_SDM845_MASK,
++		.sblk = &dpu_dma_sblk,
++		.xin_id = 1,
++		.type = SSPP_TYPE_DMA,
++		.clk_ctrl = DPU_CLK_CTRL_DMA0,
++	}, {
++		.name = "sspp_9", .id = SSPP_DMA1,
++		.base = 0x26000, .len = 0x1f0,
++		.features = DMA_SDM845_MASK,
++		.sblk = &dpu_dma_sblk,
++		.xin_id = 5,
++		.type = SSPP_TYPE_DMA,
++		.clk_ctrl = DPU_CLK_CTRL_DMA1,
++	}, {
++		.name = "sspp_10", .id = SSPP_DMA2,
++		.base = 0x28000, .len = 0x1f0,
++		.features = DMA_CURSOR_SDM845_MASK_SDMA,
++		.sblk = &dpu_dma_sblk,
++		.xin_id = 9,
++		.type = SSPP_TYPE_DMA,
++		.clk_ctrl = DPU_CLK_CTRL_DMA2,
++	}, {
++		.name = "sspp_11", .id = SSPP_DMA3,
++		.base = 0x2a000, .len = 0x1f0,
++		.features = DMA_CURSOR_SDM845_MASK_SDMA,
++		.sblk = &dpu_dma_sblk,
++		.xin_id = 13,
++		.type = SSPP_TYPE_DMA,
++		.clk_ctrl = DPU_CLK_CTRL_DMA3,
++	},
++};
++
++static const struct dpu_lm_cfg qcs615_lm[] = {
++	{
++		.name = "lm_0", .id = LM_0,
++		.base = 0x44000, .len = 0x320,
++		.features = MIXER_QCM2290_MASK,
++		.sblk = &sdm845_lm_sblk,
++		.pingpong = PINGPONG_0,
++		.dspp = DSPP_0,
++		.lm_pair = LM_1,
++	}, {
++		.name = "lm_1", .id = LM_1,
++		.base = 0x45000, .len = 0x320,
++		.features = MIXER_QCM2290_MASK,
++		.sblk = &sdm845_lm_sblk,
++		.pingpong = PINGPONG_1,
++		.lm_pair = LM_0,
++	}, {
++		.name = "lm_2", .id = LM_2,
++		.base = 0x46000, .len = 0x320,
++		.features = MIXER_QCM2290_MASK,
++		.sblk = &sdm845_lm_sblk,
++		.pingpong = PINGPONG_2,
++	},
++};
++
++static const struct dpu_dspp_cfg qcs615_dspp[] = {
++	{
++		.name = "dspp_0", .id = DSPP_0,
++		.base = 0x54000, .len = 0x1800,
++		.features = DSPP_SC7180_MASK,
++		.sblk = &sdm845_dspp_sblk,
++	},
++};
++
++static const struct dpu_pingpong_cfg qcs615_pp[] = {
++	{
++		.name = "pingpong_0", .id = PINGPONG_0,
++		.base = 0x70000, .len = 0xd4,
++		.features = PINGPONG_SM8150_MASK,
++		.sblk = &sdm845_pp_sblk,
++		.intr_done = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 8),
++	}, {
++		.name = "pingpong_1", .id = PINGPONG_1,
++		.base = 0x70800, .len = 0xd4,
++		.features = PINGPONG_SM8150_MASK,
++		.sblk = &sdm845_pp_sblk,
++		.intr_done = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 9),
++	}, {
++		.name = "pingpong_2", .id = PINGPONG_2,
++		.base = 0x71000, .len = 0xd4,
++		.features = PINGPONG_SM8150_MASK,
++		.sblk = &sdm845_pp_sblk,
++		.intr_done = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 10),
++	},
++};
++
++static const struct dpu_intf_cfg qcs615_intf[] = {
++	{
++		.name = "intf_0", .id = INTF_0,
++		.base = 0x6a000, .len = 0x280,
++		.features = INTF_SC7180_MASK,
++		.type = INTF_DP,
++		.controller_id = MSM_DP_CONTROLLER_0,
++		.prog_fetch_lines_worst_case = 24,
++		.intr_underrun = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 24),
++		.intr_vsync = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 25),
++	}, {
++		.name = "intf_1", .id = INTF_1,
++		.base = 0x6a800, .len = 0x2c0,
++		.features = INTF_SC7180_MASK,
++		.type = INTF_DSI,
++		.controller_id = MSM_DSI_CONTROLLER_0,
++		.prog_fetch_lines_worst_case = 24,
++		.intr_underrun = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 26),
++		.intr_vsync = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 27),
++		.intr_tear_rd_ptr = DPU_IRQ_IDX(MDP_INTF1_TEAR_INTR, 2),
++	}, {
++		.name = "intf_2", .id = INTF_2,
++		.base = 0x6b000, .len = 0x2c0,
++		.features = INTF_SC7180_MASK,
++		.type = INTF_NONE,
++		.controller_id = 0,
++		.prog_fetch_lines_worst_case = 24,
++		.intr_underrun = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 28),
++		.intr_vsync = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 29),
++	}, {
++		.name = "intf_3", .id = INTF_3,
++		.base = 0x6b800, .len = 0x280,
++		.features = INTF_SC7180_MASK,
++		.type = INTF_DP,
++		.controller_id = MSM_DP_CONTROLLER_1,
++		.prog_fetch_lines_worst_case = 24,
++		.intr_underrun = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 30),
++		.intr_vsync = DPU_IRQ_IDX(MDP_SSPP_TOP0_INTR, 31),
++	},
++};
++
++static const struct dpu_perf_cfg qcs615_perf_data = {
++	.max_bw_low = 4800000,
++	.max_bw_high = 4800000,
++	.min_core_ib = 2400000,
++	.min_llcc_ib = 0,
++	.min_dram_ib = 800000,
++	.min_prefill_lines = 24,
++	.danger_lut_tbl = {0xf, 0xffff, 0x0},
++	.safe_lut_tbl = {0xfff8, 0xf000, 0xffff},
++	.qos_lut_tbl = {
++		{.nentry = ARRAY_SIZE(sm8150_qos_linear),
++		.entries = sm8150_qos_linear
++		},
++		{.nentry = ARRAY_SIZE(sc7180_qos_macrotile),
++		.entries = sc7180_qos_macrotile
++		},
++		{.nentry = ARRAY_SIZE(sc7180_qos_nrt),
++		.entries = sc7180_qos_nrt
++		},
++		/* TODO: macrotile-qseed is different from macrotile */
++	},
++	.cdp_cfg = {
++		{.rd_enable = 1, .wr_enable = 1},
++		{.rd_enable = 1, .wr_enable = 0}
++	},
++	.clk_inefficiency_factor = 105,
++	.bw_inefficiency_factor = 120,
++};
++
++static const struct dpu_mdss_version qcs615_mdss_ver = {
++	.core_major_ver = 5,
++	.core_minor_ver = 3,
++};
++
++const struct dpu_mdss_cfg dpu_qcs615_cfg = {
++	.mdss_ver = &qcs615_mdss_ver,
++	.caps = &qcs615_dpu_caps,
++	.mdp = &qcs615_mdp,
++	.ctl_count = ARRAY_SIZE(qcs615_ctl),
++	.ctl = qcs615_ctl,
++	.sspp_count = ARRAY_SIZE(qcs615_sspp),
++	.sspp = qcs615_sspp,
++	.mixer_count = ARRAY_SIZE(qcs615_lm),
++	.mixer = qcs615_lm,
++	.dspp_count = ARRAY_SIZE(qcs615_dspp),
++	.dspp = qcs615_dspp,
++	.pingpong_count = ARRAY_SIZE(qcs615_pp),
++	.pingpong = qcs615_pp,
++	.intf_count = ARRAY_SIZE(qcs615_intf),
++	.intf = qcs615_intf,
++	.vbif_count = ARRAY_SIZE(sdm845_vbif),
++	.vbif = sdm845_vbif,
++	.perf = &qcs615_perf_data,
++};
++
++#endif
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.c b/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.c
+index 1947088057b1..829c8eb01c85 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.c
++++ b/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.c
+@@ -686,6 +686,7 @@ static const struct dpu_qos_lut_entry sc7180_qos_nrt[] = {
+ 
+ #include "catalog/dpu_5_0_sm8150.h"
+ #include "catalog/dpu_5_1_sc8180x.h"
++#include "catalog/dpu_5_3_qcs615.h"
+ #include "catalog/dpu_5_4_sm6125.h"
+ 
+ #include "catalog/dpu_6_0_sm8250.h"
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h b/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h
+index 936bf396d5b2..2e9daa5c0ee4 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h
++++ b/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h
+@@ -845,6 +845,7 @@ extern const struct dpu_mdss_cfg dpu_sm6115_cfg;
+ extern const struct dpu_mdss_cfg dpu_sm6125_cfg;
+ extern const struct dpu_mdss_cfg dpu_sm6350_cfg;
+ extern const struct dpu_mdss_cfg dpu_qcm2290_cfg;
++extern const struct dpu_mdss_cfg dpu_qcs615_cfg;
+ extern const struct dpu_mdss_cfg dpu_sm6375_cfg;
+ extern const struct dpu_mdss_cfg dpu_sm8350_cfg;
+ extern const struct dpu_mdss_cfg dpu_sc7280_cfg;
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c b/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
+index f63280546768..4a1ce2b01f97 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
++++ b/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
+@@ -1366,6 +1366,7 @@ static const struct dev_pm_ops dpu_pm_ops = {
+ static const struct of_device_id dpu_dt_match[] = {
+ 	{ .compatible = "qcom,msm8998-dpu", .data = &dpu_msm8998_cfg, },
+ 	{ .compatible = "qcom,qcm2290-dpu", .data = &dpu_qcm2290_cfg, },
++	{ .compatible = "qcom,qcs615-dpu", .data = &dpu_qcs615_cfg, },
+ 	{ .compatible = "qcom,sa8775p-dpu", .data = &dpu_sa8775p_cfg, },
+ 	{ .compatible = "qcom,sdm845-dpu", .data = &dpu_sdm845_cfg, },
+ 	{ .compatible = "qcom,sc7180-dpu", .data = &dpu_sc7180_cfg, },
+-- 
+2.34.1
+

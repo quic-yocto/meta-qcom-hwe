@@ -1,0 +1,74 @@
+From ea9149106711e7741a047c22af6aa5a809c7ecbb Mon Sep 17 00:00:00 2001
+From: Xin Liu <quic_liuxin@quicinc.com>
+Date: Wed, 25 Sep 2024 15:34:32 +0800
+Subject: [PATCH 01/17] FROMLIST: dt-bindings: phy: Add QMP UFS PHY compatible
+ for QCS8300
+
+Document the QMP UFS PHY compatible for Qualcomm QCS8300 to support
+physical layer functionality for UFS found on the SoC. Use fallback to
+indicate the compatibility of the QMP UFS PHY on the QCS8300 with that
+on the SA8775P.
+
+Change-Id: I21385d1590b074be02ac7ed56120e7a8eb0cb86c
+Signed-off-by: Xin Liu <quic_liuxin@quicinc.com>
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/linux-arm-msm/20240925-qcs8300_ufs_phy_binding-v3-1-c1eb5c393b09@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20240925-qcs8300_ufs_phy_binding-v3-1-c1eb5c393b09@quicinc.com/]
+---
+ .../phy/qcom,sc8280xp-qmp-ufs-phy.yaml        | 39 +++++++++++--------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml
+index f82a3804c87f..3bad4a231817 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,sc8280xp-qmp-ufs-phy.yaml
+@@ -15,23 +15,28 @@ description:
+ 
+ properties:
+   compatible:
+-    enum:
+-      - qcom,msm8996-qmp-ufs-phy
+-      - qcom,msm8998-qmp-ufs-phy
+-      - qcom,sa8775p-qmp-ufs-phy
+-      - qcom,sc7280-qmp-ufs-phy
+-      - qcom,sc8180x-qmp-ufs-phy
+-      - qcom,sc8280xp-qmp-ufs-phy
+-      - qcom,sdm845-qmp-ufs-phy
+-      - qcom,sm6115-qmp-ufs-phy
+-      - qcom,sm6125-qmp-ufs-phy
+-      - qcom,sm6350-qmp-ufs-phy
+-      - qcom,sm7150-qmp-ufs-phy
+-      - qcom,sm8150-qmp-ufs-phy
+-      - qcom,sm8250-qmp-ufs-phy
+-      - qcom,sm8350-qmp-ufs-phy
+-      - qcom,sm8450-qmp-ufs-phy
+-      - qcom,sm8550-qmp-ufs-phy
++    oneOf:
++      - items:
++          - enum:
++              - qcom,qcs8300-qmp-ufs-phy
++          - const: qcom,sa8775p-qmp-ufs-phy
++      - enum:
++          - qcom,msm8996-qmp-ufs-phy
++          - qcom,msm8998-qmp-ufs-phy
++          - qcom,sa8775p-qmp-ufs-phy
++          - qcom,sc7280-qmp-ufs-phy
++          - qcom,sc8180x-qmp-ufs-phy
++          - qcom,sc8280xp-qmp-ufs-phy
++          - qcom,sdm845-qmp-ufs-phy
++          - qcom,sm6115-qmp-ufs-phy
++          - qcom,sm6125-qmp-ufs-phy
++          - qcom,sm6350-qmp-ufs-phy
++          - qcom,sm7150-qmp-ufs-phy
++          - qcom,sm8150-qmp-ufs-phy
++          - qcom,sm8250-qmp-ufs-phy
++          - qcom,sm8350-qmp-ufs-phy
++          - qcom,sm8450-qmp-ufs-phy
++          - qcom,sm8550-qmp-ufs-phy
+ 
+   reg:
+     maxItems: 1
+-- 
+2.46.0
+

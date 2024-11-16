@@ -1,0 +1,365 @@
+From 2a35c5c4506a7d4a613ce5b8248dd7e6ff1350d8 Mon Sep 17 00:00:00 2001
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Date: Wed, 31 Jul 2024 20:55:48 +0530
+Subject: [PATCH] BACKPORT: phy: qcom: qmp: Add debug prints for register
+ writes
+
+These register prints are useful to validate the init sequence against the
+Qcom internal documentation and also to share with the Qcom hw engineers to
+debug issues related to PHY.
+
+Sample debug prints:
+
+qcom-qmp-pcie-phy 1c0e000.phy: Writing Reg: QSERDES_V5_COM_SYSCLK_EN_SEL Offset: 0x0094 Val: 0xd9
+qcom-qmp-pcie-phy 1c0e000.phy: Writing Reg: QSERDES_V5_COM_HSCLK_SEL Offset: 0x0158 Val: 0x11
+
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20240731152548.102987-1-manivannan.sadhasivam@linaro.org
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 4e92d504475ea5841716ad775f412342520a3d26]
+---
+ drivers/phy/qualcomm/phy-qcom-qmp-combo.c     | 38 ++++++++++---------
+ drivers/phy/qualcomm/phy-qcom-qmp-common.h    | 19 ++++++----
+ .../phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c  |  8 ++--
+ drivers/phy/qualcomm/phy-qcom-qmp-pcie.c      | 27 ++++++-------
+ drivers/phy/qualcomm/phy-qcom-qmp-ufs.c       | 12 +++---
+ drivers/phy/qualcomm/phy-qcom-qmp-usb.c       | 14 +++----
+ drivers/phy/qualcomm/phy-qcom-qmp-usbc.c      | 13 ++++---
+ 7 files changed, 69 insertions(+), 62 deletions(-)
+
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-combo.c b/drivers/phy/qualcomm/phy-qcom-qmp-combo.c
+index 07307d9cdf31..d27fcb7f8b74 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-combo.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-combo.c
+@@ -1843,24 +1843,25 @@ static int qmp_combo_dp_serdes_init(struct qmp_combo *qmp)
+ 	void __iomem *serdes = qmp->dp_serdes;
+ 	const struct phy_configure_opts_dp *dp_opts = &qmp->dp_opts;
+ 
+-	qmp_configure(serdes, cfg->dp_serdes_tbl, cfg->dp_serdes_tbl_num);
++	qmp_configure(qmp->dev, serdes, cfg->dp_serdes_tbl,
++		      cfg->dp_serdes_tbl_num);
+ 
+ 	switch (dp_opts->link_rate) {
+ 	case 1620:
+-		qmp_configure(serdes, cfg->serdes_tbl_rbr,
+-				cfg->serdes_tbl_rbr_num);
++		qmp_configure(qmp->dev, serdes, cfg->serdes_tbl_rbr,
++			      cfg->serdes_tbl_rbr_num);
+ 		break;
+ 	case 2700:
+-		qmp_configure(serdes, cfg->serdes_tbl_hbr,
+-				cfg->serdes_tbl_hbr_num);
++		qmp_configure(qmp->dev, serdes, cfg->serdes_tbl_hbr,
++			      cfg->serdes_tbl_hbr_num);
+ 		break;
+ 	case 5400:
+-		qmp_configure(serdes, cfg->serdes_tbl_hbr2,
+-				cfg->serdes_tbl_hbr2_num);
++		qmp_configure(qmp->dev, serdes, cfg->serdes_tbl_hbr2,
++			      cfg->serdes_tbl_hbr2_num);
+ 		break;
+ 	case 8100:
+-		qmp_configure(serdes, cfg->serdes_tbl_hbr3,
+-				cfg->serdes_tbl_hbr3_num);
++		qmp_configure(qmp->dev, serdes, cfg->serdes_tbl_hbr3,
++			      cfg->serdes_tbl_hbr3_num);
+ 		break;
+ 	default:
+ 		/* Other link rates aren't supported */
+@@ -2460,8 +2461,8 @@ static int qmp_combo_dp_power_on(struct phy *phy)
+ 
+ 	qmp_combo_dp_serdes_init(qmp);
+ 
+-	qmp_configure_lane(tx, cfg->dp_tx_tbl, cfg->dp_tx_tbl_num, 1);
+-	qmp_configure_lane(tx2, cfg->dp_tx_tbl, cfg->dp_tx_tbl_num, 2);
++	qmp_configure_lane(qmp->dev, tx, cfg->dp_tx_tbl, cfg->dp_tx_tbl_num, 1);
++	qmp_configure_lane(qmp->dev, tx2, cfg->dp_tx_tbl, cfg->dp_tx_tbl_num, 2);
+ 
+ 	/* Configure special DP tx tunings */
+ 	cfg->configure_dp_tx(qmp);
+@@ -2503,7 +2504,7 @@ static int qmp_combo_usb_power_on(struct phy *phy)
+ 	unsigned int val;
+ 	int ret;
+ 
+-	qmp_configure(serdes, cfg->serdes_tbl, cfg->serdes_tbl_num);
++	qmp_configure(qmp->dev, serdes, cfg->serdes_tbl, cfg->serdes_tbl_num);
+ 
+ 	ret = clk_prepare_enable(qmp->pipe_clk);
+ 	if (ret) {
+@@ -2512,16 +2513,17 @@ static int qmp_combo_usb_power_on(struct phy *phy)
+ 	}
+ 
+ 	/* Tx, Rx, and PCS configurations */
+-	qmp_configure_lane(tx, cfg->tx_tbl, cfg->tx_tbl_num, 1);
+-	qmp_configure_lane(tx2, cfg->tx_tbl, cfg->tx_tbl_num, 2);
++	qmp_configure_lane(qmp->dev, tx, cfg->tx_tbl, cfg->tx_tbl_num, 1);
++	qmp_configure_lane(qmp->dev, tx2, cfg->tx_tbl, cfg->tx_tbl_num, 2);
+ 
+-	qmp_configure_lane(rx, cfg->rx_tbl, cfg->rx_tbl_num, 1);
+-	qmp_configure_lane(rx2, cfg->rx_tbl, cfg->rx_tbl_num, 2);
++	qmp_configure_lane(qmp->dev, rx, cfg->rx_tbl, cfg->rx_tbl_num, 1);
++	qmp_configure_lane(qmp->dev, rx2, cfg->rx_tbl, cfg->rx_tbl_num, 2);
+ 
+-	qmp_configure(pcs, cfg->pcs_tbl, cfg->pcs_tbl_num);
++	qmp_configure(qmp->dev, pcs, cfg->pcs_tbl, cfg->pcs_tbl_num);
+ 
+ 	if (pcs_usb)
+-		qmp_configure(pcs_usb, cfg->pcs_usb_tbl, cfg->pcs_usb_tbl_num);
++		qmp_configure(qmp->dev, pcs_usb, cfg->pcs_usb_tbl,
++			      cfg->pcs_usb_tbl_num);
+ 
+ 	if (cfg->has_pwrdn_delay)
+ 		usleep_range(10, 20);
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-common.h b/drivers/phy/qualcomm/phy-qcom-qmp-common.h
+index 799384210509..b945fc14cece 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-common.h
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-common.h
+@@ -9,6 +9,7 @@
+ struct qmp_phy_init_tbl {
+ 	unsigned int offset;
+ 	unsigned int val;
++	char *name;
+ 	/*
+ 	 * mask of lanes for which this register is written
+ 	 * for cases when second lane needs different values
+@@ -20,6 +21,7 @@ struct qmp_phy_init_tbl {
+ 	{				\
+ 		.offset = o,		\
+ 		.val = v,		\
++		.name = #o,		\
+ 		.lane_mask = 0xff,	\
+ 	}
+ 
+@@ -27,13 +29,13 @@ struct qmp_phy_init_tbl {
+ 	{				\
+ 		.offset = o,		\
+ 		.val = v,		\
++		.name = #o,		\
+ 		.lane_mask = l,		\
+ 	}
+ 
+-static inline void qmp_configure_lane(void __iomem *base,
+-					   const struct qmp_phy_init_tbl tbl[],
+-					   int num,
+-					   u8 lane_mask)
++static inline void qmp_configure_lane(struct device *dev, void __iomem *base,
++				      const struct qmp_phy_init_tbl tbl[],
++				      int num, u8 lane_mask)
+ {
+ 	int i;
+ 	const struct qmp_phy_init_tbl *t = tbl;
+@@ -45,15 +47,16 @@ static inline void qmp_configure_lane(void __iomem *base,
+ 		if (!(t->lane_mask & lane_mask))
+ 			continue;
+ 
++		dev_dbg(dev, "Writing Reg: %s Offset: 0x%04x Val: 0x%02x\n",
++			t->name, t->offset, t->val);
+ 		writel(t->val, base + t->offset);
+ 	}
+ }
+ 
+-static inline void qmp_configure(void __iomem *base,
+-				      const struct qmp_phy_init_tbl tbl[],
+-				      int num)
++static inline void qmp_configure(struct device *dev, void __iomem *base,
++				 const struct qmp_phy_init_tbl tbl[], int num)
+ {
+-	qmp_configure_lane(base, tbl, num, 0xff);
++	qmp_configure_lane(dev, base, tbl, num, 0xff);
+ }
+ 
+ #endif
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c b/drivers/phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c
+index 0442b3120563..5f89e3a3e54f 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c
+@@ -288,7 +288,7 @@ static int qmp_pcie_msm8996_serdes_init(struct qmp_phy *qphy)
+ 	unsigned int val;
+ 	int ret;
+ 
+-	qmp_configure(serdes, serdes_tbl, serdes_tbl_num);
++	qmp_configure(qmp->dev, serdes, serdes_tbl, serdes_tbl_num);
+ 
+ 	qphy_clrbits(serdes, cfg->regs[QPHY_COM_SW_RESET], SW_RESET);
+ 	qphy_setbits(serdes, cfg->regs[QPHY_COM_START_CONTROL],
+@@ -431,9 +431,9 @@ static int qmp_pcie_msm8996_power_on(struct phy *phy)
+ 	}
+ 
+ 	/* Tx, Rx, and PCS configurations */
+-	qmp_configure_lane(tx, cfg->tx_tbl, cfg->tx_tbl_num, 1);
+-	qmp_configure_lane(rx, cfg->rx_tbl, cfg->rx_tbl_num, 1);
+-	qmp_configure(pcs, cfg->pcs_tbl, cfg->pcs_tbl_num);
++	qmp_configure_lane(qmp->dev, tx, cfg->tx_tbl, cfg->tx_tbl_num, 1);
++	qmp_configure_lane(qmp->dev, rx, cfg->rx_tbl, cfg->rx_tbl_num, 1);
++	qmp_configure(qmp->dev, pcs, cfg->pcs_tbl, cfg->pcs_tbl_num);
+ 
+ 	/*
+ 	 * Pull out PHY from POWER DOWN state.
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-pcie.c b/drivers/phy/qualcomm/phy-qcom-qmp-pcie.c
+index 09106215d7e1..bf0f8608c193 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-pcie.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-pcie.c
+@@ -3064,11 +3064,11 @@ static void qmp_pcie_init_port_b(struct qmp_pcie *qmp, const struct qmp_phy_cfg_
+ 	tx4 = qmp->port_b + offs->tx2;
+ 	rx4 = qmp->port_b + offs->rx2;
+ 
+-	qmp_configure_lane(tx3, tbls->tx, tbls->tx_num, 1);
+-	qmp_configure_lane(rx3, tbls->rx, tbls->rx_num, 1);
++	qmp_configure_lane(qmp->dev, tx3, tbls->tx, tbls->tx_num, 1);
++	qmp_configure_lane(qmp->dev, rx3, tbls->rx, tbls->rx_num, 1);
+ 
+-	qmp_configure_lane(tx4, tbls->tx, tbls->tx_num, 2);
+-	qmp_configure_lane(rx4, tbls->rx, tbls->rx_num, 2);
++	qmp_configure_lane(qmp->dev, tx4, tbls->tx, tbls->tx_num, 2);
++	qmp_configure_lane(qmp->dev, rx4, tbls->rx, tbls->rx_num, 2);
+ }
+ 
+ static void qmp_pcie_init_registers(struct qmp_pcie *qmp, const struct qmp_phy_cfg_tbls *tbls)
+@@ -3086,25 +3086,26 @@ static void qmp_pcie_init_registers(struct qmp_pcie *qmp, const struct qmp_phy_c
+ 	if (!tbls)
+ 		return;
+ 
+-	qmp_configure(serdes, tbls->serdes, tbls->serdes_num);
++	qmp_configure(qmp->dev, serdes, tbls->serdes, tbls->serdes_num);
+ 
+-	qmp_configure_lane(tx, tbls->tx, tbls->tx_num, 1);
+-	qmp_configure_lane(rx, tbls->rx, tbls->rx_num, 1);
++	qmp_configure_lane(qmp->dev, tx, tbls->tx, tbls->tx_num, 1);
++	qmp_configure_lane(qmp->dev, rx, tbls->rx, tbls->rx_num, 1);
+ 
+ 	if (cfg->lanes >= 2) {
+-		qmp_configure_lane(tx2, tbls->tx, tbls->tx_num, 2);
+-		qmp_configure_lane(rx2, tbls->rx, tbls->rx_num, 2);
++		qmp_configure_lane(qmp->dev, tx2, tbls->tx, tbls->tx_num, 2);
++		qmp_configure_lane(qmp->dev, rx2, tbls->rx, tbls->rx_num, 2);
+ 	}
+ 
+-	qmp_configure(pcs, tbls->pcs, tbls->pcs_num);
+-	qmp_configure(pcs_misc, tbls->pcs_misc, tbls->pcs_misc_num);
++	qmp_configure(qmp->dev, pcs, tbls->pcs, tbls->pcs_num);
++	qmp_configure(qmp->dev, pcs_misc, tbls->pcs_misc, tbls->pcs_misc_num);
+ 
+ 	if (cfg->lanes >= 4 && qmp->tcsr_4ln_config) {
+-		qmp_configure(serdes, cfg->serdes_4ln_tbl, cfg->serdes_4ln_num);
++		qmp_configure(qmp->dev, serdes, cfg->serdes_4ln_tbl,
++			      cfg->serdes_4ln_num);
+ 		qmp_pcie_init_port_b(qmp, tbls);
+ 	}
+ 
+-	qmp_configure(ln_shrd, tbls->ln_shrd, tbls->ln_shrd_num);
++	qmp_configure(qmp->dev, ln_shrd, tbls->ln_shrd, tbls->ln_shrd_num);
+ }
+ 
+ static int qmp_pcie_init(struct phy *phy)
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-ufs.c b/drivers/phy/qualcomm/phy-qcom-qmp-ufs.c
+index 5eb97a9f3135..d59f1ebfd1a2 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-ufs.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-ufs.c
+@@ -1279,7 +1279,7 @@ static void qmp_ufs_serdes_init(struct qmp_ufs *qmp, const struct qmp_phy_cfg_tb
+ {
+ 	void __iomem *serdes = qmp->serdes;
+ 
+-	qmp_configure(serdes, tbls->serdes, tbls->serdes_num);
++	qmp_configure(qmp->dev, serdes, tbls->serdes, tbls->serdes_num);
+ }
+ 
+ static void qmp_ufs_lanes_init(struct qmp_ufs *qmp, const struct qmp_phy_cfg_tbls *tbls)
+@@ -1288,12 +1288,12 @@ static void qmp_ufs_lanes_init(struct qmp_ufs *qmp, const struct qmp_phy_cfg_tbl
+ 	void __iomem *tx = qmp->tx;
+ 	void __iomem *rx = qmp->rx;
+ 
+-	qmp_configure_lane(tx, tbls->tx, tbls->tx_num, 1);
+-	qmp_configure_lane(rx, tbls->rx, tbls->rx_num, 1);
++	qmp_configure_lane(qmp->dev, tx, tbls->tx, tbls->tx_num, 1);
++	qmp_configure_lane(qmp->dev, rx, tbls->rx, tbls->rx_num, 1);
+ 
+ 	if (cfg->lanes >= 2) {
+-		qmp_configure_lane(qmp->tx2, tbls->tx, tbls->tx_num, 2);
+-		qmp_configure_lane(qmp->rx2, tbls->rx, tbls->rx_num, 2);
++		qmp_configure_lane(qmp->dev, qmp->tx2, tbls->tx, tbls->tx_num, 2);
++		qmp_configure_lane(qmp->dev, qmp->rx2, tbls->rx, tbls->rx_num, 2);
+ 	}
+ }
+ 
+@@ -1301,7 +1301,7 @@ static void qmp_ufs_pcs_init(struct qmp_ufs *qmp, const struct qmp_phy_cfg_tbls
+ {
+ 	void __iomem *pcs = qmp->pcs;
+ 
+-	qmp_configure(pcs, tbls->pcs, tbls->pcs_num);
++	qmp_configure(qmp->dev, pcs, tbls->pcs, tbls->pcs_num);
+ }
+ 
+ static void qmp_ufs_init_registers(struct qmp_ufs *qmp, const struct qmp_phy_cfg *cfg)
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-usb.c b/drivers/phy/qualcomm/phy-qcom-qmp-usb.c
+index ceef4b80c1ed..dad8a168bee3 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-usb.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-usb.c
+@@ -1319,7 +1319,7 @@ static int qmp_usb_serdes_init(struct qmp_usb *qmp)
+ 	const struct qmp_phy_init_tbl *serdes_tbl = cfg->serdes_tbl;
+ 	int serdes_tbl_num = cfg->serdes_tbl_num;
+ 
+-	qmp_configure(serdes, serdes_tbl, serdes_tbl_num);
++	qmp_configure(qmp->dev, serdes, serdes_tbl, serdes_tbl_num);
+ 
+ 	return 0;
+ }
+@@ -1400,18 +1400,18 @@ static int qmp_usb_power_on(struct phy *phy)
+ 	}
+ 
+ 	/* Tx, Rx, and PCS configurations */
+-	qmp_configure_lane(tx, cfg->tx_tbl, cfg->tx_tbl_num, 1);
+-	qmp_configure_lane(rx, cfg->rx_tbl, cfg->rx_tbl_num, 1);
++	qmp_configure_lane(qmp->dev, tx, cfg->tx_tbl, cfg->tx_tbl_num, 1);
++	qmp_configure_lane(qmp->dev, rx, cfg->rx_tbl, cfg->rx_tbl_num, 1);
+ 
+ 	if (cfg->lanes >= 2) {
+-		qmp_configure_lane(qmp->tx2, cfg->tx_tbl, cfg->tx_tbl_num, 2);
+-		qmp_configure_lane(qmp->rx2, cfg->rx_tbl, cfg->rx_tbl_num, 2);
++		qmp_configure_lane(qmp->dev, qmp->tx2, cfg->tx_tbl, cfg->tx_tbl_num, 2);
++		qmp_configure_lane(qmp->dev, qmp->rx2, cfg->rx_tbl, cfg->rx_tbl_num, 2);
+ 	}
+ 
+-	qmp_configure(pcs, cfg->pcs_tbl, cfg->pcs_tbl_num);
++	qmp_configure(qmp->dev, pcs, cfg->pcs_tbl, cfg->pcs_tbl_num);
+ 
+ 	if (pcs_usb)
+-		qmp_configure(pcs_usb, cfg->pcs_usb_tbl, cfg->pcs_usb_tbl_num);
++		qmp_configure(qmp->dev, pcs_usb, cfg->pcs_usb_tbl, cfg->pcs_usb_tbl_num);
+ 
+ 	if (cfg->has_pwrdn_delay)
+ 		usleep_range(10, 20);
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c b/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
+index 5cbc5fd529eb..d4fa1063ea61 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
+@@ -526,7 +526,8 @@ static int qmp_usbc_power_on(struct phy *phy)
+ 	unsigned int val;
+ 	int ret;
+ 
+-	qmp_configure(qmp->serdes, cfg->serdes_tbl, cfg->serdes_tbl_num);
++	qmp_configure(qmp->dev, qmp->serdes, cfg->serdes_tbl,
++		      cfg->serdes_tbl_num);
+ 
+ 	ret = clk_prepare_enable(qmp->pipe_clk);
+ 	if (ret) {
+@@ -535,13 +536,13 @@ static int qmp_usbc_power_on(struct phy *phy)
+ 	}
+ 
+ 	/* Tx, Rx, and PCS configurations */
+-	qmp_configure_lane(qmp->tx, cfg->tx_tbl, cfg->tx_tbl_num, 1);
+-	qmp_configure_lane(qmp->rx, cfg->rx_tbl, cfg->rx_tbl_num, 1);
++	qmp_configure_lane(qmp->dev, qmp->tx, cfg->tx_tbl, cfg->tx_tbl_num, 1);
++	qmp_configure_lane(qmp->dev, qmp->rx, cfg->rx_tbl, cfg->rx_tbl_num, 1);
+ 
+-	qmp_configure_lane(qmp->tx2, cfg->tx_tbl, cfg->tx_tbl_num, 2);
+-	qmp_configure_lane(qmp->rx2, cfg->rx_tbl, cfg->rx_tbl_num, 2);
++	qmp_configure_lane(qmp->dev, qmp->tx2, cfg->tx_tbl, cfg->tx_tbl_num, 2);
++	qmp_configure_lane(qmp->dev, qmp->rx2, cfg->rx_tbl, cfg->rx_tbl_num, 2);
+ 
+-	qmp_configure(qmp->pcs, cfg->pcs_tbl, cfg->pcs_tbl_num);
++	qmp_configure(qmp->dev, qmp->pcs, cfg->pcs_tbl, cfg->pcs_tbl_num);
+ 
+ 	/* Pull PHY out of reset state */
+ 	qphy_clrbits(qmp->pcs, cfg->regs[QPHY_SW_RESET], SW_RESET);
+--

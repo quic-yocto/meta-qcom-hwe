@@ -1,0 +1,34 @@
+From 1a1e6166da85ade36ff48349fc85e1a5f3b25693 Mon Sep 17 00:00:00 2001
+From: Zhenhua Huang <quic_zhenhuah@quicinc.com>
+Date: Wed, 11 Sep 2024 16:03:16 +0800
+Subject: [PATCH 11/17] FROMLIST: dt-bindings: firmware: qcom,scm: document SCM
+ on QCS8300 SoCs
+
+Document scm compatible for the Qualcomm QCS8300 SoC. It is an interface
+to communicate to the secure firmware.
+
+Change-Id: I9a6c3200b86cdebdef4afe04123bae1b4329b998
+Signed-off-by: Zhenhua Huang <quic_zhenhuah@quicinc.com>
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/all/20240911-qcs8300_binding-v2-2-de8641b3eaa1@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240911-qcs8300_binding-v2-2-de8641b3eaa1@quicinc.com/]
+---
+ Documentation/devicetree/bindings/firmware/qcom,scm.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/firmware/qcom,scm.yaml b/Documentation/devicetree/bindings/firmware/qcom,scm.yaml
+index 72663c4dc700..38924ba243e3 100644
+--- a/Documentation/devicetree/bindings/firmware/qcom,scm.yaml
++++ b/Documentation/devicetree/bindings/firmware/qcom,scm.yaml
+@@ -42,6 +42,7 @@ properties:
+           - qcom,scm-msm8998
+           - qcom,scm-qcm2290
+           - qcom,scm-qcs615
++          - qcom,scm-qcs8300
+           - qcom,scm-qdu1000
+           - qcom,scm-sa8775p
+           - qcom,scm-sc7180
+-- 
+2.46.0
+

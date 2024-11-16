@@ -1,0 +1,31 @@
+From e52fd054f159287810d41dd847f178990a52395e Mon Sep 17 00:00:00 2001
+From: lijuang <quic_lijuang@quicinc.com>
+Date: Fri, 20 Sep 2024 17:17:17 +0800
+Subject: [PATCH 19/22] FROMLIST: soc: qcom: socinfo: Add QCS615 SoC ID table
+ entry
+
+Add SoC Info support for the QCS615 platform.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Lijuan Gao <quic_lijuang@quicinc.com>
+Link: https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-4-e37617e91c62@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-4-e37617e91c62@quicinc.com/]
+---
+ drivers/soc/qcom/socinfo.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/soc/qcom/socinfo.c b/drivers/soc/qcom/socinfo.c
+index 4444dad03741..05b1596a4bdd 100644
+--- a/drivers/soc/qcom/socinfo.c
++++ b/drivers/soc/qcom/socinfo.c
+@@ -417,6 +417,7 @@ static const struct soc_id soc_id[] = {
+ 	{ qcom_board_id(IPQ5302) },
+ 	{ qcom_board_id(IPQ5300) },
+ 	{ qcom_board_id(QCS9100) },
++	{ qcom_board_id(QCS615) },
+ };
+ 
+ static const char *socinfo_machine(struct device *dev, unsigned int id)
+-- 
+2.46.0
+

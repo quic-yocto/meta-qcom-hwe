@@ -1,0 +1,53 @@
+From 010c46a76b72b3b512e88f67e4f536be2cb547dc Mon Sep 17 00:00:00 2001
+From: Yijie Yang <quic_yijiyang@quicinc.com>
+Date: Mon, 11 Nov 2024 16:48:02 +0800
+Subject: [PATCH] net: stmmac: dwmac-qcom-ethqos: add support for EMAC on
+ qcs615 platforms
+
+qcs615 uses EMAC version 2, add the relevant defines and add the new
+compatible.
+
+Signed-off-by: Yijie Yang <quic_yijiyang@quicinc.com>
+Upstream-Status: Pending
+---
+ .../ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c
+index ded1bbda5266..cc2b81fd72b8 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c
+@@ -245,6 +245,22 @@ static const struct ethqos_emac_driver_data emac_v2_1_0_data = {
+ 	.has_emac_ge_3 = false,
+ };
+ 
++static const struct ethqos_emac_por emac_v2_3_1_por[] = {
++	{ .offset = RGMII_IO_MACRO_CONFIG,	.value = 0x00C01343 },
++	{ .offset = SDCC_HC_REG_DLL_CONFIG,	.value = 0x2004642C },
++	{ .offset = SDCC_HC_REG_DDR_CONFIG,	.value = 0x00000000 },
++	{ .offset = SDCC_HC_REG_DLL_CONFIG2,	.value = 0x00200000 },
++	{ .offset = SDCC_USR_CTL,		.value = 0x00010800 },
++	{ .offset = RGMII_IO_MACRO_CONFIG2,	.value = 0x00002060 },
++};
++
++static const struct ethqos_emac_driver_data emac_v2_3_1_data = {
++	.por = emac_v2_3_1_por,
++	.num_por = ARRAY_SIZE(emac_v2_3_1_por),
++	.rgmii_config_loopback_en = true,
++	.has_emac_ge_3 = false,
++};
++
+ static const struct ethqos_emac_por emac_v3_0_0_por[] = {
+ 	{ .offset = RGMII_IO_MACRO_CONFIG,	.value = 0x40c01343 },
+ 	{ .offset = SDCC_HC_REG_DLL_CONFIG,	.value = 0x2004642c },
+@@ -854,6 +870,7 @@ static int qcom_ethqos_probe(struct platform_device *pdev)
+ 
+ static const struct of_device_id qcom_ethqos_match[] = {
+ 	{ .compatible = "qcom,qcs404-ethqos", .data = &emac_v2_3_0_data},
++	{ .compatible = "qcom,qcs615-ethqos", .data = &emac_v2_3_1_data},
+ 	{ .compatible = "qcom,sa8775p-ethqos", .data = &emac_v4_0_0_data},
+ 	{ .compatible = "qcom,sc8280xp-ethqos", .data = &emac_v3_0_0_data},
+ 	{ .compatible = "qcom,sm8150-ethqos", .data = &emac_v2_1_0_data},
+-- 
+2.34.1
+

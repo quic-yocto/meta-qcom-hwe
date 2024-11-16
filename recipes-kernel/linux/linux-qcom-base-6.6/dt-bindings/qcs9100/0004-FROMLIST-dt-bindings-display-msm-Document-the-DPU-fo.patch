@@ -1,0 +1,29 @@
+From 42cec28489d4698d793d3e6828b83ad7fbaecf78 Mon Sep 17 00:00:00 2001
+From: Mahadevan <quic_mahap@quicinc.com>
+Date: Wed, 9 Oct 2024 20:02:02 +0530
+Subject: [PATCH 4/7] FROMLIST: dt-bindings: display/msm: Document the DPU for
+ SA8775P
+
+Document the DPU for Qualcomm SA8775P platform.
+
+Signed-off-by: Mahadevan <quic_mahap@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241019-patchv3_1-v5-2-d2fb72c9a845@quicinc.com/]
+---
+ .../devicetree/bindings/display/msm/qcom,sm8650-dpu.yaml         | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/display/msm/qcom,sm8650-dpu.yaml b/Documentation/devicetree/bindings/display/msm/qcom,sm8650-dpu.yaml
+index c4087cc5abbd..01cf79bd754b 100644
+--- a/Documentation/devicetree/bindings/display/msm/qcom,sm8650-dpu.yaml
++++ b/Documentation/devicetree/bindings/display/msm/qcom,sm8650-dpu.yaml
+@@ -14,6 +14,7 @@ $ref: /schemas/display/msm/dpu-common.yaml#
+ properties:
+   compatible:
+     enum:
++      - qcom,sa8775p-dpu
+       - qcom,sm8650-dpu
+       - qcom,x1e80100-dpu
+ 
+-- 
+2.34.1
+

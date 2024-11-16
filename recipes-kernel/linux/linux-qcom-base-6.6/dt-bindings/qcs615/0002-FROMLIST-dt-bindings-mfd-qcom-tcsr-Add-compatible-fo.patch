@@ -1,0 +1,31 @@
+From 306eedad101ca1ed064bb2263a0fd8c724977461 Mon Sep 17 00:00:00 2001
+From: lijuang <quic_lijuang@quicinc.com>
+Date: Fri, 20 Sep 2024 16:31:05 +0800
+Subject: [PATCH 02/22] FROMLIST: dt-bindings: mfd: qcom,tcsr: Add compatible
+ for qcs615
+
+Document the qcom,qcs615-tcsr compatible.
+
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Lijuan Gao <quic_lijuang@quicinc.com>
+Link: https://lore.kernel.org/all/20240920-add_tcsr_compatible_for_qcs615-v2-1-8ce2dbc7f72c@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240920-add_tcsr_compatible_for_qcs615-v2-1-8ce2dbc7f72c@quicinc.com/]
+---
+ Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml b/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
+index ddfd421659e3..6e2359ad8ba9 100644
+--- a/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
++++ b/Documentation/devicetree/bindings/mfd/qcom,tcsr.yaml
+@@ -20,6 +20,7 @@ properties:
+           - qcom,msm8976-tcsr
+           - qcom,msm8998-tcsr
+           - qcom,qcs404-tcsr
++          - qcom,qcs615-tcsr
+           - qcom,sa8775p-tcsr
+           - qcom,sc7180-tcsr
+           - qcom,sc7280-tcsr
+-- 
+2.46.0
+

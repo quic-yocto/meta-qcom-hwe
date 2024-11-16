@@ -1,0 +1,25 @@
+From dbc978271e8b4efb4f30baa1c2b87876307a9ac1 Mon Sep 17 00:00:00 2001
+From: haitao xu <quic_haitxu@quicinc.com>
+Date: Tue, 12 Nov 2024 19:13:11 +0800
+Subject: [PATCH] PENDING: arm64: dts: qcom: qcs615: add dma-coherent for the
+ GPU SMMU node
+
+Add dma-coherent for the Adreno GPU SMMU node.
+
+Signed-off-by: haitao xu <quic_haitxu@quicinc.com>
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index 8117ce716b2e..0b1332be1f75 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -1454,6 +1454,7 @@ adreno_smmu: iommu@50a0000 {
+ 			reg = <0x0 0x50a0000 0x0 0x10000>;
+ 			#iommu-cells = <2>;
+ 			#global-interrupts = <1>;
++			dma-coherent;
+ 
+ 			power-domains = <&gpucc CX_GDSC>;
+ 			clocks = <&gcc GCC_GPU_MEMNOC_GFX_CLK>,

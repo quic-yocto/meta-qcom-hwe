@@ -1,0 +1,56 @@
+From 6c0de59572df861ea3ac780b49d0b8ba7ebca52b Mon Sep 17 00:00:00 2001
+From: Yijie Yang <quic_yijiyang@quicinc.com>
+Date: Thu, 10 Oct 2024 11:05:36 +0800
+Subject: [PATCH] PENDING: arm64: dts: qcom: qcs615: add ethernet node
+
+Add ethqos ethernet controller node for QCS615 SoC.
+
+Signed-off-by: Yijie Yang <quic_yijiyang@quicinc.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 29 ++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index e286949c57c4..af05a299510a 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -420,6 +420,35 @@ soc: soc@0 {
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
+ 
++		ethernet: ethernet@20000 {
++			compatible = "qcom,qcs615-ethqos";
++			reg = <0x0 0x20000 0x0 0x10000>,
++			      <0x0 0x36000 0x0 0x100>;
++			reg-names = "stmmaceth", "rgmii";
++
++			clocks = <&gcc GCC_EMAC_AXI_CLK>,
++			         <&gcc GCC_EMAC_SLV_AHB_CLK>,
++			         <&gcc GCC_EMAC_PTP_CLK>,
++			         <&gcc GCC_EMAC_RGMII_CLK>;
++			clock-names = "stmmaceth", "pclk", "ptp_ref", "rgmii";
++
++			interrupts = <GIC_SPI 660 IRQ_TYPE_LEVEL_HIGH>,
++			             <GIC_SPI 662 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "macirq", "eth_lpi";
++
++			power-domains = <&gcc EMAC_GDSC>;
++			resets = <&gcc GCC_EMAC_BCR>;
++
++			iommus = <&apps_smmu 0x1c0 0x0>;
++
++			snps,tso;
++			snps,pbl = <32>;
++			rx-fifo-depth = <16384>;
++			tx-fifo-depth = <20480>;
++
++			status = "disabled";
++		};
++
+ 		gcc: clock-controller@100000 {
+ 			compatible = "qcom,qcs615-gcc";
+ 			reg = <0 0x00100000 0 0x1f0000>;
+-- 
+2.34.1
+

@@ -1,0 +1,50 @@
+From 0e6e6e5e00b95276c1031275c757af7bcfbeb92d Mon Sep 17 00:00:00 2001
+From: Yijie Yang <quic_yijiyang@quicinc.com>
+Date: Mon, 11 Nov 2024 14:07:53 +0800
+Subject: [PATCH] PENDING: dt-bindings: net: qcom,ethqos: revise description
+ for qcs615
+
+The core version of EMAC on qcs615 has minor differences compared to that
+on sm8150. During the bring-up routine, the loopback bit needs to be set,
+and the Power-On Reset (POR) status of the registers isn't entirely
+consistent with sm8150 either.
+Therefore, it should be treated as a separate entity rather than a
+fallback option.
+
+Fixes: 32535b9410b8 ("dt-bindings: net: qcom,ethqos: add description for qcs615")
+Signed-off-by: Yijie Yang <quic_yijiyang@quicinc.com>
+Upstream-Status: Pending
+---
+ .../devicetree/bindings/net/qcom,ethqos.yaml     | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/net/qcom,ethqos.yaml b/Documentation/devicetree/bindings/net/qcom,ethqos.yaml
+index 53bbb14213a0..7b9a81325fc1 100644
+--- a/Documentation/devicetree/bindings/net/qcom,ethqos.yaml
++++ b/Documentation/devicetree/bindings/net/qcom,ethqos.yaml
+@@ -18,16 +18,12 @@ allOf:
+ 
+ properties:
+   compatible:
+-    oneOf:
+-      - items:
+-          - enum:
+-              - qcom,qcs615-ethqos
+-          - const: qcom,sm8150-ethqos
+-      - enum:
+-          - qcom,qcs404-ethqos
+-          - qcom,sa8775p-ethqos
+-          - qcom,sc8280xp-ethqos
+-          - qcom,sm8150-ethqos
++    enum:
++      - qcom,qcs404-ethqos
++      - qcom,qcs615-ethqos
++      - qcom,sa8775p-ethqos
++      - qcom,sc8280xp-ethqos
++      - qcom,sm8150-ethqos
+ 
+   reg:
+     maxItems: 2
+-- 
+2.34.1
+
