@@ -2,7 +2,7 @@ DESCRIPTION = "Recipe to install partition.xml in DEPLOY_DIR"
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
-COMPATIBLE_MACHINE = "qcm6490|qcs9100"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs615"
 
 PROVIDES += "virtual/partconf"
 
@@ -10,6 +10,7 @@ SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${BOOTBINARIES
 
 SRC_URI[qcm6490.sha256sum] = "2ab34df1fdbff9f052b4bd55832fb2ad3385b4ea6a8a2a4a340e4a8dac2527c1"
 SRC_URI[qcs9100.sha256sum] = "b79572132c4b2d455dd4353c63fb66688ec728feaf43d52e79ddd38a9dce0074"
+SRC_URI[qcs615.sha256sum] = "d15d18296ada2c1d94d3127ab374ecb8cfb4f68a3db66f76d7a4a3f1f09e2130"
 
 include firmware-common.inc
 
@@ -18,6 +19,7 @@ include firmware-${MATCHED_MACHINE}.inc
 
 BOOTBINARIES:qcm6490 = "QCM6490_bootbinaries"
 BOOTBINARIES:qcs9100 = "QCS9100_bootbinaries"
+BOOTBINARIES:qcs615 = "QCS615_bootbinaries"
 
 BOOTBINARIES_PATH = "${WORKDIR}/git/${BUILD_ID}/${BIN_PATH}"
 

@@ -2,12 +2,13 @@ DESCRIPTION = "Recipe to install firmware files at lib/firmware on rootfs"
 LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
 LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}/${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
 
-COMPATIBLE_MACHINE = "qcm6490|qcs9100"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs615"
 
 SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${HLOSFIRMWARE}.zip;name=${PBT_ARCH}"
 
 SRC_URI[qcm6490.sha256sum] = "5c1d4c3ee6cf9d7003ce8665f2168b89c8a528f8ffaf0ac71d505dddfe8c5e5e"
 SRC_URI[qcs9100.sha256sum] = "d37a2416b6377ac281c7221f79d40ad0270a30c9a6500954091e7286e0fc9f26"
+SRC_URI[qcs615.sha256sum] = "fa061c1c2d1c7b10061fa36b9aa704bd1d5e24c821a029a49cce6f4701158d4c"
 
 include firmware-common.inc
 
@@ -16,6 +17,7 @@ include firmware-${MATCHED_MACHINE}.inc
 
 HLOSFIRMWARE:qcm6490 = "QCM6490_fw"
 HLOSFIRMWARE:qcs9100 = "QCS9100_fw"
+HLOSFIRMWARE:qcs615 = "QCS615_fw"
 
 HLOSFIRMWARE_PATH = "${S}/${HLOSFIRMWARE}"
 
