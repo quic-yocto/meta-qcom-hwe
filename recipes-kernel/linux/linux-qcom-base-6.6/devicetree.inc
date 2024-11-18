@@ -7,17 +7,31 @@ SRC_URI:append = " \
     file://qcs6490/0001-arm64-dts-qcom-sc7280-Move-video-firmware-to-chrome-.patch \
     file://qcs6490/0001-arm64-dts-qcom-Use-QCOM_SCM_VMID-defines-for-qcom-vm.patch \
     file://qcs6490/0001-UPSTREAM-arm64-dts-qcom-sc7280-Add-capacity-and-DPC-.patch \
+    file://qcs6490/0004-UPSTREAM-arm64-dts-qcom-sc7280-Remove-unused-second-.patch \
+    file://qcs6490/0008-UPSTREAM-arm64-dts-qcom-sc7280-Use-WPSS-PAS-instead-.patch \
+    file://qcs6490/0014-BACKPORT-arm64-dts-qcom-qcm6490-fairphone-fp5-Add-PM.patch \
+    file://qcs6490/0015-UPSTREAM-arm64-dts-qcom-sc7280-Add-ports-subnodes-in.patch \
     "
 
 # qcs6490 board dts patches
 SRC_URI:append = " \
     file://qcs6490/0001-arm64-dts-qcom-Add-base-qcm6490-idp-board-dts.patch \
     file://qcs6490/0002-arm64-dts-qcom-Add-base-qcs6490-rb3gen2-board-dts.patch \
+    file://addons/0019-QCLINUX-arm64-dts-qcom-Add-board-id-and-msm-id-for-R.patch \
     file://qcs6490/0001-arm64-dts-qcom-qcm6490-idp-Correct-the-voltage-setti.patch \
     file://qcs6490/0002-arm64-dts-qcom-qcs6490-rb3gen2-Correct-the-voltage-s.patch \
     file://qcs6490/0001-arm64-dts-qcom-qcm6490-idp-Update-protected-clocks-l.patch \
     file://qcs6490/0001-arm64-dts-qcom-qcs6490-rb3gen2-Declare-GCC-clocks-pr.patch \
     file://qcs6490/0001-arm64-dts-qcom-qcs6490-rb3gen2-Update-the-LPASS-audi.patch \
+    file://qcs6490/0005-BACKPORT-arm64-dts-qcom-sc7280-move-MPSS-and-WPSS-me.patch \
+    file://qcs6490/0009-BACKPORT-arm64-dts-qcom-sc7280-Add-ADSP-node.patch \
+    file://qcs6490/0010-BACKPORT-arm64-dts-qcom-sc7280-Add-CDSP-node.patch \
+    file://qcs6490/0011-UPSTREAM-arm64-dts-qcom-qcs6490-rb3gen2-Enable-adsp-.patch \
+    file://qcs6490/0012-UPSTREAM-arm64-dts-qcom-qcs6490-rb3gen2-Add-DP-outpu.patch \
+    file://qcs6490/0013-UPSTREAM-arm64-dts-qcom-qcs6490-rb3gen2-Introduce-US.patch \
+    file://qcs6490/0016-UPSTREAM-arm64-dts-qcom-qcs6490-rb3gen2-Enable-USB-T.patch \
+    file://qcs6490/0017-UPSTREAM-arm64-dts-qcom-qcs6490-rb3gen2-Enable-UFS.patch \
+    file://qcs6490/0018-BACKPORT-arm64-dts-qcom-qcs6490-rb3gen2-Enable-vario.patch \
     "
 
 # qcs9100 dtsi patches

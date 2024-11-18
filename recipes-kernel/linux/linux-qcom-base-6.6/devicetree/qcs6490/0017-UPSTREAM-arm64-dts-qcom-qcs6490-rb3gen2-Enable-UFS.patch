@@ -1,0 +1,75 @@
+From ba6df38fbdd5c078bb493b0d29628593a0bddc21 Mon Sep 17 00:00:00 2001
+From: Bjorn Andersson <quic_bjorande@quicinc.com>
+Date: Wed, 27 Mar 2024 19:01:13 -0700
+Subject: [PATCH 17/19] UPSTREAM: arm64: dts: qcom: qcs6490-rb3gen2: Enable UFS
+
+The rb3gen2 has UFS memory, adjust the necessary supply voltage and add
+the controller and phy nodes to enable this.
+
+Change-Id: I082dfd245f902288ad8f1b72a79d461c0116d434
+Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Link: https://lore.kernel.org/r/20240327-rb3gen2-ufs-v2-1-3de6b5dd78dd@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://github.com/torvalds/linux/commit/58dc9622d5de6ce0b80969b136e8e09a7645eca5]
+---
+ arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts | 28 +++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+index be1a590f0431..2714e0c3f9b5 100644
+--- a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
++++ b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+@@ -267,8 +267,8 @@ vreg_l6b_1p2: ldo6 {
+ 		};
+ 
+ 		vreg_l7b_2p952: ldo7 {
+-			regulator-min-microvolt = <2400000>;
+-			regulator-max-microvolt = <3544000>;
++			regulator-min-microvolt = <2952000>;
++			regulator-max-microvolt = <2952000>;
+ 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+ 		};
+ 
+@@ -280,8 +280,11 @@ vreg_l8b_0p904: ldo8 {
+ 
+ 		vreg_l9b_1p2: ldo9 {
+ 			regulator-min-microvolt = <1200000>;
+-			regulator-max-microvolt = <1304000>;
++			regulator-max-microvolt = <1200000>;
+ 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
++			regulator-allow-set-load;
++			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
++						   RPMH_REGULATOR_MODE_HPM>;
+ 		};
+ 
+ 		vreg_l11b_1p504: ldo11 {
+@@ -634,6 +637,25 @@ &usb_dp_qmpphy_dp_in {
+ 	remote-endpoint = <&mdss_dp_out>;
+ };
+ 
++&ufs_mem_hc {
++	reset-gpios = <&tlmm 175 GPIO_ACTIVE_LOW>;
++	vcc-supply = <&vreg_l7b_2p952>;
++	vcc-max-microamp = <800000>;
++	vccq-supply = <&vreg_l9b_1p2>;
++	vccq-max-microamp = <900000>;
++	vccq2-supply = <&vreg_l9b_1p2>;
++	vccq2-max-microamp = <900000>;
++
++	status = "okay";
++};
++
++&ufs_mem_phy {
++	vdda-phy-supply = <&vreg_l10c_0p88>;
++	vdda-pll-supply = <&vreg_l6b_1p2>;
++
++	status = "okay";
++};
++
+ &wifi {
+ 	memory-region = <&wlan_fw_mem>;
+ };
+-- 
+2.46.0
+

@@ -99,4 +99,7 @@ SRC_URI:append = " \
     file://qcs615/0009-FROMLIST-dt-bindings-clock-Add-Qualcomm-QCS615-Video.patch \
     file://qcs615/0001-FROMLIST-dt-bindings-mailbox-qcom-apcs-kpss-global-D.patch \
     file://qcs615/0002-FROMLIST-dt-bindings-aoss-qcom-Document-the-qcs615-A.patch \
+    file://qcs6490/0002-UPSTREAM-dt-bindings-remoteproc-qcom-sc7180-pas-Add-.patch \
+    file://qcs6490/0003-UPSTREAM-dt-bindings-remoteproc-qcom-sc7180-pas-Fix-.patch \
+    file://qcs6490/0006-UPSTREAM-dt-bindings-remoteproc-qcom-sc7180-pas-Add-.patch \
     "

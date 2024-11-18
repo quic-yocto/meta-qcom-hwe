@@ -1,0 +1,69 @@
+From 09849113cd5a285269b39fd0f36b5c1264a629d7 Mon Sep 17 00:00:00 2001
+From: Luca Weiss <luca.weiss@fairphone.com>
+Date: Fri, 8 Dec 2023 16:08:01 +0100
+Subject: [PATCH 06/19] UPSTREAM: dt-bindings: remoteproc: qcom: sc7180-pas:
+ Add SC7280 compatibles
+
+Add the compatibles and constraints for the ADSP, CDSP and WPSS found on
+the SC7280 SoC.
+
+Change-Id: I46ae5fa05cc587cd4db0392cf6b27efd342e08be
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+Link: https://lore.kernel.org/r/20231208-sc7280-remoteprocs-v3-5-6aa394d33edf@fairphone.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://github.com/torvalds/linux/commit/11eff1020440060c53d2261531432927c9fb4ee3]
+---
+ .../bindings/remoteproc/qcom,sc7180-pas.yaml  | 21 +++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml b/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml
+index 6f0bd6fa5d26..c054b84fdcd5 100644
+--- a/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml
+@@ -18,7 +18,10 @@ properties:
+     enum:
+       - qcom,sc7180-adsp-pas
+       - qcom,sc7180-mpss-pas
++      - qcom,sc7280-adsp-pas
++      - qcom,sc7280-cdsp-pas
+       - qcom,sc7280-mpss-pas
++      - qcom,sc7280-wpss-pas
+ 
+   reg:
+     maxItems: 1
+@@ -75,6 +78,7 @@ allOf:
+         compatible:
+           enum:
+             - qcom,sc7180-adsp-pas
++            - qcom,sc7280-adsp-pas
+     then:
+       properties:
+         power-domains:
+@@ -120,6 +124,23 @@ allOf:
+             - const: cx
+             - const: mss
+ 
++  - if:
++      properties:
++        compatible:
++          enum:
++            - qcom,sc7280-cdsp-pas
++            - qcom,sc7280-wpss-pas
++    then:
++      properties:
++        power-domains:
++          items:
++            - description: CX power domain
++            - description: MX power domain
++        power-domain-names:
++          items:
++            - const: cx
++            - const: mx
++
+ unevaluatedProperties: false
+ 
+ examples:
+-- 
+2.46.0
+

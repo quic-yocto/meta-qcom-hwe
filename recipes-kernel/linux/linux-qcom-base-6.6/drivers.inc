@@ -172,4 +172,5 @@ SRC_URI:append = " \
     file://qcs615/0008-FROMLIST-clk-qcom-gpucc-qcs615-Add-QCS615-graphics-c.patch \
     file://qcs615/0010-FROMLIST-clk-qcom-videocc-qcs615-Add-QCS615-video-cl.patch \
     file://common/0004-FROMLIST-firmware-psci-Read-and-use-vendor-reset-typ.patch \
+    file://qcs6490/0007-UPSTREAM-remoteproc-qcom_q6v5_pas-Add-SC7280-ADSP-CD.patch \
     "

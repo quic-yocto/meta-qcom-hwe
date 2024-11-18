@@ -1,0 +1,32 @@
+From bd8687a328b4d586c3dd91b1b11c5bf985a4ee1c Mon Sep 17 00:00:00 2001
+From: Komal Bajaj <quic_kbajaj@quicinc.com>
+Date: Mon, 18 Nov 2024 14:45:32 +0530
+Subject: [PATCH 19/19] QCLINUX: arm64: dts: qcom: Add board-id and msm-id for
+ Rb3Gen2
+
+Add board-id and msm-id for Rb3Gen2 platforms.
+
+Change-Id: I3935693292a7a5e88df09b65e65bb7166355ca07
+Signed-off-by: Komal Bajaj <quic_kbajaj@quicinc.com>
+Upstream-Status: Inappropriate
+---
+ arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+index b9f8c245e3c4..f89eda057dc2 100644
+--- a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
++++ b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+@@ -30,6 +30,9 @@ / {
+ 	compatible = "qcom,qcs6490-rb3gen2", "qcom,qcm6490";
+ 	chassis-type = "embedded";
+ 
++	qcom,msm-id = <497 0x10000>, <498 0x10000>, <475 0x10000>, <515 0x10000>;
++	qcom,board-id = <32 0x5>, <32 0x605>;
++
+ 	aliases {
+ 		serial0 = &uart5;
+ 	};
+-- 
+2.46.0
+
