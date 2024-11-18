@@ -12,6 +12,8 @@ type qcom_qwesd_run_t;
 
 type qcom_var_cache_qwes_t;
 files_type(qcom_var_cache_qwes_t)
+type qcom_etc_qwes_t;
+files_type(qcom_etc_qwes_t)
 type qcom_var_local_qwes_t;
 files_type(qcom_var_local_qwes_t)
 ##################################################################
@@ -47,6 +49,9 @@ files_read_etc_files(qcom_qwesd_t)
 #Allow to manage path /var/cache/qwes/
 manage_dirs_pattern(qcom_qwesd_t, qcom_var_cache_qwes_t, qcom_var_cache_qwes_t)
 manage_files_pattern(qcom_qwesd_t, qcom_var_cache_qwes_t, qcom_var_cache_qwes_t)
+#Allow to manage path /etc/qwes/
+manage_dirs_pattern(qcom_qwesd_t, qcom_etc_qwes_t, qcom_etc_qwes_t)
+manage_files_pattern(qcom_qwesd_t, qcom_etc_qwes_t, qcom_etc_qwes_t)
 
 # allow qwesd for self capability.
 allow qcom_qwesd_t self:capability { chown };
@@ -102,6 +107,9 @@ core_cmd_allow_mmap_exec_shell(qcom_qwes_license_store_setup_t)
 # Update context of /var/cache/qwes after creation on boot up
 files_var_filetrans(qcom_qwes_license_store_setup_t, qcom_var_cache_qwes_t, dir)
 
+# Update context of /etc/qwes after creation on boot up
+files_etc_filetrans(qcom_qwes_license_store_setup_t, qcom_etc_qwes_t, dir)
+
 # Allow read/write to persist path.
 qcom_sfs_config_trans_qtee_supplicant_persist(qcom_qwes_license_store_setup_t)
 qcom_allow_ops_qtee_supplicant_persist(qcom_qwes_license_store_setup_t)
@@ -121,6 +129,10 @@ files_map_etc_files(qcom_qwes_license_store_setup_t)
 #Allow to manage path /var/cache/qwes/
 manage_files_pattern(qcom_qwes_license_store_setup_t, qcom_var_cache_qwes_t, qcom_var_cache_qwes_t)
 manage_dirs_pattern(qcom_qwes_license_store_setup_t, qcom_var_cache_qwes_t, qcom_var_cache_qwes_t)
+
+#Allow to manage path /etc/qwes/
+manage_files_pattern(qcom_qwes_license_store_setup_t, qcom_etc_qwes_t, qcom_etc_qwes_t)
+manage_dirs_pattern(qcom_qwes_license_store_setup_t, qcom_etc_qwes_t, qcom_etc_qwes_t)
 
 #Allow to manage path /var/local/qwes/
 manage_files_pattern(qcom_qwes_license_store_setup_t, qcom_var_local_qwes_t, qcom_var_local_qwes_t)
@@ -142,3 +154,4 @@ fs_getattr_xattr_fs(qcom_qwes_license_store_setup_t)
 
 #Generic polices
 fs_associate(qcom_var_cache_qwes_t)
+fs_associate(qcom_etc_qwes_t)

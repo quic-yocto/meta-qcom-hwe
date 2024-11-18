@@ -9,4 +9,5 @@
 /run/qwes/qwes_ipc gen_context(system_u:object_r:qcom_qwesd_run_t,s0)
 /etc/initscripts/qwes_license_store  -- gen_context(system_u:object_r:qcom_qwes_license_store_setup_exec_t,s0)
 /var/cache/qwes(/.*)? gen_context(system_u:object_r:qcom_var_cache_qwes_t,s0)
+/etc/qwes(/.*)? gen_context(system_u:object_r:qcom_etc_qwes_t,s0)
 /var/local/qwes(/.*)? gen_context(system_u:object_r:qcom_var_local_qwes_t,s0)
