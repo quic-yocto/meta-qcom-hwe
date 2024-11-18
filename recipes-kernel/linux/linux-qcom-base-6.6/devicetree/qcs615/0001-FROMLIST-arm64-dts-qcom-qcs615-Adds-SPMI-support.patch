@@ -1,0 +1,52 @@
+From 32005f67288e8c5a76586d9fd04934877bc628a1 Mon Sep 17 00:00:00 2001
+From: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Date: Mon, 18 Nov 2024 14:47:06 +0800
+Subject: [PATCH 1/2] FROMLIST: arm64: dts: qcom: qcs615: Adds SPMI support
+
+Add the SPMI bus Arbiter node for the PMIC on QCS615 platforms.
+
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Signed-off-by: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Link: https://lore.kernel.org/all/20241112-adds-spmi-pmic-peripherals-for-qcs615-v4-1-f0e54d8b6516@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241112-adds-spmi-pmic-peripherals-for-qcs615-v4-0-f0e54d8b6516@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index 575e4ed8ea1b..6a7ae320a92e 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -1431,6 +1431,29 @@ sram@c3f0000 {
+ 			reg = <0x0 0x0c3f0000 0x0 0x400>;
+ 		};
+ 
++		spmi_bus: spmi@c440000 {
++			compatible = "qcom,spmi-pmic-arb";
++			reg = <0x0 0x0c440000 0x0 0x1100>,
++			      <0x0 0x0c600000 0x0 0x2000000>,
++			      <0x0 0x0e600000 0x0 0x100000>,
++			      <0x0 0x0e700000 0x0 0xa0000>,
++			      <0x0 0x0c40a000 0x0 0x26000>;
++			reg-names = "core",
++				    "chnls",
++				    "obsrvr",
++				    "intr",
++				    "cnfg";
++			interrupts-extended = <&pdc 1 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "periph_irq";
++			interrupt-controller;
++			#interrupt-cells = <4>;
++			#address-cells = <2>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			qcom,channel = <0>;
++			qcom,ee = <0>;
++		};
++
+ 		apps_smmu: iommu@15000000 {
+ 			compatible = "qcom,qcs615-smmu-500", "qcom,smmu-500", "arm,mmu-500";
+ 			reg = <0x0 0x15000000 0x0 0x80000>;
+-- 
+2.34.1
+

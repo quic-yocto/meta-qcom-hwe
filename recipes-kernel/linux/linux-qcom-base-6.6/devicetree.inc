@@ -101,6 +101,7 @@ SRC_URI:append = " \
     file://qcs615/0003-FROMLIST-arm64-dts-qcom-qcs615-add-AOSS_QMP-node.patch \
     file://qcs615/0001-FROMLIST-arm64-dts-qcom-Add-coresight-nodes-for-QCS6.patch \
     file://qcs615/0001-FROMLIST-arm64-dts-qcom-Add-clock-nodes-for-multimed.patch \
+    file://qcs615/0001-FROMLIST-arm64-dts-qcom-qcs615-Adds-SPMI-support.patch \
     "
 
 # qcs615 board dts patches
@@ -110,6 +111,7 @@ SRC_URI:append = " \
     file://qcs615/0004-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-UFS-node.patch \
     file://qcs615/0004-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-ethernet-.patch \
     file://qcs615/0002-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-SDHC1-and-SDHC2.patch\
+    file://qcs615/0002-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-PMIC-peri.patch \
     "
 
 # qcs8300 dtsi patches
