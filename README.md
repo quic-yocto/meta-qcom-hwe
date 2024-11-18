@@ -71,6 +71,7 @@ Branch **kirkstone** is not open for direct contributions, please raise an issue
 * Sourabh Banerjee <quic_sbanerje@quicinc.com>
 * Viswanath Kraleti <quic_vkraleti@quicinc.com>
 * Ricardo Salveti <quic_rsalveti@quicinc.com>
+* Nicolas Dechesne <nicolas.dechesne@oss.qualcomm.com>
 
 ## License
 
