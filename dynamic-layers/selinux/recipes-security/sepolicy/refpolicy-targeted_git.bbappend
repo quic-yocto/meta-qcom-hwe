@@ -33,6 +33,7 @@ SRC_URI:append:qcom = " file://0070-PENDING-allow-logging-domains-to-execute-bus
             file://0084-PENDING-Allow-SE-policy-read-and-write-access-to-dbu.patch \
             file://0085-PENDING-Adding-rules-for-dnsmasq.patch \
             file://0086-PENDING-networkmanager-allow-access-tmpfs.patch \
+	    file://0088-PENDING-allow-irqbalance-to-search-bin.patch \
 "
 
 #Policy folders
