@@ -1,0 +1,36 @@
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From ffdab8d1186b860030ed5fa96a7a9a937f79edef Mon Sep 17 00:00:00 2001
+From: Balaji Pothunoori <quic_bpothuno@quicinc.com>
+Date: Sun, 24 Nov 2024 11:57:29 +0530
+Subject: [PATCH] wpa_supplicant: stop wpa_supplicant as part of device reboot
+
+This change is to stop wpa_supplicant as part of device reboot.
+
+Signed-off-by: Balaji Pothunoori <quic_bpothuno@quicinc.com>
+Upstream-Status: Pending
+---
+ wpa_supplicant/systemd/wpa_supplicant.service.in | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/wpa_supplicant/systemd/wpa_supplicant.service.in b/wpa_supplicant/systemd/wpa_supplicant.service.in
+index 58a622887cd9..3eaab717e55b 100644
+--- a/wpa_supplicant/systemd/wpa_supplicant.service.in
++++ b/wpa_supplicant/systemd/wpa_supplicant.service.in
+@@ -7,7 +7,10 @@ Wants=network.target
+ [Service]
+ Type=dbus
+ BusName=fi.w1.wpa_supplicant1
+-ExecStart=@BINDIR@/wpa_supplicant -u
++ExecStart=@BINDIR@/wpa_supplicant -u -ddd -t -f /tmp/wpa_supplicant-log.txt
++ExecStop=/usr/bin/killall wpa_supplicant
++Restart=on-failure
++RestartPreventExitStatus=0
+
+ [Install]
+ WantedBy=multi-user.target
+--
+2.34.1
+
