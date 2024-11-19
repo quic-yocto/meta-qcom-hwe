@@ -86,6 +86,7 @@ SRC_URI:append = " \
     file://qcs9100/0007-FROMLIST-arm64-dts-qcom-sa8775p-ride-Enable-Display-.patch \
     file://qcs9100/0001-FROMLIST-arm64-dts-qcom-sa8775p-Update-iommu-map-ent.patch \
     file://qcs9100/0005-FROMLIST-arm64-dts-qcom-sa8775p-ride-Add-PSCI-SYSTEM.patch \
+    file://qcs9100/0001-FROMLIST-arm64-dts-qcom-qcs9100-Update-memory-map.patch \
     "
 
 # qcs615 dtsi patches
