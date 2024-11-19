@@ -47,6 +47,24 @@ jobs:
         run: |
           ci/yocto-check-layer.sh
 
+  yocto-patchreview:
+    needs: kas-lock
+    if: github.repository == 'quic-yocto/meta-qcom-hwe'
+    runs-on: [self-hosted, x86]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: kas-lock
+          path: ci/*.lock.yml
+
+      - name: Run Yocto patchreview
+        run: |
+          ci/yocto-patchreview.sh
+
   compile:
     needs: kas-lock
     if: github.repository == 'quic-yocto/meta-qcom-hwe'
