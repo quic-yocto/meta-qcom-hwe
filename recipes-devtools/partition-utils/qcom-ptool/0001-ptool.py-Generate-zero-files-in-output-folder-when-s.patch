@@ -8,6 +8,8 @@ The patch allows ptool to generate zerosector files in output directory
 when such directory path is specified as argument to -t option.
 
 Upstream-Status: Pending
+
+Signed-off-by: Ricardo Salveti <ricardo.salveti@oss.qualcomm.com>
 ---
  ptool.py | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
