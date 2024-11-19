@@ -14,5 +14,7 @@ CMD="$CMD --no-auto"
 CMD="$CMD --dependency `pwd`/poky/meta `pwd`/meta-qcom"
 # Disable automatic testing of dependencies
 CMD="$CMD --no-auto-dependency"
+# Set machines to all machines defined in this BSP layer
+CMD="$CMD --machines $(echo $(find $TOPDIR/conf/machine/ -maxdepth 1 -name *.conf -exec basename {} .conf \; ))"
 
 exec kas shell $TOPDIR/ci/base.yml --command "$CMD"
