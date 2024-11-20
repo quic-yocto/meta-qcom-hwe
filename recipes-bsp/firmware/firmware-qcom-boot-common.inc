@@ -1,5 +1,13 @@
 # Install NHLOS boot binaries in DEPLOY_DIR
 
+S = "${WORKDIR}/sources"
+UNPACKDIR = "${S}"
+
+INHIBIT_DEFAULT_DEPS = "1"
+
+do_configure[noexec] = "1"
+do_compile[noexec] = "1"
+
 inherit deploy
 
 do_deploy() {
