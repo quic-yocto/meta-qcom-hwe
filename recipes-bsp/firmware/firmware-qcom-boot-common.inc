@@ -1,5 +1,7 @@
 # Install NHLOS boot binaries in DEPLOY_DIR
 
+PROVIDES += "virtual/bootbins"
+
 inherit deploy
 
 do_deploy() {
