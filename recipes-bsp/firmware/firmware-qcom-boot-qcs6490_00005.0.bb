@@ -10,12 +10,4 @@ BOOTBINARIES = "QCM6490_bootbinaries"
 SRC_URI = "https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${BOOTBINARIES}.zip"
 SRC_URI[sha256sum] = "5e597229af9103cfea5b398c7e83a05dd078a18af010a40f1b9adf92967d4c1e"
 
-S = "${WORKDIR}/sources"
-UNPACKDIR = "${S}"
-
-INHIBIT_DEFAULT_DEPS = "1"
-
-do_configure[noexec] = "1"
-do_compile[noexec] = "1"
-
 include firmware-qcom-boot-common.inc
