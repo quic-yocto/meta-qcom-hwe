@@ -121,6 +121,7 @@ SRC_URI:append = " \
     file://qcs8300/0006-FROMLIST-arm64-dts-qcom-qcs8300-Add-PMU-support-for-.patch \
     file://qcs8300/0001-FROMLIST-arm64-dts-qcom-Add-coresight-nodes-for-QCS8.patch \
     file://qcs8300/0002-FROMLIST-arm64-dts-qcom-qcs8300-Add-watchdog-node.patch \
+    file://qcs8300/0001-FROMLIST-arm64-dts-qcom-Add-support-for-usb-nodes-on.patch \
     "
 
 # qcs8300 board dts patches
@@ -128,4 +129,5 @@ SRC_URI:append = " \
     file://qcs8300/0026-FROMLIST-arm64-dts-qcom-add-base-QCS8300-RIDE-dts.patch \
     file://addons/0001-QCLINUX-arm64-dts-qcom-qcs8300-ride-add-board-id-and.patch \
     file://qcs8300/0003-FROMLIST-arm64-dts-qcom-qcs8300-ride-Add-watchdog-no.patch \
+    file://qcs8300/0002-FROMLIST-arm64-dts-qcom-Enable-USB-controllers-for-Q.patch \
 	"
