@@ -14,11 +14,12 @@ fi
 #Will run only for the first time and once done ostree will create this file
 #/etc/labeldone
 if [ ! -f "$restore_cookie" ]; then
-       ${RESTORCON} -R  /etc/tmpfiles.d/00ostree-tmpfiles.conf 
+       ${RESTORCON} -R  /etc/tmpfiles.d/00ostree-tmpfiles.conf
        ${RESTORCON} -R  /var  /etc
        ${RESTORCON} -R  /media /mnt   /root  /home
        ${RESTORCON} -R  /usr/local
        ${RESTORCON} -R  /var/rootdirs
+       ${RESTORCON} -R  /opt
        ${RESTORCON}   /sysroot
        touch "$restore_cookie"
        /sbin/reboot

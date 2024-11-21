@@ -19,9 +19,10 @@
 
 #this are created by ostree /meta-updated so adding in ostree
 /var/rootdirs             -l          gen_context(system_u:object_r:var_t,s0)
-/var/rootdirs/home        -l         gen_context(system_u:object_r:user_home_dir_t,s0)
-/home                     -l         gen_context(system_u:object_r:home_root_t,s0)
+/var/rootdirs/home        -l          gen_context(system_u:object_r:user_home_dir_t,s0)
+/home                     -l          gen_context(system_u:object_r:home_root_t,s0)
 /media                    -l          gen_context(system_u:object_r:mnt_t,s0)
 /mnt                      -l          gen_context(system_u:object_r:mnt_t,s0)
+/opt                      -l          gen_context(system_u:object_r:usr_t,s0)
 /sysroot/ostree/deploy/poky/deploy/[0-9a-fA-F]         gen_context(system_u:object_r:root_t,s0)
 /sysroot/ostree/deploy/poky/deploy/[0-9a-fA-F].[0-99].origin         gen_context(system_u:object_r:system_conf_t,s0)
