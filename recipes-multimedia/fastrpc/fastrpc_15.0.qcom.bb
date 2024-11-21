@@ -7,6 +7,8 @@ DESCRIPTION = "adsprpc daemon."
 
 DEPENDS += "dspservices-headers libdmabufheap"
 
+DEFAULT_PREFERENCE = "-1"
+
 PBT_ARCH = "${MACHINE_ARCH}"
 
 QCM6490_IDP_SHA256SUM = "13df2cdf9afec576dd1411391d25036679e26e10bf673c69f77b44324cdb4739"
@@ -23,9 +25,19 @@ SRC_URI[qcs9100_ride_sx.sha256sum] = "${QCS9100_RIDE_SX_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
+# Install systemd unit file at right location
+relocate_systemd_unit_files () {
+    if [ -d "${D}/lib/systemd" ]; then
+        install -d ${D}/usr/lib/
+        mv ${D}/lib/systemd  ${D}/usr/lib/systemd
+    fi
+}
+do_install[postfuncs] += "relocate_systemd_unit_files"
+
 FILES:${PN} += "${libdir}/*.so ${libdir}/pkgconfig/ ${systemd_unitdir}/system/* ${sysconfdir}/* ${bindir}/*"
 FILES:${PN}-dev = "${libdir}/*.la ${includedir}"
 
+PACKAGE_ARCH    ?= "${MACHINE_ARCH}"
 
 INSANE_SKIP:${PN} += "already-stripped"
 INSANE_SKIP:${PN} += "installed-vs-shipped"
