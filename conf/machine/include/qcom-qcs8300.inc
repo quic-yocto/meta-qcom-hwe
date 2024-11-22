@@ -13,6 +13,7 @@ MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
     fastrpc \
     kernel-modules \
     pd-mapper \
+    networkmanager-nmcli \
     qrtr \
     tqftpserv \
 "
