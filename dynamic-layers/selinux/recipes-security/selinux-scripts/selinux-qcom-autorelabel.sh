@@ -24,4 +24,6 @@ if [ ! -f "$restore_cookie" ]; then
        /sbin/reboot
 fi
 
+systemd-tmpfiles --create
+
 exit 0
