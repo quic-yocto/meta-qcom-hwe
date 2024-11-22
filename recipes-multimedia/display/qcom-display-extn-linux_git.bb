@@ -14,7 +14,6 @@ SRC_URI[qcm6490.sha256sum] = "${QCM6490_CHKSUM}"
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
 FILES:${PN}  += " /usr/data/display/* "
-FILES:${PN}  += " /data/vendor/display "
 FILES:${PN}  += " ${libdir}/* "
 FILES:${PN}-dev  = " ${includedir}/* "
 FILES:${PN}-dbg  = " ${libdir}/.debug/* "
