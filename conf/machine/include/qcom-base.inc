@@ -10,7 +10,7 @@ KERNEL_IMAGETYPES ?= "Image.gz"
 KERNEL_CLASSES += "linux-qcom-dtbbin"
 
 # QDL expects 4096 aligned ext4 image for flashing
-IMAGE_FSTYPES = "ext4"
+IMAGE_FSTYPES += "ext4"
 IMAGE_ROOTFS_ALIGNMENT = "4096"
 EXTRA_IMAGECMD:ext4 = "-i 4096 -b 4096"
 
