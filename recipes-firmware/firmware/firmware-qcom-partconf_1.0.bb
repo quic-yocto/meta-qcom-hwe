@@ -23,6 +23,9 @@ BOOTBINARIES:qcs615  = "QCS615_bootbinaries"
 
 BOOTBINARIES_PATH = "${WORKDIR}/git/${BUILD_ID}/${BIN_PATH}"
 
+PARTITION_XML ?= "partition_ufs.xml"
+PARTITION_XML:emmc-storage ?= "partition_emmc.xml"
+
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
@@ -46,7 +49,11 @@ python do_install() {
 inherit deploy
 
 do_deploy() {
-    find "${D}" -name 'partition.xml' -exec install -m 0644 {} ${DEPLOYDIR} \;
+    if [ -f "${D}/${PARTITION_XML}" ]; then
+        install -m 0644 ${D}/${PARTITION_XML} ${DEPLOYDIR}/partition.xml
+    else
+        install -m 0644 ${D}/partition.xml ${DEPLOYDIR}/partition.xml
+    fi
 }
 addtask deploy before do_build after do_install
 
