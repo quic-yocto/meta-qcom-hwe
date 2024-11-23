@@ -15,13 +15,20 @@ SRC_URI[qcm6490.sha256sum] = "${QCM6490_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
+# Install firmware file at right location
+relocate_firmware_files () {
+    install -d ${D}${nonarch_base_libdir}/firmware/
+    mv ${D}/lib/* ${D}${nonarch_base_libdir}/
+    rm -rf ${D}/lib/
+}
+do_install[postfuncs] += "relocate_firmware_files"
+
 FILES:${PN} = "\
     /usr/lib/* \
     /usr/bin/* \
     /usr/include/* \
-    /lib/firmware/*"
+    ${nonarch_base_libdir}/firmware/*"
 FILES:${PN}-dev = ""
-
 
 INSANE_SKIP:${PN}-dbg = "arch"
 INSANE_SKIP:${PN} = "arch"
