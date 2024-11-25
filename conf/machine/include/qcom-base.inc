@@ -72,6 +72,9 @@ IMAGE_FSTYPES = "ext4"
 IMAGE_ROOTFS_ALIGNMENT = "4096"
 EXTRA_IMAGECMD:ext4 = "-i 4096 -b 4096"
 
+#Add options to ota-esp
+EXTRA_IMAGECMD:ota-ext4:append = " -O encrypt,stable_inodes"
+
 # Mask out tar.gz from IMAGE_FSTYPES
 IMAGE_TYPES_MASKED = "tar.gz"
 
