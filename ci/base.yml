@@ -29,6 +29,9 @@ local_conf_header:
     INHERIT += "buildstats buildstats-summary"
     INHERIT += "buildhistory"
     INHERIT += "rm_work"
+  qcomflash: |
+    IMAGE_CLASSES += "image_types_qcom"
+    IMAGE_FSTYPES += "qcomflash"
   extra: |
     EXTRA_IMAGE_FEATURES = "allow-empty-password empty-root-password allow-root-login"
 
