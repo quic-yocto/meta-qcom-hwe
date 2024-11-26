@@ -66,6 +66,8 @@ do_compile() {
             oe_runmake ${EXTRA_OEMAKE} qcs9100-ride-sx-camera
         elif [ "${TARGET_BOARD}" = "qcs9075-ride-sx" ]; then
             oe_runmake ${EXTRA_OEMAKE} qcs9075-ride-sx-camera
+        elif [ "${TARGET_BOARD}" = "qcs9075-rb8-core-kit" ]; then
+            oe_runmake ${EXTRA_OEMAKE} qcs9075-camera-rb8
         fi
     elif [ "${SOC_FAM}" = "qcs8300" ]; then
         if [ "${TARGET_BOARD}" = "qcs8300-ride-sx" ]; then
