@@ -4,7 +4,3 @@ header:
   version: 14
   includes:
   - ci/base.yml
-
-target:
-  - esp-qcom-image
-  - core-image-minimal
