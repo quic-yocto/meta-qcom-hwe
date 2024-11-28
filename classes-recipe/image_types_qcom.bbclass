@@ -15,7 +15,7 @@ QCOM_ESP_FILE ?= "${@'efi.bin' if d.getVar('QCOM_ESP_IMAGE') else ''}"
 QCOM_DTB_DEFAULT ?= "${@os.path.basename(d.getVar('KERNEL_DEVICETREE').split()[0][:-4]) if d.getVar('KERNEL_DEVICETREE') else ''}"
 QCOM_DTB_FILE ?= "dtb.bin"
 
-QCOM_ROOTFS_FILE ?= "system.img"
+QCOM_ROOTFS_FILE ?= "rootfs.img"
 IMAGE_QCOMFLASH_FS_TYPE ??= "ext4"
 
 QCOMFLASH_DIR = "${WORKDIR}/qcomflash"
