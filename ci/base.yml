@@ -36,3 +36,6 @@ local_conf_header:
     EXTRA_IMAGE_FEATURES = "allow-empty-password empty-root-password allow-root-login"
 
 machine: unset
+
+target:
+  - core-image-base
