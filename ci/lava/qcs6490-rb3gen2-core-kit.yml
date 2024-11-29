@@ -1,0 +1,48 @@
+actions:
+- deploy:
+    images:
+      image:
+        headers:
+          Authentication: Q_GITHUB_TOKEN
+        url: "{{BUILD_DOWNLOAD_URL}}"
+    postprocess:
+      docker:
+        image: ghcr.io/foundriesio/lava-lmp-sign:main
+        steps:
+        - export IMAGE_PATH=$PWD
+        - echo "DEVICE_TYPE=qcs6490-rb3gen2" >> $IMAGE_PATH/flash.settings
+        - cat $IMAGE_PATH/flash.settings
+    timeout:
+      minutes: 5
+    to: downloads
+- deploy:
+    images:
+      image:
+        url: downloads://{{BUILD_FILE_NAME}}
+      settings:
+        url: downloads://flash.settings
+    timeout:
+      minutes: 5
+    to: flasher
+- boot:
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+    method: minimal
+    prompts:
+    - root@{{DEVICE_TYPE}}
+    timeout:
+      minutes: 3
+- command:
+    name: network_turn_on
+device_type: {{DEVICE_TYPE}}
+job_name: boot test ({{DEVICE_TYPE}}) {{GITHUB_RUN_ID}}
+metadata:
+  build-commit: '{{GITHUB_SHA}}'
+priority: 50
+tags:
+- cambridge-lab
+timeouts:
+  job:
+    minutes: 15
+visibility: public
