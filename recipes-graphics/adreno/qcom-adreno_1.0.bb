@@ -25,10 +25,10 @@ FILES:${PN} = "${includedir}/* \
                ${base_libdir}/firmware/* \
                ${libdir}/* \
                ${bindir}/* \
-               /usr/local/share/vulkan/icd.d/* "
+               /usr/share/vulkan/icd.d/* "
 FILES:${PN}-dev = ""
 FILES:${PN}-dbg = ""
 
 
-INSANE_SKIP:${PN} = "installed-vs-shipped dev-deps file-rdeps dev-so arch already-stripped"
+INSANE_SKIP:${PN} = "dev-deps file-rdeps dev-so arch already-stripped"
 
