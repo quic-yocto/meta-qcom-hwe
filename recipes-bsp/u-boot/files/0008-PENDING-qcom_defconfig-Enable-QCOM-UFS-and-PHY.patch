@@ -1,0 +1,29 @@
+From 801da338bc85a0b977cd4b3259617fbff7456310 Mon Sep 17 00:00:00 2001
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+Date: Thu, 28 Nov 2024 22:35:00 +0530
+Subject: [PATCH 08/12] PENDING: qcom_defconfig: Enable QCOM UFS and PHY
+
+Enable QCOM UFS and PHY
+
+Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+Upstream-Status: Pending
+---
+ configs/qcom_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configs/qcom_defconfig b/configs/qcom_defconfig
+index ce790c8f92..035813a84d 100644
+--- a/configs/qcom_defconfig
++++ b/configs/qcom_defconfig
+@@ -114,6 +114,8 @@ CONFIG_USB_DWC3_GENERIC=y
+ CONFIG_USB_GADGET=y
+ CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_USB_FUNCTION_MASS_STORAGE=y
++CONFIG_PHY_QCOM_QMP_UFS=y
++CONFIG_QCOM_UFS=y
+ CONFIG_UFS=y
+ CONFIG_VIDEO=y
+ # CONFIG_VIDEO_FONT_8X16 is not set
+-- 
+2.34.1
+

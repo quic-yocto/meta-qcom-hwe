@@ -1,0 +1,45 @@
+From 4952fb1645635678d1544c8d658441f7682f7698 Mon Sep 17 00:00:00 2001
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+Date: Thu, 28 Nov 2024 14:19:22 +0530
+Subject: [PATCH 02/12] PENDING: configs: add qcm6490_defconfig
+
+Introduce a defconfig for the QCS9100 RideSX boards with a dedicated
+uefi partition. These can replace EDK2 entirely with U-Boot.
+
+Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+Upstream-Status: Pending
+---
+ configs/qcs9100_defconfig | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+ create mode 100644 configs/qcs9100_defconfig
+
+diff --git a/configs/qcs9100_defconfig b/configs/qcs9100_defconfig
+new file mode 100644
+index 0000000000..479f2a58bf
+--- /dev/null
++++ b/configs/qcs9100_defconfig
+@@ -0,0 +1,21 @@
++# Configuration for building U-Boot to be flashed
++# to the uefi partition of QCM6490 dev boards with
++# the "Linux Embedded" partition layout (which have
++# a dedicated "uefi" partition for edk2/U-Boot)
++
++#include "qcom_defconfig"
++
++# Otherwise buildman thinks this isn't an ARM platform
++CONFIG_ARM=y
++
++CONFIG_DEBUG_UART=y
++CONFIG_DEBUG_UART_ANNOUNCE=y
++CONFIG_DEBUG_UART_BASE=0xA8C000
++CONFIG_DEBUG_UART_MSM_GENI=y
++CONFIG_DEBUG_UART_CLOCK=14745600
++
++# Address where U-Boot will be loaded
++CONFIG_TEXT_BASE=0xaf000000
++CONFIG_REMAKE_ELF=y
++
++CONFIG_DEFAULT_DEVICE_TREE="qcom/qcs9100-ride-r3"
+-- 
+2.34.1
+

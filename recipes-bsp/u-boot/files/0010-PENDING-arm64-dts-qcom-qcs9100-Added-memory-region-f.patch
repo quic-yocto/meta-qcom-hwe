@@ -1,0 +1,45 @@
+From c38c3307e54fc85674efcefec0b6bdfb3d8b011b Mon Sep 17 00:00:00 2001
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+Date: Fri, 29 Nov 2024 16:18:41 +0530
+Subject: [PATCH 10/12] PENDING: arm64: dts: qcom: qcs9100: Added memory-region
+ for smem entry
+
+msm smem driver expects the memory-region entry adding to support QCS9100.
+
+Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+Upstream-Status: Pending
+---
+ dts/upstream/src/arm64/qcom/sa8775p.dtsi | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/dts/upstream/src/arm64/qcom/sa8775p.dtsi b/dts/upstream/src/arm64/qcom/sa8775p.dtsi
+index 23f1b2e5e6..08afdd89f9 100644
+--- a/dts/upstream/src/arm64/qcom/sa8775p.dtsi
++++ b/dts/upstream/src/arm64/qcom/sa8775p.dtsi
+@@ -334,6 +334,12 @@
+ 		method = "smc";
+ 	};
+ 
++        smem {
++                compatible = "qcom,smem";
++                memory-region = <&smem_mem>;
++                hwlocks = <&tcsr_mutex 3>;
++        };
++
+ 	reserved-memory {
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
+@@ -386,10 +392,8 @@
+ 		};
+ 
+ 		smem_mem: smem@90900000 {
+-			compatible = "qcom,smem";
+ 			reg = <0x0 0x90900000 0x0 0x200000>;
+ 			no-map;
+-			hwlocks = <&tcsr_mutex 3>;
+ 		};
+ 
+ 		tz_sail_mailbox_mem: tz-sail-mailbox@90c00000 {
+-- 
+2.34.1
+

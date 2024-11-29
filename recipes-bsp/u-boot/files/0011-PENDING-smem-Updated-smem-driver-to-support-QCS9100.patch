@@ -1,0 +1,57 @@
+From 21825b2da1effce51bd2cbdeb539549a62bbb1c3 Mon Sep 17 00:00:00 2001
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+Date: Fri, 29 Nov 2024 16:16:06 +0530
+Subject: [PATCH 11/12] PENDING: smem: Updated smem driver to support QCS9100
+
+Updated msm smem driver to support the QCS9100 target
+
+Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+Upstream-Status: Pending
+---
+ drivers/smem/msm_smem.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/smem/msm_smem.c b/drivers/smem/msm_smem.c
+index ccd145f9af..2d4f6962b5 100644
+--- a/drivers/smem/msm_smem.c
++++ b/drivers/smem/msm_smem.c
+@@ -88,7 +88,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ #define SMEM_GLOBAL_HOST	0xfffe
+ 
+ /* Max number of processors/hosts in a system */
+-#define SMEM_HOST_COUNT		10
++#define SMEM_HOST_COUNT		50
+ 
+ /**
+  * struct smem_proc_comm - proc_comm communication struct (legacy)
+@@ -823,8 +823,8 @@ static int qcom_smem_map_memory(struct qcom_smem *smem, struct udevice *dev,
+ {
+ 	struct fdt_resource r;
+ 	int ret;
+-	int node = dev_of_offset(dev);
+-
++	//int node = dev_of_offset(dev);
++	int node = fdt_node_offset_by_compatible(gd->fdt_blob, 0, "qcom,smem");
+ 	ret = fdtdec_lookup_phandle(gd->fdt_blob, node, name);
+ 	if (ret < 0) {
+ 		dev_err(dev, "No %s specified\n", name);
+@@ -852,10 +852,14 @@ static int qcom_smem_probe(struct udevice *dev)
+ 	int num_regions;
+ 	u32 version;
+ 	int ret;
+-	int node = dev_of_offset(dev);
++	//int node = dev_of_offset(dev);
++	int node = fdt_node_offset_by_compatible(gd->fdt_blob, 0, "qcom,smem");
++
++	if (__smem)
++		return 0;
+ 
+ 	num_regions = 1;
+-	if (fdtdec_lookup_phandle(gd->fdt_blob, node, "qcomrpm-msg-ram") >= 0)
++	if (fdtdec_lookup_phandle(gd->fdt_blob, node, "qcom,rpm-msg-ram") >= 0)
+ 		num_regions++;
+ 
+ 	array_size = num_regions * sizeof(struct smem_region);
+-- 
+2.34.1
+

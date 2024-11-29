@@ -1,0 +1,40 @@
+From fc5603701d8a4a8b64d2a0c8822e351ebe06bc94 Mon Sep 17 00:00:00 2001
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+Date: Thu, 28 Nov 2024 19:51:06 +0530
+Subject: [PATCH 05/12] PENDING: arm64: dts: qcom: qcs9100: Add memory entry to
+ bootup
+
+Added the memory entry to bootup which will be removed later when the
+bootloader fills later
+
+Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+Upstream-Status: Pending
+---
+ dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts b/dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts
+index 759d1ec694..a02a8faace 100644
+--- a/dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts
++++ b/dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts
+@@ -8,4 +8,17 @@
+ / {
+ 	model = "Qualcomm QCS9100 Ride Rev3";
+ 	compatible = "qcom,qcs9100-ride-r3", "qcom,qcs9100", "qcom,sa8775p";
++
++        /* Will be removed when bootloader updates later */
++        memory@80000000 {
++                device_type = "memory";
++                reg = <0x0 0x80000000 0x0 0x3ee00000>,
++                        <0x0 0xc0000000 0x0 0x0fd00000>,
++                        <0xD 0x00000000 0x2 0x80000000>,
++                        <0xA 0x80000000 0x1 0x80000000>,
++                        <0x9 0x00000000 0x1 0x80000000>,
++                        <0x1 0x00000000 0x3 0x00000000>,
++                        <0x0 0xd0000000 0x0 0x01900000>,
++                        <0x0 0xd3500000 0x0 0x2cb00000>;
++        };
+ };
+-- 
+2.34.1
+

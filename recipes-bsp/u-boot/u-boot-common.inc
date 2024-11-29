@@ -16,7 +16,18 @@ PE = "1"
 SRCREV = "f39199e8096dab68fe4a8e15f8ff60026a5fe491"
 
 SRC_URI = "git://source.denx.de/u-boot/u-boot.git;protocol=https;branch=master"
-# SRC_URI += "file://0001-scripts-dtc-pylibfdt-libfdt.i_shipped-Use-SWIG_Appen.patch"
+SRC_URI += "file://0001-PENDING-arm64-dts-qcom-qcs9100-Add-support-for-the-Q.patch \
+	    file://0002-PENDING-configs-add-qcm6490_defconfig.patch \
+	    file://0003-PENDING-clk-qcom-add-initial-clock-driver-for-sa8775.patch \
+	    file://0004-PENDING-qcom_defconfig-enable-SA8775P-clocks.patch \
+	    file://0005-PENDING-arm64-dts-qcom-qcs9100-Add-memory-entry-to-b.patch \
+	    file://0006-PENDING-phy-qcom-Import-QMP-phy-related-header-files.patch \
+	    file://0007-PENDING-phy-qcom-Add-QMP-UFS-PHY-driver-for-QCS9100.patch \
+	    file://0008-PENDING-qcom_defconfig-Enable-QCOM-UFS-and-PHY.patch \
+	    file://0009-PENDING-smem-Added-socinfo-header-file.patch \
+	    file://0010-PENDING-arm64-dts-qcom-qcs9100-Added-memory-region-f.patch \
+	    file://0011-PENDING-smem-Updated-smem-driver-to-support-QCS9100.patch \
+	    file://0012-PENDING-efi_loader-Add-multidt-support.patch"
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"

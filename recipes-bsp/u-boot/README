@@ -1,0 +1,40 @@
+Introduction
+============
+u-boot receipe is added to support the uboot for QC IEIOT products.
+Initial support is added for Lemans in the current uboot receipe.
+
+Build Instruction
+=================
+Pre-requisites for compiling QCS9100 uboot:
+
+Add below lines at the end in conf/machine/qcs9100-ride-sx.conf
+
+----------
+PREFERRED_PROVIDER_virtual/bootloader ?= "u-boot"
+PREFERRED_PROVIDER_virtual/bootloader ??= "u-boot"
+UBOOT_ARC = "arm"
+UBOOT_MACHINE = "qcs9100_defconfig"
+----------
+
+Compilation steps:
+
+1. Give this command from the top directory
+   "MACHINE=qcs9100-ride-sx DISTRO=qcom-wayland QCOM_SELECTE_BSP=custom source setup-environment build-custom"
+2. "bitbake -v -c compile u-boot"
+3. u-boot.elf will be available at <build directory>/build-custom/tmp-glibc/work/qcs9100_ride_sx-qcom-linux/u-boot/1_2024.10-r0/build/
+
+
+
+Convert uboot.elf to uboot.mbn
+==============================
+We can find the steps for u-boot.mbn conversion in
+https://www.linaro.org/blog/initial-u-boot-release-for-qualcomm-platforms
+
+1. git clone https://github.com/msm8916-mainline/qtestsign
+2. python qtestsign.py -v6 hyp -o u-boot.mbn u-boot.elf
+
+Validation
+==========
+
+Flash the latest meta build and replace uefi image with u-boot.mbn in uboot partition
+Check the fullboot is working

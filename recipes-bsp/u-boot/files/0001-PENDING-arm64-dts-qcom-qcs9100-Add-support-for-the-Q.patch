@@ -1,0 +1,61 @@
+From 44d733e2505395d56aee700f71fa1f59f1f0f7cc Mon Sep 17 00:00:00 2001
+From: Varadarajan Narayanan <quic_varada@quicinc.com>
+Date: Thu, 28 Nov 2024 12:37:49 +0530
+Subject: [PATCH 01/12] PENDING: arm64: dts: qcom: qcs9100: Add support for the
+ QCS9100 Ride and Ride Rev3 boards
+
+Add device tree support for the QCS9100 Ride and Ride Rev3 boards. The
+QCS9100 is a variant of the SA8775p, and they are fully compatible with
+each other. The QCS9100 Ride/Ride Rev3 board is essentially the same as
+the SA8775p Ride/Ride Rev3 board, with the QCS9100 SoC mounted instead
+of the SA8775p.
+
+This is a port of the upstream Linux patch to U-Boot.
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=7dcc1dfaa3d1cd3aafed2beb7086ed34fdb22303
+
+Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+Upstream-Status: Pending
+---
+ dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts | 11 +++++++++++
+ dts/upstream/src/arm64/qcom/qcs9100-ride.dts    | 11 +++++++++++
+ 2 files changed, 22 insertions(+)
+ create mode 100644 dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts
+ create mode 100644 dts/upstream/src/arm64/qcom/qcs9100-ride.dts
+
+diff --git a/dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts b/dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts
+new file mode 100644
+index 0000000000..759d1ec694
+--- /dev/null
++++ b/dts/upstream/src/arm64/qcom/qcs9100-ride-r3.dts
+@@ -0,0 +1,11 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) 2024, Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++/dts-v1/;
++
++#include "sa8775p-ride-r3.dts"
++/ {
++	model = "Qualcomm QCS9100 Ride Rev3";
++	compatible = "qcom,qcs9100-ride-r3", "qcom,qcs9100", "qcom,sa8775p";
++};
+diff --git a/dts/upstream/src/arm64/qcom/qcs9100-ride.dts b/dts/upstream/src/arm64/qcom/qcs9100-ride.dts
+new file mode 100644
+index 0000000000..979462dfec
+--- /dev/null
++++ b/dts/upstream/src/arm64/qcom/qcs9100-ride.dts
+@@ -0,0 +1,11 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) 2024, Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++/dts-v1/;
++
++#include "sa8775p-ride.dts"
++/ {
++	model = "Qualcomm QCS9100 Ride";
++	compatible = "qcom,qcs9100-ride", "qcom,qcs9100", "qcom,sa8775p";
++};
+-- 
+2.34.1
+
