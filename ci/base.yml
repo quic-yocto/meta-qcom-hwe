@@ -34,6 +34,7 @@ local_conf_header:
     IMAGE_FSTYPES += "qcomflash"
   extra: |
     EXTRA_IMAGE_FEATURES = "allow-empty-password empty-root-password allow-root-login"
+    IMAGE_ROOTFS_EXTRA_SPACE = "307200"
 
 machine: unset
 
