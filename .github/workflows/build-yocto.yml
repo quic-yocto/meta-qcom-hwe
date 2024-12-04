@@ -108,10 +108,12 @@ jobs:
 
           retries=3
           for ((i=0; i<retries; i++)); do
-              curl -X POST -v ${url} && break
-              echo "something went wrong, sleep and retry"
+              curl -X POST -i -w '%{http_code}' --fail-with-body ${url} && break
+              echo # new line break in case response doesn't have one
+              echo "Error: unable to publish artifacts, sleep and retry"
               sleep 2
           done
           (( retries == i )) && { echo 'Failed to publish artifacts'; exit 1; }
 
+          echo # new line break in case response doesn't have one
           echo Image available at: ${url}
