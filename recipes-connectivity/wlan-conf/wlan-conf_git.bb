@@ -9,8 +9,6 @@ SRCBRANCH  = "wlan-os-service.qclinux.1.1.r1-rel"
 SRCREV     = "86a12ca727d35f795876d19ea7b0bdf8ffdfe106"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=mdm-init \
-           file://0001-wlan_qcm6490-Update-default-driver-as-ath11k.patch \
-           file://0002-wlan_qcm6490-add-WoWLAN-pattern-to-wpa_supplicant-co.patch \
            file://wlan_daemon.service"
 
 S = "${WORKDIR}/mdm-init"
