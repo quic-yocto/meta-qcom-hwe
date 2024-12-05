@@ -13,10 +13,14 @@ repos:
   meta-qcom-hwe:
 
   meta-qcom:
+    # comment the url if you need to work out of the default branch
     url: https://github.com/Linaro/meta-qcom
+    path: meta-qcom
 
   poky:
+    # comment the url if you need to work out of the default branch
     url: https://git.yoctoproject.org/git/poky
+    path: poky
     layers:
       meta:
       meta-poky:
