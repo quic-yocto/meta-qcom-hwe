@@ -1,7 +1,7 @@
-From 050074345c69427286478595d038f45b8b016c73 Mon Sep 17 00:00:00 2001
+From 6d5232f3ae7feed857b772761f2cac194c8ac980 Mon Sep 17 00:00:00 2001
 From: Miaoqing Pan <quic_miaoqing@quicinc.com>
 Date: Mon, 9 Sep 2024 10:32:59 +0800
-Subject: [PATCH] FORMLIST: wifi: ath11k: use union for vaddr and iaddr in
+Subject: [PATCH 4/7] FORMLIST: wifi: ath11k: use union for vaddr and iaddr in
  target_mem_chunk
 
 The value of 'ab->hw_params.fixed_mem_region' determines that
@@ -19,7 +19,7 @@ Upstream-Status: Submitted [https://lore.kernel.org/linux-wireless/2024081301302
  2 files changed, 16 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/net/wireless/ath/ath11k/qmi.c b/drivers/net/wireless/ath/ath11k/qmi.c
-index 83dc284392de..338c28d7939f 100644
+index 41fad03a3025..e75bbc64a48d 100644
 --- a/drivers/net/wireless/ath/ath11k/qmi.c
 +++ b/drivers/net/wireless/ath/ath11k/qmi.c
 @@ -1955,13 +1955,15 @@ static void ath11k_qmi_free_target_mem_chunk(struct ath11k_base *ab)
@@ -66,14 +66,14 @@ index 83dc284392de..338c28d7939f 100644
  			ab->qmi.target_mem[idx].size = ab->qmi.target_mem[i].size;
  			ab->qmi.target_mem[idx].type = ab->qmi.target_mem[i].type;
 diff --git a/drivers/net/wireless/ath/ath11k/qmi.h b/drivers/net/wireless/ath/ath11k/qmi.h
-index 7e06d100af57..fdf9b5f8c19f 100644
+index d477e2be814b..fdf9b5f8c19f 100644
 --- a/drivers/net/wireless/ath/ath11k/qmi.h
 +++ b/drivers/net/wireless/ath/ath11k/qmi.h
 @@ -1,7 +1,7 @@
  /* SPDX-License-Identifier: BSD-3-Clause-Clear */
  /*
   * Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
-- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+- * Copyright (c) 2022, Qualcomm Innovation Center, Inc. All rights reserved.
 + * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
   */
  
@@ -93,5 +93,5 @@ index 7e06d100af57..fdf9b5f8c19f 100644
  
  struct target_info {
 -- 
-2.17.1
+2.25.1
 

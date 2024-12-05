@@ -5,14 +5,6 @@ export POLICY_MONOLITHIC
 FILESEXTRAPATHS:append := "${THISDIR}:"
 FILESEXTRAPATHS:append := "${THISDIR}/patches:"
 
-QCOM_STORE_ROOT = "/etc/selinux/policy-store"
-
-FILES:${PN} += " \
-        ${sysconfdir}/selinux/${POLICY_NAME}/ \
-        ${datadir}/selinux/${POLICY_NAME}/*.pp \
-        ${QCOM_STORE_ROOT}/${POLICY_NAME}/ \
-"
-
 SRC_URI:remove:qcom = "file://0042-policy-modules-system-systemd-systemd-user-fixes.patch"
 
 #Patches
@@ -21,9 +13,9 @@ SRC_URI:append:qcom = " file://0070-PENDING-allow-logging-domains-to-execute-bus
             file://0072-PENDING-allow-systemd-generator-to-getattr-of-unit-files.patch \
             file://0073-PENDING-add-perms-to-mount-to-resolve-service-fails.patch \
             file://0074-PENDING-add-required-policies-for-functionfs.patch \
-            file://0075-PENDING-policies-for-serial-login.patch \
-            file://0076-PENDING-add-sepolicies-for-pulseaudio-audio-device.patch \
-            file://0077-PENDING-Add-sepolicy-for-systemd-failure-services.patch \
+	    file://0075-PENDING-policies-for-serial-login.patch \
+	    file://0076-PENDING-add-sepolicies-for-pulseaudio-audio-device.patch \
+	    file://0077-PENDING-Add-sepolicy-for-systemd-failure-services.patch \
             file://0078-PENDING-add-sepolicies-for-modem-manager.patch \
             file://0079-PENDING-Add-sepolicy-for-systemd-networkd-wait-online.patch \
             file://0080-PENDING-Add-sepolicy-rules-for-hostapd-hostapd_cli.patch \
@@ -33,7 +25,6 @@ SRC_URI:append:qcom = " file://0070-PENDING-allow-logging-domains-to-execute-bus
             file://0084-PENDING-Allow-SE-policy-read-and-write-access-to-dbu.patch \
             file://0085-PENDING-Adding-rules-for-dnsmasq.patch \
             file://0086-PENDING-networkmanager-allow-access-tmpfs.patch \
-            file://0997-QCLINUX-file_contexts.subs_dist-set-aliases-for-var-lib-seli.patch \
 "
 
 #Policy folders
@@ -71,7 +62,7 @@ prepare_policy_store () {
         oe_runmake 'DESTDIR=${D}' 'prefix=${D}${prefix}' install
         POL_PRIORITY=100
         POL_SRC=${D}${datadir}/selinux/${POLICY_NAME}
-        POL_STORE=${D}${QCOM_STORE_ROOT}/${POLICY_NAME}
+        POL_STORE=${D}${localstatedir}/lib/selinux/${POLICY_NAME}
         POL_ACTIVE_MODS=${POL_STORE}/active/modules/${POL_PRIORITY}
 
         # Prepare to create policy store
@@ -100,31 +91,7 @@ prepare_policy_store () {
         fi
 }
 
-
-rebuild_policy () {
-        cat <<-EOF > ${D}${sysconfdir}/selinux/semanage.conf
-module-store = direct
-[setfiles]
-path = ${STAGING_DIR_NATIVE}${base_sbindir_native}/setfiles
-args = -q -c \$@ \$<
-[end]
-[sefcontext_compile]
-path = ${STAGING_DIR_NATIVE}${sbindir_native}/sefcontext_compile
-args = \$@
-[end]
-
-policy-version = 33
-store-root = "${QCOM_STORE_ROOT}"
-EOF
-
-        # Create policy store and build the policy
-        semodule -p ${D} -s ${POLICY_NAME} -n -B
-        rm -f ${D}${sysconfdir}/selinux/semanage.conf
-        # no need to leave final dir created by semanage laying around
-        rm -rf ${D}${QCOM_STORE_ROOT}/final
-}
-
-COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs8300|qcs615"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs8300"
 
 def get_machine(d):
     need_machine = (d.getVar('COMPATIBLE_MACHINE') or "").split("|")
@@ -143,7 +110,6 @@ def test_modules_list(d):
         'qcm6490': ['qcm6490_test', 'qcs9100_test'],
         'qcs9100': ['qcm6490_test', 'qcs9100_test'],
         'qcs8300': ['qcm6490_test', 'qcs9100_test'],
-        'qcs615':  ['qcm6490_test', 'qcs9100_test'],
         'qcm8550': ['qcm8550_test'],
         'qcs8550': ['qcs8550_test'],
     }
@@ -160,7 +126,6 @@ def target_modules_list(d):
         'qcm6490': ['qcm6490', 'qcs9100'],
         'qcs9100': ['qcm6490', 'qcs9100'],
         'qcs8300': ['qcm6490', 'qcs9100'],
-        'qcs615':  ['qcm6490', 'qcs9100'],
         'qcm8550': ['qcm8550'],
         'qcs8550': ['qcs8550'],
     }

@@ -1,0 +1,252 @@
+From 8fdaa2ed968a0312f358408e5e8e161d8be3e21f Mon Sep 17 00:00:00 2001
+From: Vedang Nagar <quic_vnagar@quicinc.com>
+Date: Tue, 27 Aug 2024 15:35:53 +0530
+Subject: [PATCH 28/29] FROMLIST: media: iris: add allow checks for v4l2 ioctls
+
+Based on instance state machine, add allow checks
+for all the v4l2 and vb2 ops.
+
+Signed-off-by: Vedang Nagar <quic_vnagar@quicinc.com>
+Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-28-c5fdbbe65e70@quicinc.com/]
+---
+ drivers/media/platform/qcom/iris/iris_ctrls.c |  3 +
+ drivers/media/platform/qcom/iris/iris_state.c | 80 +++++++++++++++++++
+ drivers/media/platform/qcom/iris/iris_state.h | 10 +++
+ drivers/media/platform/qcom/iris/iris_vb2.c   | 14 ++++
+ drivers/media/platform/qcom/iris/iris_vdec.c  |  5 ++
+ drivers/media/platform/qcom/iris/iris_vidc.c  | 15 ++++
+ 6 files changed, 127 insertions(+)
+
+diff --git a/drivers/media/platform/qcom/iris/iris_ctrls.c b/drivers/media/platform/qcom/iris/iris_ctrls.c
+index 64b2f19c2b03..5aeb48a8ccb6 100644
+--- a/drivers/media/platform/qcom/iris/iris_ctrls.c
++++ b/drivers/media/platform/qcom/iris/iris_ctrls.c
+@@ -81,6 +81,9 @@ static int iris_vdec_op_s_ctrl(struct v4l2_ctrl *ctrl)
+ 	if (!iris_valid_cap_id(cap_id))
+ 		return -EINVAL;
+ 
++	if (!iris_allow_s_ctrl(inst, cap_id))
++		return -EBUSY;
++
+ 	cap[cap_id].flags |= CAP_FLAG_CLIENT_SET;
+ 
+ 	inst->fw_cap[cap_id].value = ctrl->val;
+diff --git a/drivers/media/platform/qcom/iris/iris_state.c b/drivers/media/platform/qcom/iris/iris_state.c
+index d37f99d72491..1c7437bc808b 100644
+--- a/drivers/media/platform/qcom/iris/iris_state.c
++++ b/drivers/media/platform/qcom/iris/iris_state.c
+@@ -77,6 +77,56 @@ int iris_inst_change_state(struct iris_inst *inst,
+ 	return 0;
+ }
+ 
++bool iris_allow_s_fmt(struct iris_inst *inst, u32 type)
++{
++	return (inst->state == IRIS_INST_DEINIT) ||
++		(inst->state == IRIS_INST_INIT) ||
++		(V4L2_TYPE_IS_CAPTURE(type) && inst->state == IRIS_INST_INPUT_STREAMING) ||
++		(V4L2_TYPE_IS_OUTPUT(type) && inst->state == IRIS_INST_OUTPUT_STREAMING);
++}
++
++bool iris_allow_reqbufs(struct iris_inst *inst, u32 type)
++{
++	return (inst->state == IRIS_INST_DEINIT) ||
++		(inst->state == IRIS_INST_INIT) ||
++		(V4L2_TYPE_IS_CAPTURE(type) && inst->state == IRIS_INST_INPUT_STREAMING) ||
++		(V4L2_TYPE_IS_OUTPUT(type) && inst->state == IRIS_INST_OUTPUT_STREAMING);
++}
++
++bool iris_allow_qbuf(struct iris_inst *inst, u32 type)
++{
++	return (V4L2_TYPE_IS_OUTPUT(type) && inst->state == IRIS_INST_INPUT_STREAMING) ||
++		(V4L2_TYPE_IS_OUTPUT(type) && inst->state == IRIS_INST_STREAMING) ||
++		(V4L2_TYPE_IS_CAPTURE(type) && inst->state == IRIS_INST_OUTPUT_STREAMING) ||
++		(V4L2_TYPE_IS_CAPTURE(type) && inst->state == IRIS_INST_STREAMING);
++}
++
++bool iris_allow_streamon(struct iris_inst *inst, u32 type)
++{
++	return (V4L2_TYPE_IS_OUTPUT(type) && inst->state == IRIS_INST_INIT) ||
++		(V4L2_TYPE_IS_OUTPUT(type) && inst->state == IRIS_INST_OUTPUT_STREAMING) ||
++		(V4L2_TYPE_IS_CAPTURE(type) && inst->state == IRIS_INST_INIT) ||
++		(V4L2_TYPE_IS_CAPTURE(type) && inst->state == IRIS_INST_INPUT_STREAMING);
++}
++
++bool iris_allow_streamoff(struct iris_inst *inst, u32 type)
++{
++	return (V4L2_TYPE_IS_OUTPUT(type) && inst->state == IRIS_INST_INPUT_STREAMING) ||
++		(V4L2_TYPE_IS_OUTPUT(type) && inst->state == IRIS_INST_STREAMING) ||
++		(V4L2_TYPE_IS_CAPTURE(type) && inst->state == IRIS_INST_OUTPUT_STREAMING) ||
++		(V4L2_TYPE_IS_CAPTURE(type) && inst->state == IRIS_INST_STREAMING) ||
++		inst->state == IRIS_INST_ERROR;
++}
++
++bool iris_allow_s_ctrl(struct iris_inst *inst, u32 cap_id)
++{
++	return ((inst->state == IRIS_INST_DEINIT) ||
++		(inst->state == IRIS_INST_INIT) ||
++		((inst->fw_cap[cap_id].flags & CAP_FLAG_DYNAMIC_ALLOWED) &&
++		(inst->state == IRIS_INST_INPUT_STREAMING ||
++		inst->state == IRIS_INST_STREAMING)));
++}
++
+ int iris_inst_state_change_streamon(struct iris_inst *inst, u32 plane)
+ {
+ 	enum iris_inst_state new_state = IRIS_INST_ERROR;
+@@ -214,3 +264,33 @@ int iris_inst_sub_state_change_pause(struct iris_inst *inst, u32 plane)
+ 
+ 	return iris_inst_change_sub_state(inst, 0, set_sub_state);
+ }
++
++static inline bool iris_drc_pending(struct iris_inst *inst)
++{
++	return inst->sub_state & IRIS_INST_SUB_DRC &&
++		inst->sub_state & IRIS_INST_SUB_DRC_LAST;
++}
++
++static inline bool iris_drain_pending(struct iris_inst *inst)
++{
++	return inst->sub_state & IRIS_INST_SUB_DRAIN &&
++		inst->sub_state & IRIS_INST_SUB_DRAIN_LAST;
++}
++
++bool iris_allow_cmd(struct iris_inst *inst, u32 cmd)
++{
++	if (cmd == V4L2_DEC_CMD_START) {
++		if (inst->state == IRIS_INST_INPUT_STREAMING ||
++		    inst->state == IRIS_INST_OUTPUT_STREAMING ||
++		    inst->state == IRIS_INST_STREAMING)
++			if (iris_drc_pending(inst) || iris_drain_pending(inst))
++				return true;
++	} else if (cmd == V4L2_DEC_CMD_STOP) {
++		if (inst->state == IRIS_INST_INPUT_STREAMING ||
++		    inst->state == IRIS_INST_STREAMING)
++			if (inst->sub_state != IRIS_INST_SUB_DRAIN)
++				return true;
++	}
++
++	return false;
++}
+diff --git a/drivers/media/platform/qcom/iris/iris_state.h b/drivers/media/platform/qcom/iris/iris_state.h
+index a01037918a9c..9516425fcfa7 100644
+--- a/drivers/media/platform/qcom/iris/iris_state.h
++++ b/drivers/media/platform/qcom/iris/iris_state.h
+@@ -133,10 +133,20 @@ int iris_inst_change_state(struct iris_inst *inst,
+ int iris_inst_change_sub_state(struct iris_inst *inst,
+ 			       enum iris_inst_sub_state clear_sub_state,
+ 			       enum iris_inst_sub_state set_sub_state);
++
++bool iris_allow_s_fmt(struct iris_inst *inst, u32 type);
++bool iris_allow_reqbufs(struct iris_inst *inst, u32 type);
++bool iris_allow_qbuf(struct iris_inst *inst, u32 type);
++bool iris_allow_streamon(struct iris_inst *inst, u32 type);
++bool iris_allow_streamoff(struct iris_inst *inst, u32 type);
++bool iris_allow_s_ctrl(struct iris_inst *inst, u32 cap_id);
++
+ int iris_inst_state_change_streamon(struct iris_inst *inst, u32 plane);
+ int iris_inst_state_change_streamoff(struct iris_inst *inst, u32 plane);
+ int iris_inst_sub_state_change_drc(struct iris_inst *inst);
+ int iris_inst_sub_state_change_drain_last(struct iris_inst *inst);
+ int iris_inst_sub_state_change_drc_last(struct iris_inst *inst);
+ int iris_inst_sub_state_change_pause(struct iris_inst *inst, u32 plane);
++bool iris_allow_cmd(struct iris_inst *inst, u32 cmd);
++
+ #endif
+diff --git a/drivers/media/platform/qcom/iris/iris_vb2.c b/drivers/media/platform/qcom/iris/iris_vb2.c
+index 974fce49d8fb..73c274844788 100644
+--- a/drivers/media/platform/qcom/iris/iris_vb2.c
++++ b/drivers/media/platform/qcom/iris/iris_vb2.c
+@@ -120,6 +120,11 @@ int iris_vb2_queue_setup(struct vb2_queue *q,
+ 		goto unlock;
+ 	}
+ 
++	if (!iris_allow_reqbufs(inst, q->type)) {
++		ret = -EBUSY;
++		goto unlock;
++	}
++
+ 	core = inst->core;
+ 	f = V4L2_TYPE_IS_OUTPUT(q->type) ? inst->fmt_src : inst->fmt_dst;
+ 
+@@ -215,6 +220,11 @@ int iris_vb2_start_streaming(struct vb2_queue *q, unsigned int count)
+ 		goto error;
+ 	}
+ 
++	if (!iris_allow_streamon(inst, q->type)) {
++		ret = -EBUSY;
++		goto error;
++	}
++
+ 	if (!V4L2_TYPE_IS_OUTPUT(q->type) &&
+ 	    !V4L2_TYPE_IS_CAPTURE(q->type)) {
+ 		ret = -EINVAL;
+@@ -269,6 +279,10 @@ void iris_vb2_stop_streaming(struct vb2_queue *q)
+ 		return;
+ 
+ 	mutex_lock(&inst->lock);
++	if (!iris_allow_streamoff(inst, q->type)) {
++		ret = -EBUSY;
++		goto exit;
++	}
+ 
+ 	if (!V4L2_TYPE_IS_OUTPUT(q->type) &&
+ 	    !V4L2_TYPE_IS_CAPTURE(q->type))
+diff --git a/drivers/media/platform/qcom/iris/iris_vdec.c b/drivers/media/platform/qcom/iris/iris_vdec.c
+index 4b8670612dab..dfe7fedc234f 100644
+--- a/drivers/media/platform/qcom/iris/iris_vdec.c
++++ b/drivers/media/platform/qcom/iris/iris_vdec.c
+@@ -603,6 +603,11 @@ int iris_vdec_qbuf(struct iris_inst *inst, struct vb2_v4l2_buffer *vbuf)
+ 	if (ret)
+ 		return ret;
+ 
++	if (!iris_allow_qbuf(inst, vb2->type)) {
++		buf->attr |= BUF_ATTR_DEFERRED;
++		return 0;
++	}
++
+ 	iris_scale_power(inst);
+ 
+ 	return iris_queue_buffer(inst, buf);
+diff --git a/drivers/media/platform/qcom/iris/iris_vidc.c b/drivers/media/platform/qcom/iris/iris_vidc.c
+index 07eb276472f6..a22b4c1226df 100644
+--- a/drivers/media/platform/qcom/iris/iris_vidc.c
++++ b/drivers/media/platform/qcom/iris/iris_vidc.c
+@@ -316,6 +316,11 @@ static int iris_try_fmt_vid_mplane(struct file *filp, void *fh, struct v4l2_form
+ 		goto unlock;
+ 	}
+ 
++	if (!iris_allow_s_fmt(inst, f->type)) {
++		ret = -EBUSY;
++		goto unlock;
++	}
++
+ 	ret = iris_vdec_try_fmt(inst, f);
+ 
+ unlock:
+@@ -339,6 +344,11 @@ static int iris_s_fmt_vid_mplane(struct file *filp, void *fh, struct v4l2_format
+ 		goto unlock;
+ 	}
+ 
++	if (!iris_allow_s_fmt(inst, f->type)) {
++		ret = -EBUSY;
++		goto unlock;
++	}
++
+ 	ret = iris_vdec_s_fmt(inst, f);
+ 
+ unlock:
+@@ -624,6 +634,11 @@ static int iris_dec_cmd(struct file *filp, void *fh,
+ 	if (inst->state == IRIS_INST_DEINIT)
+ 		goto unlock;
+ 
++	if (!iris_allow_cmd(inst, dec->cmd)) {
++		ret = -EBUSY;
++		goto unlock;
++	}
++
+ 	if (dec->cmd == V4L2_DEC_CMD_START)
+ 		ret = iris_vdec_start_cmd(inst);
+ 	else if (dec->cmd == V4L2_DEC_CMD_STOP)
+-- 
+2.34.1
+

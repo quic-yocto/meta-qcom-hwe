@@ -24,6 +24,7 @@ SRC_URI:append = " \
 SRC_URI:append = " \
     file://qcs9100/0001-FROMLIST-arm64-dts-qcom-sa8775p-add-ADSP-CDSP-and-GP.patch \
     file://qcs9100/0001-FROMGIT-arm64-dts-qcom-sa8775p-Mark-APPS-and-PCIe-SM.patch \
+    file://qcs9100/0001-arm64-dts-qcom-sa8775p-Correct-IRQ-number-of-EL2-non.patch \
     file://qcs9100/0002-BACKPORT-arm64-dts-qcom-sa8775p-Add-llcc-support-for.patch \
     file://qcs9100/0001-UPSTREAM-arm64-dts-qcom-sa8775p-Add-capacity-and-DPC.patch \
     file://qcs9100/0001-UPSTREAM-arm64-dts-qcom-sa8775p-add-TRNG-node.patch \
@@ -37,13 +38,8 @@ SRC_URI:append = " \
     file://qcs9100/0001-UPSTREAM-arm64-dts-qcom-sa8775p-fix-the-fastrpc-labe.patch \
     file://qcs9100/0002-UPSTREAM-arm64-qcom-sa8775p-Add-ADSP-and-CDSP0-fastr.patch \
     file://qcs9100/0003-FROMLIST-arm64-dts-qcom-sa8775p-Add-TCSR-halt-regist.patch \
-    file://qcs9100/0001-QCLINUX-Revert-UPSTREAM-arm64-dts-qcom-sa8775p-enabl.patch \
-    file://qcs9100/0002-FROMLIST-arm64-dts-qcom-sa8775p-pmics-enable-rtc.patch \
-    file://qcs9100/0003-FROMGIT-arm64-dts-qcom-sa8775p-ride-enable-pmm8654au.patch \
     file://qcs9100/0001-arm64-dts-qcom-sa8775p-Add-new-memory-map-updates-to.patch \
-    file://qcs9100/0007-FROMLIST-arm64-dts-qcom-sa8775p-add-display-dt-nodes.patch \
-    file://qcs9100/0006-FROMLIST-arm64-dts-qcom-sa8775p-add-DisplayPort-devi.patch \
-    file://qcs9100/0002-PENDING-arm64-dts-qcom-iris-video-driver-for-sa8775p.patch \
+    file://qcs9100/0002-arm64-dts-qcom-sa8775p-Update-memory-map-for-SA8775P.patch \
     "
 # qcs9100 board dts patches
 SRC_URI:append = " \
@@ -57,59 +53,4 @@ SRC_URI:append = " \
     file://qcs9100/0003-QCLINUX-Revert-FROMLIST-arm64-dts-qcom-sa8775p-ride-.patch \
     file://qcs9100/0006-BACKPORT-Enable-all-remoteproc-nodes-on-the-sa8775p-.patch \
     file://qcs9100/0001-FROMLIST-arm64-dts-qcom-sa8775p-ride-add-WiFi-BT-nod.patch \
-    file://qcs9100/0001-Revert-FROMLIST-arm64-dts-qcom-sa8775p-ride-add-WiFi.patch \
-    file://qcs9100/0003-FROMGIT-BACKPORT-arm64-dts-qcom-move-common-parts-fo.patch \
-    file://qcs9100/0004-FROMGIT-arm64-dts-qcom-sa8775p-ride-enable-remotepro.patch \
-    file://qcs9100/0005-FROMGIT-arm64-dts-qcom-sa8775p-Add-PCIe-bridge-node.patch \
-    file://qcs9100/0006-FROMLIST-BACKPORT-arm64-dts-qcom-sa8775p-ride-add-Wi.patch \
-    file://qcs9100/0007-FROMGIT-arm64-dts-qcom-sa8775p-ride-r3-add-new-board.patch \
-    file://qcs9100/0010-FROMLIST-arm64-dts-qcom-qcs9100-Add-support-for-the-.patch \
-    file://qcs9100/0011-QCLINUX-arm64-dts-qcom-Add-Modify-board-id-and-msm-i.patch \
-    file://qcs9100/0007-FROMLIST-arm64-dts-qcom-sa8775p-ride-Enable-Display-.patch \
     "
-
-# qcs615 dtsi patches
-SRC_URI:append = " \
-    file://qcs615/0020-FROMLIST-arm64-dts-qcom-add-initial-support-for-QCS6.patch \
-    file://qcs615/0003-FROMLIST-arm64-dts-qcom-qcs615-add-the-SCM-node.patch \
-    file://qcs615/0004-FROMLIST-arm64-dts-qcom-qcs615-add-the-APPS-SMMU-nod.patch \
-    file://qcs615/0001-FROMLIST-arm64-dts-qcom-qcs615-Add-LLCC-support-for-.patch \
-    file://qcs615/0001-FROMLIST-arm64-dts-qcom-qcs615-Add-QUPv3-configurati.patch \
-    file://qcs615/0003-FROMLIST-arm64-dts-qcom-qcs615-add-UFS-node.patch \
-    file://qcs615/0001-FROMLIST-arm64-dts-qcom-qcs615-add-SDHC1-and-SDHC2.patch \
-    file://qcs615/0001-FROMLIST-arm64-dts-qcom-Add-clock-nodes-for-multimed.patch \
-    file://qcs615/0002-FROMLIST-arm64-dts-qcom-Add-cpu-scaling-clock-node.patch \
-    file://qcs615/0001-PENDING-arm64-dts-qcom-Add-support-for-usb-node-on-Q.patch \
-    file://qcs615/0001-PENDING-arm64-dts-qcom-qcs615-Add-gpu-and-gmu-nodes.patch \
-    file://qcs615/0002-PENDING-arm64-dts-qcom-qcs615-add-the-GPU-SMMU-node.patch \
-    file://qcs615/0001-PENDING-arm64-dts-qcom-qcs615-add-dma-coherent-for-t.patch \
-    file://qcs615/0007-FROMLIST-arm64-dts-qcom-Add-display-support-for-QCS615.patch \
-    file://qcs615/0003-FROMLIST-arm64-dts-qcom-add-venus-node-for-the-qcs61.patch \
-    file://qcs615/0001-PENDING-arm64-dts-qcom-qcs615-add-ethernet-node.patch \
-    "
-
-# qcs615 board dts patches
-SRC_URI:append = " \
-    file://qcs615/0021-FROMLIST-arm64-dts-qcom-add-base-QCS615-RIDE-dts.patch \
-    file://addons/0001-QCLINUX-arm64-dts-qcom-qcs615-ride-add-board-id-and-.patch \
-    file://qcs615/0004-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-UFS-node.patch \
-    file://qcs615/0004-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-ethernet-.patch \
-    file://qcs615/0002-FROMLIST-arm64-dts-qcom-qcs615-ride-Enable-SDHC1-and-SDHC2.patch\
-    file://qcs615/0002-PENDING-arm64-dts-qcom-qcs615-Enable-USB-controllers.patch \
-    file://qcs615/0001-PENDING-arm64-dts-qcom-qcs615-ride-Enable-Adreno-612.patch \
-    file://qcs615/0008-FROMLIST-arm64-dts-qcom-Add-display-support-for-QCS615-RIDE-b.patch \
-    file://qcs615/0004-FROMLIST-arm64-dts-qcom-qcs615-ride-enable-venus-nod.patch \
-    "
-
-# qcs8300 dtsi patches
-SRC_URI:append = " \
-    file://qcs8300/0025-FROMLIST-arm64-dts-qcom-add-initial-support-for-QCS8.patch \
-    file://qcs8300/0005-FROMLIST-arm64-dts-qcom-qcs8300-Add-LLCC-support-for.patch \
-    file://qcs8300/0006-FROMLIST-arm64-dts-qcom-qcs8300-Add-PMU-support-for-.patch \
-	"
-
-# qcs8300 board dts patches
-SRC_URI:append = " \
-    file://qcs8300/0026-FROMLIST-arm64-dts-qcom-add-base-QCS8300-RIDE-dts.patch \
-    file://addons/0001-QCLINUX-arm64-dts-qcom-qcs8300-ride-add-board-id-and.patch \
-	"

@@ -1,0 +1,219 @@
+From be12caa148b2e32cf79646b7fa7fb12de9705ed0 Mon Sep 17 00:00:00 2001
+From: Dikshita Agarwal <quic_dikshita@quicinc.com>
+Date: Tue, 27 Aug 2024 15:35:28 +0530
+Subject: [PATCH 03/29] FROMLIST: media: iris: add platform driver for iris
+ video device
+
+In preparation of adding H264 decode functionality,
+add probe and remove functions to iris video platform driver.
+
+Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240827-iris_v3-v3-3-c5fdbbe65e70@quicinc.com/]
+---
+ drivers/media/platform/qcom/Kconfig           |   1 +
+ drivers/media/platform/qcom/Makefile          |   1 +
+ drivers/media/platform/qcom/iris/Kconfig      |   9 ++
+ drivers/media/platform/qcom/iris/Makefile     |   3 +
+ drivers/media/platform/qcom/iris/iris_core.h  |  29 +++++
+ drivers/media/platform/qcom/iris/iris_probe.c | 108 ++++++++++++++++++
+ 6 files changed, 151 insertions(+)
+ create mode 100644 drivers/media/platform/qcom/iris/Kconfig
+ create mode 100644 drivers/media/platform/qcom/iris/Makefile
+ create mode 100644 drivers/media/platform/qcom/iris/iris_core.h
+ create mode 100644 drivers/media/platform/qcom/iris/iris_probe.c
+
+diff --git a/drivers/media/platform/qcom/Kconfig b/drivers/media/platform/qcom/Kconfig
+index cc5799b9ea00..4f4d3a68e6e5 100644
+--- a/drivers/media/platform/qcom/Kconfig
++++ b/drivers/media/platform/qcom/Kconfig
+@@ -3,4 +3,5 @@
+ comment "Qualcomm media platform drivers"
+ 
+ source "drivers/media/platform/qcom/camss/Kconfig"
++source "drivers/media/platform/qcom/iris/Kconfig"
+ source "drivers/media/platform/qcom/venus/Kconfig"
+diff --git a/drivers/media/platform/qcom/Makefile b/drivers/media/platform/qcom/Makefile
+index 4f055c396e04..ea2221a202c0 100644
+--- a/drivers/media/platform/qcom/Makefile
++++ b/drivers/media/platform/qcom/Makefile
+@@ -1,3 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ obj-y += camss/
++obj-y += iris/
+ obj-y += venus/
+diff --git a/drivers/media/platform/qcom/iris/Kconfig b/drivers/media/platform/qcom/iris/Kconfig
+new file mode 100644
+index 000000000000..a9986aaa448d
+--- /dev/null
++++ b/drivers/media/platform/qcom/iris/Kconfig
+@@ -0,0 +1,9 @@
++config VIDEO_QCOM_IRIS
++        tristate "Qualcomm Iris V4L2 decoder driver"
++        depends on VIDEO_DEV
++        depends on ARCH_QCOM || COMPILE_TEST
++        help
++          This is a V4L2 driver for Qualcomm Iris video accelerator
++          hardware. It accelerates decoding operations on various
++          Qualcomm SoCs.
++          To compile this driver as a module choose m here.
+diff --git a/drivers/media/platform/qcom/iris/Makefile b/drivers/media/platform/qcom/iris/Makefile
+new file mode 100644
+index 000000000000..913da225486b
+--- /dev/null
++++ b/drivers/media/platform/qcom/iris/Makefile
+@@ -0,0 +1,3 @@
++iris-objs += iris_probe.o \
++
++obj-$(CONFIG_VIDEO_QCOM_IRIS) += iris.o
+diff --git a/drivers/media/platform/qcom/iris/iris_core.h b/drivers/media/platform/qcom/iris/iris_core.h
+new file mode 100644
+index 000000000000..402f0aaef995
+--- /dev/null
++++ b/drivers/media/platform/qcom/iris/iris_core.h
+@@ -0,0 +1,29 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#ifndef _IRIS_CORE_H_
++#define _IRIS_CORE_H_
++
++#include <media/v4l2-device.h>
++
++/**
++ * struct iris_core - holds core parameters valid for all instances
++ *
++ * @dev: reference to device structure
++ * @reg_base: IO memory base address
++ * @irq: iris irq
++ * @v4l2_dev: a holder for v4l2 device structure
++ * @vdev_dec: iris video device structure for decoder
++ */
++
++struct iris_core {
++	struct device				*dev;
++	void __iomem				*reg_base;
++	int					irq;
++	struct v4l2_device			v4l2_dev;
++	struct video_device			*vdev_dec;
++};
++
++#endif
+diff --git a/drivers/media/platform/qcom/iris/iris_probe.c b/drivers/media/platform/qcom/iris/iris_probe.c
+new file mode 100644
+index 000000000000..0a54fdaa1ab5
+--- /dev/null
++++ b/drivers/media/platform/qcom/iris/iris_probe.c
+@@ -0,0 +1,108 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#include <linux/module.h>
++
++#include "iris_core.h"
++
++static int iris_register_video_device(struct iris_core *core)
++{
++	struct video_device *vdev;
++	int ret;
++
++	vdev = video_device_alloc();
++	if (!vdev)
++		return -ENOMEM;
++
++	strscpy(vdev->name, "qcom-iris-decoder", sizeof(vdev->name));
++	vdev->release = video_device_release;
++	vdev->vfl_dir = VFL_DIR_M2M;
++	vdev->v4l2_dev = &core->v4l2_dev;
++	vdev->device_caps = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
++
++	ret = video_register_device(vdev, VFL_TYPE_VIDEO, -1);
++	if (ret)
++		goto err_vdev_release;
++
++	core->vdev_dec = vdev;
++	video_set_drvdata(vdev, core);
++
++	return 0;
++
++err_vdev_release:
++	video_device_release(vdev);
++
++	return ret;
++}
++
++static void iris_remove(struct platform_device *pdev)
++{
++	struct iris_core *core;
++
++	core = platform_get_drvdata(pdev);
++	if (!core)
++		return;
++
++	video_unregister_device(core->vdev_dec);
++
++	v4l2_device_unregister(&core->v4l2_dev);
++}
++
++static int iris_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct iris_core *core;
++	int ret;
++
++	core = devm_kzalloc(&pdev->dev, sizeof(*core), GFP_KERNEL);
++	if (!core)
++		return -ENOMEM;
++	core->dev = dev;
++
++	core->reg_base = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(core->reg_base))
++		return PTR_ERR(core->reg_base);
++
++	core->irq = platform_get_irq(pdev, 0);
++	if (core->irq < 0)
++		return core->irq;
++
++	ret = v4l2_device_register(dev, &core->v4l2_dev);
++	if (ret)
++		return ret;
++
++	ret = iris_register_video_device(core);
++	if (ret)
++		goto err_v4l2_unreg;
++
++	platform_set_drvdata(pdev, core);
++
++	return 0;
++
++err_v4l2_unreg:
++	v4l2_device_unregister(&core->v4l2_dev);
++
++	return ret;
++}
++
++static const struct of_device_id iris_dt_match[] = {
++	{ .compatible = "qcom,sm8550-iris", },
++	{ .compatible = "qcom,sm8250-venus", },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, iris_dt_match);
++
++static struct platform_driver qcom_iris_driver = {
++	.probe = iris_probe,
++	.remove_new = iris_remove,
++	.driver = {
++		.name = "qcom-iris",
++		.of_match_table = iris_dt_match,
++	},
++};
++
++module_platform_driver(qcom_iris_driver);
++MODULE_DESCRIPTION("Qualcomm Iris video driver");
++MODULE_LICENSE("GPL");
+-- 
+2.34.1
+

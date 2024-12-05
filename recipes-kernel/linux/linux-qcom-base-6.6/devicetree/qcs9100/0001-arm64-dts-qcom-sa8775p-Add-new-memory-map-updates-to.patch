@@ -1,7 +1,8 @@
 From dd36fbf8f312e238c644dd7bd53ad0e5deb422c7 Mon Sep 17 00:00:00 2001
 From: Ninad Naik <quic_ninanaik@quicinc.com>
 Date: Mon, 23 Sep 2024 11:58:42 +0530
-Subject: BACKPORT: UPSTREAM: arm64: dts: qcom: sa8775p: Add new memory map updates to SA8775P
+Subject: [PATCH 1/2] arm64: dts: qcom: sa8775p: Add new memory map updates to 
+ SA8775P
 
 New memory map layout changes (by Qualcomm firmware) have brought
 in updates to base addresses and/or size for different memory regions
@@ -18,7 +19,8 @@ Signed-off-by: Ninad Naik <quic_ninanaik@quicinc.com>
 Tested-by: Eric Chanudet <echanude@redhat.com> # sa8775p-ride
 Link: https://lore.kernel.org/r/20240125055134.7015-1-quic_ninanaik@quicinc.com
 Signed-off-by: Bjorn Andersson <andersson@kernel.org>
-Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git f9491ad2318d5c46383be91208620963e8cb13c0]
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+f9491ad2318d5c46383be91208620963e8cb13c0]
 ---
  arch/arm64/boot/dts/qcom/sa8775p.dtsi | 103 +++++++++++++++++++++++---
  1 file changed, 94 insertions(+), 9 deletions(-)
