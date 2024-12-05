@@ -1,0 +1,34 @@
+From 1ae94694c9c859b8f05de387752b377de6757279 Mon Sep 17 00:00:00 2001
+From: Yuvaraj Ranganathan <quic_yrangana@quicinc.com>
+Date: Wed, 13 Nov 2024 07:57:49 +0530
+Subject: [PATCH] FROMGIT: dt-bindings: crypto: qcom-qce: document the SA8775P
+ crypto engine
+
+Document the crypto engine on the SA8775P Platform.
+
+Signed-off-by: Yuvaraj Ranganathan <quic_yrangana@quicinc.com>
+Link: https://lore.kernel.org/all/20241017144500.3968797-2-quic_yrangana@quicinc.com
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Git-commit: 7a42b7b930aa9e0dfa42f5ef40af5bafad16b38d
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 7a42b7b930aa9e0dfa42f5ef40af5bafad16b38d]
+---
+ Documentation/devicetree/bindings/crypto/qcom-qce.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/crypto/qcom-qce.yaml b/Documentation/devicetree/bindings/crypto/qcom-qce.yaml
+index 8e665d910e6e..5b1c0b2fcbe6 100644
+--- a/Documentation/devicetree/bindings/crypto/qcom-qce.yaml
++++ b/Documentation/devicetree/bindings/crypto/qcom-qce.yaml
+@@ -44,6 +44,7 @@ properties:
+ 
+       - items:
+           - enum:
++              - qcom,sa8775p-qce
+               - qcom,sm8250-qce
+               - qcom,sm8350-qce
+               - qcom,sm8450-qce
+-- 
+2.34.1
+

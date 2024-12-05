@@ -1,0 +1,32 @@
+From 0c8fdb2b6d9089ea7c44aa35d026796912ce0abf Mon Sep 17 00:00:00 2001
+From: Taniya Das <quic_tdas@quicinc.com>
+Date: Wed, 16 Oct 2024 10:59:43 +0530
+Subject: [PATCH] FROMLIST: dt-bindings: clock: qcom-rpmhcc: Add RPMHCC
+ bindings for QCS615
+
+Add bindings and update documentation for clock rpmh driver on QCS615
+SoCs.
+
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Taniya Das <quic_tdas@quicinc.com>
+Link: https://lore.kernel.org/all/20241016-qcs615-clock-driver-v3-1-bb5d4135db45@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241016-qcs615-clock-driver-v3-1-bb5d4135db45@quicinc.com/]
+---
+ Documentation/devicetree/bindings/clock/qcom,rpmhcc.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/clock/qcom,rpmhcc.yaml b/Documentation/devicetree/bindings/clock/qcom,rpmhcc.yaml
+index fd14d18309a8..2dd35053f643 100644
+--- a/Documentation/devicetree/bindings/clock/qcom,rpmhcc.yaml
++++ b/Documentation/devicetree/bindings/clock/qcom,rpmhcc.yaml
+@@ -17,6 +17,7 @@ description: |
+ properties:
+   compatible:
+     enum:
++      - qcom,qcs615-rpmh-clk
+       - qcom,qdu1000-rpmh-clk
+       - qcom,sa8775p-rpmh-clk
+       - qcom,sc7180-rpmh-clk
+-- 
+2.46.0
+

@@ -5,7 +5,11 @@ LIC_FILES_CHKSUM = "file://ar/src/ftm_audio_main.c;beginline=12;endline=14;md5=8
 
 DESCRIPTION = "Audio FTM"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/audio_ftm.git;protocol=https;rev=bc4eb5e019994c1564ff649e0eabfe60b621371a;branch=audio-core.lnx.1.0.r1-rel;destsuffix=audio/opensource/audio_ftm"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/audio_ftm.git;protocol=https"
+SRCBRANCH  = "audio-core.lnx.1.0.r1-rel"
+SRCREV     = "bc4eb5e019994c1564ff649e0eabfe60b621371a"
+
+SRC_URI =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/audio_ftm"
 
 S = "${WORKDIR}/audio/opensource/audio_ftm"
 

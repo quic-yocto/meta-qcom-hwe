@@ -1,0 +1,41 @@
+From c357e8cec2776d2ee6f5c6740c9c49a6042ed7b9 Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Wed, 25 Sep 2024 15:45:06 +0800
+Subject: [PATCH 09/17] FROMLIST: dt-bindings: interconnect: qcom-bwmon:
+ Document QCS8300 bwmon compatibles
+
+Document QCS8300 BWMONs, which has two BWMONv4 instances for the CPU->LLCC
+path and one BWMONv5 instance for LLCC->DDR path.
+
+Change-Id: I928d98e5ca57004fc02e521ee41af947f6f6a8a9
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/all/20240925-qcs8300_bwmon_binding-v1-1-a7bfd94b2854@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240925-qcs8300_bwmon_binding-v1-1-a7bfd94b2854@quicinc.com/]
+---
+ .../devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml    | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+index 73f809cdb783..bd226e4d822b 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+@@ -25,6 +25,7 @@ properties:
+       - const: qcom,msm8998-bwmon       # BWMON v4
+       - items:
+           - enum:
++              - qcom,qcs8300-cpu-bwmon
+               - qcom,sc7180-cpu-bwmon
+               - qcom,sc7280-cpu-bwmon
+               - qcom,sc8280xp-cpu-bwmon
+@@ -35,6 +36,7 @@ properties:
+           - const: qcom,sdm845-bwmon    # BWMON v4, unified register space
+       - items:
+           - enum:
++              - qcom,qcs8300-llcc-bwmon
+               - qcom,sc7180-llcc-bwmon
+               - qcom,sc8280xp-llcc-bwmon
+               - qcom,sm6350-cpu-bwmon
+-- 
+2.46.0
+

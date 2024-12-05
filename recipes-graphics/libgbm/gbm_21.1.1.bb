@@ -9,13 +9,22 @@ LIC_FILES_CHKSUM = " \
 ${BSD-3-Clause-Clear_LICENSE};md5=01550572dbf950bfb945602fe114d132 \
 ${BSD-3-Clause_LICENSE};md5=966a1bac2e99d152d17ed2b6d7ad8bab"
 
-DEPENDS = "glib-2.0 wayland displaydlkm"
+DEPENDS = "glib-2.0 wayland"
+DEPENDS:append:qcm6490 = " qcom-displaydlkm"
+
 PROVIDES += "virtual/libgbm libgbm"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/display/libgbm.git;protocol=https;rev=5764548062cc98934c1f08ddae3927bb3633fcd4;branch=display.qclinux.1.0.r1-rel;destsuffix=display/vendor/qcom/opensource/display/libgbm \
-                file://pkgconfig/gbm.pc"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/display/libgbm.git;protocol=https"
+SRCBRANCH  = "display.qclinux.1.0.r1-rel"
+SRCREV     = "5764548062cc98934c1f08ddae3927bb3633fcd4"
+
+SRC_URI =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=display/vendor/qcom/opensource/display/libgbm"
 
 S = "${WORKDIR}/display/vendor/qcom/opensource/display/libgbm"
+
+SRC_URI:append = " file://pkgconfig/gbm.pc "
+SRC_URI:append:qcs9100 = " file://files/0001-gbm-decouple-gbm-with-downstream-display-driver.patch "
+SRC_URI:append:qcs8300-ride-sx = " file://files/0001-gbm-decouple-gbm-with-downstream-display-driver.patch "
 
 inherit autotools-brokensep pkgconfig
 

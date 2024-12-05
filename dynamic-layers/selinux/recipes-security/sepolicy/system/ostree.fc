@@ -1,0 +1,28 @@
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+/ostree(/*)?                         gen_context(system_u:object_r:usr_t,s0)
+/ostree/repo(/*)?                    gen_context(system_u:object_r:system_conf_t,s0)
+/etc/ostree/remotes.d(/.*)?          gen_context(system_u:object_r:system_conf_t,s0)
+/usr/lib/ostree-boot(/.*)?           gen_context(system_u:object_r:usr_t,s0)
+/sysroot/ostree/deploy/.*-atomic/deploy(/.*)?  gen_context(system_u:object_r:root_t,s0)
+/sysroot/ostree/lock                 gen_context(system_u:object_r:ostree_lock_t,s0)
+/run/ostree-booted    -s             gen_context(system_u:object_r:ostree_var_run_t,s0)
+/var/sota                            gen_context(system_u:object_r:ostree_var_run_t,s0)
+#Bin files added by ostree
+/usr/bin/ostree    --                gen_context(system_u:object_r:ostree_exec_t,s0)
+/usr/bin/rpm-ostreed  --             gen_context(system_u:object_r:ostree_exec_t,s0)
+
+/sysroot/ostree/repo(/.*)?           gen_context(system_u:object_r:system_conf_t,s0)
+/usr/local                           gen_context(system_u:object_r:usr_t,s0)
+/sysroot                             gen_context(system_u:object_r:boot_t,s0)
+
+#this are created by ostree /meta-updated so adding in ostree
+/var/rootdirs             -l          gen_context(system_u:object_r:var_t,s0)
+/var/rootdirs/home        -l          gen_context(system_u:object_r:user_home_dir_t,s0)
+/home                     -l          gen_context(system_u:object_r:home_root_t,s0)
+/media                    -l          gen_context(system_u:object_r:mnt_t,s0)
+/mnt                      -l          gen_context(system_u:object_r:mnt_t,s0)
+/opt                      -l          gen_context(system_u:object_r:usr_t,s0)
+/sysroot/ostree/deploy/poky/deploy/[0-9a-fA-F]         gen_context(system_u:object_r:root_t,s0)
+/sysroot/ostree/deploy/poky/deploy/[0-9a-fA-F].[0-99].origin         gen_context(system_u:object_r:system_conf_t,s0)

@@ -1,17 +1,20 @@
-inherit qprebuilt pkgconfig
+inherit autotools pkgconfig
 
-LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
-LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
+LICENSE = "BSD-3-Clause-Clear"
+LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
 DESCRIPTION = "pulseaudio BT audio interface"
+PR = "r0"
 
-DEPENDS += "pulseaudio"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/pulseaudio-plugin.git;protocol=https"
+SRCBRANCH  = "audio-algos.lnx.1.0.r1-rel"
+SRCREV     = "47f57bb8df85b134c36e1db65cb1368cfa9cda32"
 
-PBT_ARCH = "armv8-2a"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/pulseaudio-plugins"
 
-SRC_URI[armv8-2a.sha256sum] = "a19c7e959a03649a1b0bd9c485c35e43b7e9bbbdfad59af757cfba2d1f878c48"
+S = "${WORKDIR}/audio/opensource/pulseaudio-plugins/utils/pa_bt_audio"
 
-SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
+DEPENDS = "pulseaudio"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

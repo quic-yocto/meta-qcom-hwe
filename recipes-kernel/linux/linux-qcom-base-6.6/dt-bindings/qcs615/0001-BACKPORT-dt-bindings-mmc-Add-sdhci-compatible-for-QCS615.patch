@@ -1,0 +1,31 @@
+From 91980cd9354ad42ead84046a58e3b8b7ad768c92 Mon Sep 17 00:00:00 2001
+From: Yuanjie Yang <quic_yuanjiey@quicinc.com>
+Date: Tue, 29 Oct 2024 15:00:44 +0800
+Subject: [PATCH] BACKPORT: dt-bindings: mmc: Add sdhci compatible for QCS615
+
+Document the sdhci compatible for Qualcomm QCS615 to support
+function for SDHC1 and SDHC2 on the Soc.
+
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Yuanjie Yang <quic_yuanjiey@quicinc.com>
+Link: https://lore.kernel.org/linux-arm-msm/20241023092708.604195-1-quic_yuanjiey@quicinc.com/
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/ulfh/mmc.git 3c0946b6a378fb92658aabcda5c70ea3e83143bf]
+---
+ Documentation/devicetree/bindings/mmc/sdhci-msm.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/mmc/sdhci-msm.yaml b/Documentation/devicetree/bindings/mmc/sdhci-msm.yaml
+index 10f34aa8ba8a..7c45c281879a 100644
+--- a/Documentation/devicetree/bindings/mmc/sdhci-msm.yaml
++++ b/Documentation/devicetree/bindings/mmc/sdhci-msm.yaml
+@@ -40,6 +40,7 @@ properties:
+               - qcom,ipq9574-sdhci
+               - qcom,qcm2290-sdhci
+               - qcom,qcs404-sdhci
++              - qcom,qcs615-sdhci
+               - qcom,qdu1000-sdhci
+               - qcom,sc7180-sdhci
+               - qcom,sc7280-sdhci
+-- 
+2.34.1
+

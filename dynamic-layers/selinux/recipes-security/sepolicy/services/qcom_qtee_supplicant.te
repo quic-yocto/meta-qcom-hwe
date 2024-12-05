@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 policy_module(qcom_qtee_supplicant, 1.0)
@@ -39,3 +39,9 @@ logging_rw_runtime_sockets(qcom_qtee_supplicant_t)
 qcom_persist_dir_search(qcom_qtee_supplicant_t)
 qcom_allow_ops_qtee_supplicant_persist(qcom_qtee_supplicant_t)
 qcom_allow_ops_qtee_supplicant_data(qcom_qtee_supplicant_t)
+
+# Allow qtee_supplicant to read /usr/share/zoneinfo
+miscfiles_read_localization(qcom_qtee_supplicant_t)
+
+# Allow qtee_supplicant to access wakelocks under /sys/power
+dev_rw_sysfs(qcom_qtee_supplicant_t)

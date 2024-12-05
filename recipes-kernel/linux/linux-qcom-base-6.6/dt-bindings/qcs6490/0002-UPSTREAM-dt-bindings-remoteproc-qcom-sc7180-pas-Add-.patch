@@ -1,0 +1,139 @@
+From 3fb1e90f2e717968509ee1d491ca191e26f94cfd Mon Sep 17 00:00:00 2001
+From: Nikita Travkin <nikita@trvn.ru>
+Date: Thu, 7 Sep 2023 15:02:34 +0500
+Subject: [PATCH 02/19] UPSTREAM: dt-bindings: remoteproc: qcom: sc7180-pas:
+ Add ADSP compatible
+
+SC7180 has an ADSP remoteproc. Add it's compatible to the bindings and
+refactor the schema conditionals to fit the ADSP.
+
+Change-Id: I11b6dcf66a160b36a418f9fad158f44a110d244f
+Signed-off-by: Nikita Travkin <nikita@trvn.ru>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/r/20230907-sc7180-adsp-rproc-v3-1-6515c3fbe0a3@trvn.ru
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://github.com/torvalds/linux/commit/eadadb9510f7e45d2dca602ec261518a65e349f8]
+---
+ .../bindings/remoteproc/qcom,sc7180-pas.yaml  | 81 +++++++++++++------
+ 1 file changed, 56 insertions(+), 25 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml b/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml
+index 689d5d535331..f10f329677d8 100644
+--- a/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml
+@@ -16,6 +16,7 @@ description:
+ properties:
+   compatible:
+     enum:
++      - qcom,sc7180-adsp-pas
+       - qcom,sc7180-mpss-pas
+       - qcom,sc7280-mpss-pas
+ 
+@@ -30,26 +31,6 @@ properties:
+     items:
+       - const: xo
+ 
+-  interrupts:
+-    minItems: 6
+-
+-  interrupt-names:
+-    minItems: 6
+-
+-  power-domains:
+-    minItems: 2
+-    items:
+-      - description: CX power domain
+-      - description: MX power domain
+-      - description: MSS power domain
+-
+-  power-domain-names:
+-    minItems: 2
+-    items:
+-      - const: cx
+-      - const: mx
+-      - const: mss
+-
+   memory-region:
+     maxItems: 1
+     description: Reference to the reserved-memory for the Hexagon core
+@@ -71,6 +52,40 @@ required:
+ 
+ allOf:
+   - $ref: /schemas/remoteproc/qcom,pas-common.yaml#
++  - if:
++      properties:
++        compatible:
++          enum:
++            - qcom,sc7180-adsp-pas
++    then:
++      properties:
++        interrupts:
++          maxItems: 5
++        interrupt-names:
++          maxItems: 5
++    else:
++      properties:
++        interrupts:
++          minItems: 6
++        interrupt-names:
++          minItems: 6
++
++  - if:
++      properties:
++        compatible:
++          enum:
++            - qcom,sc7180-adsp-pas
++    then:
++      properties:
++        power-domains:
++          items:
++            - description: LCX power domain
++            - description: LMX power domain
++        power-domain-names:
++          items:
++            - const: lcx
++            - const: lmx
++
+   - if:
+       properties:
+         compatible:
+@@ -79,15 +94,31 @@ allOf:
+     then:
+       properties:
+         power-domains:
+-          minItems: 3
++          items:
++            - description: CX power domain
++            - description: MX power domain
++            - description: MSS power domain
+         power-domain-names:
+-          minItems: 3
+-    else:
++          items:
++            - const: cx
++            - const: mx
++            - const: mss
++
++  - if:
++      properties:
++        compatible:
++          enum:
++            - qcom,sc7280-mpss-pas
++    then:
+       properties:
+         power-domains:
+-          maxItems: 2
++          items:
++            - description: CX power domain
++            - description: MX power domain
+         power-domain-names:
+-          maxItems: 2
++          items:
++            - const: cx
++            - const: mx
+ 
+ unevaluatedProperties: false
+ 
+-- 
+2.46.0
+

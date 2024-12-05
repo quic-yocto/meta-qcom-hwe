@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 [Unit]
-SourcePath=/etc/initscripts/log_restrict.sh
-Description=QCOM logging service
+SourcePath=/etc/initscripts/post_boot.sh
+Description=QCOM postboot service
 
 [Service]
 ExecStart=/etc/initscripts/post_boot.sh

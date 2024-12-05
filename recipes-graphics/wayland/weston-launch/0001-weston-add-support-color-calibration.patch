@@ -1,0 +1,2141 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From b3ccba4c9a2cd4fd6d6442f879aa0905e5570765 Mon Sep 17 00:00:00 2001
+From: Shivam Khamble <quic_skhamble@quicinc.com>
+Date: Tue, 20 Aug 2024 18:03:42 +0530
+Subject: [PATCH] weston: add support color calibration
+
+-- Creates qdcm session during display core creation.
+-- Adds support for unmarshalling input and marshalling response.
+-- Adds qdcm solid color tool to mimic qdcm tpg to support calibration.
+
+Change-Id: I9be7749c507d3bc6ea81f02b7b535d332c43d626
+Signed-off-by: Shivam Khamble <quic_skhamble@quicinc.com>
+---
+ clients/meson.build                           |   14 +
+ clients/weston-qdcm-solid-color-tool.c        | 1278 +++++++++++++++++
+ libweston/backend-sdm/meson.build             |    4 +
+ .../backend-sdm/sdm-service/sdm_display.cpp   |   37 +
+ .../backend-sdm/sdm-service/sdm_display.h     |   60 +-
+ .../sdm-service/sdm_display_color_manager.cpp |   83 ++
+ .../sdm-service/sdm_display_color_manager.h   |   54 +
+ .../sdm-service/sdm_display_connect.cpp       |   34 +
+ .../sdm-service/sdm_display_debugger.cpp      |   14 +-
+ .../sdm-service/sdm_display_qdcm_session.cpp  |  206 +++
+ .../sdm-service/sdm_display_qdcm_session.h    |   53 +
+ libweston/backend-sdm/sdm.c                   |    4 +
+ libweston/meson.build                         |   10 +-
+ meson.build                                   |   15 +-
+ 14 files changed, 1846 insertions(+), 20 deletions(-)
+ create mode 100644 clients/weston-qdcm-solid-color-tool.c
+ create mode 100644 libweston/backend-sdm/sdm-service/sdm_display_color_manager.cpp
+ create mode 100644 libweston/backend-sdm/sdm-service/sdm_display_color_manager.h
+ create mode 100644 libweston/backend-sdm/sdm-service/sdm_display_qdcm_session.cpp
+ create mode 100644 libweston/backend-sdm/sdm-service/sdm_display_qdcm_session.h
+
+diff --git a/clients/meson.build b/clients/meson.build
+index 762b882c..af47284f 100644
+--- a/clients/meson.build
++++ b/clients/meson.build
+@@ -153,6 +153,20 @@ simple_clients = [
+ 		'deps': [ 'egl', 'wayland-egl', 'glesv2', 'wayland-cursor' ],
+ 		'options': [ 'renderer-gl' ]
+ 	},
++	{
++		'name': 'qdcm-solid-color',
++		'sources': [
++			'weston-qdcm-solid-color-tool.c',
++			xdg_shell_client_protocol_h,
++			xdg_shell_protocol_c,
++			ivi_application_client_protocol_h,
++			ivi_application_protocol_c,
++			xdg_output_unstable_v1_client_protocol_h,
++			xdg_output_unstable_v1_protocol_c,
++		],
++		'dep_objs': [ dep_wayland_client, dep_libshared, dep_libm ],
++		'deps': [ 'egl', 'wayland-egl', 'glesv2', 'wayland-cursor' ],
++	},
+ 	# weston-simple-im is handled specially separately due to install_dir and odd window.h usage
+ 	{
+ 		'name': 'shm',
+diff --git a/clients/weston-qdcm-solid-color-tool.c b/clients/weston-qdcm-solid-color-tool.c
+new file mode 100644
+index 00000000..6f3ed7a2
+--- /dev/null
++++ b/clients/weston-qdcm-solid-color-tool.c
+@@ -0,0 +1,1278 @@
++/*
++ * Copyright © 2021 The Linux Foundation. All rights reserved.
++ * Copyright © 2011 Benjamin Franzke
++ * Copyright © 2010 Intel Corporation
++ * Copyright © 2014 Collabora Ltd.
++ *
++ * Permission to use, copy, modify, distribute, and sell this software and its
++ * documentation for any purpose is hereby granted without fee, provided that
++ * the above copyright notice appear in all copies and that both that copyright
++ * notice and this permission notice appear in supporting documentation, and
++ * that the name of the copyright holders not be used in advertising or
++ * publicity pertaining to distribution of the software without specific,
++ * written prior permission.  The copyright holders make no representations
++ * about the suitability of this software for any purpose.  It is provided "as
++ * is" without express or implied warranty.
++ *
++ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
++ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
++ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
++ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
++ * OF THIS SOFTWARE.
++ */
++
++/*
++ * Changes from Qualcomm Innovation Center, Inc. are provided under the
++ * following license:
++ *
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
++ */
++
++#include "config.h"
++
++#include <assert.h>
++#include <math.h>
++#include <signal.h>
++#include <stdbool.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include <linux/input.h>
++
++#include <wayland-client.h>
++#include <wayland-egl.h>
++
++#include <EGL/egl.h>
++#include <EGL/eglext.h>
++#include <GLES2/gl2.h>
++
++#include "xdg-shell-client-protocol.h"
++#include <sys/types.h>
++#include <unistd.h>
++
++#include "shared/helpers.h"
++#include "shared/platform.h"
++#include "shared/weston-egl-ext.h"
++
++#include "shared/xalloc.h"
++#include "xdg-output-unstable-v1-client-protocol.h"
++#include <libweston/zalloc.h>
++
++#include <arpa/inet.h>
++#include <errno.h>
++#include <netinet/in.h>
++#include <pthread.h>
++#include <sys/fcntl.h>
++#include <sys/socket.h>
++#include <sys/types.h>
++#include <unistd.h>
++
++#define MAX_PACKET_SIZE 256
++#define CFG_SIZE 44
++#define PORT 8845
++
++#ifndef MIN
++#define MIN(a, b) ((a < b) ? a : b)
++#endif
++
++static int running = 1;
++static bool repaint_once = false;
++int32_t listener_handler_;
++int32_t socket_handler_;
++pthread_t thread_;
++int32_t sig_flag_;
++
++struct window;
++
++typedef struct {
++  GLfloat r;
++  GLfloat g;
++  GLfloat b;
++  GLfloat bg_r;
++  GLfloat bg_g;
++  GLfloat bg_b;
++  GLint x;
++  GLint y;
++  GLint w;
++  GLint h;
++  GLint depth;
++} TPGConfig;
++
++struct WideColorModeConfig {
++  EGLint space_;
++  EGLint r_, g_, b_, a_;
++};
++
++enum IndexRGB { SRGB_TOSRGB = 0, SRGB_TO_DISPLAYP3, SRGB_TO_DCIP3 };
++
++static const float RGB2RGB_TRANSFORM[2][3][3] = {{// sRGB to sRGB(0)
++                                                  {1.0F, 0.0F, 0.0F},
++                                                  {0.0F, 1.0F, 0.0F},
++                                                  {0.0F, 0.0F, 1.0F}},
++                                                 {// sRGB to DisplayP3 (1)
++                                                  {0.8225F, 0.1775F, 0.0F},
++                                                  {0.0332F, 0.9668F, -0.0F},
++                                                  {0.0171F, 0.0724F, 0.9105F}},
++                                                 {// sRGB to DCI_P3 (2)
++                                                  {0.8686F, 0.1289F, 0.0025F},
++                                                  {0.0345F, 0.9618F, -0.0036F},
++                                                  {0.0168F, 0.0710F, 0.9121F}}};
++
++struct output_info {
++  struct wl_output *output;
++  struct wl_list global_link;
++
++  int32_t version;
++
++  struct {
++    int32_t x, y;
++    int32_t scale;
++    int32_t physical_width, physical_height;
++    enum wl_output_subpixel subpixel;
++    enum wl_output_transform output_transform;
++    char *make;
++    char *model;
++  } geometry;
++
++  struct wl_list modes;
++};
++
++struct xdg_output_v1_info {
++  struct wl_list link;
++
++  struct zxdg_output_v1 *xdg_output;
++  struct output_info *output;
++
++  struct {
++    int32_t x, y;
++    int32_t width, height;
++  } logical;
++
++  char *name, *description;
++};
++
++struct xdg_output_manager_v1_info {
++  struct zxdg_output_manager_v1 *manager;
++  struct weston_info *info;
++  struct wl_list outputs;
++};
++
++struct output {
++  struct wl_output *wl_output;
++  int x, y;
++  int width, height;
++  int physical_width, physical_height;
++  const char *make, *model, *name;
++  int transform;
++  int subpixel;
++  int scale;
++  int refresh;
++  bool initialized;
++};
++
++struct weston_info {
++  struct wl_display *display;
++  struct wl_registry *registry;
++
++  bool roundtrip_needed;
++  /* required for xdg-output-unstable-v1 */
++  struct wl_list outputs;
++  struct xdg_output_manager_v1_info *xdg_output_manager_v1_info;
++};
++
++struct display {
++  struct wl_display *display;
++  struct wl_registry *registry;
++  struct wl_compositor *compositor;
++  struct xdg_wm_base *wm_base;
++  struct {
++    EGLDisplay dpy;
++    EGLContext ctx;
++    EGLConfig conf;
++  } egl;
++  struct window *window;
++  struct output output;
++  struct weston_info info;
++
++  PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC swap_buffers_with_damage;
++};
++
++struct geometry {
++  int width, height;
++};
++
++struct window {
++  struct display *display;
++  GLint egl_width, egl_height;
++  struct {
++    GLuint rotation_uniform;
++    GLuint pos;
++    GLuint col;
++    GLuint program;
++  } gl;
++
++  struct wl_egl_window *native;
++  struct wl_surface *surface;
++  struct xdg_surface *xdg_surface;
++  struct xdg_toplevel *xdg_toplevel;
++  EGLSurface egl_surface;
++  struct wl_callback *callback;
++  int fullscreen, maximized, buffer_size, delay;
++  bool wait_for_configure;
++  TPGConfig *cfg;
++  int index_rgb;
++  const char *output_name;
++  struct wl_output *fs_output;
++};
++
++static const char *gVertexShader = "attribute vec4 vPosition;\n"
++                                   "attribute vec4 vColor;\n"
++                                   "varying vec4 shapeColor;\n"
++                                   "void main()\n"
++                                   "{\n"
++                                   "  gl_Position = vPosition;\n"
++                                   "  shapeColor = vColor;\n"
++                                   "}\n";
++
++static const char *gFragmentShader = "precision mediump float;\n"
++                                     "varying vec4 shapeColor;\n"
++                                     "void main()\n"
++                                     "{\n"
++                                     "  gl_FragColor = shapeColor;\n"
++                                     "}\n";
++
++enum ParseRetrunValue {
++  ErrorNone = 0,
++  InvalidFile,
++  InvalidParameter,
++};
++
++enum ParseConfigState {
++  NoneChanged = 0,
++  ColorChanged = 1 << 0,
++  GeometryChanged = 1 << 1
++};
++
++static bool is_partial_solid_fill_enabled(struct window *window) {
++  // check if width and height match config and != 0
++  return (window->cfg->w != 0 && window->cfg->h != 0 &&
++          window->cfg->w < window->egl_width &&
++          window->cfg->h < window->egl_height);
++}
++
++void set_config(struct display *display, TPGConfig *cfg) {
++  memcpy(display->window->cfg, cfg, sizeof(TPGConfig));
++}
++
++void start_repaint() { repaint_once = true; }
++
++bool need_repaint() { return repaint_once; }
++
++void repaint_done() {
++  int32_t ack = 0;
++  int32_t ret = -1;
++  ret = send(socket_handler_, &ack, sizeof(ack), 0);
++  if (ret < 0) {
++    fprintf(stderr, "ERROR writing to socket");
++  }
++  repaint_once = false;
++}
++
++int32_t connect_to_socket() {
++  struct sockaddr_in address;
++
++  listener_handler_ = -1;
++  socket_handler_ = -1;
++  sig_flag_ = 0;
++
++  /* Connect to Socket */
++  listener_handler_ = socket(AF_INET, SOCK_STREAM, 0);
++  if (listener_handler_ < 0) {
++    fprintf(stderr, "Unable to create socket: errno:%d\n", errno);
++    return -1;
++  }
++
++  address.sin_family = AF_INET;
++  address.sin_addr.s_addr = inet_addr("127.0.0.1");
++  address.sin_port = htons(PORT);
++
++  if (bind(listener_handler_, (struct sockaddr *)&address, sizeof(address)) <
++      0) {
++    fprintf(stderr, "Socket bind failed\n");
++    return -1;
++  }
++
++  /* Create listener for opened socket */
++  printf("waiting for incoming connection...\n");
++  if (listen(listener_handler_, 1) < 0) {
++    fprintf(stderr, "socket listen fail\n");
++    return -1;
++  }
++  return 0;
++}
++
++void *command_thread_handler(struct display *display) {
++  /* Detach thread */
++  pthread_detach(pthread_self());
++  if (socket_handler_ < 0) {
++    fprintf(stderr, "no valid socket handler\n");
++    return NULL;
++  }
++
++  char buffer[MAX_PACKET_SIZE];
++  while (!sig_flag_) {
++    fd_set read_fd;
++    FD_ZERO(&read_fd);
++    FD_SET(socket_handler_, &read_fd);
++
++    /* assign time out value */
++    struct timeval to;
++    to.tv_sec = 3600;
++    to.tv_usec = 0;
++
++    /* wait for incoming connection */
++    int32_t len = select(socket_handler_ + 1, &read_fd, NULL, NULL, &to);
++    if (len < 0) {
++      fprintf(stderr, "select() failed");
++      break;
++    }
++
++    // Ensure socket is set to blocking
++    int flags = fcntl(socket_handler_, F_GETFL, 0);
++    if (flags < 0) {
++      fprintf(stderr, "Unable to read flags. Setting flag to blocking");
++    } else {
++      flags = (flags & ~O_NONBLOCK);
++      if (fcntl(socket_handler_, F_SETFL, flags) != 0)
++        fprintf(stderr, "unable to set flags to blocking");
++    }
++
++    if (FD_ISSET(socket_handler_, &read_fd)) {
++      memset(buffer, 0, MAX_PACKET_SIZE);
++      int32_t bytes_read = recv(socket_handler_, buffer, MAX_PACKET_SIZE, 0);
++      printf("Bytes read from socket: %d\n", bytes_read);
++      if (bytes_read != CFG_SIZE) {
++        printf("Packet size mismatch: Expected %d but received %d\n", CFG_SIZE,
++               bytes_read);
++        break;
++      }
++      if (bytes_read > 0) {
++        // Parse buffer
++        TPGConfig cfg;
++        memcpy(&cfg, buffer, CFG_SIZE);
++
++        // Normalize coordinates based on bit depth
++        cfg.r = (cfg.depth == 8 ? (GLfloat)(cfg.r / 255.0)
++                                : (GLfloat)(cfg.r / 1023.0));
++        cfg.g = (cfg.depth == 8 ? (GLfloat)(cfg.g / 255.0)
++                                : (GLfloat)(cfg.g / 1023.0));
++        cfg.b = (cfg.depth == 8 ? (GLfloat)(cfg.b / 255.0)
++                                : (GLfloat)(cfg.b / 1023.0));
++        cfg.bg_r = (cfg.depth == 8 ? (GLfloat)(cfg.bg_r / 255.0)
++                                   : (GLfloat)(cfg.bg_r / 1023.0));
++        cfg.bg_g = (cfg.depth == 8 ? (GLfloat)(cfg.bg_g / 255.0)
++                                   : (GLfloat)(cfg.bg_g / 1023.0));
++        cfg.bg_b = (cfg.depth == 8 ? (GLfloat)(cfg.bg_b / 255.0)
++                                   : (GLfloat)(cfg.bg_b / 1023.0));
++
++        printf("r:%f g:%f b:%f, bg_r:%f bg_g:%f bg_b:%f, \
++					x:%d, y:%d, w:%d, h:%d, bit_depth:%d\n",
++               cfg.r, cfg.g, cfg.b, cfg.bg_r, cfg.bg_g, cfg.bg_b, cfg.x, cfg.y,
++               cfg.w, cfg.h, cfg.depth);
++
++        set_config(display, &cfg);
++        start_repaint();
++      } else if (bytes_read == 0) {
++        /* Unexpected socket closing */
++        break;
++      }
++    } else {
++      fprintf(stderr, "sockets handler not set");
++      break;
++    }
++  }
++  printf("closing client handler\n");
++  close(socket_handler_);
++  socket_handler_ = -1;
++
++  return NULL;
++}
++
++void *command_start_listener(struct display *display) {
++  printf("start command listener!\n");
++  /* Waiting for incoming connection */
++  while (!sig_flag_) {
++    struct sockaddr addr;
++    socklen_t alen = sizeof(addr);
++
++    int32_t handler =
++        accept(listener_handler_, (struct sockaddr *)&addr, &alen);
++    if (handler > 0) {
++      /* Create handler thread for this connection */
++      pthread_t thread;
++      while (socket_handler_ != -1) {
++        printf("Copying data...\n");
++        sleep(1);
++      }
++
++      socket_handler_ = handler;
++      if (pthread_create(&thread, NULL, command_thread_handler, display)) {
++        fprintf(stderr, "Failed to create thread handler\n");
++        break;
++      }
++      sched_yield();
++    } else {
++      fprintf(stderr, "Failed to accept incoming connection\n");
++      break;
++    }
++  }
++  printf("Stopping listener\n");
++  close(listener_handler_);
++  return NULL;
++}
++
++void command_start(struct display *display) {
++
++  /* Connect to socket*/
++  int32_t ret = connect_to_socket();
++  if (ret < 0) {
++    fprintf(stderr, "Failed to connect to socket\n");
++  }
++
++  /* Start the listener thread to handling incoming connections */
++  ret = pthread_create(&thread_, NULL, command_start_listener, display);
++  if (ret < 0) {
++    fprintf(stderr, "Failed to initialize listener thread\n");
++  }
++}
++
++static void output_handle_geometry(void *data, struct wl_output *wl_output,
++                                   int x, int y, int physical_width,
++                                   int physical_height, int subpixel,
++                                   const char *make, const char *model,
++                                   int32_t transform) {
++  struct output *output = data;
++
++  output->x = x;
++  output->y = y;
++  output->physical_width = physical_width;
++  output->physical_height = physical_height;
++  output->subpixel = subpixel;
++  output->make = make;
++  output->model = model;
++  output->transform = transform;
++}
++
++static void output_handle_mode(void *data, struct wl_output *wl_output,
++                               uint32_t flags, int width, int height,
++                               int refresh) {
++  struct output *output = data;
++
++  if (flags & WL_OUTPUT_MODE_CURRENT) {
++    output->width = width;
++    output->height = height;
++    output->refresh = refresh;
++  }
++}
++
++static void output_handle_scale(void *data, struct wl_output *wl_output,
++                                int scale) {
++  struct output *output = data;
++
++  output->scale = scale;
++}
++
++static void output_handle_done(void *data, struct wl_output *wl_output) {
++  struct output *output = data;
++  output->initialized = true;
++}
++
++static void output_handle_name(void *data, struct wl_output *wl_output,
++                               const char *name) {
++  struct output *output = data;
++  output->name = name;
++}
++
++static void handle_xdg_output_v1_logical_position(void *data,
++                                                  struct zxdg_output_v1 *output,
++                                                  int32_t x, int32_t y) {
++  struct xdg_output_v1_info *xdg_output = data;
++  xdg_output->logical.x = x;
++  xdg_output->logical.y = y;
++}
++
++static void handle_xdg_output_v1_logical_size(void *data,
++                                              struct zxdg_output_v1 *output,
++                                              int32_t width, int32_t height) {
++  struct xdg_output_v1_info *xdg_output = data;
++  xdg_output->logical.width = width;
++  xdg_output->logical.height = height;
++}
++
++static void handle_xdg_output_v1_done(void *data,
++                                      struct zxdg_output_v1 *output) {
++  /* Don't bother waiting for this; there's no good reason a
++   * compositor will wait more than one roundtrip before sending
++   * these initial events. */
++}
++
++static void handle_xdg_output_v1_name(void *data, struct zxdg_output_v1 *output,
++                                      const char *name) {
++  struct xdg_output_v1_info *xdg_output = data;
++  xdg_output->name = strdup(name);
++}
++
++static void handle_xdg_output_v1_description(void *data,
++                                             struct zxdg_output_v1 *output,
++                                             const char *description) {
++  struct xdg_output_v1_info *xdg_output = data;
++  xdg_output->description = strdup(description);
++}
++
++static const struct wl_output_listener output_listener = {
++    output_handle_geometry, output_handle_mode,
++    output_handle_done,     output_handle_scale,
++    output_handle_name, // None
++};
++
++static const struct zxdg_output_v1_listener xdg_output_v1_listener = {
++    .logical_position = handle_xdg_output_v1_logical_position,
++    .logical_size = handle_xdg_output_v1_logical_size,
++    .done = handle_xdg_output_v1_done,
++    .name = handle_xdg_output_v1_name,
++    .description = handle_xdg_output_v1_description,
++};
++
++static void
++add_xdg_output_v1_info(struct xdg_output_manager_v1_info *manager_info,
++                       struct output_info *output) {
++  struct xdg_output_v1_info *xdg_output = xzalloc(sizeof *xdg_output);
++
++  wl_list_insert(&manager_info->outputs, &xdg_output->link);
++  xdg_output->xdg_output = zxdg_output_manager_v1_get_xdg_output(
++      manager_info->manager, output->output);
++  zxdg_output_v1_add_listener(xdg_output->xdg_output, &xdg_output_v1_listener,
++                              xdg_output);
++
++  xdg_output->output = output;
++
++  manager_info->info->roundtrip_needed = true;
++}
++
++static void add_output_info(struct weston_info *info, uint32_t id,
++                            uint32_t version) {
++  struct output_info *output = xzalloc(sizeof *output);
++
++  output->version = MIN(version, 2);
++  output->geometry.scale = 1;
++  wl_list_init(&output->modes);
++
++  output->output = wl_registry_bind(info->registry, id, &wl_output_interface,
++                                    output->version);
++  wl_output_add_listener(output->output, &output_listener, output);
++
++  wl_list_insert(&info->outputs, &output->global_link);
++
++  if (info->xdg_output_manager_v1_info)
++    add_xdg_output_v1_info(info->xdg_output_manager_v1_info, output);
++}
++
++static void destroy_xdg_output_v1_info(struct xdg_output_v1_info *info) {
++  wl_list_remove(&info->link);
++  zxdg_output_v1_destroy(info->xdg_output);
++  free(info->name);
++  free(info->description);
++  free(info);
++}
++
++static void print_xdg_output_v1_info(const struct xdg_output_v1_info *info) {
++  printf("\txdg_output_v1\n");
++  if (info->name)
++    printf("\t\tname: '%s'\n", info->name);
++  if (info->description)
++    printf("\t\tdescription: '%s'\n", info->description);
++  printf("\t\tlogical_x: %d, logical_y: %d\n", info->logical.x,
++         info->logical.y);
++  printf("\t\tlogical_width: %d, logical_height: %d\n", info->logical.width,
++         info->logical.height);
++}
++
++static void print_xdg_output_manager_v1_info(void *data) {
++  struct xdg_output_manager_v1_info *info = data;
++  struct xdg_output_v1_info *output;
++
++  wl_list_for_each(output, &info->outputs, link) {
++    print_xdg_output_v1_info(output);
++  }
++}
++
++static struct xdg_output_v1_info *get_xdg_output_info(void *data,
++                                                      const char *name) {
++  struct xdg_output_manager_v1_info *info = data;
++  struct xdg_output_v1_info *output;
++
++  wl_list_for_each(output, &info->outputs, link) {
++    if (name == NULL && output->name) {
++      printf("Use default output - %s \n", output->name);
++      return output;
++    }
++    if (output->name && (strcmp(output->name, name) == 0)) {
++      printf("found output name:%s \n", output->name);
++      return output;
++    }
++  }
++
++  printf("cannot found output(%s) !\n", name);
++  return NULL;
++}
++
++static void add_xdg_output_manager_v1_info(struct weston_info *info,
++                                           uint32_t id, uint32_t version) {
++  struct output_info *output;
++  struct xdg_output_manager_v1_info *manager = xzalloc(sizeof *manager);
++
++  wl_list_init(&manager->outputs);
++  manager->info = info;
++
++  manager->manager =
++      wl_registry_bind(info->registry, id, &zxdg_output_manager_v1_interface,
++                       version > 2 ? 2 : version);
++
++  wl_list_for_each(output, &info->outputs, global_link)
++      add_xdg_output_v1_info(manager, output);
++
++  info->xdg_output_manager_v1_info = manager;
++}
++
++static void destroy_xdg_output_manager_v1_info(void *data) {
++  struct xdg_output_manager_v1_info *info = data;
++  struct xdg_output_v1_info *output, *tmp;
++
++  zxdg_output_manager_v1_destroy(info->manager);
++
++  wl_list_for_each_safe(output, tmp, &info->outputs, link)
++      destroy_xdg_output_v1_info(output);
++}
++
++static void choose_output(struct display *display, const char *output_name) {
++  /* Get all wl_output info and do fullscreen */
++  do {
++    display->info.roundtrip_needed = false;
++    wl_display_roundtrip(display->info.display);
++  } while (display->info.roundtrip_needed);
++  print_xdg_output_manager_v1_info(display->info.xdg_output_manager_v1_info);
++
++  if (display->window->fullscreen == true) {
++    struct xdg_output_v1_info *output;
++    output = get_xdg_output_info(display->info.xdg_output_manager_v1_info,
++                                 output_name);
++    display->window->fs_output = output->output->output;
++    display->window->egl_width = output->logical.width;
++    display->window->egl_height = output->logical.height;
++    xdg_toplevel_set_fullscreen(display->window->xdg_toplevel,
++                                display->window->fs_output);
++    xdg_toplevel_set_position(display->window->xdg_toplevel, output->logical.x,
++                              0);
++
++    wl_display_roundtrip(display->info.display);
++  }
++}
++
++static void init_egl(struct display *display, struct window *window) {
++  static const struct {
++    char *extension, *entrypoint;
++  } swap_damage_ext_to_entrypoint[] = {
++      {
++          .extension = "EGL_EXT_swap_buffers_with_damage",
++          .entrypoint = "eglSwapBuffersWithDamageEXT",
++      },
++      {
++          .extension = "EGL_KHR_swap_buffers_with_damage",
++          .entrypoint = "eglSwapBuffersWithDamageKHR",
++      },
++  };
++
++  static const EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2,
++                                           EGL_NONE};
++  const char *extensions;
++
++  EGLint config_attribs[] = {EGL_SURFACE_TYPE,
++                             EGL_WINDOW_BIT,
++                             EGL_RENDERABLE_TYPE,
++                             EGL_OPENGL_ES2_BIT,
++                             EGL_RED_SIZE,
++                             8,
++                             EGL_GREEN_SIZE,
++                             8,
++                             EGL_BLUE_SIZE,
++                             8,
++                             EGL_ALPHA_SIZE,
++                             8,
++                             EGL_NONE};
++
++  EGLint major, minor, n, count, i;
++  EGLConfig *configs;
++  EGLBoolean ret;
++
++  display->egl.dpy = weston_platform_get_egl_display(EGL_PLATFORM_WAYLAND_KHR,
++                                                     display->display, NULL);
++  assert(display->egl.dpy);
++
++  ret = eglInitialize(display->egl.dpy, &major, &minor);
++  assert(ret == EGL_TRUE);
++  ret = eglBindAPI(EGL_OPENGL_ES_API);
++  assert(ret == EGL_TRUE);
++
++  if (!eglGetConfigs(display->egl.dpy, NULL, 0, &count) || count < 1)
++    assert(0);
++
++  configs = calloc(count, sizeof *configs);
++  assert(configs);
++
++  ret = eglChooseConfig(display->egl.dpy, config_attribs, configs, count, &n);
++  assert(ret && n >= 1);
++
++  for (i = 0; i < n; i++) {
++    EGLint buffer_size, red_size;
++    eglGetConfigAttrib(display->egl.dpy, configs[i], EGL_BUFFER_SIZE,
++                       &buffer_size);
++    eglGetConfigAttrib(display->egl.dpy, configs[i], EGL_RED_SIZE, &red_size);
++    if ((window->buffer_size == 0 || window->buffer_size == buffer_size) &&
++        red_size < 10) {
++      display->egl.conf = configs[i];
++      break;
++    }
++  }
++  free(configs);
++  if (display->egl.conf == NULL) {
++    fprintf(stderr, "did not find config with buffer size %d\n",
++            window->buffer_size);
++    exit(EXIT_FAILURE);
++  }
++
++  display->egl.ctx = eglCreateContext(display->egl.dpy, display->egl.conf,
++                                      EGL_NO_CONTEXT, context_attribs);
++  assert(display->egl.ctx);
++
++  display->swap_buffers_with_damage = NULL;
++  extensions = eglQueryString(display->egl.dpy, EGL_EXTENSIONS);
++  if (extensions &&
++      weston_check_egl_extension(extensions, "EGL_EXT_buffer_age")) {
++    for (i = 0; i < (int)ARRAY_LENGTH(swap_damage_ext_to_entrypoint); i++) {
++      if (weston_check_egl_extension(
++              extensions, swap_damage_ext_to_entrypoint[i].extension)) {
++        /* The EXTPROC is identical to the KHR one */
++        display->swap_buffers_with_damage =
++            (PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)eglGetProcAddress(
++                swap_damage_ext_to_entrypoint[i].entrypoint);
++        break;
++      }
++    }
++  }
++
++  if (display->swap_buffers_with_damage)
++    printf("has EGL_EXT_buffer_age and %s\n",
++           swap_damage_ext_to_entrypoint[i].extension);
++}
++
++static void fini_egl(struct display *display) {
++  eglTerminate(display->egl.dpy);
++  eglReleaseThread();
++}
++
++static GLuint create_shader(struct window *window, const char *source,
++                            GLenum shader_type) {
++  GLuint shader;
++  GLint status;
++
++  shader = glCreateShader(shader_type);
++  assert(shader != 0);
++
++  glShaderSource(shader, 1, (const char **)&source, NULL);
++  glCompileShader(shader);
++
++  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
++  if (!status) {
++    char log[1000];
++    GLsizei len;
++    glGetShaderInfoLog(shader, 1000, &len, log);
++    fprintf(stderr, "Error: compiling %s: %.*s\n",
++            shader_type == GL_VERTEX_SHADER ? "vertex" : "fragment", len, log);
++    exit(1);
++  }
++
++  return shader;
++}
++
++static void init_gl(struct window *window) {
++  GLuint frag, vert;
++  GLuint program;
++  GLint status;
++  EGLBoolean ret;
++
++  printf("egl width-%d, height-%d\n", window->egl_width, window->egl_height);
++
++  window->native = wl_egl_window_create(window->surface, window->egl_width,
++                                        window->egl_height);
++  window->egl_surface = weston_platform_create_egl_surface(
++      window->display->egl.dpy, window->display->egl.conf, window->native,
++      NULL);
++
++  ret = eglMakeCurrent(window->display->egl.dpy, window->egl_surface,
++                       window->egl_surface, window->display->egl.ctx);
++  assert(ret == EGL_TRUE);
++
++  frag = create_shader(window, gFragmentShader, GL_FRAGMENT_SHADER);
++  vert = create_shader(window, gVertexShader, GL_VERTEX_SHADER);
++
++  program = glCreateProgram();
++  glAttachShader(program, frag);
++  glAttachShader(program, vert);
++  glLinkProgram(program);
++
++  glGetProgramiv(program, GL_LINK_STATUS, &status);
++  if (!status) {
++    char log[1000];
++    GLsizei len;
++    glGetProgramInfoLog(program, 1000, &len, log);
++    fprintf(stderr, "Error: linking:\n%.*s\n", len, log);
++    exit(1);
++  }
++
++  glUseProgram(program);
++
++  window->gl.pos = 0;
++  window->gl.col = 1;
++  window->gl.program = program;
++
++  glBindAttribLocation(program, window->gl.pos, "vPosition");
++  glBindAttribLocation(program, window->gl.col, "vColor");
++  glLinkProgram(program);
++}
++
++static void handle_surface_configure(void *data, struct xdg_surface *surface,
++                                     uint32_t serial) {
++  struct window *window = data;
++
++  xdg_surface_ack_configure(surface, serial);
++
++  window->wait_for_configure = false;
++}
++
++static const struct xdg_surface_listener xdg_surface_listener = {
++    handle_surface_configure};
++
++static void handle_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
++                                      int32_t width, int32_t height,
++                                      struct wl_array *states) {}
++
++static void handle_toplevel_close(void *data,
++                                  struct xdg_toplevel *xdg_toplevel) {
++  running = 0;
++}
++
++static const struct xdg_toplevel_listener xdg_toplevel_listener = {
++    handle_toplevel_configure,
++    handle_toplevel_close,
++};
++
++static void create_surface(struct window *window) {
++  struct display *display = window->display;
++
++  window->surface = wl_compositor_create_surface(display->compositor);
++
++  window->xdg_surface =
++      xdg_wm_base_get_xdg_surface(display->wm_base, window->surface);
++  xdg_surface_add_listener(window->xdg_surface, &xdg_surface_listener, window);
++
++  window->xdg_toplevel = xdg_surface_get_toplevel(window->xdg_surface);
++  xdg_toplevel_add_listener(window->xdg_toplevel, &xdg_toplevel_listener,
++                            window);
++
++  xdg_toplevel_set_title(window->xdg_toplevel, "qdcm-solid-color");
++  xdg_toplevel_set_app_id(window->xdg_toplevel, "qdcm.weston.solid.color.app");
++
++  if (window->maximized)
++    xdg_toplevel_set_maximized(window->xdg_toplevel);
++
++  window->wait_for_configure = true;
++  wl_surface_commit(window->surface);
++}
++
++static void destroy_surface(struct window *window) {
++  /* Required, otherwise segfault in egl_dri2.c: dri2_make_current()
++   * on eglReleaseThread(). */
++  eglMakeCurrent(window->display->egl.dpy, EGL_NO_SURFACE, EGL_NO_SURFACE,
++                 EGL_NO_CONTEXT);
++
++  weston_platform_destroy_egl_surface(window->display->egl.dpy,
++                                      window->egl_surface);
++  wl_egl_window_destroy(window->native);
++
++  if (window->xdg_toplevel)
++    xdg_toplevel_destroy(window->xdg_toplevel);
++  if (window->xdg_surface)
++    xdg_surface_destroy(window->xdg_surface);
++  wl_surface_destroy(window->surface);
++
++  if (window->callback)
++    wl_callback_destroy(window->callback);
++}
++
++static void rgb2rgb_conv(float *pIn, enum IndexRGB conv_ind) {
++  const float(*const pMtx)[3] = RGB2RGB_TRANSFORM[conv_ind];
++  float in0 = pIn[0];
++  float in1 = pIn[1];
++  float in2 = pIn[2];
++
++  pIn[0] = pMtx[0][0] * in0 + pMtx[0][1] * in1 + pMtx[0][2] * in2;
++  pIn[1] = pMtx[1][0] * in0 + pMtx[1][1] * in1 + pMtx[1][2] * in2;
++  pIn[2] = pMtx[2][0] * in0 + pMtx[2][1] * in1 + pMtx[2][2] * in2;
++}
++
++static void GetOGLCoordinates(struct window *window, int x, int y, float *posX,
++                              float *posY) {
++  *posX = (2.0f / (float)window->egl_width * (float)x) - 1.0f;
++  // Y needs to be inverse because screen coordinates (0,0) start at
++  // top left, where as, OpenGL (0,0) NDC coordinates start at bottom left.
++  *posY = 1.0f - (2.0f / (float)window->egl_height * (float)y);
++}
++
++static void SetObjLayerVertices(struct window *window, GLfloat *vertices_,
++                                float x1, float y1, float x2, float y2) {
++  float posX = 0, posY = 0;
++  // First Triangle
++  GetOGLCoordinates(window, x1, y1, &posX, &posY);
++  vertices_[0] = posX;
++  vertices_[1] = posY;
++  GetOGLCoordinates(window, x1, y2, &posX, &posY);
++  vertices_[2] = posX;
++  vertices_[3] = posY;
++  GetOGLCoordinates(window, x2, y2, &posX, &posY);
++  vertices_[4] = posX;
++  vertices_[5] = posY;
++  // Second Triangle
++  GetOGLCoordinates(window, x1, y1, &posX, &posY);
++  vertices_[6] = posX;
++  vertices_[7] = posY;
++  GetOGLCoordinates(window, x2, y2, &posX, &posY);
++  vertices_[8] = posX;
++  vertices_[9] = posY;
++  GetOGLCoordinates(window, x2, y1, &posX, &posY);
++  vertices_[10] = posX;
++  vertices_[11] = posY;
++}
++
++static void redraw(void *data, struct wl_callback *callback, bool first_cycle) {
++  struct window *window = data;
++  struct display *display = window->display;
++  struct wl_region *region;
++  EGLint rect[4];
++  EGLint buffer_age = 0;
++
++  assert(window->callback == callback);
++  window->callback = NULL;
++
++  if (callback)
++    wl_callback_destroy(callback);
++
++  if (display->swap_buffers_with_damage)
++    eglQuerySurface(display->egl.dpy, window->egl_surface, EGL_BUFFER_AGE_EXT,
++                    &buffer_age);
++
++  if (first_cycle) {
++    float foreground_color[3] = {window->cfg->r, window->cfg->g,
++                                 window->cfg->b};
++    glViewport(0, 0, window->egl_width, window->egl_height);
++    rgb2rgb_conv(foreground_color, window->index_rgb);
++    glClearColor((GLfloat)foreground_color[0], (GLfloat)foreground_color[1],
++                 (GLfloat)foreground_color[2], 1.0);
++    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
++  } else {
++    if (is_partial_solid_fill_enabled(window)) {
++      // Set background color
++      float background_color[3] = {window->cfg->bg_r, window->cfg->bg_g,
++                                   window->cfg->bg_b};
++      glViewport(0, 0, window->egl_width, window->egl_height);
++      rgb2rgb_conv(background_color, window->index_rgb);
++      glClearColor((GLfloat)background_color[0], (GLfloat)background_color[1],
++                   (GLfloat)background_color[2], 1.0);
++      glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
++
++      // Set foreground color
++      float vertices_[12] = {// first triangle
++                             -0.5, 0.5, -0.5, -0.5, 0.5, -0.5,
++                             // second triangle
++                             -0.5, 0.5, 0.5, -0.5, 0.5, 0.5};
++
++      GLfloat verticesColors_[24] = {
++          1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
++          1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
++          1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
++      };
++
++      // SetObjLayerColor
++      float foreground_color[3] = {window->cfg->r, window->cfg->g,
++                                   window->cfg->b};
++      rgb2rgb_conv(foreground_color, window->index_rgb);
++      for (int i = 0; i < 24; i += 4) {
++        verticesColors_[i] = (GLfloat)(foreground_color[0]);
++        verticesColors_[i + 1] = (GLfloat)(foreground_color[1]);
++        verticesColors_[i + 2] = (GLfloat)(foreground_color[2]);
++      }
++
++      // SetObjLayerVertices
++      SetObjLayerVertices(window, vertices_, (float)window->cfg->x,
++                          (float)window->cfg->y,
++                          (float)(window->cfg->x + window->cfg->w),
++                          (float)(window->cfg->y + window->cfg->h));
++
++      // Draw foreground
++      glUseProgram(window->gl.program);
++      glVertexAttribPointer(window->gl.pos, 2, GL_FLOAT, GL_FALSE, 0,
++                            vertices_);
++      glEnableVertexAttribArray(window->gl.pos);
++      glVertexAttribPointer(window->gl.col, 4, GL_FLOAT, GL_FALSE, 0,
++                            verticesColors_);
++      glEnableVertexAttribArray(window->gl.col);
++      glDrawArrays(GL_TRIANGLES, 0, 6);
++    } else {
++      // Set foreground color only
++      float foreground_color[3] = {window->cfg->r, window->cfg->g,
++                                   window->cfg->b};
++      glViewport(0, 0, window->egl_width, window->egl_width);
++      rgb2rgb_conv(foreground_color, window->index_rgb);
++      glClearColor((GLfloat)foreground_color[0], (GLfloat)foreground_color[1],
++                   (GLfloat)foreground_color[2], 1.0);
++      glClear(GL_COLOR_BUFFER_BIT);
++    }
++  }
++
++  usleep(window->delay);
++
++  if (window->fullscreen) {
++    region = wl_compositor_create_region(window->display->compositor);
++    wl_region_add(region, 0, 0, window->egl_width, window->egl_height);
++    wl_surface_set_opaque_region(window->surface, region);
++    wl_region_destroy(region);
++  } else {
++    wl_surface_set_opaque_region(window->surface, NULL);
++  }
++
++  if (display->swap_buffers_with_damage && buffer_age > 0) {
++    rect[0] = window->egl_width / 4 - 1;
++    rect[1] = window->egl_height / 4 - 1;
++    rect[2] = window->egl_width / 2 + 2;
++    rect[3] = window->egl_height / 2 + 2;
++    display->swap_buffers_with_damage(display->egl.dpy, window->egl_surface,
++                                      rect, 1);
++  } else {
++    eglSwapBuffers(display->egl.dpy, window->egl_surface);
++  }
++}
++
++static void init_surface(struct window *window) {
++  int ret = 0;
++  create_surface(window);
++
++  /* we already have wait_for_configure set after create_surface() */
++  while (running && ret != -1 && window->wait_for_configure) {
++    ret = wl_display_dispatch(window->display->display);
++
++    /* wait until xdg_surface::configure acks the new dimensions */
++    if (window->wait_for_configure)
++      continue;
++
++    choose_output(window->display, window->output_name);
++    init_gl(window);
++  }
++}
++
++static void draw_frame(struct window *window, bool is_init, bool show_blank) {
++  int ret = 0;
++
++  if (is_init) {
++    init_surface(window);
++    redraw(window, NULL, true);
++    redraw(window, NULL, true);
++  } else {
++    if (show_blank)
++      redraw(window, NULL, true);
++
++    redraw(window, NULL, false);
++  }
++}
++
++static void xdg_wm_base_ping(void *data, struct xdg_wm_base *shell,
++                             uint32_t serial) {
++  xdg_wm_base_pong(shell, serial);
++}
++
++static const struct xdg_wm_base_listener wm_base_listener = {
++    xdg_wm_base_ping,
++};
++
++static void registry_handle_global(void *data, struct wl_registry *registry,
++                                   uint32_t name, const char *interface,
++                                   uint32_t version) {
++  struct display *d = data;
++
++  if (strcmp(interface, "wl_compositor") == 0) {
++    d->compositor = wl_registry_bind(registry, name, &wl_compositor_interface,
++                                     MIN(version, 4));
++  } else if (strcmp(interface, "xdg_wm_base") == 0) {
++    d->wm_base = wl_registry_bind(registry, name, &xdg_wm_base_interface, 1);
++    xdg_wm_base_add_listener(d->wm_base, &wm_base_listener, d);
++  } else if (strcmp(interface, "wl_output") == 0) {
++    d->info.display = d->display;
++    d->info.registry = d->registry;
++    add_output_info(&d->info, name, version);
++  } else if (!strcmp(interface, zxdg_output_manager_v1_interface.name)) {
++    d->info.display = d->display;
++    d->info.registry = d->registry;
++    add_xdg_output_manager_v1_info(&d->info, name, version);
++  }
++}
++
++static void registry_handle_global_remove(void *data,
++                                          struct wl_registry *registry,
++                                          uint32_t name) {}
++
++static const struct wl_registry_listener registry_listener = {
++    registry_handle_global, registry_handle_global_remove};
++
++static void signal_int(int signum) { running = 0; }
++
++static void destroy_display(struct display *display) {
++  if (display->wm_base)
++    xdg_wm_base_destroy(display->wm_base);
++
++  if (display->compositor)
++    wl_compositor_destroy(display->compositor);
++
++  if (display->info.xdg_output_manager_v1_info)
++    destroy_xdg_output_manager_v1_info(
++        display->info.xdg_output_manager_v1_info);
++
++  wl_registry_destroy(display->registry);
++  wl_display_flush(display->display);
++  wl_display_disconnect(display->display);
++}
++
++static int init_display(struct display *display, struct window *window) {
++  display->display = wl_display_connect(NULL);
++  assert(display->display);
++
++  display->registry = wl_display_get_registry(display->display);
++  wl_registry_add_listener(display->registry, &registry_listener, display);
++
++  wl_list_init(&display->info.outputs);
++  display->info.xdg_output_manager_v1_info = NULL;
++
++  wl_display_roundtrip(display->display);
++
++  if (!display->wm_base) {
++    fprintf(stderr, "xdg-shell support required. simple-egl exiting\n");
++    destroy_display(display);
++    return -1;
++  }
++
++  return 0;
++}
++
++static void usage(int error_code) {
++  fprintf(stderr, "Usage: simple-egl [OPTIONS]\n\n"
++                  "  -d <us>\tBuffer swap delay in microseconds\n"
++                  "  -f\tRun in fullscreen mode\n"
++                  "  -m\tRun in maximized mode\n"
++                  "  -output\t Set output <Get more detail from weston-info>\n"
++                  "  -index\t Set output <Get more detail from weston-info>\n"
++                  "\n\t\t 0 - sRGB to sRGB (default)"
++                  "\n\t\t 1 - sRGB to DisplayP3"
++                  "\n\t\t 2 - sRGB to DCI_P3\n"
++                  "  -h\tThis help text\n\n");
++
++  exit(error_code);
++}
++
++int main(int argc, char **argv) {
++  int i = 0, ret = 0;
++  struct sigaction sigint;
++  struct display display = {0};
++  struct window window = {0};
++  TPGConfig cfg = {// default config
++                   // color(r,g,b)
++                   1.0, 1.0, 1.0, 0.0, 0.0, 0.0,
++                   // position(x,y)
++                   0, 0,
++                   // size(w,h)
++                   250, 250,
++                   // depth
++                   8};
++
++  window.display = &display;
++  display.window = &window;
++  window.egl_width = cfg.w;
++  window.egl_height = cfg.h;
++  window.delay = 0;
++  window.index_rgb = 0;
++  window.cfg = &cfg;
++  window.fullscreen = 1;
++  window.output_name = NULL;
++
++  sigint.sa_handler = signal_int;
++  sigemptyset(&sigint.sa_mask);
++  sigint.sa_flags = SA_RESETHAND;
++  sigaction(SIGINT, &sigint, NULL);
++
++  for (i = 1; i < argc; i++) {
++    if (strcmp("-d", argv[i]) == 0 && i + 1 < argc)
++      window.delay = atoi(argv[++i]);
++    else if (strcmp("-f", argv[i]) == 0)
++      window.fullscreen = 1;
++    else if (strcmp("-m", argv[i]) == 0)
++      window.maximized = 1;
++    else if (strcmp("-index", argv[i]) == 0)
++      window.index_rgb = atoi(argv[++i]);
++    else if (strcmp("-output", argv[i]) == 0) {
++      window.output_name = argv[++i];
++      printf("fullscreen in output-(%s)\n", window.output_name);
++    } else if (strcmp("-h", argv[i]) == 0)
++      usage(EXIT_SUCCESS);
++    else
++      usage(EXIT_FAILURE);
++  }
++
++  ret = init_display(&display, &window);
++  if (ret != 0) {
++    fprintf(stderr, "Init display failed! qdcm-solid-color-tool exiting\n");
++    return -1;
++  }
++
++  init_egl(&display, &window);
++
++  draw_frame(&window, true, true); // show blank
++
++  command_start(&display);
++
++  while (running && ret != -1) {
++    ret = wl_display_dispatch_pending(display.display);
++    if (need_repaint()) {
++      redraw(&window, NULL, false);
++      repaint_done();
++    }
++  }
++
++  fprintf(stderr, "qdcm-solid-color-tool exiting\n");
++
++  destroy_surface(&window);
++  fini_egl(&display);
++  destroy_display(&display);
++
++  return 0;
++}
+diff --git a/libweston/backend-sdm/meson.build b/libweston/backend-sdm/meson.build
+index 860e76c8..b12c0d12 100644
+--- a/libweston/backend-sdm/meson.build
++++ b/libweston/backend-sdm/meson.build
+@@ -25,6 +25,10 @@ srcs_drm = [
+ 	'sdm-service/sdm_display_socket_handler.h',
+ 	'sdm-service/uevent.c',
+ 	'sdm-service/uevent.h',
++	'sdm-service/sdm_display_color_manager.cpp',
++	'sdm-service/sdm_display_color_manager.h',
++	'sdm-service/sdm_display_qdcm_session.cpp',
++	'sdm-service/sdm_display_qdcm_session.h',
+ 	linux_dmabuf_unstable_v1_protocol_c,
+ 	linux_dmabuf_unstable_v1_server_protocol_h,
+ 	gbm_buffer_backend_protocol_c,
+diff --git a/libweston/backend-sdm/sdm-service/sdm_display.cpp b/libweston/backend-sdm/sdm-service/sdm_display.cpp
+index 09af7f7b..600a80f0 100644
+--- a/libweston/backend-sdm/sdm-service/sdm_display.cpp
++++ b/libweston/backend-sdm/sdm-service/sdm_display.cpp
+@@ -80,6 +80,7 @@
+ 
+ #define __CLASS__ "SdmDisplay"
+ extern "C" void NotifyOnRefresh(struct drm_output *);
++extern "C" void NotifyOnQdcmRefresh(struct drm_output *);
+ 
+ vblank_cb_t vblank_cb_;
+ 
+@@ -250,6 +251,12 @@ DisplayError SdmDisplay::HistogramEvent(int /* fd */, uint32_t /* blob_fd */) {
+   return kErrorNone;
+ }
+ 
++void SdmDisplay::RefreshCallback() {
++  if (drm_output_) {
++    NotifyOnQdcmRefresh(drm_output_);
++  }
++}
++
+ void SdmDisplay::RefreshWithCachedLayerstack()
+ {
+     DisplayError error = kErrorNone;
+@@ -1593,6 +1600,25 @@ DisplayError SdmDisplay::GetHdrInfo(struct DisplayHdrInfo *display_hdr_info) {
+   return error;
+ }
+ 
++int SdmDisplay::ColorSVCRequestRoute(const PPDisplayAPIPayload &in_payload,
++                                     PPDisplayAPIPayload *out_payload,
++                                     PPPendingParams *pending_action) {
++  int ret = 0;
++
++  if (display_intf_) {
++    ret = display_intf_->ColorSVCRequestRoute(in_payload, out_payload,
++                                              pending_action);
++  } else {
++    ret = -EINVAL;
++  }
++
++  return ret;
++}
++
++void SdmDisplay::SetIdleTimeoutMs(uint32_t timeout_ms, uint32_t inactive_ms) {
++  display_intf_->SetIdleTimeoutMs(timeout_ms, inactive_ms);
++}
++
+ SdmNullDisplay::SdmNullDisplay(DisplayType type, CoreInterface *core_intf) {
+ }
+ 
+@@ -1629,6 +1655,17 @@ DisplayError SdmNullDisplay::GetPanelBrightness(float *brightness) {
+   return kErrorNone;
+ }
+ 
++int SdmNullDisplay::ColorSVCRequestRoute(const PPDisplayAPIPayload &in_payload,
++                                         PPDisplayAPIPayload *out_payload,
++                                         PPPendingParams *pending_action) {
++  return kErrorNone;
++}
++
++void SdmNullDisplay::SetIdleTimeoutMs(uint32_t timeout_ms,
++                                      uint32_t inactive_ms) {}
++
++void SdmNullDisplay::RefreshCallback() {}
++
+ DisplayError SdmNullDisplay::SetVSyncState(bool enable, struct drm_output *output) {
+   /**
+    * TODO: drm_output_ needs to be re-initialized based on the preferred supported mode
+diff --git a/libweston/backend-sdm/sdm-service/sdm_display.h b/libweston/backend-sdm/sdm-service/sdm_display.h
+index 233524ac..3ca9fdd8 100644
+--- a/libweston/backend-sdm/sdm-service/sdm_display.h
++++ b/libweston/backend-sdm/sdm-service/sdm_display.h
+@@ -30,23 +30,23 @@
+ #ifndef __SDM_DISPLAY_H__
+ #define __SDM_DISPLAY_H__
+ 
++#include <atomic>
++#include <color_metadata.h>
+ #include <core/core_interface.h>
+ #include <core/display_interface.h>
+ #include <debug_handler.h>
+-#include <utils/debug.h>
+-#include <utils/constants.h>
+-#include <utils/formats.h>
++#include <iostream>
++#include <map>
++#include <memory>
+ #include <private/color_params.h>
+-#include <color_metadata.h>
+ #include <stdio.h>
+ #include <string>
++#include <thread>
+ #include <utility>
+-#include <map>
++#include <utils/constants.h>
++#include <utils/debug.h>
++#include <utils/formats.h>
+ #include <vector>
+-#include <iostream>
+-#include <thread>
+-#include <atomic>
+-#include <memory>
+ 
+ #include "sdm-service/sdm_display_debugger.h"
+ #include "sdm-service/sdm_display_interface.h"
+@@ -94,6 +94,12 @@ class SdmDisplayInterface {
+     virtual DisplayError SetPanelBrightness(float brightness) = 0;
+     virtual DisplayError GetPanelBrightness(float *brightness) = 0;
+     virtual DisplayError GetHdrInfo(struct DisplayHdrInfo *display_hdr_info) = 0;
++    virtual int ColorSVCRequestRoute(const PPDisplayAPIPayload &in_payload,
++                                     PPDisplayAPIPayload *out_payload,
++                                     PPPendingParams *pending_action) = 0;
++    virtual void RefreshCallback() = 0;
++    virtual void SetIdleTimeoutMs(uint32_t timeout_ms,
++                                  uint32_t inactive_ms) = 0;
+     static int GetDrmMasterFd();
+     static void SetDrmMasterFd(int fd);
+     struct drm_output *drm_output_;
+@@ -120,6 +126,11 @@ class SdmNullDisplay : public SdmDisplayInterface {
+     DisplayError SetPanelBrightness(float brightness);
+     DisplayError GetPanelBrightness(float *brightness);
+     DisplayError GetHdrInfo(struct DisplayHdrInfo *display_hdr_info);
++    void RefreshCallback();
++    int ColorSVCRequestRoute(const PPDisplayAPIPayload &in_payload,
++                             PPDisplayAPIPayload *out_payload,
++                             PPPendingParams *pending_action);
++    void SetIdleTimeoutMs(uint32_t timeout_ms, uint32_t inactive_ms);
+ };
+ 
+ class SdmDisplay : public SdmDisplayInterface, DisplayEventHandler, SdmDisplayDebugger {
+@@ -145,6 +156,11 @@ class SdmDisplay : public SdmDisplayInterface, DisplayEventHandler, SdmDisplayDe
+     DisplayError SetPanelBrightness(float brightness);
+     DisplayError GetPanelBrightness(float *brightness);
+ 
++    int ColorSVCRequestRoute(const PPDisplayAPIPayload &in_payload,
++                             PPDisplayAPIPayload *out_payload,
++                             PPPendingParams *pending_action);
++
++    void SetIdleTimeoutMs(uint32_t timeout_ms, uint32_t inactive_ms);
+     int OnMinHdcpEncryptionLevelChange(uint32_t min_enc_level);
+     DisplayError GetHdrInfo(struct DisplayHdrInfo *display_hdr_info);
+ 
+@@ -218,7 +234,7 @@ class SdmDisplay : public SdmDisplayInterface, DisplayEventHandler, SdmDisplayDe
+     ColorMode SelectBestColorSpace(bool isHdrSupported);
+     ColorMode GetBestHDRColorMode(ColorPrimaries layer_gamut, GammaTransfer layer_gamma);
+     void InitializeLayerIds();
+-
++    void RefreshCallback();
+     CoreInterface *core_intf_ = NULL;
+     SdmDisplayBufferAllocator *buffer_allocator_;
+     SdmDisplaySocketHandler socket_handler_;
+@@ -289,6 +305,21 @@ class SdmDisplayProxy {
+       return display_intf_->GetHdrInfo(display_hdr_info);
+     }
+ 
++    void RefreshCallback() { display_intf_->RefreshCallback(); }
++
++    int ColorSVCRequestRoute(const PPDisplayAPIPayload &in_payload,
++                             PPDisplayAPIPayload *out_payload,
++                             PPPendingParams *pending_action) {
++      return display_intf_->ColorSVCRequestRoute(in_payload, out_payload,
++                                                 pending_action);
++    }
++
++    void SetIdleTimeoutMs(uint32_t timeout_ms, uint32_t inactive_ms) {
++      display_intf_->SetIdleTimeoutMs(timeout_ms, inactive_ms);
++    }
++
++    int32_t GetDisplayType() { return disp_type_; }
++
+   private:
+     // Uevent thread
+     static void *UeventThread(void *context);
+@@ -306,6 +337,15 @@ class SdmDisplayProxy {
+     hotplug_cb_t hotplug_cb_;
+ };
+ 
++#ifdef __cplusplus
++extern "C" {
++#endif
++SdmDisplayProxy *GetDisplayFromId(uint32_t display_id);
++SdmDisplayProxy *GetDisplayFromIndex(uint32_t index);
++#ifdef __cplusplus
++}
++#endif
++
+ }  // namespace sdm
+ 
+ #endif  // __SDM_DISPLAY_H__
+diff --git a/libweston/backend-sdm/sdm-service/sdm_display_color_manager.cpp b/libweston/backend-sdm/sdm-service/sdm_display_color_manager.cpp
+new file mode 100644
+index 00000000..0146b692
+--- /dev/null
++++ b/libweston/backend-sdm/sdm-service/sdm_display_color_manager.cpp
+@@ -0,0 +1,83 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
++ */
++
++#include <sys/socket.h>
++#include <sys/un.h>
++#include <utils/constants.h>
++#include <utils/debug.h>
++
++#include "sdm_display_color_manager.h"
++#include "sdm_display.h"
++#include "sdm_display_buffer_allocator.h"
++
++#define __CLASS__ "SDMColorManager"
++
++namespace sdm {
++
++int SDMColorManager::CreatePayloadFromQdcmPkt(
++    const QdcmPacket &in_pkt, uint32_t *disp_id,
++    struct PPDisplayAPIPayload *sink) {
++  int ret = 0;
++  uint32_t id(0);
++  uint32_t size(0);
++
++  id = UINT32(in_pkt.id());
++  size = UINT32(in_pkt.size());
++  if (size > 0) {
++    const void *data = in_pkt.content().data();
++    const uint8_t *temp = reinterpret_cast<const uint8_t *>(data);
++
++    sink->size = size;
++    sink->payload = const_cast<uint8_t *>(temp);
++    *disp_id = id;
++  } else {
++    DLOGW("Failing size checking, size = %d", size);
++    ret = -EINVAL;
++  }
++
++  return ret;
++}
++
++SDMColorManager *
++SDMColorManager::CreateColorManager(BufferAllocator *buffer_allocator) {
++  SDMColorManager *color_mgr = new SDMColorManager(buffer_allocator);
++
++  if (!color_mgr) {
++    DLOGE("Unable to create SDMColorManager");
++    return NULL;
++  }
++  return color_mgr;
++}
++
++int SDMColorManager::EnableQDCMMode(bool enable, SdmDisplayProxy *sdmdisplay) {
++  entry_timeout_ = UINT32(SdmDisplayDebugger::GetIdleTimeoutMs());
++  int ret = 0;
++
++  // if enter QDCM mode, disable GPU fallback idle timeout.
++  if (sdmdisplay) {
++    int inactive_ms = IDLE_TIMEOUT_INACTIVE_MS;
++    Debug::Get()->GetProperty(IDLE_TIME_INACTIVE_PROP, &inactive_ms);
++    uint32_t timeout = enable ? 0 : entry_timeout_;
++    sdmdisplay->SetIdleTimeoutMs(timeout, inactive_ms);
++  }
++
++  return ret;
++}
++
++SDMColorManager::SDMColorManager(BufferAllocator *buffer_allocator)
++    : buffer_allocator_(buffer_allocator) {}
++
++SDMColorManager::~SDMColorManager() {}
++
++void SDMColorManager::DestroyColorManager() { delete this; }
++
++void SDMColorManager::MarshallStructIntoQdcmPkt(
++    const struct PPDisplayAPIPayload &data, QdcmPacket *out_pkt) {
++  out_pkt->set_size(INT32(data.size));
++  if (data.payload)
++    out_pkt->set_content(data.payload, data.size);
++}
++
++} // namespace sdm
+diff --git a/libweston/backend-sdm/sdm-service/sdm_display_color_manager.h b/libweston/backend-sdm/sdm-service/sdm_display_color_manager.h
+new file mode 100644
+index 00000000..317713a0
+--- /dev/null
++++ b/libweston/backend-sdm/sdm-service/sdm_display_color_manager.h
+@@ -0,0 +1,54 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
++ */
++
++#ifndef __SDM_DISPLAY_COLOR_MANAGER_H__
++#define __SDM_DISPLAY_COLOR_MANAGER_H__
++
++#include <core/sdm_types.h>
++#include <dlfcn.h>
++#include <fcntl.h>
++#include <iostream>
++#include <map>
++#include <private/color_params.h>
++#include <qdcm_service_intf.h>
++#include <stdio.h>
++#include <string>
++#include <thread>
++#include <unistd.h>
++#include <utility>
++#include <utils/constants.h>
++#include <utils/debug.h>
++#include <utils/formats.h>
++#include <utils/locker.h>
++#include <utils/sys.h>
++#include <vector>
++
++#include "sdm-service/sdm_display_buffer_allocator.h"
++#include "sdm_display.h"
++
++typedef class BufferAllocator BufferAllocator;
++
++namespace sdm {
++
++class SDMColorManager {
++public:
++  static SDMColorManager *CreateColorManager(BufferAllocator *buffer_allocator);
++  static int CreatePayloadFromQdcmPkt(const QdcmPacket &in_pkt,
++                                      uint32_t *disp_id,
++                                      struct PPDisplayAPIPayload *sink);
++  static void MarshallStructIntoQdcmPkt(const struct PPDisplayAPIPayload &data,
++                                        QdcmPacket *out_pkt);
++
++  explicit SDMColorManager(BufferAllocator *buffer_allocator);
++  int EnableQDCMMode(bool enable, SdmDisplayProxy *sdmdisplay);
++  ~SDMColorManager();
++  void DestroyColorManager();
++
++private:
++  uint32_t entry_timeout_ = 0;
++  BufferAllocator *buffer_allocator_ = NULL;
++};
++} // namespace sdm
++#endif // SDM_DISPLAY_COLOR_MANAGER_H
+diff --git a/libweston/backend-sdm/sdm-service/sdm_display_connect.cpp b/libweston/backend-sdm/sdm-service/sdm_display_connect.cpp
+index f55375c3..2e707386 100644
+--- a/libweston/backend-sdm/sdm-service/sdm_display_connect.cpp
++++ b/libweston/backend-sdm/sdm-service/sdm_display_connect.cpp
+@@ -31,6 +31,7 @@
+ 
+ #include "sdm-service/sdm_display.h"
+ #include "sdm-service/sdm_display_connect.h"
++#include "sdm-service/sdm_display_qdcm_session.h"
+ #include "sdm-service/uevent.h"
+ 
+ #ifdef __cplusplus
+@@ -59,6 +60,8 @@ HWDisplaysInfo hw_displays_info_ = {};
+ // ordered by output id
+ SdmDisplaysInfo sdm_displays_info_ = {};
+ 
++static QDCMSession *qdcmsession_ = nullptr;
++
+ SdmDisplayProxy *GetDisplayFromId(uint32_t display_id) {
+     auto it = displays_.find(display_id);
+     if (it == displays_.end()) {
+@@ -68,6 +71,23 @@ SdmDisplayProxy *GetDisplayFromId(uint32_t display_id) {
+     return it->second;
+ }
+ 
++SdmDisplayProxy *GetDisplayFromIndex(uint32_t index) {
++  auto it = displays_.begin();
++  uint32_t i = 0;
++  for (it; it != displays_.end(); ++it) {
++    if (i != index) {
++      i++;
++      continue;
++    }
++
++    DLOGI("Get index[%u] display_id = %d.", index, it->first);
++    return it->second;
++  }
++
++  DLOGE("No display available with index: %d.", index);
++  return NULL;
++}
++
+ bool IsDisplayCreated(uint32_t display_id) {
+     return displays_.find(display_id) != displays_.end();
+ }
+@@ -108,6 +128,14 @@ int CreateCore(bool use_pixman)
+         return kErrorNone;
+     }
+     buffer_allocator_ = new SdmDisplayBufferAllocator(use_pixman);
++    if (!qdcmsession_) {
++      qdcmsession_ = new QDCMSession;
++      if (qdcmsession_) {
++        if (qdcmsession_->Init(buffer_allocator_) != kErrorNone) {
++          DLOGE("qdcmsession Init failed");
++        }
++      }
++    }
+ 
+     // TODO: Check the requirement for this property
+     std::shared_ptr<IPCIntf> ipc_intf = nullptr;
+@@ -133,6 +161,12 @@ int DestroyCore()
+ {
+     DisplayError error = kErrorNone;
+ 
++    if (qdcmsession_) {
++      qdcmsession_->Deinit();
++      delete qdcmsession_;
++      qdcmsession_ = NULL;
++    }
++
+     if (!core_intf_) {
+         DLOGE("Core was already destroyed => core_intf_ = NULL");
+         return kErrorNone;
+diff --git a/libweston/backend-sdm/sdm-service/sdm_display_debugger.cpp b/libweston/backend-sdm/sdm-service/sdm_display_debugger.cpp
+index 00008202..a5be72de 100644
+--- a/libweston/backend-sdm/sdm-service/sdm_display_debugger.cpp
++++ b/libweston/backend-sdm/sdm-service/sdm_display_debugger.cpp
+@@ -23,14 +23,15 @@
+ *
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+ *
+-* Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
++* Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+ 
+-#include <stdio.h>
+-#include <stdlib.h>
+ #include <display_properties.h>
+ #include <properties.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <utils/constants.h>
+ 
+ extern "C" {
+ #include <libweston/libweston.h>
+@@ -282,4 +283,11 @@ SdmDisplayDebugger::SdmDisplayDebugger() {
+   config_trace_debug();
+ }
+ 
++int SdmDisplayDebugger::GetIdleTimeoutMs() {
++  int value = IDLE_TIMEOUT_DEFAULT_MS;
++  debug_handler_.GetProperty(IDLE_TIME_PROP, &value);
++
++  return value;
++}
++
+ }  // namespace sdm
+diff --git a/libweston/backend-sdm/sdm-service/sdm_display_qdcm_session.cpp b/libweston/backend-sdm/sdm-service/sdm_display_qdcm_session.cpp
+new file mode 100644
+index 00000000..8af9ea29
+--- /dev/null
++++ b/libweston/backend-sdm/sdm-service/sdm_display_qdcm_session.cpp
+@@ -0,0 +1,206 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
++ */
++
++#include "sdm_display.h"
++#include "sdm_display_qdcm_session.h"
++#include <qdcm_service_intf.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define __CLASS__ "QDCMSession"
++
++namespace sdm {
++
++QDCMSession::QDCMSession() {}
++
++int QDCMSession::Init(BufferAllocator *buffer_allocator_) {
++  DLOGI("Initializing QDCM Service...");
++  qdcm_service_intf_ = QdcmServiceFactory::GetQdcmServiceInstance();
++  // Create functional object of notifyCallback with
++  // placeholders 1 and 2 to indicate two input parameters needed
++  // for notifyCallback.
++  qdcm_service_intf_->Init(std::bind(&QDCMSession::notifyCallback, this,
++                                     std::placeholders::_1,
++                                     std::placeholders::_2));
++
++  color_mgr_ = SDMColorManager::CreateColorManager(buffer_allocator_);
++  if (!color_mgr_) {
++    DLOGW("Failed to load SDMColorManager.");
++    return -EINVAL;
++  }
++  return 0;
++}
++
++int32_t QDCMSession::Deinit() {
++  if (qdcm_service_intf_) {
++    qdcm_service_intf_->DeInit();
++  }
++
++  if (color_mgr_) {
++    color_mgr_->DestroyColorManager();
++  }
++
++  return 0;
++}
++
++int32_t QDCMSession::QdcmCMDDispatch(uint32_t display_id,
++                                     const PPDisplayAPIPayload &req_payload,
++                                     struct PPDisplayAPIPayload *resp_payload,
++                                     PPPendingParams *pending_action) {
++  int ret = 0;
++  SdmDisplayProxy *dpy = GetDisplayFromIndex(display_id);
++  if (!dpy) {
++    DLOGE("Failed as Display (%d) not created yet.", display_id);
++    return kErrorNotSupported;
++  }
++  ret = dpy->ColorSVCRequestRoute(req_payload, resp_payload, pending_action);
++
++  return ret;
++}
++
++int32_t QDCMSession::QdcmCMDHandler(const QdcmPacket *in_pkt,
++                                    QdcmPacket *out_pkt) {
++  int ret = 0;
++  float *brightness = NULL;
++  uint32_t display_id(0), numdisps = 0, id = 0;
++  PPPendingParams pending_action;
++  struct PPDisplayAPIPayload resp_payload, req_payload;
++  uint8_t *disp_id = NULL;
++
++  if (!color_mgr_) {
++    DLOGW("color_mgr_ not initialized.");
++    return -ENOENT;
++  }
++
++  pending_action.action = kNoAction;
++  pending_action.params = NULL;
++
++  // Read display_id, payload_size and payload from in_pkt.
++  ret = SDMColorManager::CreatePayloadFromQdcmPkt(*in_pkt, &display_id,
++                                                  &req_payload);
++  if (!ret) {
++    ret = QdcmCMDDispatch(display_id, req_payload, &resp_payload,
++                          &pending_action);
++  }
++
++  if (ret) {
++    out_pkt->set_id(ret); // first field in out pkt indicates return code.
++    req_payload.DestroyPayload();
++    resp_payload.DestroyPayload();
++    return ret;
++  }
++
++  SdmDisplayProxy *dpy = GetDisplayFromIndex(display_id);
++  if (!dpy) {
++    DLOGE("Failed as Display (%d) not created yet.", display_id);
++    return kErrorNotSupported;
++  }
++
++  if (kNoAction != pending_action.action) {
++    int32_t action = pending_action.action;
++    int count = -1;
++    while (action > 0) {
++      count++;
++      int32_t bit = (action & 1);
++      action = action >> 1;
++
++      if (!bit)
++        continue;
++
++      DLOGV_IF(kTagQDCM, "pending action = %d, display_id = %d", BITMAP(count),
++               display_id);
++      switch (BITMAP(count)) {
++      case kInvalidating:
++        dpy->RefreshCallback();
++        break;
++      case kEnterQDCMMode:
++        ret = color_mgr_->EnableQDCMMode(true, dpy);
++        break;
++      case kExitQDCMMode:
++        ret = color_mgr_->EnableQDCMMode(false, dpy);
++        break;
++      case kSetPanelBrightness:
++        ret = -EINVAL;
++        brightness = reinterpret_cast<float *>(resp_payload.payload);
++        if (brightness == NULL) {
++          DLOGE("Brightness payload is Null");
++        } else {
++          ret = dpy->SetPanelBrightness(*brightness);
++        }
++        break;
++      case kEnableFrameCapture:
++        ret = 0;
++        break;
++      case kDisableFrameCapture:
++        ret = 0;
++        break;
++      case kConfigureDetailedEnhancer:
++        ret = 0; // TODO
++        break;
++      case kModeSet:
++        ret = 0; // TODO
++        break;
++      case kNoAction:
++        break;
++      case kMultiDispProc:
++        numdisps = GetDisplayCount();
++        for (id = 1; id < numdisps; id++) {
++          dpy = GetDisplayFromIndex(id);
++          if (dpy && (dpy->GetDisplayType() == kBuiltIn)) {
++            int result = 0;
++            resp_payload.DestroyPayload();
++            result = dpy->ColorSVCRequestRoute(req_payload, &resp_payload,
++                                               &pending_action);
++            if (result) {
++              DLOGW("Failed to dispatch action to disp %d ret %d", id, result);
++              ret = result;
++            }
++          }
++        }
++        break;
++      case kMultiDispGetId:
++        numdisps = GetDisplayCount();
++        ret = resp_payload.CreatePayloadBytes(kNumDisplays, &disp_id);
++        if (ret) {
++          DLOGW("Unable to create response payload!");
++        } else {
++          for (int i = 0; i < kNumDisplays; i++) {
++            disp_id[i] = kNumDisplays;
++          }
++          for (id = 0; id < numdisps; id++) {
++            dpy = GetDisplayFromIndex(id);
++            if (dpy && (dpy->GetDisplayType() == kBuiltIn)) {
++              disp_id[id] = (uint8_t)id;
++            }
++          }
++        }
++        break;
++      case kSetModeFromClient:
++        ret = 0; // TODO
++        break;
++      default:
++        DLOGW("Invalid pending action = %d!", pending_action.action);
++        break;
++      }
++    }
++  }
++  // for display API getter case, marshall returned params into out_pkt.
++  out_pkt->set_id(ret);
++  SDMColorManager::MarshallStructIntoQdcmPkt(resp_payload, out_pkt);
++  req_payload.DestroyPayload();
++  resp_payload.DestroyPayload();
++
++  return ret;
++}
++
++int QDCMSession::notifyCallback(const void *in_pkt, void *out_pkt) {
++  return QdcmCMDHandler((const QdcmPacket *)in_pkt, (QdcmPacket *)out_pkt);
++}
++} // namespace sdm
++#ifdef __cplusplus
++}
++#endif
+diff --git a/libweston/backend-sdm/sdm-service/sdm_display_qdcm_session.h b/libweston/backend-sdm/sdm-service/sdm_display_qdcm_session.h
+new file mode 100644
+index 00000000..3f9d945d
+--- /dev/null
++++ b/libweston/backend-sdm/sdm-service/sdm_display_qdcm_session.h
+@@ -0,0 +1,53 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause-Clear
++ */
++
++#ifndef __SDM_DISPLAY_QDCM_SESSION_H__
++#define __SDM_DISPLAY_QDCM_SESSION_H__
++
++// TODO: Temporary fix to resolve conflict with C++11 function static_assert
++// This is needed as c++11 static_asserts are used in grpc lib.
++#ifdef static_assert
++#undef static_assert
++#endif
++#include "sdm_display.h"
++#include "sdm_display_buffer_allocator.h"
++#include "sdm_display_color_manager.h"
++#include "sdm_display_interface.h"
++#include <private/color_params.h>
++#include <qdcm_service_intf.h>
++
++namespace sdm {
++
++class QDCMSession {
++public:
++  static const int kNumBuiltIn = 4;
++  static const int kNumPluggable = 4;
++  static const int kNumVirtual = 4;
++  // Add 1 primary display which can be either a builtin or pluggable.
++  // Async powermode update requires dummy hwc displays.
++  // Limit dummy displays to builtin/pluggable type for now.
++  static const int kNumRealDisplays =
++      1 + kNumBuiltIn + kNumPluggable + kNumVirtual;
++  static const int kNumDisplays = 1 + kNumBuiltIn + kNumPluggable +
++                                  kNumVirtual + 1 + kNumBuiltIn + kNumPluggable;
++
++  QDCMSession();
++  int Init(BufferAllocator *buffer_allocator_);
++  int Deinit();
++
++private:
++  int notifyCallback(const void *in_pkt, void *out_pkt);
++  int32_t QdcmCMDHandler(const QdcmPacket *in_pkt, QdcmPacket *out_pkt);
++  int32_t QdcmCMDDispatch(uint32_t display_id,
++                          const struct PPDisplayAPIPayload &req_payload,
++                          struct PPDisplayAPIPayload *resp_payload,
++                          struct PPPendingParams *pending_action);
++
++  SDMColorManager *color_mgr_ = nullptr;
++  QdcmServiceIntf *qdcm_service_intf_ = nullptr;
++};
++
++} // namespace sdm
++#endif // SDM_DISPLAY_QDCM_SESSION_H
+diff --git a/libweston/backend-sdm/sdm.c b/libweston/backend-sdm/sdm.c
+index ea184e7b..4e7c7e44 100644
+--- a/libweston/backend-sdm/sdm.c
++++ b/libweston/backend-sdm/sdm.c
+@@ -1892,3 +1892,7 @@ void NotifyOnRefresh(struct drm_output *drm_output) {
+   drm_output->base.repaint_status = REPAINT_AWAITING_COMPLETION;
+   drm_output->atomic_complete_pending = true;
+ }
++
++void NotifyOnQdcmRefresh(struct drm_output *output) {
++  weston_output_damage(output);
++}
+diff --git a/libweston/meson.build b/libweston/meson.build
+index 9494fd8e..33977f99 100644
+--- a/libweston/meson.build
++++ b/libweston/meson.build
+@@ -170,7 +170,15 @@ if get_option('backend-drm')
+ endif
+ 
+ if get_option('backend-sdm')
+-deps_session_helper += [dep_libdrm, dep_libsdmcore, dep_libsdmutils, dep_libsdmdal]
++	deps_session_helper += [
++		dep_libdrm,
++		dep_libsdmcore,
++		dep_libsdmutils,
++		dep_libsdmdal,
++		dep_libqdcmgrpc,
++		dep_libprotobuf,
++		dep_libgrpc,
++	]
+ endif
+ 
+ systemd_dep = dependency('', required: false)
+diff --git a/meson.build b/meson.build
+index 9d55ac3d..1651cd09 100644
+--- a/meson.build
++++ b/meson.build
+@@ -164,12 +164,15 @@ dep_libdrm_headers = dep_libdrm.partial_dependency(compile_args: true)
+ dep_threads = dependency('threads')
+ dep_gbm = dependency('gbm')
+ if get_option('backend-sdm')
+-dep_glib = dependency('glib-2.0')
+-dep_property = cc.find_library('propertyvault', required: true)
+-dep_libsdmcore = cc.find_library('sdmcore')
+-dep_libsdmutils = cc.find_library('sdmutils')
+-dep_libsdmdal = cc.find_library('sdmdal')
+-dep_libdrmutils = cc.find_library('drmutils')
++	dep_glib = dependency('glib-2.0')
++	dep_property = cc.find_library('propertyvault', required: true)
++	dep_libsdmcore = cc.find_library('sdmcore')
++	dep_libsdmutils = cc.find_library('sdmutils')
++	dep_libsdmdal = cc.find_library('sdmdal')
++	dep_libdrmutils = cc.find_library('drmutils')
++	dep_libqdcmgrpc = cc.find_library('qdcmgrpc')
++	dep_libprotobuf = cc.find_library('protobuf')
++	dep_libgrpc = cc.find_library('grpc++')
+ endif
+ 
+ dep_libdrm_version = dep_libdrm.version()
+-- 
+2.34.1
+

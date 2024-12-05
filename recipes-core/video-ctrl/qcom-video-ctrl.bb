@@ -9,13 +9,14 @@ DEPENDS += "qcom-fastcv-binaries glib-2.0"
 
 PBT_ARCH = "armv8-2a"
 
-SRC_URI[armv8-2a.sha256sum] = "2093a8f74f35bdc54a557827e3ed4befba1181834441d35f621a88b6c1c8cf75"
+ARMV8_SHA256SUM = "2093a8f74f35bdc54a557827e3ed4befba1181834441d35f621a88b6c1c8cf75"
+
+SRC_URI[armv8-2a.sha256sum] = "${ARMV8_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
-FILES:${PN} += "${INSTALL_BINDIR}"
-FILES:${PN} += "${INSTALL_LIBDIR}"
-
+FILES:${PN} += "${bindir}"
+FILES:${PN} += "${libdir}"
 
 SOLIBS = ".so*"
 FILES_SOLIBSDEV = ""

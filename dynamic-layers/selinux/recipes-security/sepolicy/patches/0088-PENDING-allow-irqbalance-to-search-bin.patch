@@ -1,0 +1,25 @@
+From 2327439cee787c1e625ce2427b6890e30fe1fb8e Mon Sep 17 00:00:00 2001
+From: Komal Bajaj <quic_kbajaj@quicinc.com>
+Date: Tue, 19 Nov 2024 14:59:35 +0530
+Subject: [PATCH] PENDING: allow irqbalance to search bin
+
+Upstream-Status: Pending
+
+Signed-off-by: Komal Bajaj <quic_kbajaj@quicinc.com>
+---
+ policy/modules/services/irqbalance.te | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/policy/modules/services/irqbalance.te b/policy/modules/services/irqbalance.te
+index 35dd36e28..26677b000 100644
+--- a/policy/modules/services/irqbalance.te
++++ b/policy/modules/services/irqbalance.te
+@@ -57,3 +57,5 @@ miscfiles_read_localization(irqbalance_t)
+ userdom_dontaudit_use_unpriv_user_fds(irqbalance_t)
+ userdom_dontaudit_search_user_home_dirs(irqbalance_t)
+ 
++corecmd_search_bin(irqbalance_t)
++
+-- 
+2.46.0
+

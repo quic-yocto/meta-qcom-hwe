@@ -1,0 +1,49 @@
+From 29355f03959596ada6f97d76fbef81aecf38ca87 Mon Sep 17 00:00:00 2001
+From: Bjorn Andersson <quic_bjorande@quicinc.com>
+Date: Tue, 26 Mar 2024 19:04:21 -0700
+Subject: [PATCH 13/19] UPSTREAM: arm64: dts: qcom: qcs6490-rb3gen2: Introduce
+ USB redriver
+
+The RB3gen2 has a USB redriver on APPS_I2C, enable the bus and introduce
+the redriver. The plumbing with other components is kept separate for
+clarity.
+
+Change-Id: I02e6be7fadc0303a26ebac30eca8ec396b0f7f5e
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Link: https://lore.kernel.org/r/20240326-rb3gen2-dp-connector-v2-4-a9f1bc32ecaf@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://github.com/torvalds/linux/commit/a1615efb7c775adbee5400739a5e0a0d7a548dd8]
+---
+ arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+index 59f79cdc37a1..48503369cdcc 100644
+--- a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
++++ b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+@@ -444,6 +444,20 @@ &gcc {
+ 			   <GCC_WPSS_RSCP_CLK>;
+ };
+ 
++&i2c1 {
++	status = "okay";
++
++	typec-mux@1c {
++		compatible = "onnn,nb7vpq904m";
++		reg = <0x1c>;
++
++		vcc-supply = <&vreg_l18b_1p8>;
++
++		retimer-switch;
++		orientation-switch;
++	};
++};
++
+ &lpass_audiocc {
+ 	compatible = "qcom,qcm6490-lpassaudiocc";
+ 	/delete-property/ power-domains;
+-- 
+2.46.0
+

@@ -6,13 +6,15 @@ DESCRIPTION = "Recipe to build Linux kernel"
 LICENSE = "GPLv2.0-with-linux-syscall-note"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-inherit kernel
+inherit kernel sota
 
 COMPATIBLE_MACHINE = "(qcom)"
 
+SRCPROJECT = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https"
+SRCBRANCH  = "kernel.qclinux.1.0.r1-rel"
+SRCREV     = "53ba38499671a8cb6d87b602b9a90290af445b24"
 
-SRC_URI = "git://git.codelinaro.org/clo/la/kernel/qcom.git;protocol=https;rev=b09a1d09b89bba12367c99fb46706fd8ef5c0459;branch=kernel.qclinux.1.0.r1-rel;destsuffix=kernel \
-           file://0001-PENDING-qcom-ice-Fix-incorrect-error-handling.patch \
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=kernel \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux.cfg', '', d)} \
            ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux_debug.cfg', '', d)} \
            "

@@ -1,0 +1,292 @@
+From 96b7ad7882d574a15ff42f8e7b8aa0772f3060b3 Mon Sep 17 00:00:00 2001
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Fri, 26 Jan 2024 01:22:39 +0200
+Subject: [PATCH] BACKPORT: phy: qcom: qmp: move common bits definitions to
+ common header
+
+Move bit definitions for the common headers to the common phy-qcom-qmp.h
+header.
+
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20240126-phy-qmp-merge-common-v2-5-a463d0b57836@linaro.org
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git c01e03f97c4ea501fbd7dfe3eb7920a9a855e635]
+---
+ drivers/phy/qualcomm/phy-qcom-qmp-combo.c     | 21 -----------
+ .../phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c  | 10 +-----
+ drivers/phy/qualcomm/phy-qcom-qmp-pcie.c      | 12 -------
+ drivers/phy/qualcomm/phy-qcom-qmp-ufs.c       |  7 ----
+ .../phy/qualcomm/phy-qcom-qmp-usb-legacy.c    | 21 -----------
+ drivers/phy/qualcomm/phy-qcom-qmp-usb.c       | 35 -------------------
+ drivers/phy/qualcomm/phy-qcom-qmp-usbc.c      | 32 -----------------
+ drivers/phy/qualcomm/phy-qcom-qmp.h           | 25 +++++++++++++
+ 8 files changed, 26 insertions(+), 137 deletions(-)
+
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-combo.c b/drivers/phy/qualcomm/phy-qcom-qmp-combo.c
+index 78c3002056e9..07307d9cdf31 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-combo.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-combo.c
+@@ -41,16 +41,6 @@
+ #include "phy-qcom-qmp-dp-phy-v5.h"
+ #include "phy-qcom-qmp-dp-phy-v6.h"
+ 
+-/* QPHY_SW_RESET bit */
+-#define SW_RESET				BIT(0)
+-/* QPHY_POWER_DOWN_CONTROL */
+-#define SW_PWRDN				BIT(0)
+-/* QPHY_START_CONTROL bits */
+-#define SERDES_START				BIT(0)
+-#define PCS_START				BIT(1)
+-/* QPHY_PCS_STATUS bit */
+-#define PHYSTATUS				BIT(6)
+-
+ /* QPHY_V3_DP_COM_RESET_OVRD_CTRL register bits */
+ /* DP PHY soft reset */
+ #define SW_DPPHY_RESET				BIT(0)
+@@ -65,17 +55,6 @@
+ #define USB3_MODE				BIT(0) /* enables USB3 mode */
+ #define DP_MODE					BIT(1) /* enables DP mode */
+ 
+-/* QPHY_PCS_AUTONOMOUS_MODE_CTRL register bits */
+-#define ARCVR_DTCT_EN				BIT(0)
+-#define ALFPS_DTCT_EN				BIT(1)
+-#define ARCVR_DTCT_EVENT_SEL			BIT(4)
+-
+-/* QPHY_PCS_LFPS_RXTERM_IRQ_CLEAR register bits */
+-#define IRQ_CLEAR				BIT(0)
+-
+-/* QPHY_V3_PCS_MISC_CLAMP_ENABLE register bits */
+-#define CLAMP_EN				BIT(0) /* enables i/o clamp_n */
+-
+ /* QPHY_V3_DP_COM_TYPEC_CTRL register bits */
+ #define SW_PORTSELECT_VAL			BIT(0)
+ #define SW_PORTSELECT_MUX			BIT(1)
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c b/drivers/phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c
+index 07c6f20a49d4..0442b3120563 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-pcie-msm8996.c
+@@ -23,17 +23,9 @@
+ 
+ #include "phy-qcom-qmp.h"
+ 
+-/* QPHY_SW_RESET bit */
+-#define SW_RESET				BIT(0)
+-/* QPHY_POWER_DOWN_CONTROL */
+-#define SW_PWRDN				BIT(0)
+-#define REFCLK_DRV_DSBL				BIT(1)
+ /* QPHY_START_CONTROL bits */
+-#define SERDES_START				BIT(0)
+-#define PCS_START				BIT(1)
+ #define PLL_READY_GATE_EN			BIT(3)
+-/* QPHY_PCS_STATUS bit */
+-#define PHYSTATUS				BIT(6)
++
+ /* QPHY_COM_PCS_READY_STATUS bit */
+ #define PCS_READY				BIT(0)
+ 
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-pcie.c b/drivers/phy/qualcomm/phy-qcom-qmp-pcie.c
+index dc1992ce2985..09106215d7e1 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-pcie.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-pcie.c
+@@ -34,18 +34,6 @@
+ #include "phy-qcom-qmp-pcs-pcie-v6_20.h"
+ #include "phy-qcom-qmp-pcie-qhp.h"
+ 
+-/* QPHY_SW_RESET bit */
+-#define SW_RESET				BIT(0)
+-/* QPHY_POWER_DOWN_CONTROL */
+-#define SW_PWRDN				BIT(0)
+-#define REFCLK_DRV_DSBL				BIT(1)
+-/* QPHY_START_CONTROL bits */
+-#define SERDES_START				BIT(0)
+-#define PCS_START				BIT(1)
+-/* QPHY_PCS_STATUS bit */
+-#define PHYSTATUS				BIT(6)
+-#define PHYSTATUS_4_20				BIT(7)
+-
+ #define PHY_INIT_COMPLETE_TIMEOUT		10000
+ 
+ /* set of registers with offsets different per-PHY */
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-ufs.c b/drivers/phy/qualcomm/phy-qcom-qmp-ufs.c
+index 0e1226372b56..5eb97a9f3135 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-ufs.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-ufs.c
+@@ -32,13 +32,6 @@
+ 
+ #include "phy-qcom-qmp-qserdes-txrx-ufs-v6.h"
+ 
+-/* QPHY_SW_RESET bit */
+-#define SW_RESET				BIT(0)
+-/* QPHY_POWER_DOWN_CONTROL */
+-#define SW_PWRDN				BIT(0)
+-/* QPHY_START_CONTROL bits */
+-#define SERDES_START				BIT(0)
+-#define PCS_START				BIT(1)
+ /* QPHY_PCS_READY_STATUS bit */
+ #define PCS_READY				BIT(0)
+ 
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-usb-legacy.c b/drivers/phy/qualcomm/phy-qcom-qmp-usb-legacy.c
+index ec51c8e20ac5..ced2baf027ec 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-usb-legacy.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-usb-legacy.c
+@@ -27,16 +27,6 @@
+ 
+ #include "phy-qcom-qmp-dp-com-v3.h"
+ 
+-/* QPHY_SW_RESET bit */
+-#define SW_RESET				BIT(0)
+-/* QPHY_POWER_DOWN_CONTROL */
+-#define SW_PWRDN				BIT(0)
+-/* QPHY_START_CONTROL bits */
+-#define SERDES_START				BIT(0)
+-#define PCS_START				BIT(1)
+-/* QPHY_PCS_STATUS bit */
+-#define PHYSTATUS				BIT(6)
+-
+ /* QPHY_V3_DP_COM_RESET_OVRD_CTRL register bits */
+ /* DP PHY soft reset */
+ #define SW_DPPHY_RESET				BIT(0)
+@@ -51,17 +41,6 @@
+ #define USB3_MODE				BIT(0) /* enables USB3 mode */
+ #define DP_MODE					BIT(1) /* enables DP mode */
+ 
+-/* QPHY_PCS_AUTONOMOUS_MODE_CTRL register bits */
+-#define ARCVR_DTCT_EN				BIT(0)
+-#define ALFPS_DTCT_EN				BIT(1)
+-#define ARCVR_DTCT_EVENT_SEL			BIT(4)
+-
+-/* QPHY_PCS_LFPS_RXTERM_IRQ_CLEAR register bits */
+-#define IRQ_CLEAR				BIT(0)
+-
+-/* QPHY_V3_PCS_MISC_CLAMP_ENABLE register bits */
+-#define CLAMP_EN				BIT(0) /* enables i/o clamp_n */
+-
+ #define PHY_INIT_COMPLETE_TIMEOUT		10000
+ 
+ struct qmp_phy_init_tbl {
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-usb.c b/drivers/phy/qualcomm/phy-qcom-qmp-usb.c
+index 67eaa04a5d0d..ceef4b80c1ed 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-usb.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-usb.c
+@@ -26,41 +26,6 @@
+ #include "phy-qcom-qmp-pcs-usb-v4.h"
+ #include "phy-qcom-qmp-pcs-usb-v5.h"
+ 
+-/* QPHY_SW_RESET bit */
+-#define SW_RESET				BIT(0)
+-/* QPHY_POWER_DOWN_CONTROL */
+-#define SW_PWRDN				BIT(0)
+-/* QPHY_START_CONTROL bits */
+-#define SERDES_START				BIT(0)
+-#define PCS_START				BIT(1)
+-/* QPHY_PCS_STATUS bit */
+-#define PHYSTATUS				BIT(6)
+-
+-/* QPHY_V3_DP_COM_RESET_OVRD_CTRL register bits */
+-/* DP PHY soft reset */
+-#define SW_DPPHY_RESET				BIT(0)
+-/* mux to select DP PHY reset control, 0:HW control, 1: software reset */
+-#define SW_DPPHY_RESET_MUX			BIT(1)
+-/* USB3 PHY soft reset */
+-#define SW_USB3PHY_RESET			BIT(2)
+-/* mux to select USB3 PHY reset control, 0:HW control, 1: software reset */
+-#define SW_USB3PHY_RESET_MUX			BIT(3)
+-
+-/* QPHY_V3_DP_COM_PHY_MODE_CTRL register bits */
+-#define USB3_MODE				BIT(0) /* enables USB3 mode */
+-#define DP_MODE					BIT(1) /* enables DP mode */
+-
+-/* QPHY_PCS_AUTONOMOUS_MODE_CTRL register bits */
+-#define ARCVR_DTCT_EN				BIT(0)
+-#define ALFPS_DTCT_EN				BIT(1)
+-#define ARCVR_DTCT_EVENT_SEL			BIT(4)
+-
+-/* QPHY_PCS_LFPS_RXTERM_IRQ_CLEAR register bits */
+-#define IRQ_CLEAR				BIT(0)
+-
+-/* QPHY_V3_PCS_MISC_CLAMP_ENABLE register bits */
+-#define CLAMP_EN				BIT(0) /* enables i/o clamp_n */
+-
+ #define PHY_INIT_COMPLETE_TIMEOUT		10000
+ 
+ /* set of registers with offsets different per-PHY */
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c b/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
+index 2de440f0bf02..d316a541f628 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
+@@ -28,38 +28,6 @@
+ #include "phy-qcom-qmp.h"
+ #include "phy-qcom-qmp-pcs-misc-v3.h"
+ 
+-/* QPHY_SW_RESET bit */
+-#define SW_RESET				BIT(0)
+-/* QPHY_POWER_DOWN_CONTROL */
+-#define SW_PWRDN				BIT(0)
+-/* QPHY_START_CONTROL bits */
+-#define SERDES_START				BIT(0)
+-#define PCS_START				BIT(1)
+-/* QPHY_PCS_STATUS bit */
+-#define PHYSTATUS				BIT(6)
+-
+-/* QPHY_V3_DP_COM_RESET_OVRD_CTRL register bits */
+-/* DP PHY soft reset */
+-#define SW_DPPHY_RESET				BIT(0)
+-/* mux to select DP PHY reset control, 0:HW control, 1: software reset */
+-#define SW_DPPHY_RESET_MUX			BIT(1)
+-/* USB3 PHY soft reset */
+-#define SW_USB3PHY_RESET			BIT(2)
+-/* mux to select USB3 PHY reset control, 0:HW control, 1: software reset */
+-#define SW_USB3PHY_RESET_MUX			BIT(3)
+-
+-/* QPHY_V3_DP_COM_PHY_MODE_CTRL register bits */
+-#define USB3_MODE				BIT(0) /* enables USB3 mode */
+-#define DP_MODE					BIT(1) /* enables DP mode */
+-
+-/* QPHY_PCS_AUTONOMOUS_MODE_CTRL register bits */
+-#define ARCVR_DTCT_EN				BIT(0)
+-#define ALFPS_DTCT_EN				BIT(1)
+-#define ARCVR_DTCT_EVENT_SEL			BIT(4)
+-
+-/* QPHY_PCS_LFPS_RXTERM_IRQ_CLEAR register bits */
+-#define IRQ_CLEAR				BIT(0)
+-
+ #define PHY_INIT_COMPLETE_TIMEOUT		10000
+ 
+ /* set of registers with offsets different per-PHY */
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp.h b/drivers/phy/qualcomm/phy-qcom-qmp.h
+index 2c1651a09942..b998907bdf2d 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp.h
++++ b/drivers/phy/qualcomm/phy-qcom-qmp.h
+@@ -44,6 +44,31 @@
+ 
+ #include "phy-qcom-qmp-pcs-v6_20.h"
+ 
++/* QPHY_SW_RESET bit */
++#define SW_RESET				BIT(0)
++/* QPHY_POWER_DOWN_CONTROL */
++#define SW_PWRDN				BIT(0)
++#define REFCLK_DRV_DSBL				BIT(1) /* PCIe */
++
++/* QPHY_START_CONTROL bits */
++#define SERDES_START				BIT(0)
++#define PCS_START				BIT(1)
++
++/* QPHY_PCS_STATUS bit */
++#define PHYSTATUS				BIT(6)
++#define PHYSTATUS_4_20				BIT(7)
++
++/* QPHY_PCS_AUTONOMOUS_MODE_CTRL register bits */
++#define ARCVR_DTCT_EN				BIT(0)
++#define ALFPS_DTCT_EN				BIT(1)
++#define ARCVR_DTCT_EVENT_SEL			BIT(4)
++
++/* QPHY_PCS_LFPS_RXTERM_IRQ_CLEAR register bits */
++#define IRQ_CLEAR				BIT(0)
++
++/* QPHY_PCS_MISC_CLAMP_ENABLE register bits */
++#define CLAMP_EN				BIT(0) /* enables i/o clamp_n */
++
+ /* Only for QMP V3 & V4 PHY - DP COM registers */
+ #define QPHY_V3_DP_COM_PHY_MODE_CTRL			0x00
+ #define QPHY_V3_DP_COM_SW_RESET				0x04
+--

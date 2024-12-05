@@ -2,16 +2,20 @@ inherit systemd externalsrc
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append:qcom = " \
-    file://post_boot.sh \
-    file://logging-restrictions.sh \
-    file://start_stop_modem.sh \
+    file://automountsdcard.rules \
+    file://automountsdcard.sh \
+    file://sdcard-mount.service \
+    file://coresight_reset_source_sink.sh \
+    file://debug-config.service \
     file://debug_config.sh \
     file://debug_config_qcm6490.sh \
-    file://log-restrict.service \
-    file://post-boot.service \
-    file://modem-start-stop.service \
-    file://debug-config.service \
     file://debug_config_qcs9100.sh \
+    file://log-restrict.service \
+    file://logging-restrictions.sh \
+    file://modem-start-stop.service \
+    file://post_boot.sh \
+    file://post-boot.service \
+    file://start_stop_modem.sh \
 "
 
 do_install:append:qcom() {
@@ -41,7 +45,17 @@ do_install:append:qcom() {
     install -m 0755 ${WORKDIR}/debug_config_qcm6490.sh ${D}${sysconfdir}/initscripts/debug_config_qcm6490.sh
     install -m 0755 ${WORKDIR}/debug_config_qcs9100.sh ${D}${sysconfdir}/initscripts/debug_config_qcs9100.sh
     install -m 0644 ${WORKDIR}/debug-config.service -D ${D}${systemd_unitdir}/system/debug-config.service
+    install -m 0755 ${WORKDIR}/coresight_reset_source_sink.sh ${D}${sysconfdir}/initscripts/coresight_reset_source_sink.sh
     ln -sf ${systemd_unitdir}/system/debug-config.service ${D}${systemd_unitdir}/system/multi-user.target.wants/debug-config.service
+
+    # automount sdcard
+    install -d ${D}/mnt/sdcard
+    install -d ${D}${sysconfdir}/udev/rules.d/
+    install -m 0644 ${WORKDIR}/automountsdcard.rules ${D}${sysconfdir}/udev/rules.d/automountsdcard.rules
+    install -d ${D}${sysconfdir}/udev/scripts/
+    install -m 0755 ${WORKDIR}/automountsdcard.sh ${D}${sysconfdir}/udev/scripts/automountsdcard.sh
+    install -d ${D}${sysconfdir}/systemd/system/
+    install -m 0755 ${WORKDIR}/sdcard-mount.service ${D}${sysconfdir}/systemd/system/sdcard-mount.service
 }
 
 S = "${WORKDIR}"
@@ -71,4 +85,7 @@ INITSCRIPT_PACKAGES =+ "${PN}-debug-config"
 INITSCRIPT_NAME:${PN}-debug-config = "debug_config.sh"
 
 PACKAGES =+ "${PN}-debug-config"
-FILES:${PN}-debug-config += "${systemd_unitdir}/system/debug-config.service ${systemd_unitdir}/system/multi-user.target.wants/debug-config.service ${sysconfdir}/initscripts/debug_config_qcm6490.sh ${sysconfdir}/initscripts/debug_config_qcs9100.sh ${sysconfdir}/initscripts/debug_config.sh"
+FILES:${PN}-debug-config += "${systemd_unitdir}/system/debug-config.service ${systemd_unitdir}/system/multi-user.target.wants/debug-config.service ${sysconfdir}/initscripts/debug_config_qcm6490.sh ${sysconfdir}/initscripts/debug_config_qcs9100.sh ${sysconfdir}/initscripts/debug_config.sh ${sysconfdir}/initscripts/coresight_reset_source_sink.sh"
+
+PACKAGES =+ "${PN}-automount-sdcard"
+FILES:${PN}-automount-sdcard =+ "/mnt/sdcard ${sysconfdir}/udev/rules.d/automountsdcard.rules ${sysconfdir}/udev/scripts/automountsdcard.sh ${sysconfdir}/systemd/system/sdcard-mount.service"

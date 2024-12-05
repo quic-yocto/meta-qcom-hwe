@@ -1,0 +1,44 @@
+From d7e8876cf16f0516d397c7cea17e07d8b558b8a3 Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Wed, 25 Sep 2024 18:43:32 +0800
+Subject: [PATCH 17/17] FROMLIST: dt-bindings: arm: qcom: document QCS8300 SoC
+ and reference board
+
+Document Qualcomm QCS8300 SoC and its reference board QCS8300 RIDE.
+
+Change-Id: I2586ea60fc4d1ff7ea88e7a77f5c2285066fcafe
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/all/20240925-qcs8300_initial_dtsi-v2-1-494c40fa2a42@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240925-qcs8300_initial_dtsi-v2-1-494c40fa2a42@quicinc.com/]
+---
+ Documentation/devicetree/bindings/arm/qcom.yaml | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/qcom.yaml b/Documentation/devicetree/bindings/arm/qcom.yaml
+index 1a3194ed75a4..ccf59ccdc1bb 100644
+--- a/Documentation/devicetree/bindings/arm/qcom.yaml
++++ b/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -50,6 +50,7 @@ description: |
+         msm8998
+         qcs404
+         qcs615
++        qcs8300
+         qcm2290
+         qcm6490
+         qcs9100
+@@ -876,6 +877,11 @@ properties:
+               - qcom,qcs615-ride
+           - const: qcom,qcs615
+ 
++      - items:
++          - enum:
++              - qcom,qcs8300-ride
++          - const: qcom,qcs8300
++
+       - items:
+           - enum:
+               - qcom,sa8155p-adp
+-- 
+2.46.0
+

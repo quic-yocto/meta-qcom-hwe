@@ -1,7 +1,12 @@
+FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
+
+SRC_URI:append:qcom = "file://procps.conf"
 
 do_install:append:qcom () {
     # For coredump handling
-    mkdir -p ${D}/var/coredump
+    install -d ${D}/${sysconfdir}/tmpfiles.d
+    install -m 644 ${WORKDIR}/procps.conf ${D}/${sysconfdir}/tmpfiles.d/procps.conf
+
     echo "" >> ${D}${sysconfdir}/sysctl.conf
     echo "# Enable core dump collection" >> ${D}${sysconfdir}/sysctl.conf
     echo "kernel.core_pattern = /var/coredump/%e.core" >> ${D}${sysconfdir}/sysctl.conf

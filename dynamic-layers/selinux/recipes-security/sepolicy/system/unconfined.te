@@ -5,3 +5,5 @@
 qcom_connect_cmdline_to_property_vault(unconfined_t)
 
 qcom_weston_dev_socket_create_dir(unconfined_t)
+
+logging_write_generic_logs(unconfined_t)

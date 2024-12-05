@@ -1,0 +1,42 @@
+From 2cf5a7a17b2219a7d7838e62745339ebf7affc1e Mon Sep 17 00:00:00 2001
+From: Luca Weiss <luca.weiss@fairphone.com>
+Date: Fri, 8 Dec 2023 16:07:57 +0100
+Subject: [PATCH 03/19] UPSTREAM: dt-bindings: remoteproc: qcom: sc7180-pas:
+ Fix SC7280 MPSS PD-names
+
+The power domains for MPSS on SC7280 are actually named CX and MSS, and
+not CX and MX. Adjust the name which also aligns the bindings with the
+dts and fixes validation.
+
+Fixes: 8bb92d6fd0b3 ("dt-bindings: remoteproc: qcom,sc7180-pas: split into separate file")
+Change-Id: Ide0faa07e6dbf515fc5b22c9c06728906873aae2
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+Link: https://lore.kernel.org/r/20231208-sc7280-remoteprocs-v3-1-6aa394d33edf@fairphone.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://github.com/torvalds/linux/commit/9d598fab9731055638c6e9333c4f21aa0d174a48]
+---
+ .../devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml       | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml b/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml
+index f10f329677d8..6f0bd6fa5d26 100644
+--- a/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/qcom,sc7180-pas.yaml
+@@ -114,11 +114,11 @@ allOf:
+         power-domains:
+           items:
+             - description: CX power domain
+-            - description: MX power domain
++            - description: MSS power domain
+         power-domain-names:
+           items:
+             - const: cx
+-            - const: mx
++            - const: mss
+ 
+ unevaluatedProperties: false
+ 
+-- 
+2.46.0
+

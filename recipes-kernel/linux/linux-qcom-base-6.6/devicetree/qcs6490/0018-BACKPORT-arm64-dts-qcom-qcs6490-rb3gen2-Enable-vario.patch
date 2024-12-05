@@ -1,0 +1,50 @@
+From 8c7cdc5a5972ac857c82a0021d39359abf586b45 Mon Sep 17 00:00:00 2001
+From: Komal Bajaj <quic_kbajaj@quicinc.com>
+Date: Wed, 17 Apr 2024 17:39:28 +0530
+Subject: [PATCH 18/19] BACKPORT: arm64: dts: qcom: qcs6490-rb3gen2: Enable
+ various remoteprocs
+
+Enable the ADSP, CDSP and WPSS that are found on qcs6490-rb3gen2.
+
+Change-Id: Ia8af3823ab9d1333105ed38667f13c631a636c9d
+Signed-off-by: Komal Bajaj <quic_kbajaj@quicinc.com>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20240417120928.32344-3-quic_kbajaj@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://github.com/torvalds/linux/commit/ac6d35b9b74c113753bd266e01d6b853618a1e37]
+---
+ arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+index 2714e0c3f9b5..b9f8c245e3c4 100644
+--- a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
++++ b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+@@ -17,7 +17,6 @@
+ #include "pmk8350.dtsi"
+ 
+ /delete-node/ &ipa_fw_mem;
+-/delete-node/ &remoteproc_mpss;
+ /delete-node/ &rmtfs_mem;
+ /delete-node/ &adsp_mem;
+ /delete-node/ &cdsp_mem;
+@@ -581,6 +580,16 @@ &remoteproc_cdsp {
+ 	status = "okay";
+ };
+ 
++&remoteproc_mpss {
++	firmware-name = "qcom/qcs6490/modem.mdt";
++	status = "okay";
++};
++
++&remoteproc_wpss {
++	firmware-name = "qcom/qcs6490/wpss.mbn";
++	status = "okay";
++};
++
+ &tlmm {
+ 	gpio-reserved-ranges = <32 2>, /* ADSP */
+ 			       <48 4>; /* NFC */
+-- 
+2.46.0
+

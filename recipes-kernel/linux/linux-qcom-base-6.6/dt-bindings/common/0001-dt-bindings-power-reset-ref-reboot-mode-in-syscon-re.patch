@@ -1,0 +1,43 @@
+From 4c4f33087621b900611aa811c5bfcd84d4759ec8 Mon Sep 17 00:00:00 2001
+From: Elliot Berman <quic_eberman@quicinc.com>
+Date: Tue, 31 Oct 2023 11:27:00 -0700
+Subject: [PATCH 1/6] UPSTREAM: dt-bindings: power: reset: $ref reboot-mode in
+ syscon-reboot-mode
+
+syscon-reboot-mode.yaml should $ref: reboot-mode.yaml, but instead
+rewrites the properties. Update so it $refs instead.
+
+Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Link: https://lore.kernel.org/r/20231031-ref-reboot-mode-v1-1-18dde4faf7e8@quicinc.com
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+Git-commit: 160dff476f81b928ee4a4d2be95066fa32513483
+Upstream-Status: Backport [https://lore.kernel.org/all/20231031-ref-reboot-mode-v1-1-18dde4faf7e8@quicinc.com/]
+---
+ .../bindings/power/reset/syscon-reboot-mode.yaml          | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
+index 9b1ffceefe3d..b6acff199cde 100644
+--- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
++++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
+@@ -29,12 +29,10 @@ properties:
+     $ref: /schemas/types.yaml#/definitions/uint32
+     description: Offset in the register map for the mode register (in bytes)
+ 
+-patternProperties:
+-  "^mode-.+":
+-    $ref: /schemas/types.yaml#/definitions/uint32
+-    description: Vendor-specific mode value written to the mode register
++allOf:
++  - $ref: reboot-mode.yaml#
+ 
+-additionalProperties: false
++unevaluatedProperties: false
+ 
+ required:
+   - compatible
+-- 
+2.46.0
+

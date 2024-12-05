@@ -1,0 +1,46 @@
+From 61a6dbb91ff8e337629ab57ded03dbaffd540860 Mon Sep 17 00:00:00 2001
+From: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Date: Mon, 18 Nov 2024 14:50:24 +0800
+Subject: [PATCH 2/2] FROMLIST: arm64: dts: qcom: qcs615-ride: Enable PMIC
+ peripherals
+
+Enable PMIC and PMIC peripherals for qcs615-ride board.
+
+Signed-off-by: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Link: https://lore.kernel.org/all/20241112-adds-spmi-pmic-peripherals-for-qcs615-v4-2-f0e54d8b6516@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241112-adds-spmi-pmic-peripherals-for-qcs615-v4-0-f0e54d8b6516@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615-ride.dts | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615-ride.dts b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+index bc8822da57a7..15f7391ef191 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs615-ride.dts
+@@ -7,6 +7,7 @@
+ #include <dt-bindings/regulator/qcom,rpmh-regulator.h>
+ #include <dt-bindings/gpio/gpio.h>
+ #include "qcs615.dtsi"
++#include "pm8150.dtsi"
+ / {
+ 	model = "Qualcomm Technologies, Inc. QCS615 Ride";
+ 	compatible = "qcom,qcs615-ride", "qcom,qcs615";
+@@ -261,6 +262,15 @@ &gcc {
+ 		 <&sleep_clk>;
+ };
+ 
++&pon_pwrkey {
++	status = "okay";
++};
++
++&pon_resin {
++	linux,code = <KEY_VOLUMEDOWN>;
++	status = "okay";
++};
++
+ &qupv3_id_0 {
+ 	status = "okay";
+ };
+-- 
+2.34.1
+

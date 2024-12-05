@@ -4,7 +4,11 @@ DESCRIPTION = "QCOM QPS615 devicetree"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/opensource/data-eth.git;protocol=https;rev=988995f8991c72d114783c178ef4a89b6d16b4dd;branch=data-kernel.qclinux.1.0.r1-rel;destsuffix=data-eth"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/data-eth.git;protocol=https"
+SRCBRANCH  = "data-kernel.qclinux.1.0.r1-rel"
+SRCREV     = "988995f8991c72d114783c178ef4a89b6d16b4dd"
+
+SRC_URI =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=data-eth"
 
 S = "${WORKDIR}/data-eth/ethernet-devicetree"
 
@@ -25,4 +29,3 @@ do_deploy() {
     install -m 0644  ${S}/*.dtbo ${DEPLOYDIR}/tech_dtbs
 }
 addtask do_deploy after do_install
-RM_WORK_EXCLUDE += "${PN}"

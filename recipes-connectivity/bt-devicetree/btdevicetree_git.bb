@@ -4,8 +4,16 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec53
 
 inherit module deploy
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bt-devicetree.git;protocol=https;rev=c49ddc861274291935391cd970f289e74022b5ae;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/bt-devicetree"
-SRC_URI += "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https;rev=339830ec33c244ca1747b1e7dce971f2a5050a4d;branch=bt-performant.qclinux.1.0.r1-rel;destsuffix=bluetooth/stack/bluetooth_ext"
+QCOM_BT_DT_SRC ?= "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bt-devicetree.git;protocol=https"
+QCOM_BT_DT_SRCBRANCH ?= "bt-performant.qclinux.1.0.r1-rel"
+QCOM_BT_DT_SRCREV ?= "c49ddc861274291935391cd970f289e74022b5ae"
+
+QCOM_BLUETOOTH_EXT_SRC ?= "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https"
+QCOM_BLUETOOTH_EXT_SRCBRANCH ?= "bt-performant.qclinux.1.0.r1-rel"
+QCOM_BLUETOOTH_EXT_SRCREV ?= "339830ec33c244ca1747b1e7dce971f2a5050a4d"
+
+SRC_URI = "${QCOM_BT_DT_SRC};branch=${QCOM_BT_DT_SRCBRANCH};rev=${QCOM_BT_DT_SRCREV};destsuffix=bluetooth/bt-devicetree \
+           ${QCOM_BLUETOOTH_EXT_SRC};branch=${QCOM_BLUETOOTH_EXT_SRCBRANCH};rev=${QCOM_BLUETOOTH_EXT_SRCREV};destsuffix=bluetooth/stack/bluetooth_ext"
 
 BT_SOURCE = "${WORKDIR}/bluetooth"
 S = "${BT_SOURCE}/bt-devicetree"

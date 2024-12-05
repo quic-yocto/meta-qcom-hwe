@@ -1,0 +1,80 @@
+From c4fcc9d130920af4915679baeb7dd3d584ec220a Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Thu, 31 Oct 2024 15:14:37 +0800
+Subject: [PATCH 4/6] BACKPORT: soc: qcom: llcc: Add LLCC configuration for the
+ QCS8300 platform
+
+Add LLCC configuration for the QCS8300 platform. There is an errata on
+LB_CNT information on QCS8300 platform, hardcode num_banks to get the
+correct value.
+
+Change-Id: I08aee66f18f996934f9aca7f32d06223be9e7429
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Link: https://lore.kernel.org/r/20241031-qcs8300_llcc-v3-2-bb56952cb83b@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux.git 584e936feedfcf678510a749f407115bdc811fbd]
+---
+ drivers/soc/qcom/llcc-qcom.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/drivers/soc/qcom/llcc-qcom.c b/drivers/soc/qcom/llcc-qcom.c
+index 6e48a7790c40..5d1473a10bdb 100644
+--- a/drivers/soc/qcom/llcc-qcom.c
++++ b/drivers/soc/qcom/llcc-qcom.c
+@@ -145,6 +145,14 @@ static const struct llcc_slice_config qcs615_data[] =  {
+ 	{ LLCC_GPU,      12, 128, 1, 0, 0xF, 0x0, 0, 0, 0, 0, 1, 0 },
+ };
+ 
++static struct llcc_slice_config qcs8300_data[] =  {
++	{LLCC_GPUHTW,   11, 128, 1, 1, 0x00F, 0x0, 0, 0, 0, 1, 0, 0, 0},
++	{LLCC_GPU,      12, 512, 1, 1, 0x00F, 0x0, 0, 0, 0, 1, 0, 1, 0},
++	{LLCC_MMUHWT,   13, 128, 1, 1, 0x00F, 0x0, 0, 0, 0, 0, 1, 0, 0},
++	{LLCC_ECC,      26, 256, 3, 1, 0x00F, 0x0, 0, 0, 0, 0, 1, 0, 0},
++	{LLCC_WRCACHE,	31, 128, 1, 1, 0x00F, 0x0, 0, 0, 0, 0, 1, 0, 0},
++};
++
+ static const struct llcc_slice_config sa8775p_data[] =  {
+ 	{LLCC_CPUSS,    1, 2048, 1, 0, 0x00FF, 0x0, 0, 0, 0, 1, 1, 0, 0},
+ 	{LLCC_VIDSC0,   2, 512, 3, 1, 0x00FF, 0x0, 0, 0, 0, 1, 0, 0, 0},
+@@ -465,6 +473,17 @@ static const struct qcom_llcc_config qcs615_cfg[] = {
+ 	},
+ };
+ 
++static const struct qcom_llcc_config qcs8300_cfg[] = {
++	{
++		.sct_data	= qcs8300_data,
++		.size		= ARRAY_SIZE(qcs8300_data),
++		.need_llcc_cfg  = true,
++		.reg_offset	= llcc_v2_1_reg_offset,
++		.edac_reg_offset = &llcc_v2_1_edac_reg_offset,
++		.num_banks	= 4,
++	},
++};
++
+ static const struct qcom_llcc_config sa8775p_cfg[] = {
+ 	{
+ 		.sct_data	= sa8775p_data,
+@@ -601,6 +620,11 @@ static const struct qcom_sct_config qcs615_cfgs = {
+ 	.num_config	= ARRAY_SIZE(qcs615_cfg),
+ };
+ 
++static const struct qcom_sct_config qcs8300_cfgs = {
++	.llcc_config	= qcs8300_cfg,
++	.num_config	= ARRAY_SIZE(qcs8300_cfg),
++};
++
+ static const struct qcom_sct_config sa8775p_cfgs = {
+ 	.llcc_config	= sa8775p_cfg,
+ 	.num_config	= ARRAY_SIZE(sa8775p_cfg),
+@@ -1217,6 +1241,7 @@ static int qcom_llcc_probe(struct platform_device *pdev)
+ 
+ static const struct of_device_id qcom_llcc_of_match[] = {
+ 	{ .compatible = "qcom,qcs615-llcc", .data = &qcs615_cfgs },
++	{ .compatible = "qcom,qcs8300-llcc", .data = &qcs8300_cfgs},
+ 	{ .compatible = "qcom,sa8775p-llcc", .data = &sa8775p_cfgs },
+ 	{ .compatible = "qcom,sc7180-llcc", .data = &sc7180_cfgs },
+ 	{ .compatible = "qcom,sc7280-llcc", .data = &sc7280_cfgs },
+-- 
+2.46.0
+

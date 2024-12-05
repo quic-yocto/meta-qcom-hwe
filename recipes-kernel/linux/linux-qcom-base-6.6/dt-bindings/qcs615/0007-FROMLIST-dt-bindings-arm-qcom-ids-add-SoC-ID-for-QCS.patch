@@ -1,0 +1,31 @@
+From 7ad40ab5e37ed49b47a35c2942c2f554b00b863a Mon Sep 17 00:00:00 2001
+From: lijuang <quic_lijuang@quicinc.com>
+Date: Fri, 20 Sep 2024 17:11:36 +0800
+Subject: [PATCH 07/22] FROMLIST: dt-bindings: arm: qcom,ids: add SoC ID for
+ QCS615
+
+Add the ID for the Qualcomm QCS615 SoC.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Lijuan Gao <quic_lijuang@quicinc.com>
+Link: https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-2-e37617e91c62@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-2-e37617e91c62@quicinc.com/]
+---
+ include/dt-bindings/arm/qcom,ids.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/dt-bindings/arm/qcom,ids.h b/include/dt-bindings/arm/qcom,ids.h
+index c57eba0d5649..08376fa82717 100644
+--- a/include/dt-bindings/arm/qcom,ids.h
++++ b/include/dt-bindings/arm/qcom,ids.h
+@@ -261,6 +261,7 @@
+ #define QCOM_ID_IPQ5302			595
+ #define QCOM_ID_IPQ5300			624
+ #define QCOM_ID_QCS9100			667
++#define QCOM_ID_QCS615			680
+ /*
+  * The board type and revision information, used by Qualcomm bootloaders and
+  * DTS for older chipsets (qcom,board-id):
+-- 
+2.46.0
+

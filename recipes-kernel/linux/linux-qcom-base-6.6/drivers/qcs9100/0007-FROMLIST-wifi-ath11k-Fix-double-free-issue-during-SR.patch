@@ -1,7 +1,7 @@
-From f5aee7ab77e24ae165cc2dc4592aa63a9ac7fa54 Mon Sep 17 00:00:00 2001
+From ce4a56cf157072275da2e3a2d6bf58ea4e465a38 Mon Sep 17 00:00:00 2001
 From: Manikanta Pubbisetty <quic_mpubbise@quicinc.com>
 Date: Fri, 19 Jul 2024 14:03:43 +0530
-Subject: [PATCH 7/7] FROMLIST: wifi: ath11k: Fix double free issue during SRNG
+Subject: [PATCH] FROMLIST: wifi: ath11k: Fix double free issue during SRNG
  deinit
 
 Currently struct ath11k_hal::srng_config pointer is not assigned
@@ -25,14 +25,14 @@ Upstream-Status: Submitted [https://lore.kernel.org/linux-wireless/2024082605332
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/wireless/ath/ath11k/hal.c b/drivers/net/wireless/ath/ath11k/hal.c
-index 0a99aa7ddbf4..e6fe0df4b941 100644
+index ae5f7e401e21..e6fe0df4b941 100644
 --- a/drivers/net/wireless/ath/ath11k/hal.c
 +++ b/drivers/net/wireless/ath/ath11k/hal.c
 @@ -1,7 +1,7 @@
  // SPDX-License-Identifier: BSD-3-Clause-Clear
  /*
   * Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
-- * Copyright (c) 2022, Qualcomm Innovation Center, Inc. All rights reserved.
+- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
 + * Copyright (c) 2022, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
   */
  #include <linux/dma-mapping.h>
@@ -46,5 +46,5 @@ index 0a99aa7ddbf4..e6fe0df4b941 100644
  EXPORT_SYMBOL(ath11k_hal_srng_deinit);
  
 -- 
-2.25.1
+2.17.1
 

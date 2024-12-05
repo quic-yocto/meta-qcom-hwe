@@ -6,3 +6,8 @@ RRECOMMENDS:${PN} += " \
     firmware-qcom-dspso \
     firmware-qcom-hlosfw \
 "
+
+RRECOMMENDS:${PN}:append:qcom-base-bsp = " \
+    linux-firmware-qcom-vpu \
+    linux-firmware-qcom-adreno-a663 \
+"

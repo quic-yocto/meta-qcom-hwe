@@ -9,7 +9,7 @@ device needs to be disconnected.
 Fixes: https://github.com/bluez/bluez/issues/785
 
 Signed-off-by: Cheng Jiang <quic_chejiang@quicinc.com>
-Upstream-Status: BACKPORT
+Upstream-Status: Backport
 ---
  src/adapter.c | 2 +-
  src/device.c  | 7 ++++++-

@@ -1,0 +1,78 @@
+From fa104e309f6bf6bb750c3f9849c2e96f17c126f6 Mon Sep 17 00:00:00 2001
+From: Cheng Jiang <quic_chejiang@quicinc.com>
+Date: Mon, 28 Oct 2024 19:32:47 +0800
+Subject: [PATCH] device: only use the address type selection algorithm when
+ remote device is a dual-mode device when pair device
+
+For a BLE-only device, if the device is already paired and the upper
+layer attempts to pair it again, the bdaddr_type will be set to
+BDADDR_BREDR since the LE connection is already bonded. This causes the
+device to use the BR/EDR bearer, which stalls the pairing procedure and
+requires waiting for the pairing timeout.
+
+The bluetoothctl log below shows the error result:
+
+[bluetooth]# pair ED:8E:0E:B3:85:C1
+Attempting to pair with ED:8E:0E:B3:85:C1
+Pairing successful
+[RAPOO BleMouse]# disconnect ED:8E:0E:B3:85:C1
+Attempting to disconnect from ED:8E:0E:B3:85:C1
+[RAPOO BleMouse]#
+[bluetooth]# devices Paired
+Device ED:8E:0E:B3:85:C1 RAPOO BleMouse
+[bluetooth]# scan le
+SetDiscoveryFilter success
+Discovery started
+[CHG] Controller 8C:FD:F0:21:84:17 Discovering: yes
+[CHG] Device ED:8E:0E:B3:85:C1 RSSI: -38
+[bluetooth]# scan off
+Discovery stopped
+[bluetooth]# pair ED:8E:0E:B3:85:C1
+Attempting to pair with ED:8E:0E:B3:85:C1
+[bluetooth]#
+Failed to pair: org.freedesktop.DBus.Error.NoReply
+
+Signed-off-by: Cheng Jiang <quic_chejiang@quicinc.com>
+Upstream-Status: Backport
+---
+ src/device.c | 23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
+
+diff --git a/src/device.c b/src/device.c
+index 7585184de..2b3d19f55 100644
+--- a/src/device.c
++++ b/src/device.c
+@@ -3077,12 +3077,25 @@ static DBusMessage *pair_device(DBusConnection *conn, DBusMessage *msg,
+ 	if (device->bonding)
+ 		return btd_error_in_progress(msg);
+ 
+-	if (device->bredr_state.bonded)
++	/* Only use this selection algorithms when device is combo
++	 * chip. Ohterwise, it will use the wrong bearer to establish
++	 * a connection if the device is already paired, which will
++	 * stall the pairing procedure. For example, for a BLE only
++	 * device, if the device is already paired, and upper layer
++	 * issue the pair device again, it will set bdaddr_type to
++	 * BDADDR_BREDR since LE is bonded, then it goes with BR/EDR
++	 * bearer.
++	 */
++	if (device->bredr && device->le) {
++		if (device->bredr_state.bonded)
++			bdaddr_type = device->bdaddr_type;
++		else if (device->le_state.bonded)
++			bdaddr_type = BDADDR_BREDR;
++		else
++			bdaddr_type = select_conn_bearer(device);
++	} else {
+ 		bdaddr_type = device->bdaddr_type;
+-	else if (device->le_state.bonded)
+-		bdaddr_type = BDADDR_BREDR;
+-	else
+-		bdaddr_type = select_conn_bearer(device);
++	}
+ 
+ 	state = get_state(device, bdaddr_type);
+ 
+-- 
+2.25.1
+

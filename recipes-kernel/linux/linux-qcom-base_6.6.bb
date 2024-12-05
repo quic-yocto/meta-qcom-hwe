@@ -7,7 +7,7 @@ DESCRIPTION = "Recipe to build Linux kernel from 6.6 LTS branch"
 LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-inherit kernel
+inherit kernel sota
 
 COMPATIBLE_MACHINE = "(qcom)"
 
@@ -28,8 +28,8 @@ KERNEL_CONFIG_FRAGMENTS:append = " ${@oe.utils.vartrue('DEBUG_BUILD', '${WORKDIR
 
 S = "${WORKDIR}/git"
 
-# 6.6.38
-SRCREV = "2928631d5304b8fec48bad4c7254ebf230b6cc51"
+# 6.6.52
+SRCREV = "561bbd55f91a8e94576ca3fbf35a0c99ff70d4b2"
 PV = "6.6+git${SRCPV}"
 
 KERNEL_CONFIG ??= "defconfig"

@@ -1,0 +1,51 @@
+From 7ea96b41fac0ed77105a71b3a7cffd48b91b3834 Mon Sep 17 00:00:00 2001
+From: Amisha Jain <quic_amisjain@quicinc.com>
+Date: Mon, 14 Oct 2024 16:19:14 +0530
+Subject: [PATCH] UPSTREAM: Resolve obex SRM issue for PTS testcases
+
+Add check for unknown/undefined srm value.
+
+This fix is required to pass the below the PTS testcases :
+1. OPP/SR/GOEP/SRM/BI-02-C
+2. FTP/SR/GOEP/SRM/BI-02-C
+3. PBAP/PSE/GOEP/SRM/BI-05-C
+
+Description - Verify that the Server ignores a SRM header with an
+invalid value in the PUT/GET request and carries on with the
+PUT/GET operation with SRM disabled.
+
+Current Behaviour - Server is sending SRM enable in the response even
+though receiving the unknown SRM value.
+
+To fix this, I have added the check to verify the valid SRM values
+before continuing with SRM enable.
+
+Upstream-Status: Backport https://github.com/bluez/bluez/commit/d35bae15152bb61008f4ca5643184377ef31c7ff
+Signed-off-by: Amisha Jain <quic_amisjain@quicinc.com>
+---
+ gobex/gobex.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/gobex/gobex.c b/gobex/gobex.c
+index 869f545..fbf761a 100644
+--- a/gobex/gobex.c
++++ b/gobex/gobex.c
+@@ -317,6 +317,15 @@ static void set_srm(GObex *obex, guint8 op, guint8 srm)
+ 	struct srm_config *config = obex->srm;
+ 	gboolean enable;
+ 
++	switch (srm) {
++	case G_OBEX_SRM_ENABLE:
++	case G_OBEX_SRM_DISABLE:
++	case G_OBEX_SRM_INDICATE:
++		break;
++	default:
++		return;
++	}
++
+ 	if (config == NULL) {
+ 		if (srm == G_OBEX_SRM_DISABLE)
+ 			return;
+-- 
+2.34.1
+

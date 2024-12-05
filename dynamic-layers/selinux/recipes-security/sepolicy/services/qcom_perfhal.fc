@@ -7,5 +7,4 @@
 /run/perfservice  -s           gen_context(system_u:object_r:qcom_perfhal_runtime_t,s0)
 /etc/perf(/.*)?             -- gen_context(system_u:object_r:qcom_perfhal_etc_t,s0)
 /etc/powerhint.xml          -- gen_context(system_u:object_r:qcom_perfhal_etc_t,s0)
-/var/lib/perfd              -- gen_context(system_u:object_r:qcom_perfhal_data_t,s0)
-/var/lib/perfd(/.*)?           gen_context(system_u:object_r:qcom_perfhal_data_t,s0)
+/etc/perf/data(/.*)?           gen_context(system_u:object_r:qcom_perfhal_data_t,s0)

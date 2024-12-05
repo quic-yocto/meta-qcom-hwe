@@ -1,0 +1,31 @@
+From 82fa08d8773d036c268216f72cd0f5df428c4141 Mon Sep 17 00:00:00 2001
+From: Krishna Kurapati <quic_kriskura@quicinc.com>
+Date: Mon, 14 Oct 2024 14:14:32 +0530
+Subject: [PATCH] FROMLIST: phy: qcom: qmp-usbc: Add qmp configuration for
+ QCS615
+
+Provide PHY configuration for the USB QMP PHY for QCS615 Platform.
+
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Krishna Kurapati <quic_kriskura@quicinc.com>
+Link: https://lore.kernel.org/all/20241014084432.3310114-6-quic_kriskura@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241014084432.3310114-6-quic_kriskura@quicinc.com/]
+---
+ drivers/phy/qualcomm/phy-qcom-qmp-usbc.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c b/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
+index d4fa1063ea61..c56ba8468538 100644
+--- a/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
++++ b/drivers/phy/qualcomm/phy-qcom-qmp-usbc.c
+@@ -1123,6 +1123,9 @@ static const struct of_device_id qmp_usbc_of_match_table[] = {
+ 	}, {
+ 		.compatible = "qcom,qcm2290-qmp-usb3-phy",
+ 		.data = &qcm2290_usb3phy_cfg,
++	}, {
++		.compatible = "qcom,qcs615-qmp-usb3-phy",
++		.data = &qcm2290_usb3phy_cfg,
+ 	}, {
+ 		.compatible = "qcom,sdm660-qmp-usb3-phy",
+ 		.data = &sdm660_usb3phy_cfg,
+-- 

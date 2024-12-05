@@ -1,0 +1,13 @@
+Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+Description=Load qps615.ko module
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/modprobe tc956x_pcie_eth
+
+[Install]
+WantedBy=multi-user.target

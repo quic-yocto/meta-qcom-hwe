@@ -1,0 +1,36 @@
+From 75f4dcdf1b0916b90927cb452eebf094508c5542 Mon Sep 17 00:00:00 2001
+From: Qingqing Zhou <quic_qqzhou@quicinc.com>
+Date: Thu, 10 Oct 2024 13:24:01 +0530
+Subject: [PATCH 3/5] FROMLIST: arm64: dts: qcom: qcs615: add the SCM node
+
+Add the SCM node for QCS615 platform. It is an interface to
+communicate to the secure firmware.
+
+Signed-off-by: Qingqing Zhou <quic_qqzhou@quicinc.com>
+Link: https://lore.kernel.org/all/20241015081603.30643-4-quic_qqzhou@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241015081603.30643-4-quic_qqzhou@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index ac4c4c751da1..027c5125f36b 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -278,6 +278,13 @@
+ 		reg = <0 0x80000000 0 0>;
+ 	};
+ 
++	firmware {
++		scm {
++			compatible = "qcom,scm-qcs615", "qcom,scm";
++			qcom,dload-mode = <&tcsr 0x13000>;
++		};
++	};
++
+ 	camnoc_virt: interconnect-0 {
+ 		compatible = "qcom,qcs615-camnoc-virt";
+ 		#interconnect-cells = <2>;
+-- 
+2.17.1
+

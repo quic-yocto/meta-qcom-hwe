@@ -1,0 +1,31 @@
+From 95acfaf9f83f8074830d983e1057f7642fa1a157 Mon Sep 17 00:00:00 2001
+From: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Date: Thu, 22 Aug 2024 16:48:40 +0530
+Subject: [PATCH 4/7] FROMLIST: dt-bindings: display: msm: dp-controller:
+ document SA8775P compatible
+
+Add compatible string for the DisplayPort controller found on the
+Qualcomm SA8775P platform.
+
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+Signed-off-by: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241018070706.28980-5-quic_mukhopad@quicinc.com/]
+---
+ Documentation/devicetree/bindings/display/msm/dp-controller.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/display/msm/dp-controller.yaml b/Documentation/devicetree/bindings/display/msm/dp-controller.yaml
+index 97993feda193..a212f335d5ff 100644
+--- a/Documentation/devicetree/bindings/display/msm/dp-controller.yaml
++++ b/Documentation/devicetree/bindings/display/msm/dp-controller.yaml
+@@ -17,6 +17,7 @@ properties:
+   compatible:
+     oneOf:
+       - enum:
++          - qcom,sa8775p-dp
+           - qcom,sc7180-dp
+           - qcom,sc7280-dp
+           - qcom,sc7280-edp
+-- 
+2.17.1
+

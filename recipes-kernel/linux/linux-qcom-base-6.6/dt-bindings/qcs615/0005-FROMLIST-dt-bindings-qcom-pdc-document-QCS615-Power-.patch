@@ -1,0 +1,31 @@
+From 8fad8c42cbbcb436755f86f70b5a458c980300d4 Mon Sep 17 00:00:00 2001
+From: Lijuan Gao <quic_lijuang@quicinc.com>
+Date: Wed, 28 Aug 2024 10:02:11 +0800
+Subject: [PATCH 05/22] FROMLIST: dt-bindings: qcom,pdc: document QCS615 Power
+ Domain Controller
+
+Add a compatible for the Power Domain Controller on QCS615 platform.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Lijuan Gao <quic_lijuang@quicinc.com>
+Link: https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-3-e37617e91c62@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240926-add_initial_support_for_qcs615-v3-3-e37617e91c62@quicinc.com/]
+---
+ .../devicetree/bindings/interrupt-controller/qcom,pdc.yaml       | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml b/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
+index 4847b04be1a1..80787758ed67 100644
+--- a/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
++++ b/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
+@@ -26,6 +26,7 @@ properties:
+   compatible:
+     items:
+       - enum:
++          - qcom,qcs615-pdc
+           - qcom,qdu1000-pdc
+           - qcom,sa8775p-pdc
+           - qcom,sc7180-pdc
+-- 
+2.46.0
+

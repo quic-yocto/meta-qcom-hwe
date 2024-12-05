@@ -1,0 +1,35 @@
+From a575380e93dbf4defdb02aa1dbd5ea84d42f642f Mon Sep 17 00:00:00 2001
+From: Kyle Deng <quic_chunkaid@quicinc.com>
+Date: Wed, 11 Sep 2024 16:03:18 +0800
+Subject: [PATCH 13/17] FROMLIST: dt-bindings: soc: qcom,aoss-qmp: Document the
+ QCS8300 AOSS channel
+
+Document the Always-On Subsystem side channel on the Qualcomm QCS8300
+platform for communication with client found on the SoC such as
+remoteprocs.
+
+Change-Id: I39ba577369c3077aaac8d10dc623d28f40fd4933
+Signed-off-by: Kyle Deng <quic_chunkaid@quicinc.com>
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Link: https://lore.kernel.org/all/20240911-qcs8300_binding-v2-4-de8641b3eaa1@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240911-qcs8300_binding-v2-4-de8641b3eaa1@quicinc.com/]
+---
+ Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml
+index d1c7c2be865f..cf7cb35032e8 100644
+--- a/Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml
++++ b/Documentation/devicetree/bindings/soc/qcom/qcom,aoss-qmp.yaml
+@@ -25,6 +25,7 @@ properties:
+   compatible:
+     items:
+       - enum:
++          - qcom,qcs8300-aoss-qmp
+           - qcom,qdu1000-aoss-qmp
+           - qcom,sa8775p-aoss-qmp
+           - qcom,sc7180-aoss-qmp
+-- 
+2.46.0
+

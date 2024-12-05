@@ -8,6 +8,7 @@ Before=local-fs.target
 [Mount]
 What=/dev/disk/by-partlabel/usb_fw
 Where=/var/usbfw
+DirectoryMode=0744
 Type=ext4
 
 [Install]

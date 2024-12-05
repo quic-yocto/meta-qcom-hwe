@@ -1,0 +1,54 @@
+From cf7748cb39fd1d576359a18ff8dee8dc27a6a661 Mon Sep 17 00:00:00 2001
+From: Kyle Deng <quic_chunkaid@quicinc.com>
+Date: Wed, 23 Oct 2024 16:17:06 +0800
+Subject: [PATCH 3/3] FROMLIST: arm64: dts: qcom: qcs615: add AOSS_QMP node
+
+Add the Always-On Subsystem Qualcomm Message Protocol(AOSS_QMP) node for
+QCS615 SoC. The AOSS_QMP enables the system to send and receive messages
+on the SoC and uses the same hardware version as sdm845.
+
+Signed-off-by: Kyle Deng <quic_chunkaid@quicinc.com>
+Link: https://lore.kernel.org/all/20241018073417.2338864-4-quic_chunkaid@quicinc.com/
+Upstream-Status: Submitted[https://lore.kernel.org/all/20241018073417.2338864-4-quic_chunkaid@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index b282ec79fd52..da5fd22ab750 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -1226,6 +1226,16 @@ pdc: interrupt-controller@b220000 {
+ 			interrupt-controller;
+ 		};
+ 
++		aoss_qmp: power-controller@c300000 {
++			compatible = "qcom,qcs615-aoss-qmp", "qcom,aoss-qmp";
++			reg = <0x0 0x0c300000 0x0 0x400>;
++			interrupts = <GIC_SPI 389 IRQ_TYPE_EDGE_RISING>;
++			mboxes = <&apss_shared 0>;
++
++			#clock-cells = <0>;
++			#power-domain-cells = <1>;
++		};
++
+ 		sram@c3f0000 {
+ 			compatible = "qcom,rpmh-stats";
+ 			reg = <0x0 0x0c3f0000 0x0 0x400>;
+@@ -1315,6 +1325,13 @@ intc: interrupt-controller@17a00000 {
+ 			redistributor-stride = <0x0 0x20000>;
+ 		};
+ 
++		apss_shared: mailbox@17c00000 {
++			compatible = "qcom,qcs615-apss-shared",
++				     "qcom,sdm845-apss-shared";
++			reg = <0x0 0x17c00000 0x0 0x1000>;
++			#mbox-cells = <1>;
++		};
++
+ 		watchdog: watchdog@17c10000 {
+ 			compatible = "qcom,apss-wdt-qcs615", "qcom,kpss-wdt";
+ 			reg = <0x0 0x17c10000 0x0 0x1000>;
+-- 
+2.34.1
+

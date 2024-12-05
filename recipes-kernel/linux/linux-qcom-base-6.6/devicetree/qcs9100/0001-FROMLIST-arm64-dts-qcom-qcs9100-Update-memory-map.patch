@@ -1,0 +1,255 @@
+From f27204efa5eb8116bfc3450cc608d730ff1d43cb Mon Sep 17 00:00:00 2001
+From: Pratyush Brahma <quic_pbrahma@quicinc.com>
+Date: Tue, 19 Nov 2024 16:45:33 +0530
+Subject: [PATCH] FROMLIST: arm64: dts: qcom: qcs9100: Update memory
+ map  for QCS9100 Ride and QCS9100 Ride Rev3
+
+This patch series is based on Tengfei Fan's patches [1] which adds support
+for QCS9100 Ride and QCS9100 Ride Rev3 boards.
+
+Some new carveouts (viz. gunyah_md and a few pil carveouts) have been
+introduced and the size and base addresses have been updated for
+a few of existing carveouts compared to SA8775P. Also, tz_ffi_mem carveout
+and its corresponding scm reference has been removed as it is not required
+for these boards. Incorporate these changes in the updated memory map
+boards.
+
+[1] https://lore.kernel.org/all/20240911-add_qcs9100_support-v2-4-e43a71ceb017@quicinc.com/.
+
+Signed-off-by: Pratyush Brahma <quic_pbrahma@quicinc.com>
+Upstream-Status: Submitted [ https://lore.kernel.org/all/20241119092501.31111-1-quic_pbrahma@quicinc.com/ ]
+---
+ arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts |  99 ++++++++++++++++++
+ arch/arm64/boot/dts/qcom/qcs9100-ride.dts    | 100 +++++++++++++++++++
+ 2 files changed, 199 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts b/arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts
+index bdfc0d3f2f4d..97e52fb8d473 100644
+--- a/arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts
++++ b/arch/arm64/boot/dts/qcom/qcs9100-ride-r3.dts
+@@ -5,9 +5,108 @@
+ /dts-v1/;
+ 
+ #include "sa8775p-ride-r3.dts"
++/delete-node/ &pil_adsp_mem;
++/delete-node/ &pil_gdsp0_mem;
++/delete-node/ &pil_gdsp1_mem;
++/delete-node/ &pil_cdsp0_mem;
++/delete-node/ &pil_gpu_mem;
++/delete-node/ &pil_cdsp1_mem;
++/delete-node/ &pil_cvp_mem;
++/delete-node/ &pil_video_mem;
++/delete-node/ &audio_mdf_mem;
++/delete-node/ &trusted_apps_mem;
++/delete-node/ &tz_ffi_mem;
++
+ / {
+ 	model = "Qualcomm QCS9100 Ride Rev3";
+ 	compatible = "qcom,qcs9100-ride-r3", "qcom,qcs9100", "qcom,sa8775p";
+ 	qcom,msm-id = <667 0x10000>, <667 0x20000>;
+ 	qcom,board-id = <0x20025 1>;
++
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		gunyah_md_mem: gunyah-md@91a80000 {
++			reg = <0x0 0x91a80000 0x0 0x80000>;
++			no-map;
++		};
++
++		pil_adsp_mem: pil-adsp@95900000 {
++			reg = <0x0 0x95900000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		q6_adsp_dtb_mem: q6-adsp-dtb@97700000 {
++			reg = <0x0 0x97700000 0x0 0x80000>;
++			no-map;
++		};
++
++		q6_gdsp0_dtb_mem: q6-gdsp0-dtb@97780000 {
++			reg = <0x0 0x97780000 0x0 0x80000>;
++			no-map;
++		};
++
++		pil_gdsp0_mem: pil-gdsp0@97800000 {
++			reg = <0x0 0x97800000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		pil_gdsp1_mem: pil-gdsp1@99600000 {
++			reg = <0x0 0x99600000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		q6_gdsp1_dtb_mem: q6-gdsp1-dtb@9b400000 {
++			reg = <0x0 0x9b400000 0x0 0x80000>;
++			no-map;
++		};
++
++		q6_cdsp0_dtb_mem: q6-cdsp0-dtb@9b480000 {
++			reg = <0x0 0x9b480000 0x0 0x80000>;
++			no-map;
++		};
++
++		pil_cdsp0_mem: pil-cdsp0@9b500000 {
++			reg = <0x0 0x9b500000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		pil_gpu_mem: pil-gpu@9d300000 {
++			reg = <0x0 0x9d300000 0x0 0x2000>;
++			no-map;
++		};
++
++		q6_cdsp1_dtb_mem: q6-cdsp1-dtb@9d380000 {
++			reg = <0x0 0x9d380000 0x0 0x80000>;
++			no-map;
++		};
++
++		pil_cdsp1_mem: pil-cdsp1@9d400000 {
++			reg = <0x0 0x9d400000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		pil_cvp_mem: pil-cvp@9f200000 {
++			reg = <0x0 0x9f200000 0x0 0x700000>;
++			no-map;
++		};
++
++		pil_video_mem: pil-video@9f900000 {
++			reg = <0x0 0x9f900000 0x0 0x1000000>;
++			no-map;
++		};
++
++		trusted_apps_mem: trusted-apps@d1900000 {
++			reg = <0x0 0xd1900000 0x0 0x1c00000>;
++			no-map;
++		};
++	};
++
++	firmware {
++		scm {
++			/delete-property/ memory-region;
++		};
++	};
+ };
+diff --git a/arch/arm64/boot/dts/qcom/qcs9100-ride.dts b/arch/arm64/boot/dts/qcom/qcs9100-ride.dts
+index 1ce3bd5b6efb..4b0c22539605 100644
+--- a/arch/arm64/boot/dts/qcom/qcs9100-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs9100-ride.dts
+@@ -5,9 +5,109 @@
+ /dts-v1/;
+ 
+ #include "sa8775p-ride.dts"
++
++/delete-node/ &pil_adsp_mem;
++/delete-node/ &pil_gdsp0_mem;
++/delete-node/ &pil_gdsp1_mem;
++/delete-node/ &pil_cdsp0_mem;
++/delete-node/ &pil_gpu_mem;
++/delete-node/ &pil_cdsp1_mem;
++/delete-node/ &pil_cvp_mem;
++/delete-node/ &pil_video_mem;
++/delete-node/ &audio_mdf_mem;
++/delete-node/ &trusted_apps_mem;
++/delete-node/ &tz_ffi_mem;
++
+ / {
+ 	model = "Qualcomm QCS9100 Ride";
+ 	compatible = "qcom,qcs9100-ride", "qcom,qcs9100", "qcom,sa8775p";
+ 	qcom,msm-id = <667 0x10000>, <667 0x20000>;
+ 	qcom,board-id = <0x10019 0>, <0x10025 1>;
++
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		gunyah_md_mem: gunyah-md@91a80000 {
++			reg = <0x0 0x91a80000 0x0 0x80000>;
++			no-map;
++		};
++
++		pil_adsp_mem: pil-adsp@95900000 {
++			reg = <0x0 0x95900000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		q6_adsp_dtb_mem: q6-adsp-dtb@97700000 {
++			reg = <0x0 0x97700000 0x0 0x80000>;
++			no-map;
++		};
++
++		q6_gdsp0_dtb_mem: q6-gdsp0-dtb@97780000 {
++			reg = <0x0 0x97780000 0x0 0x80000>;
++			no-map;
++		};
++
++		pil_gdsp0_mem: pil-gdsp0@97800000 {
++			reg = <0x0 0x97800000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		pil_gdsp1_mem: pil-gdsp1@99600000 {
++			reg = <0x0 0x99600000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		q6_gdsp1_dtb_mem: q6-gdsp1-dtb@9b400000 {
++			reg = <0x0 0x9b400000 0x0 0x80000>;
++			no-map;
++		};
++
++		q6_cdsp0_dtb_mem: q6-cdsp0-dtb@9b480000 {
++			reg = <0x0 0x9b480000 0x0 0x80000>;
++			no-map;
++		};
++
++		pil_cdsp0_mem: pil-cdsp0@9b500000 {
++			reg = <0x0 0x9b500000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		pil_gpu_mem: pil-gpu@9d300000 {
++			reg = <0x0 0x9d300000 0x0 0x2000>;
++			no-map;
++		};
++
++		q6_cdsp1_dtb_mem: q6-cdsp1-dtb@9d380000 {
++			reg = <0x0 0x9d380000 0x0 0x80000>;
++			no-map;
++		};
++
++		pil_cdsp1_mem: pil-cdsp1@9d400000 {
++			reg = <0x0 0x9d400000 0x0 0x1e00000>;
++			no-map;
++		};
++
++		pil_cvp_mem: pil-cvp@9f200000 {
++			reg = <0x0 0x9f200000 0x0 0x700000>;
++			no-map;
++		};
++
++		pil_video_mem: pil-video@9f900000 {
++			reg = <0x0 0x9f900000 0x0 0x1000000>;
++			no-map;
++		};
++
++		trusted_apps_mem: trusted-apps@d1900000 {
++			reg = <0x0 0xd1900000 0x0 0x1c00000>;
++			no-map;
++		};
++	};
++
++	firmware {
++		scm {
++			/delete-property/ memory-region;
++		};
++	};
+ };
+-- 
+2.17.1
+

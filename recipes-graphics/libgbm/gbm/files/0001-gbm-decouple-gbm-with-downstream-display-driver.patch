@@ -1,0 +1,942 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+#
+#Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From 56dcaa03cc9a00823562c4a41c2d730a02797d67 Mon Sep 17 00:00:00 2001
+From: Devanshi Bansal <quic_devanshi@quicinc.com>
+Date: Mon, 16 Sep 2024 11:04:58 +0530
+Subject: [PATCH] gbm: decouple gbm with downstream display driver
+
+Change-Id: Ie3c2d899ca1172ecb0ee02f6abb425290741da59
+
+Signed-off-by: Devanshi Bansal <quic_devanshi@quicinc.com>
+---
+ Android.bp                      |   1 +
+ Makefile.am                     |   3 +-
+ inc/msmgbm.h                    |   1 -
+ inc/msmgbm_helper.h             |  62 +++++
+ inc/msmgbm_platform_wrapper.h   |   2 +-
+ src/msmgbm.c                    |  31 ++-
+ src/msmgbm_fb.c                 |   2 +-
+ src/msmgbm_helper.c             | 458 ++++++++++++++++++++++++++++++++
+ src/msmgbm_platform_wrapper.cpp |  98 +++----
+ test/gbmtest.c                  |   7 +-
+ 10 files changed, 595 insertions(+), 70 deletions(-)
+ create mode 100644 inc/msmgbm_helper.h
+ create mode 100644 src/msmgbm_helper.c
+
+diff --git a/Android.bp b/Android.bp
+index 981033f..478d66d 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -51,6 +51,7 @@ cc_library_shared {
+         "src/msmgbm_mapper.cpp",
+         "src/msmgbm.c",
+         "src/msmgbm_dma.cpp",
++		"src/msmgbm_helper.c",
+     ],
+ }
+ 
+diff --git a/Makefile.am b/Makefile.am
+index 6e4e98c..50f5a06 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -31,7 +31,8 @@ libgbm_la_SOURCES = src/gbm.c \
+                     src/msmgbm_platform_wrapper.cpp \
+                     src/msmgbm_adreno_utils.cpp \
+                     src/msmgbm_camera_utils.cpp \
+-                    src/msmgbm_mapper.cpp
++                    src/msmgbm_mapper.cpp \
++                    src/msmgbm_helper.c
+ 
+ if ENABLE_COMPILEWITHDRM
+ libgbm_la_SOURCES += src/msmgbm.c
+diff --git a/inc/msmgbm.h b/inc/msmgbm.h
+index 2983308..7528931 100644
+--- a/inc/msmgbm.h
++++ b/inc/msmgbm.h
+@@ -74,7 +74,6 @@ extern "C" {
+ #include <stddef.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+-#include <display/drm/sde_drm.h>
+ 
+ //Enables debug log
+ #ifdef GBM_DEBUG
+diff --git a/inc/msmgbm_helper.h b/inc/msmgbm_helper.h
+new file mode 100644
+index 0000000..567ed8a
+--- /dev/null
++++ b/inc/msmgbm_helper.h
+@@ -0,0 +1,62 @@
++/*
++* Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++* SPDX-License-Identifier: BSD-3-Clause-Clear
++*/
++
++#ifndef MSMGBM_HELPER_H_
++#define MSMGBM_HELPER_H_
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include <stdint.h>
++#include <stdbool.h>
++
++/* Width and Height should be multiple of 16 */
++#define INTERLACE_WIDTH_MAX 1920
++#define INTERLACE_HEIGHT_MAX 1920
++#define INTERLACE_MB_PER_FRAME_MAX ((1920*1088)/256)
++
++/**
++ * DRM format modifier tokens
++ */
++#define DRM_FORMAT_MOD_QCOM_DX	fourcc_mod_code(QCOM, 0x2)
++#define DRM_FORMAT_MOD_QCOM_TIGHT	fourcc_mod_code(QCOM, 0x4)
++#define DRM_FORMAT_MOD_QCOM_TILE	fourcc_mod_code(QCOM, 0x8)
++#define DRM_FORMAT_MOD_QCOM_ALPHA_SWAP	fourcc_mod_code(QCOM, 0x10)
++
++enum color_fmts {
++	FMT_NV12,
++	FMT_NV21,
++	FMT_NV12_UBWC,
++	FMT_NV12_BPP10_UBWC,
++	FMT_RGBA8888_UBWC,
++	FMT_RGB565_UBWC,
++	FMT_P010_UBWC,
++	FMT_P010,
++	FMT_NV12_512,
++
++};
++
++unsigned int Align(unsigned int val, int alignment);
++int Roundoff(unsigned int val, int rf_factor);
++unsigned int CalculateYStride(unsigned int color_fmt, unsigned int width);
++unsigned int CalculateUVStride(unsigned int color_fmt, unsigned int width);
++unsigned int CalculateYScanlines(unsigned int color_fmt, unsigned int height);
++unsigned int CalculateUVScanlines(unsigned int color_fmt,	unsigned int height);
++unsigned int CalculateYMetaStride(unsigned int color_fmt, unsigned int width);
++unsigned int CalculateYMetaScanlines(unsigned int color_fmt,	unsigned int height);
++unsigned int CalculateUVMetaStride(unsigned int color_fmt, unsigned int width);
++unsigned int CalculateUVMetaScanlines(unsigned int color_fmt, unsigned int height);
++unsigned int CalculateRGBStride(unsigned int color_fmt, unsigned int width);
++unsigned int CalculateRGBScanlines(unsigned int color_fmt, unsigned int height);
++unsigned int CalculateRGBMetaStride(unsigned int color_fmt, unsigned int width);
++unsigned int CalculateBufferSize(unsigned int color_fmt, unsigned int width, unsigned int height);
++
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif //MSMGBM_HELPER_H_
+diff --git a/inc/msmgbm_platform_wrapper.h b/inc/msmgbm_platform_wrapper.h
+index 86f8bcf..0c61d5c 100644
+--- a/inc/msmgbm_platform_wrapper.h
++++ b/inc/msmgbm_platform_wrapper.h
+@@ -42,7 +42,7 @@
+ #include <linux/version.h>
+ 
+ #ifdef VENUS_COLOR_FORMAT
+-#include <display/media/mmm_color_fmt.h>
++#include <msmgbm_helper.h>
+ #else
+ #define VENUS_Y_STRIDE(args...) 0
+ #define VENUS_Y_SCANLINES(args...) 0
+diff --git a/src/msmgbm.c b/src/msmgbm.c
+index 2254f4e..91b606a 100644
+--- a/src/msmgbm.c
++++ b/src/msmgbm.c
+@@ -89,8 +89,7 @@
+ #include <msmgbm_dma.h>
+ #include <msmgbm_common.h>
+ #include <linux/version.h>
+-
+-#include <display/media/mmm_color_fmt.h>
++#include <msmgbm_helper.h>
+ 
+ #ifdef USE_GLIB
+ #define strlcat g_strlcat
+@@ -221,12 +220,12 @@ msmgbm_stride_for_plane(int plane, struct gbm_bo * bo) {
+     // UBWC RGB format
+     // there are two planes.
+     if (plane == 0) {
+-      stride = MMM_COLOR_FMT_RGB_META_STRIDE(MMM_COLOR_FMT_RGBA8888_UBWC, bo->width);
++      stride = CalculateRGBMetaStride(FMT_RGBA8888_UBWC, bo->width);
+     } else if (plane == 1) {
+       if (bo->bpp == 2) {
+-        stride = MMM_COLOR_FMT_RGB_STRIDE(MMM_COLOR_FMT_RGB565_UBWC, bo->width);
++        stride = CalculateRGBStride(FMT_RGB565_UBWC, bo->width);
+       } else if(bo->bpp == 4) {
+-        stride = MMM_COLOR_FMT_RGB_STRIDE(MMM_COLOR_FMT_RGBA8888_UBWC, bo->width);
++        stride = CalculateRGBStride(FMT_RGBA8888_UBWC, bo->width);
+       }
+     }
+     return stride;
+@@ -3158,19 +3157,19 @@ void get_yuv_ubwc_sp_plane_info(int width, int height,
+     unsigned int c_stride = 0;
+     unsigned int alignment = 4096;
+ 
+-    y_meta_stride = MMM_COLOR_FMT_Y_META_STRIDE(color_format, width);
+-    y_meta_height = MMM_COLOR_FMT_Y_META_SCANLINES(color_format, height);
++    y_meta_stride = CalculateYMetaStride(color_format, width);
++    y_meta_height = CalculateYMetaScanlines(color_format, height);
+     y_meta_size = ALIGN((y_meta_stride * y_meta_height), alignment);
+ 
+-    y_stride = MMM_COLOR_FMT_Y_STRIDE(color_format, width);
+-    y_height = MMM_COLOR_FMT_Y_SCANLINES(color_format, height);
++    y_stride = CalculateYStride(color_format, width);
++    y_height = CalculateYScanlines(color_format, height);
+     y_size = ALIGN((y_stride * y_height), alignment);
+ 
+-    c_meta_stride = MMM_COLOR_FMT_UV_META_STRIDE(color_format, width);
+-    c_meta_height = MMM_COLOR_FMT_UV_META_SCANLINES(color_format, height);
++    c_meta_stride = CalculateUVMetaStride(color_format, width);
++    c_meta_height = CalculateUVMetaScanlines(color_format, height);
+     c_meta_size = ALIGN((c_meta_stride * c_meta_height), alignment);
+ 
+-    c_stride = MMM_COLOR_FMT_UV_STRIDE(color_format, width);
++    c_stride = CalculateUVStride(color_format, width);
+ 
+     buf_lyt->num_planes = 4;
+ 
+@@ -3224,18 +3223,18 @@ int msmgbm_yuv_plane_info(struct gbm_bo *gbo,generic_buf_layout_t *buf_lyt){
+         case GBM_FORMAT_YCbCr_420_SP_VENUS_UBWC:
+             if (is_ubwc_enabled(gbo->format, gbo->usage_flags, gbo->usage_flags))
+                 get_yuv_ubwc_sp_plane_info(gbo->aligned_width, gbo->aligned_height,
+-                                           MMM_COLOR_FMT_NV12_UBWC, buf_lyt);
++                                           FMT_NV12_UBWC, buf_lyt);
+             else
+                 get_yuv_sp_plane_info(gbo->aligned_width, gbo->aligned_height,
+                                       YUV_420_SP_BPP, buf_lyt);
+             break;
+         case GBM_FORMAT_YCbCr_420_TP10_UBWC:
+             get_yuv_ubwc_sp_plane_info(gbo->aligned_width, gbo->aligned_height,
+-                                       MMM_COLOR_FMT_NV12_BPP10_UBWC, buf_lyt);
++                                       FMT_NV12_BPP10_UBWC, buf_lyt);
+             break;
+         case GBM_FORMAT_YCbCr_420_P010_UBWC:
+             get_yuv_ubwc_sp_plane_info(gbo->aligned_width, gbo->aligned_height,
+-                                       MMM_COLOR_FMT_P010_UBWC, buf_lyt);
++                                       FMT_P010_UBWC, buf_lyt);
+             break;
+         case GBM_FORMAT_P010:
+         case GBM_FORMAT_YCbCr_420_P010_VENUS:
+@@ -3246,7 +3245,7 @@ int msmgbm_yuv_plane_info(struct gbm_bo *gbo,generic_buf_layout_t *buf_lyt){
+             break;
+         case GBM_FORMAT_C8:
+             get_yuv_ubwc_sp_plane_info(gbo->aligned_width, gbo->aligned_height,
+-                                       MMM_COLOR_FMT_NV12_UBWC, buf_lyt);
++                                       FMT_NV12_UBWC, buf_lyt);
+             break;
+         case GBM_FORMAT_UYVY:
+         case GBM_FORMAT_YUYV:
+diff --git a/src/msmgbm_fb.c b/src/msmgbm_fb.c
+index efa3fd3..9b85ce2 100644
+--- a/src/msmgbm_fb.c
++++ b/src/msmgbm_fb.c
+@@ -56,8 +56,8 @@
+ #include <msmgbm.h>
+ #include <msmgbm_common.h>
+ #include <linux/version.h>
+-#include <display/media/mmm_color_fmt.h>
+ #include <linux/msm_mdp.h>
++#include <msmgbm_helper.h>
+ #ifdef BUILD_HAS_WAYLAND_SUPPORT
+ #include <wayland-server.h>
+ #endif
+diff --git a/src/msmgbm_helper.c b/src/msmgbm_helper.c
+new file mode 100644
+index 0000000..6ed8750
+--- /dev/null
++++ b/src/msmgbm_helper.c
+@@ -0,0 +1,458 @@
++/*
++* Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++* SPDX-License-Identifier: BSD-3-Clause-Clear
++*/
++
++#include <stdint.h>
++#include <stddef.h>
++#include <stdbool.h>
++#include <gbm_priv.h>
++#include <msmgbm_helper.h>
++
++unsigned int Align(unsigned int val, int alignment) {
++	return ((alignment & (alignment -1)) ?
++            (((val + alignment -1) / alignment) * alignment) :
++            ((val + alignment -1) & (~(alignment -1))));
++}
++
++int Roundoff(unsigned int val, int rf_factor) {
++    return ((val + (rf_factor - 1)) / rf_factor);
++}
++
++unsigned int CalculateYStride(unsigned int color_fmt, unsigned int width)
++{
++	unsigned int alignment, stride = 0;
++
++	if (!width)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_NV12_512:
++		alignment = 512;
++		stride = Align(width, alignment);
++		break;
++	case FMT_NV12:
++	case FMT_NV21:
++	case FMT_NV12_UBWC:
++		alignment = 128;
++		stride = Align(width, alignment);
++		break;
++	case FMT_NV12_BPP10_UBWC:
++		alignment = 256;
++		stride = Align(width, 192);
++		stride = Align(stride * 4/3, alignment);
++		break;
++	case FMT_P010_UBWC:
++	case FMT_P010:
++		alignment = 256;
++		stride = Align(width * 2, alignment);
++		break;
++	default:
++		break;
++	}
++invalid_input:
++	return stride;
++}
++
++unsigned int CalculateUVStride(unsigned int color_fmt, unsigned int width)
++{
++	unsigned int alignment, stride = 0;
++
++	if (!width)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_NV12_512:
++		alignment = 512;
++		stride = Align(width, alignment);
++		break;
++	case FMT_NV12:
++	case FMT_NV21:
++	case FMT_NV12_UBWC:
++		alignment = 128;
++		stride = Align(width, alignment);
++		break;
++	case FMT_NV12_BPP10_UBWC:
++		alignment = 256;
++		stride = Align(width, 192);
++		stride = Align(stride * 4/3, alignment);
++		break;
++	case FMT_P010_UBWC:
++	case FMT_P010:
++		alignment = 256;
++		stride = Align(width * 2, alignment);
++		break;
++	default:
++		break;
++	}
++invalid_input:
++	return stride;
++}
++
++unsigned int CalculateYScanlines(unsigned int color_fmt, unsigned int height)
++{
++	unsigned int alignment, sclines = 0;
++
++	if (!height)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_NV12_512:
++		alignment = 512;
++		break;
++	case FMT_NV12:
++	case FMT_NV21:
++	case FMT_NV12_UBWC:
++	case FMT_P010:
++		alignment = 32;
++		break;
++	case FMT_NV12_BPP10_UBWC:
++	case FMT_P010_UBWC:
++		alignment = 16;
++		break;
++	default:
++		return 0;
++	}
++	sclines = Align(height, alignment);
++invalid_input:
++	return sclines;
++}
++
++unsigned int CalculateUVScanlines(unsigned int color_fmt,	unsigned int height)
++{
++	unsigned int alignment, sclines = 0;
++
++	if (!height)
++		goto invalid_input;
++
++	switch (color_fmt) {
++
++	case FMT_NV12_512:
++		alignment = 256;
++		break;
++	case FMT_NV12:
++	case FMT_NV21:
++	case FMT_NV12_BPP10_UBWC:
++	case FMT_P010_UBWC:
++	case FMT_P010:
++		alignment = 16;
++		break;
++	case FMT_NV12_UBWC:
++		alignment = 32;
++		break;
++	default:
++		goto invalid_input;
++	}
++
++	sclines = Align((height+1)>>1, alignment);
++
++invalid_input:
++	return sclines;
++}
++
++unsigned int CalculateYMetaStride(unsigned int color_fmt, unsigned int width)
++{
++	int y_tile_width = 0, y_meta_stride = 0;
++
++	if (!width)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_NV12_UBWC:
++	case FMT_P010_UBWC:
++		y_tile_width = 32;
++		break;
++	case FMT_NV12_BPP10_UBWC:
++		y_tile_width = 48;
++		break;
++	default:
++		goto invalid_input;
++	}
++
++	y_meta_stride = Roundoff(width, y_tile_width);
++	y_meta_stride = Align(y_meta_stride, 64);
++
++invalid_input:
++	return y_meta_stride;
++}
++
++unsigned int CalculateYMetaScanlines(unsigned int color_fmt,	unsigned int height)
++{
++	int y_tile_height = 0, y_meta_scanlines = 0;
++
++	if (!height)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_NV12_UBWC:
++		y_tile_height = 8;
++		break;
++	case FMT_NV12_BPP10_UBWC:
++	case FMT_P010_UBWC:
++		y_tile_height = 4;
++		break;
++	default:
++		goto invalid_input;
++	}
++
++	y_meta_scanlines = Roundoff(height, y_tile_height);
++	y_meta_scanlines = Align(y_meta_scanlines, 16);
++
++invalid_input:
++	return y_meta_scanlines;
++}
++
++unsigned int CalculateUVMetaStride(unsigned int color_fmt, unsigned int width)
++{
++	int uv_tile_width = 0, uv_meta_stride = 0;
++
++	if (!width)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_NV12_UBWC:
++	case FMT_P010_UBWC:
++		uv_tile_width = 16;
++		break;
++	case FMT_NV12_BPP10_UBWC:
++		uv_tile_width = 24;
++		break;
++	default:
++		goto invalid_input;
++	}
++
++	uv_meta_stride = Roundoff((width+1)>>1, uv_tile_width);
++	uv_meta_stride = Align(uv_meta_stride, 64);
++
++invalid_input:
++	return uv_meta_stride;
++}
++
++unsigned int CalculateUVMetaScanlines(unsigned int color_fmt, unsigned int height)
++{
++	int uv_tile_height = 0, uv_meta_scanlines = 0;
++
++	if (!height)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_NV12_UBWC:
++		uv_tile_height = 8;
++		break;
++	case FMT_NV12_BPP10_UBWC:
++	case FMT_P010_UBWC:
++		uv_tile_height = 4;
++		break;
++	default:
++		goto invalid_input;
++	}
++
++	uv_meta_scanlines = Roundoff((height+1)>>1,
++							uv_tile_height);
++	uv_meta_scanlines = Align(uv_meta_scanlines, 16);
++
++invalid_input:
++	return uv_meta_scanlines;
++}
++
++unsigned int CalculateRGBStride(unsigned int color_fmt, unsigned int width)
++{
++	unsigned int alignment = 0, stride = 0, bpp = 4;
++
++	if (!width)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_RGB565_UBWC:
++		alignment = 256;
++		bpp = 2;
++		break;
++	case FMT_RGBA8888_UBWC:
++		alignment = 256;
++		break;
++	default:
++		goto invalid_input;
++	}
++
++	stride = Align(width * bpp, alignment);
++
++invalid_input:
++	return stride;
++}
++
++unsigned int CalculateRGBScanlines(unsigned int color_fmt, unsigned int height)
++{
++	unsigned int alignment = 0, scanlines = 0;
++
++	if (!height)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_RGBA8888_UBWC:
++	case FMT_RGB565_UBWC:
++		alignment = 16;
++		break;
++	default:
++		goto invalid_input;
++	}
++
++	scanlines = Align(height, alignment);
++
++invalid_input:
++	return scanlines;
++}
++
++unsigned int CalculateRGBMetaStride(unsigned int color_fmt, unsigned int width)
++{
++	int rgb_tile_width = 0, rgb_meta_stride = 0;
++
++	if (!width)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_RGBA8888_UBWC:
++	case FMT_RGB565_UBWC:
++		rgb_tile_width = 16;
++		break;
++	default:
++		goto invalid_input;
++	}
++
++	rgb_meta_stride = Roundoff(width, rgb_tile_width);
++	rgb_meta_stride = Align(rgb_meta_stride, 64);
++
++invalid_input:
++	return rgb_meta_stride;
++}
++
++unsigned int CalculateRGBMetaScanlines(unsigned int color_fmt, unsigned int height)
++{
++	int rgb_tile_height = 0, rgb_meta_scanlines = 0;
++
++	if (!height)
++		goto invalid_input;
++
++	switch (color_fmt) {
++	case FMT_RGBA8888_UBWC:
++	case FMT_RGB565_UBWC:
++		rgb_tile_height = 4;
++		break;
++	default:
++		goto invalid_input;
++	}
++
++	rgb_meta_scanlines = Roundoff(height, rgb_tile_height);
++	rgb_meta_scanlines = Align(rgb_meta_scanlines, 16);
++
++invalid_input:
++	return rgb_meta_scanlines;
++}
++
++unsigned int CalculateBufferSize(unsigned int color_fmt, unsigned int width, unsigned int height)
++{
++	unsigned int size = 0;
++	unsigned int y_plane, uv_plane, y_stride,
++		uv_stride, y_sclines, uv_sclines;
++	unsigned int y_ubwc_plane = 0, uv_ubwc_plane = 0;
++	unsigned int y_meta_stride = 0, y_meta_scanlines = 0;
++	unsigned int uv_meta_stride = 0, uv_meta_scanlines = 0;
++	unsigned int y_meta_plane = 0, uv_meta_plane = 0;
++	unsigned int rgb_stride = 0, rgb_scanlines = 0;
++	unsigned int rgb_plane = 0, rgb_ubwc_plane = 0, rgb_meta_plane = 0;
++	unsigned int rgb_meta_stride = 0, rgb_meta_scanlines = 0;
++
++	if (!width || !height)
++		goto invalid_input;
++
++	y_stride = CalculateYStride(color_fmt, width);
++	uv_stride = CalculateUVStride(color_fmt, width);
++	y_sclines = CalculateYScanlines(color_fmt, height);
++	uv_sclines = CalculateUVScanlines(color_fmt, height);
++	rgb_stride = CalculateRGBStride(color_fmt, width);
++	rgb_scanlines = CalculateRGBScanlines(color_fmt, height);
++
++	switch (color_fmt) {
++	case FMT_NV21:
++	case FMT_NV12:
++	case FMT_P010:
++	case FMT_NV12_512:
++		y_plane = y_stride * y_sclines;
++		uv_plane = uv_stride * uv_sclines;
++		size = y_plane + uv_plane;
++		break;
++	case FMT_NV12_UBWC:
++		y_meta_stride = CalculateYMetaStride(color_fmt, width);
++		uv_meta_stride = CalculateUVMetaStride(color_fmt, width);
++		if (width <= INTERLACE_WIDTH_MAX &&
++			height <= INTERLACE_HEIGHT_MAX &&
++			(height * width) / 256 <= INTERLACE_MB_PER_FRAME_MAX) {
++			y_sclines = CalculateYScanlines(color_fmt,
++								(height+1)>>1);
++			y_ubwc_plane = Align(y_stride * y_sclines, 4096);
++			uv_sclines = CalculateUVScanlines(color_fmt, (height+1)>>1);
++			uv_ubwc_plane =	Align(uv_stride * uv_sclines, 4096);
++			y_meta_scanlines = CalculateYMetaScanlines(
++						color_fmt, (height+1)>>1);
++			y_meta_plane = Align(y_meta_stride * y_meta_scanlines, 4096);
++			uv_meta_scanlines = CalculateUVMetaScanlines(
++                                               color_fmt, (height+1)>>1);
++			uv_meta_plane = Align(uv_meta_stride *
++                                  uv_meta_scanlines, 4096);
++			size = (y_ubwc_plane + uv_ubwc_plane + y_meta_plane +
++                     uv_meta_plane)*2;
++		} else {
++			y_sclines = CalculateYScanlines(color_fmt, height);
++			y_ubwc_plane = Align(y_stride * y_sclines, 4096);
++			uv_sclines = CalculateUVScanlines(color_fmt, height);
++			uv_ubwc_plane =	Align(uv_stride * uv_sclines, 4096);
++			y_meta_scanlines = CalculateYMetaScanlines(
++                                                color_fmt, height);
++			y_meta_plane = Align(y_meta_stride * y_meta_scanlines, 4096);
++			uv_meta_scanlines = CalculateUVMetaScanlines(color_fmt, height);
++			uv_meta_plane = Align(uv_meta_stride * uv_meta_scanlines, 4096);
++			size = (y_ubwc_plane + uv_ubwc_plane + y_meta_plane +
++				uv_meta_plane);
++		}
++		break;
++	case FMT_NV12_BPP10_UBWC:
++		y_ubwc_plane = Align(y_stride * y_sclines, 4096);
++		uv_ubwc_plane = Align(uv_stride * uv_sclines, 4096);
++		y_meta_stride = CalculateYMetaStride(color_fmt, width);
++		y_meta_scanlines = CalculateYMetaScanlines(color_fmt, height);
++		y_meta_plane = Align(y_meta_stride * y_meta_scanlines, 4096);
++		uv_meta_stride = CalculateUVMetaStride(color_fmt, width);
++		uv_meta_scanlines = CalculateUVMetaScanlines(color_fmt,
++									height);
++		uv_meta_plane = Align(uv_meta_stride *
++					uv_meta_scanlines, 4096);
++
++		size = y_ubwc_plane + uv_ubwc_plane + y_meta_plane +
++			uv_meta_plane;
++		break;
++	case FMT_P010_UBWC:
++		y_ubwc_plane = Align(y_stride * y_sclines, 4096);
++		uv_ubwc_plane = Align(uv_stride * uv_sclines, 4096);
++		y_meta_stride = CalculateYMetaStride(color_fmt, width);
++		y_meta_scanlines = CalculateYMetaScanlines(color_fmt, height);
++		y_meta_plane = Align(y_meta_stride * y_meta_scanlines, 4096);
++		uv_meta_stride = CalculateUVMetaStride(color_fmt, width);
++		uv_meta_scanlines = CalculateUVMetaScanlines(color_fmt, height);
++		uv_meta_plane = Align(uv_meta_stride * uv_meta_scanlines, 4096);
++
++		size = y_ubwc_plane + uv_ubwc_plane + y_meta_plane +
++			uv_meta_plane;
++		break;
++	case FMT_RGBA8888_UBWC:
++	case FMT_RGB565_UBWC:
++		rgb_ubwc_plane = Align(rgb_stride * rgb_scanlines, 4096);
++		rgb_meta_stride = CalculateRGBMetaStride(color_fmt, width);
++		rgb_meta_scanlines = CalculateRGBMetaScanlines(color_fmt, height);
++		rgb_meta_plane = Align(rgb_meta_stride * rgb_meta_scanlines, 4096);
++		size = rgb_ubwc_plane + rgb_meta_plane;
++		break;
++	default:
++		break;
++	}
++invalid_input:
++	return Align(size, 4096);
++}
+diff --git a/src/msmgbm_platform_wrapper.cpp b/src/msmgbm_platform_wrapper.cpp
+index dc346fe..518d3da 100644
+--- a/src/msmgbm_platform_wrapper.cpp
++++ b/src/msmgbm_platform_wrapper.cpp
+@@ -628,31 +628,31 @@ unsigned int platform_wrap::get_size(int format, int width, int height, int usag
+         case GBM_FORMAT_NV12_ENCODEABLE:
+         case GBM_FORMAT_NV12:
+             mmm_color_format = (usage & GBM_BO_USAGE_PRIVATE_HEIF) ?
+-                                MMM_COLOR_FMT_NV12_512 : MMM_COLOR_FMT_NV12;
+-            size = MMM_COLOR_FMT_BUFFER_SIZE(mmm_color_format, width, height);
+-            LOG(LOG_DBG," MMM_COLOR_FMT_BUF_SIZE=%u, computed for Width=%u, Height=%u\n",
++                                FMT_NV12_512 : FMT_NV12;
++            size = CalculateBufferSize(mmm_color_format, width, height);
++            LOG(LOG_DBG," FMT_BUF_SIZE=%u, computed for Width=%u, Height=%u\n",
+                                   size, width, height);
+             break;
+-#ifdef MMM_COLOR_FMT_NV12_512
++#ifdef FMT_NV12_512
+         case GBM_FORMAT_NV12_HEIF:
+-            size = MMM_COLOR_FMT_BUFFER_SIZE(MMM_COLOR_FMT_NV12_512, width, height);
+-            LOG(LOG_DBG," MMM_COLOR_FMT_BUF_SIZE=%u, computed for Width=%u, Height=%u\n",
++            size = CalculateBufferSize(FMT_NV12_512, width, height);
++            LOG(LOG_DBG," FMT_BUF_SIZE=%u, computed for Width=%u, Height=%u\n",
+                                   size, width, height);
+             break;
+ #endif
+         case GBM_FORMAT_YCrCb_420_SP_VENUS:
+-            size = MMM_COLOR_FMT_BUFFER_SIZE(MMM_COLOR_FMT_NV21, width, height);
++            size = CalculateBufferSize(FMT_NV21, width, height);
+             break;
+         case GBM_FORMAT_YCbCr_420_TP10_UBWC:
+             // The macro returns the stride which is 4/3 times the width, hence * 3/4
+-            //*aligned_w = (MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12_BPP10_UBWC, width) * 3) / 4;
+-            //*aligned_h = MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12_BPP10_UBWC, height);
+-            size = MMM_COLOR_FMT_BUFFER_SIZE(MMM_COLOR_FMT_NV12_BPP10_UBWC, width, height);
+-            LOG(LOG_DBG," MMM_COLOR_FMT_BUF_SIZE=%u, computed for Width=%u, Height=%u\n",
++            //*aligned_w = (CalculateYStride(FMT_NV12_BPP10_UBWC, width) * 3) / 4;
++            //*aligned_h = CalculateYScanlines(FMT_NV12_BPP10_UBWC, height);
++            size = CalculateBufferSize(FMT_NV12_BPP10_UBWC, width, height);
++            LOG(LOG_DBG," FMT_BUF_SIZE=%u, computed for Width=%u, Height=%u\n",
+                                   size, width, height);
+             break;
+         case GBM_FORMAT_YCbCr_420_P010_VENUS:
+-            size = MMM_COLOR_FMT_BUFFER_SIZE(MMM_COLOR_FMT_P010, width, height);
++            size = CalculateBufferSize(FMT_P010, width, height);
+             break;
+         case GBM_FORMAT_P010:
+             size = ALIGN((alignedw * alignedh * 2) + (alignedw * alignedh) + 1, 4096);
+@@ -715,7 +715,7 @@ unsigned int platform_wrap::get_size(int format, int width, int height, int usag
+             size = alignedw * alignedh * 16;
+             break;
+         case GBM_FORMAT_YCbCr_420_SP_VENUS_UBWC:
+-            size = MMM_COLOR_FMT_BUFFER_SIZE(MMM_COLOR_FMT_NV12_UBWC, width, height);
++            size = CalculateBufferSize(FMT_NV12_UBWC, width, height);
+             break;
+         default:
+             LOG(LOG_ERR," Unrecognized pixel format: %s\n", get_msmgbm_format_name(format));
+@@ -738,22 +738,22 @@ void platform_wrap::get_yuv_ubwc_wdth_hght(int width, int height, int format,
+     case GBM_FORMAT_NV12_UBWC_FLEX_2_BATCH:
+     case GBM_FORMAT_NV12_UBWC_FLEX_4_BATCH:
+     case GBM_FORMAT_NV12_UBWC_FLEX_8_BATCH:
+-      *aligned_w = MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12_UBWC, width);
+-      *aligned_h = MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12_UBWC, height);
++      *aligned_w = CalculateYStride(FMT_NV12_UBWC, width);
++      *aligned_h = CalculateYScanlines(FMT_NV12_UBWC, height);
+       break;
+     case GBM_FORMAT_YCbCr_420_TP10_UBWC:
+       // The macro returns the stride which is 4/3 times the width, hence * 3/4
+-      *aligned_w = (MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12_BPP10_UBWC, width) * 3) / 4;
+-      *aligned_h = MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12_BPP10_UBWC, height);
++      *aligned_w = (CalculateYStride(FMT_NV12_BPP10_UBWC, width) * 3) / 4;
++      *aligned_h = CalculateYScanlines(FMT_NV12_BPP10_UBWC, height);
+       break;
+     case GBM_FORMAT_YCbCr_420_P010_UBWC:
+       // The macro returns the stride which is 2 times the width, hence / 2
+-      *aligned_w = (MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_P010_UBWC, width) / 2);
+-      *aligned_h = MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_P010_UBWC, height);
++      *aligned_w = (CalculateYStride(FMT_P010_UBWC, width) / 2);
++      *aligned_h = CalculateYScanlines(FMT_P010_UBWC, height);
+       break;
+     case GBM_FORMAT_C8:
+-      *aligned_w = INT(MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12_UBWC, width));
+-      *aligned_h = INT(MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12_UBWC, height));
++      *aligned_w = INT(CalculateYStride(FMT_NV12_UBWC, width));
++      *aligned_h = INT(CalculateYScanlines(FMT_NV12_UBWC, height));
+       break;
+     default:
+       LOG(LOG_ERR," Unsupported pixel format: 0x%x\n",format);
+@@ -851,24 +851,24 @@ void platform_wrap::get_aligned_wdth_hght(gbm_bufdesc *descriptor, unsigned int
+       *alignedw = ALIGN(width, 32);
+       break;
+     case GBM_FORMAT_YCbCr_420_P010_VENUS:
+-      *alignedw = INT(MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_P010, width) / 2);
+-      *alignedh = INT(MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_P010, height));
++      *alignedw = INT(CalculateYStride(FMT_P010, width) / 2);
++      *alignedh = INT(CalculateYScanlines(FMT_P010, height));
+       break;
+     case GBM_FORMAT_YCbCr_420_SP_VENUS:
+     case GBM_FORMAT_NV12_ENCODEABLE:
+       LOG(LOG_DBG,"@ YUV Format\n");
+       mmm_color_format = (prod_usage & GBM_BO_USAGE_PRIVATE_HEIF) ?
+-                          MMM_COLOR_FMT_NV12_512 : MMM_COLOR_FMT_NV12;
+-      *alignedw = INT(MMM_COLOR_FMT_Y_STRIDE(mmm_color_format, width));
+-      *alignedh = INT(MMM_COLOR_FMT_Y_SCANLINES(mmm_color_format, height));
++                          FMT_NV12_512 : FMT_NV12;
++      *alignedw = INT(CalculateYStride(mmm_color_format, width));
++      *alignedh = INT(CalculateYScanlines(mmm_color_format, height));
+       break;
+     case GBM_FORMAT_NV12:
+       if (ubwc_enabled) {
+-          *alignedw = INT(MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12_UBWC, width));
+-          *alignedh = INT(MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12_UBWC, height));
++          *alignedw = INT(CalculateYStride(FMT_NV12_UBWC, width));
++          *alignedh = INT(CalculateYScanlines(FMT_NV12_UBWC, height));
+       } else {
+-          *alignedw = INT(MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12, width));
+-          *alignedh = INT(MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12, height));
++          *alignedw = INT(CalculateYStride(FMT_NV12, width));
++          *alignedh = INT(CalculateYScanlines(FMT_NV12, height));
+       }
+       break;
+     case GBM_FORMAT_C8_LINEAR:
+@@ -876,17 +876,17 @@ void platform_wrap::get_aligned_wdth_hght(gbm_bufdesc *descriptor, unsigned int
+       *alignedh = height;
+       break;
+     case GBM_FORMAT_C8:
+-      *alignedw = INT(MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12_UBWC, width));
+-      *alignedh = INT(MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12_UBWC, height));
++      *alignedw = INT(CalculateYStride(FMT_NV12_UBWC, width));
++      *alignedh = INT(CalculateYScanlines(FMT_NV12_UBWC, height));
+       break;
+     case GBM_FORMAT_YCrCb_420_SP_VENUS:
+-      *alignedw = INT(MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV21, width));
+-      *alignedh = INT(MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV21, height));
++      *alignedw = INT(CalculateYStride(FMT_NV21, width));
++      *alignedh = INT(CalculateYScanlines(FMT_NV21, height));
+       break;
+     case GBM_FORMAT_YCbCr_420_TP10_UBWC:
+       // The macro returns the stride which is 4/3 times the width, hence * 3/4
+-      *alignedw = (MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12_BPP10_UBWC, width) * 3) / 4;
+-      *alignedh = MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12_BPP10_UBWC, height);
++      *alignedw = (CalculateYStride(FMT_NV12_BPP10_UBWC, width) * 3) / 4;
++      *alignedh = CalculateYScanlines(FMT_NV12_BPP10_UBWC, height);
+       break;
+     case GBM_FORMAT_BLOB:
+     case GBM_FORMAT_RAW_OPAQUE:
+@@ -895,15 +895,15 @@ void platform_wrap::get_aligned_wdth_hght(gbm_bufdesc *descriptor, unsigned int
+       *alignedw = ALIGN(width, 64);
+       *alignedh = ALIGN(height, 64);
+       break;
+-#ifdef MMM_COLOR_FMT_NV12_512
++#ifdef FMT_NV12_512
+     case GBM_FORMAT_NV12_HEIF:
+-      *alignedw = INT(MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12_512, width));
+-      *alignedh = INT(MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12_512, height));
++      *alignedw = INT(CalculateYStride(FMT_NV12_512, width));
++      *alignedh = INT(CalculateYScanlines(FMT_NV12_512, height));
+       break;
+ #endif
+     case GBM_FORMAT_YCbCr_420_SP_VENUS_UBWC:
+-      *alignedw = MMM_COLOR_FMT_Y_STRIDE(MMM_COLOR_FMT_NV12_UBWC, width);
+-      *alignedh = MMM_COLOR_FMT_Y_SCANLINES(MMM_COLOR_FMT_NV12_UBWC, height);
++      *alignedw = CalculateYStride(FMT_NV12_UBWC, width);
++      *alignedh = CalculateYScanlines(FMT_NV12_UBWC, height);
+       break;
+     default:
+       break;
+@@ -1144,25 +1144,25 @@ unsigned int platform_wrap::get_ubwc_size(int width, int height, int format, uns
+     case GBM_FORMAT_NV12:
+     case GBM_FORMAT_YCbCr_420_SP_VENUS:
+     case GBM_FORMAT_YCbCr_420_SP_VENUS_UBWC:
+-      size = MMM_COLOR_FMT_BUFFER_SIZE(MMM_COLOR_FMT_NV12_UBWC, width, height);
++      size = CalculateBufferSize(FMT_NV12_UBWC, width, height);
+       break;
+     case GBM_FORMAT_YCbCr_420_TP10_UBWC:
+-      size = MMM_COLOR_FMT_BUFFER_SIZE(MMM_COLOR_FMT_NV12_BPP10_UBWC, width, height);
++      size = CalculateBufferSize(FMT_NV12_BPP10_UBWC, width, height);
+       break;
+     case GBM_FORMAT_YCbCr_420_P010_UBWC:
+-      size = MMM_COLOR_FMT_BUFFER_SIZE(MMM_COLOR_FMT_P010_UBWC, width, height);
++      size = CalculateBufferSize(FMT_P010_UBWC, width, height);
+       break;
+     case GBM_FORMAT_C8:
+-      size = MMM_COLOR_FMT_ALIGN((alignedw * alignedh), 4096);
+-      y_meta_stride = MMM_COLOR_FMT_Y_META_STRIDE(MMM_COLOR_FMT_NV12_UBWC, width);
+-      y_meta_scanlines = MMM_COLOR_FMT_Y_META_SCANLINES(MMM_COLOR_FMT_NV12_UBWC, height);
+-      size += MMM_COLOR_FMT_ALIGN(y_meta_stride * y_meta_scanlines, 4096);
++      size = Align((alignedw * alignedh), 4096);
++      y_meta_stride = CalculateYMetaStride(FMT_NV12_UBWC, width);
++      y_meta_scanlines = CalculateYMetaScanlines(FMT_NV12_UBWC, height);
++      size += Align(y_meta_stride * y_meta_scanlines, 4096);
+       break;
+     case GBM_FORMAT_NV12_UBWC_FLEX:
+     case GBM_FORMAT_NV12_UBWC_FLEX_2_BATCH:
+     case GBM_FORMAT_NV12_UBWC_FLEX_4_BATCH:
+     case GBM_FORMAT_NV12_UBWC_FLEX_8_BATCH:
+-      size = get_batch_size(format) * MMM_COLOR_FMT_BUFFER_SIZE(MMM_COLOR_FMT_NV12_UBWC,
++      size = get_batch_size(format) * CalculateBufferSize(FMT_NV12_UBWC,
+                                                                 width, height);
+       break;
+     default:
+diff --git a/test/gbmtest.c b/test/gbmtest.c
+index 31b6a56..c6455e1 100644
+--- a/test/gbmtest.c
++++ b/test/gbmtest.c
+@@ -56,7 +56,7 @@
+ #include <gbm_priv.h>
+ #include <wayland-server.h>
+ #include <drm/drm_fourcc.h>
+-#include <display/drm/sde_drm.h>
++
+ #ifdef USE_GLIB
+ #include <glib.h>
+ #define strlcat g_strlcat
+@@ -92,6 +92,11 @@
+ #define RENDER_DEVICE_NAME "/dev/dri/renderD128"
+ #define ION_DEVICE_NAME "/dev/ion"
+ 
++#define DRM_FORMAT_MOD_QCOM_DX	fourcc_mod_code(QCOM, 0x2)
++#define DRM_FORMAT_MOD_QCOM_TIGHT	fourcc_mod_code(QCOM, 0x4)
++#define DRM_FORMAT_MOD_QCOM_TILE	fourcc_mod_code(QCOM, 0x8)
++#define DRM_FORMAT_MOD_QCOM_ALPHA_SWAP	fourcc_mod_code(QCOM, 0x10)
++
+ static int fd;
+ static struct gbm_device *gbm;
+ 
+-- 
+2.34.1
+

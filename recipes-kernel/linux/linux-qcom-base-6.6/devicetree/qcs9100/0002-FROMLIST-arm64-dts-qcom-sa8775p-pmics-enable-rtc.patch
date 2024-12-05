@@ -1,0 +1,35 @@
+From af6f4ed36f26640389768ebff7e0fe95a35733dd Mon Sep 17 00:00:00 2001
+From: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Date: Fri, 7 Jun 2024 14:39:50 +0800
+Subject: [PATCH 8/9] FROMLIST: arm64: dts: qcom: sa8775p-pmics: enable rtc
+
+Add RTC node, the RTC is controlled by PMIC device via spmi bus.
+
+Signed-off-by: Tingguo Cheng <quic_tingguoc@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240902104302.3959670-1-quic_tingguoc@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/sa8775p-pmics.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-pmics.dtsi b/arch/arm64/boot/dts/qcom/sa8775p-pmics.dtsi
+index eca4318d8864..4eb5d00c1350 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-pmics.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p-pmics.dtsi
+@@ -252,6 +252,14 @@ pmm8654au_0_pon_resin: resin {
+ 			};
+ 		};
+ 
++		pmm8654au_0_rtc: rtc@6100 {
++			compatible = "qcom,pmk8350-rtc";
++			reg = <0x6100>, <0x6200>;
++			reg-names = "rtc", "alarm";
++			interrupts = <0x0 0x62 0x1 IRQ_TYPE_EDGE_RISING>;
++			allow-set-time;
++		};
++
+ 		pmm8654au_0_gpios: gpio@8800 {
+ 			compatible = "qcom,pmm8654au-gpio", "qcom,spmi-gpio";
+ 			reg = <0x8800>;
+-- 
+2.34.1
+

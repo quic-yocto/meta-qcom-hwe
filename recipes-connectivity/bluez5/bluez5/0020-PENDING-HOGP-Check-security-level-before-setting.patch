@@ -1,0 +1,34 @@
+From 4c22fd8a77f745cbc124297a5d2aa877e0d6848a Mon Sep 17 00:00:00 2001
+From: Jiayang Mao <quic_jiaymao@quicinc.com>
+Date: Thu, 14 Nov 2024 09:33:24 +0530
+Subject: PENDING: HOGP: Check security level before setting
+ bt_gatt_client_set_security will fail if the security level is already
+ BT_ATT_SECURITY_MEDIUM. So, get and check the security level before setting
+ it.
+
+Signed-off-by: Jiayang Mao <quic_jiaymao@quicinc.com>
+upstream-status: Pending
+---
+ profiles/input/hog.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/profiles/input/hog.c b/profiles/input/hog.c
+index d50b823..7ec8f73 100644
+--- a/profiles/input/hog.c
++++ b/profiles/input/hog.c
+@@ -189,8 +189,10 @@ static int hog_accept(struct btd_service *service)
+ 			return -ECONNREFUSED;
+ 
+ 		client = btd_device_get_gatt_client(device);
+-		if (!bt_gatt_client_set_security(client,
+-						BT_ATT_SECURITY_MEDIUM))
++		if (BT_ATT_SECURITY_MEDIUM !=
++			bt_gatt_client_get_security(client) &&
++		    !bt_gatt_client_set_security(client,
++						 BT_ATT_SECURITY_MEDIUM))
+ 			return -ECONNREFUSED;
+ 	}
+ 
+-- 
+2.25.1
+

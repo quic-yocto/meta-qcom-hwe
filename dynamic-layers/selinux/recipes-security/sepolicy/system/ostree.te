@@ -1,0 +1,130 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+policy_module(ostree, 1.0)
+
+########################################
+##
+## Declarations
+##
+#
+type ostree_t;
+type ostree_exec_t;
+
+init_daemon_domain(ostree_t, ostree_exec_t)
+
+### AS This is firstversion need address all issue
+permissive ostree_t;
+
+#########################
+##### systemconf in ostree/repo .., conf files
+type system_conf_t;
+files_type(system_conf_t)
+#
+##########################
+##### /run/ostree-booted socket files
+type ostree_var_run_t;
+files_runtime_file(ostree_var_run_t)
+#dev_node(ostree_var_run_t)
+#
+#
+#allow ostree_t self:ostree_var_run_t {create_socket_perms};
+fs_manage_configfs_files(ostree_t)
+
+
+#####################
+## /sysroot/ostree/lock
+type ostree_lock_t;
+files_lock_file(ostree_lock_t)
+manage_dirs_pattern(ostree_t, ostree_lock_t, ostree_lock_t)
+manage_files_pattern(ostree_t, ostree_lock_t, ostree_lock_t)
+
+
+files_read_all_files(ostree_t)
+files_read_all_symlinks(ostree_t)
+fs_list_all(ostree_t)
+
+
+miscfiles_read_localization(ostree_t)
+
+corecmd_exec_bin(ostree_t)
+corecmd_exec_shell(ostree_t)
+
+systemd_getattr_updated_runtime(ostree_t)
+files_relabel_non_security_files(ostree_t)
+sysnet_manage_config(ostree_t)
+
+
+#init_relabel_all_unit_files(ostree_t)
+qcom_allow_ops_qcom_etc_sensors(ostree_t)
+systemd_getattr_updated_runtime(ostree_t)
+fs_manage_dos_dirs(ostree_t)
+
+files_manage_var_dirs(ostree_t)
+files_rw_var_files(ostree_t)
+files_setattr_runtime_dirs(ostree_t)
+
+
+udev_relabel_rules_files(ostree_t)
+udev_manage_rules_files(ostree_t)
+
+
+corecmd_relabel_bin_files(ostree_t)
+
+kernel_read_kernel_sysctls(ostree_t)
+allow ostree_t self:udp_socket create_socket_perms;
+dev_read_urand(ostree_t)
+manage_dirs_pattern(ostree_t, initrc_tmp_t, initrc_tmp_t)
+fs_getattr_tmpfs(ostree_t)
+allow ostree_t self:process { getcap getsched setcap setsched sigkill signal };
+
+allow ostree_t self:capability { chown dac_override dac_read_search fowner fsetid ipc_lock kill mknod net_admin setgid setuid sys_admin sys_chroot sys_nice sys_rawio };
+
+
+
+manage_dirs_pattern(ostree_t, boot_t, boot_t)
+manage_dirs_pattern(ostree_t, var_run_t, var_run_t)
+manage_files_pattern(ostree_t, var_run_t, var_run_t)
+
+manage_dirs_pattern(ostree_t, ostree_var_run_t, ostree_var_run_t)
+manage_files_pattern(ostree_t, ostree_var_run_t, ostree_var_run_t)
+
+
+allow kernel_t  boot_t:system   module_load ;
+
+kernel_list_unlabeled(ostree_t)
+kernel_relabelfrom_unlabeled_dirs(ostree_t)
+kernel_relabelfrom_unlabeled_files(ostree_t)
+kernel_relabelfrom_unlabeled_symlinks(ostree_t)
+kernel_relabelfrom_unlabeled_pipes(ostree_t)
+kernel_relabelfrom_unlabeled_sockets(ostree_t)
+kernel_relabelfrom_unlabeled_blk_devs(ostree_t)
+kernel_relabelfrom_unlabeled_chr_devs(ostree_t)
+files_manage_non_security_files(ostree_t)
+files_read_all_files(ostree_t)
+#files_write_non_security_files(ostree_t)
+#files_create_non_security_files(ostree_t)
+files_getattr_all_symlinks(ostree_t)
+files_read_all_symlinks(ostree_t)
+files_getattr_all_sockets(ostree_t)
+files_read_all_chr_files(ostree_t)
+
+##files_relabel_all_files(ostree_t xxxx_type)
+#files_manage_all_files(ostree_t)
+files_search_all(ostree_t)
+#files_create_all_files_as(ostree_t)
+files_getattr_all_file_type_fs(ostree_t)
+
+
+seutil_relabelto_bin_policy(ostree_t)
+seutil_create_bin_policy(ostree_t)
+miscfiles_manage_generic_cert_files(ostree_t)
+sysnet_manage_config(ostree_t)
+logging_send_syslog_msg(ostree_t)
+miscfiles_manage_fonts(ostree_t)
+miscfiles_relabel_man_cache(ostree_t)
+virt_manage_config(ostree_t)
+seutil_manage_file_contexts(ostree_t)
+modutils_manage_module_config(ostree_t)
+files_getattr_rootfs(ostree_t)
+files_getattr_default_dirs(ostree_t)

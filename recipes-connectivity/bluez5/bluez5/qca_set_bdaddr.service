@@ -8,7 +8,7 @@ After=bluetooth.service
 User=system
 Group=system
 Type=simple
-ExecStart=+/bin/bash /etc/initscripts/qca_set_bdaddr.sh
+ExecStart=+/etc/initscripts/qca_set_bdaddr.sh
 
 [Install]
 WantedBy=bluetooth.target

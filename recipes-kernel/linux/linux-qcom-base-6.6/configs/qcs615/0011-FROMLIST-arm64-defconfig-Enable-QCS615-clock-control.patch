@@ -1,0 +1,37 @@
+From efd1f0f928a7a59252e84e78acd42d14b3883f82 Mon Sep 17 00:00:00 2001
+From: Taniya Das <quic_tdas@quicinc.com>
+Date: Fri, 8 Nov 2024 09:39:28 +0530
+Subject: [PATCH 11/11] FROMLIST: arm64: defconfig: Enable QCS615 clock
+ controllers
+
+Enable the QCS615 display, video, camera and graphics clock controller
+for their respective functionalities on the Qualcomm QCS615 ride
+platform.
+
+Signed-off-by: Taniya Das <quic_tdas@quicinc.com>
+Link: https://lore.kernel.org/linux-arm-msm/20241108-qcs615-mm-clockcontroller-v3-11-7d3b2d235fdf@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20241108-qcs615-mm-clockcontroller-v3-11-7d3b2d235fdf@quicinc.com/]
+---
+ arch/arm64/configs/defconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 86f28b0af2d0..46f5c476c230 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -1224,8 +1224,12 @@ CONFIG_MSM_MMCC_8998=m
+ CONFIG_MSM_GCC_8998=y
+ CONFIG_QCM_GCC_2290=y
+ CONFIG_QCM_DISPCC_2290=m
++CONFIG_QCS_DISPCC_615=m
++CONFIG_QCS_CAMCC_615=m
+ CONFIG_QCS_GCC_404=y
+ CONFIG_QCS_GCC_615=y
++CONFIG_QCS_GPUCC_615=m
++CONFIG_QCS_VIDEOCC_615=m
+ CONFIG_SA_CAMCC_8775P=m
+ CONFIG_QCS_GCC_8300=y
+ CONFIG_SA_DISPCC_8775P=m
+-- 
+2.34.1
+

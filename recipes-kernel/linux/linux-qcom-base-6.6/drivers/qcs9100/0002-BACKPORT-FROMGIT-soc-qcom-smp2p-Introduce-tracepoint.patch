@@ -1,0 +1,194 @@
+From 1b5cfbe9d03416df19b085c3dc3ca5adb35e193b Mon Sep 17 00:00:00 2001
+From: Sudeepgoud Patil <quic_sudeepgo@quicinc.com>
+Date: Tue, 16 Jul 2024 23:08:34 +0530
+Subject: [PATCH 2/2] BACKPORT: FROMGIT: soc: qcom: smp2p: Introduce tracepoint
+ support
+
+Introduce tracepoint support for smp2p to enable
+communication logging between local and remote processors.
+Include tracepoints with information about the remote subsystem
+name, negotiation details, supported features, bit change
+notifications, and ssr activity. These logs are useful for
+debugging issues between subsystems.
+
+Link: https://lore.kernel.org/r/20240716173835.997259-3-quic_sudeepgo@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+[quic_sudeepgo: Resolve conflict by adding second argument for __assign_str]
+Signed-off-by: Sudeepgoud Patil <quic_sudeepgo@quicinc.com>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/remoteproc/linux.git 85a55eeed40db02dfe292712c1789953712f86a4]
+
+---
+ drivers/soc/qcom/Makefile      |  1 +
+ drivers/soc/qcom/smp2p.c       |  9 ++++
+ drivers/soc/qcom/trace-smp2p.h | 98 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 108 insertions(+)
+ create mode 100644 drivers/soc/qcom/trace-smp2p.h
+
+diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+index bbca2e1e55bb..29582612165b 100644
+--- a/drivers/soc/qcom/Makefile
++++ b/drivers/soc/qcom/Makefile
+@@ -20,6 +20,7 @@ qcom_rpmh-y			+= rpmh.o
+ obj-$(CONFIG_QCOM_SMD_RPM)	+= rpm-proc.o smd-rpm.o
+ obj-$(CONFIG_QCOM_SMEM) +=	smem.o
+ obj-$(CONFIG_QCOM_SMEM_STATE) += smem_state.o
++CFLAGS_smp2p.o := -I$(src)
+ obj-$(CONFIG_QCOM_SMP2P)	+= smp2p.o
+ obj-$(CONFIG_QCOM_SMSM)	+= smsm.o
+ obj-$(CONFIG_QCOM_SOCINFO)	+= socinfo.o
+diff --git a/drivers/soc/qcom/smp2p.c b/drivers/soc/qcom/smp2p.c
+index eb62d61ba043..e0ef98605da7 100644
+--- a/drivers/soc/qcom/smp2p.c
++++ b/drivers/soc/qcom/smp2p.c
+@@ -161,6 +161,9 @@ struct qcom_smp2p {
+ 	struct list_head outbound;
+ };
+ 
++#define CREATE_TRACE_POINTS
++#include "trace-smp2p.h"
++
+ static void qcom_smp2p_kick(struct qcom_smp2p *smp2p)
+ {
+ 	/* Make sure any updated data is written before the kick */
+@@ -192,6 +195,7 @@ static void qcom_smp2p_do_ssr_ack(struct qcom_smp2p *smp2p)
+ 	struct smp2p_smem_item *out = smp2p->out;
+ 	u32 val;
+ 
++	trace_smp2p_ssr_ack(smp2p->dev);
+ 	smp2p->ssr_ack = !smp2p->ssr_ack;
+ 
+ 	val = out->flags & ~BIT(SMP2P_FLAGS_RESTART_ACK_BIT);
+@@ -214,6 +218,7 @@ static void qcom_smp2p_negotiate(struct qcom_smp2p *smp2p)
+ 			smp2p->ssr_ack_enabled = true;
+ 
+ 		smp2p->negotiation_done = true;
++		trace_smp2p_negotiate(smp2p->dev, out->features);
+ 	}
+ }
+ 
+@@ -252,6 +257,8 @@ static void qcom_smp2p_notify_in(struct qcom_smp2p *smp2p)
+ 		status = val ^ entry->last_value;
+ 		entry->last_value = val;
+ 
++		trace_smp2p_notify_in(entry, status, val);
++
+ 		/* No changes of this entry? */
+ 		if (!status)
+ 			continue;
+@@ -413,6 +420,8 @@ static int smp2p_update_bits(void *data, u32 mask, u32 value)
+ 	writel(val, entry->value);
+ 	spin_unlock_irqrestore(&entry->lock, flags);
+ 
++	trace_smp2p_update_bits(entry, orig, val);
++
+ 	if (val != orig)
+ 		qcom_smp2p_kick(entry->smp2p);
+ 
+diff --git a/drivers/soc/qcom/trace-smp2p.h b/drivers/soc/qcom/trace-smp2p.h
+new file mode 100644
+index 000000000000..fa985a0d7615
+--- /dev/null
++++ b/drivers/soc/qcom/trace-smp2p.h
+@@ -0,0 +1,98 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM qcom_smp2p
++
++#if !defined(__QCOM_SMP2P_TRACE_H__) || defined(TRACE_HEADER_MULTI_READ)
++#define __QCOM_SMP2P_TRACE_H__
++
++#include <linux/device.h>
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(smp2p_ssr_ack,
++	TP_PROTO(const struct device *dev),
++	TP_ARGS(dev),
++	TP_STRUCT__entry(
++		__string(dev_name, dev_name(dev))
++	),
++	TP_fast_assign(
++		__assign_str(dev_name, dev_name(dev));
++	),
++	TP_printk("%s: SSR detected", __get_str(dev_name))
++);
++
++TRACE_EVENT(smp2p_negotiate,
++	TP_PROTO(const struct device *dev, unsigned int features),
++	TP_ARGS(dev, features),
++	TP_STRUCT__entry(
++		__string(dev_name, dev_name(dev))
++		__field(u32, out_features)
++	),
++	TP_fast_assign(
++		__assign_str(dev_name, dev_name(dev));
++		__entry->out_features = features;
++	),
++	TP_printk("%s: state=open out_features=%s", __get_str(dev_name),
++		__print_flags(__entry->out_features, "|",
++			{SMP2P_FEATURE_SSR_ACK, "SMP2P_FEATURE_SSR_ACK"})
++	)
++);
++
++TRACE_EVENT(smp2p_notify_in,
++	TP_PROTO(struct smp2p_entry *smp2p_entry, unsigned long status, u32 val),
++	TP_ARGS(smp2p_entry, status, val),
++	TP_STRUCT__entry(
++		__string(dev_name, dev_name(smp2p_entry->smp2p->dev))
++		__string(client_name, smp2p_entry->name)
++		__field(unsigned long, status)
++		__field(u32, val)
++	),
++	TP_fast_assign(
++		__assign_str(dev_name, dev_name(smp2p_entry->smp2p->dev));
++		__assign_str(client_name, smp2p_entry->name);
++		__entry->status = status;
++		__entry->val = val;
++	),
++	TP_printk("%s: %s: status:0x%0lx val:0x%0x",
++		__get_str(dev_name),
++		__get_str(client_name),
++		__entry->status,
++		__entry->val
++	)
++);
++
++TRACE_EVENT(smp2p_update_bits,
++	TP_PROTO(struct smp2p_entry *smp2p_entry, u32 orig, u32 val),
++	TP_ARGS(smp2p_entry, orig, val),
++	TP_STRUCT__entry(
++		__string(dev_name, dev_name(smp2p_entry->smp2p->dev))
++		__string(client_name, smp2p_entry->name)
++		__field(u32, orig)
++		__field(u32, val)
++	),
++	TP_fast_assign(
++		__assign_str(dev_name, dev_name(smp2p_entry->smp2p->dev));
++		__assign_str(client_name, smp2p_entry->name);
++		__entry->orig = orig;
++		__entry->val = val;
++	),
++	TP_printk("%s: %s: orig:0x%0x new:0x%0x",
++		__get_str(dev_name),
++		__get_str(client_name),
++		__entry->orig,
++		__entry->val
++	)
++);
++
++#endif /* __QCOM_SMP2P_TRACE_H__ */
++
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE trace-smp2p
++
++#include <trace/define_trace.h>
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
+

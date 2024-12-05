@@ -1,0 +1,58 @@
+From aae7a4a133ed63a6ddb13be245aecf73fd193c8d Mon Sep 17 00:00:00 2001
+From: Satyam Gupta <quic_satygupt@quicinc.com>
+Date: Wed, 4 Sep 2024 17:14:00 +0530
+Subject: [PATCH 1/3] PENDING: media: iris: add compatible string for sa8775p
+
+Add required compatible string for video iris driver
+to enable for sa8775p. Overwrite FW name for sa8775p.
+
+Change-Id: I46c101f12884cd9a421dee46a65826ecc1792de2
+Signed-off-by: Satyam Gupta <quic_satygupt@quicinc.com>
+Upstream-Status: Pending
+---
+ drivers/media/platform/qcom/iris/iris_core.h  | 2 +-
+ drivers/media/platform/qcom/iris/iris_probe.c | 8 ++++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/media/platform/qcom/iris/iris_core.h b/drivers/media/platform/qcom/iris/iris_core.h
+index 70e0dbc7c457..48a0c5c25bc1 100644
+--- a/drivers/media/platform/qcom/iris/iris_core.h
++++ b/drivers/media/platform/qcom/iris/iris_core.h
+@@ -82,7 +82,7 @@ struct iris_core {
+ 	struct clk_bulk_data			*clock_tbl;
+ 	u32					clk_count;
+ 	struct reset_control_bulk_data		*resets;
+-	const struct iris_platform_data		*iris_platform_data;
++	struct iris_platform_data		*iris_platform_data;
+ 	enum iris_core_state			state;
+ 	dma_addr_t				iface_q_table_daddr;
+ 	dma_addr_t				sfr_daddr;
+diff --git a/drivers/media/platform/qcom/iris/iris_probe.c b/drivers/media/platform/qcom/iris/iris_probe.c
+index a2aadd48926f..e7e087168d71 100644
+--- a/drivers/media/platform/qcom/iris/iris_probe.c
++++ b/drivers/media/platform/qcom/iris/iris_probe.c
+@@ -230,6 +230,10 @@ static int iris_probe(struct platform_device *pdev)
+ 
+ 	disable_irq_nosync(core->irq);
+ 
++	if (of_device_is_compatible(core->dev->of_node, "qcom,sa8775p-iris")) {
++		core->iris_platform_data->fwname = "qcom/vpu/vpu30_p4_s6.mbn";
++	}
++
+ 	iris_init_ops(core);
+ 	core->iris_platform_data->init_hfi_command_ops(core);
+ 	core->iris_platform_data->init_hfi_response_ops(core);
+@@ -321,6 +325,10 @@ static const struct dev_pm_ops iris_pm_ops = {
+ };
+ 
+ static const struct of_device_id iris_dt_match[] = {
++	{
++		.compatible = "qcom,sa8775p-iris",
++		.data = &sm8550_data,
++	},
+ 	{
+ 		.compatible = "qcom,sm8550-iris",
+ 		.data = &sm8550_data,
+-- 
+2.25.1
+

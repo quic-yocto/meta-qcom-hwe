@@ -9,5 +9,5 @@ PACKAGES = " \
         "
 
 RDEPENDS:packagegroup-qcom-perf = "\
-    perf-hal \
+    qcom-perf-hal \
     "

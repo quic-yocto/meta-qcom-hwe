@@ -3,7 +3,7 @@ SUMMARY = "QCOM WIFI opensource package groups"
 LICENSE = "BSD-3-Clause \
            & Qualcomm-Technologies-Inc.-Proprietary"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+PACKAGE_ARCH = "${SOC_ARCH}"
 
 inherit packagegroup
 
@@ -33,4 +33,5 @@ RDEPENDS:${PN}:append:qcom-custom-bsp = "\
 	qcom-ath6kl-utils \
 	qcom-ftm \
 	qcom-wlan-tools \
+	qcom-ath11k-fwtest \
 	"

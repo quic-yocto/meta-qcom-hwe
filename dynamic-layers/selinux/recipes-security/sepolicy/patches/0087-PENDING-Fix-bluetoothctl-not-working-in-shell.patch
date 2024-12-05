@@ -1,0 +1,28 @@
+From 1183af341ef3953e37accb3d4bfba2b6abbaa46d Mon Sep 17 00:00:00 2001
+From: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
+Date: Tue, 1 Oct 2024 16:19:18 +0530
+Subject: [PATCH] PENDING: Fix bluetoothctl not working in shell
+
+Signed-off-by: Mohammed Sameer Mulla <quic_mohamull@quicinc.com>
+
+Upstream-Status: Pending
+
+Change-Id: I8f92e0142f0cad72e9f973ae6448b9cfe82384d4
+---
+ policy/modules/services/bluetooth.te | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/policy/modules/services/bluetooth.te b/policy/modules/services/bluetooth.te
+index 164bace9f..7a45f79b9 100644
+--- a/policy/modules/services/bluetooth.te
++++ b/policy/modules/services/bluetooth.te
+@@ -135,6 +135,7 @@ optional_policy(`
+ 	dbus_system_bus_client(bluetooth_t)
+ 	dbus_connect_system_bus(bluetooth_t)
+ 	init_dbus_send_script(bluetooth_t)
++        unconfined_dbus_send(bluetooth_t)
+ 
+ 	optional_policy(`
+ 		cups_dbus_chat(bluetooth_t)
+-- 
+

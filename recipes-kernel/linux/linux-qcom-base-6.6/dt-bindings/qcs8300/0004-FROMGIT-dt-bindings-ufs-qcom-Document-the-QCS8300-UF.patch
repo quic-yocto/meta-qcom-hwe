@@ -1,0 +1,46 @@
+From 0829025007b3d8c62d1422431b3a383bc83012b9 Mon Sep 17 00:00:00 2001
+From: Xin Liu <quic_liuxin@quicinc.com>
+Date: Wed, 11 Sep 2024 15:06:36 +0800
+Subject: [PATCH 04/17] FROMGIT: dt-bindings: ufs: qcom: Document the QCS8300
+ UFS Controller
+
+Document the Universal Flash Storage(UFS) Controller on the Qualcomm
+QCS8300 Platform.
+
+Change-Id: I9c7854ee7f92faf89f2218bbeb3460efdad14bde
+Signed-off-by: Xin Liu <quic_liuxin@quicinc.com>
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Link: https://lore.kernel.org/r/20240911-qcs8300_ufs_binding-v2-1-68bb66d48730@quicinc.com
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Acked-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Git-commit: c602a04b27ec80ada4b288967a09f213d5e05722
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git c602a04b27ec80ada4b288967a09f213d5e05722]
+---
+ Documentation/devicetree/bindings/ufs/qcom,ufs.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/ufs/qcom,ufs.yaml b/Documentation/devicetree/bindings/ufs/qcom,ufs.yaml
+index 462ead5a1cec..87a00a649320 100644
+--- a/Documentation/devicetree/bindings/ufs/qcom,ufs.yaml
++++ b/Documentation/devicetree/bindings/ufs/qcom,ufs.yaml
+@@ -26,6 +26,7 @@ properties:
+           - qcom,msm8994-ufshc
+           - qcom,msm8996-ufshc
+           - qcom,msm8998-ufshc
++          - qcom,qcs8300-ufshc
+           - qcom,sa8775p-ufshc
+           - qcom,sc8280xp-ufshc
+           - qcom,sdm845-ufshc
+@@ -116,6 +117,7 @@ allOf:
+           contains:
+             enum:
+               - qcom,msm8998-ufshc
++              - qcom,qcs8300-ufshc
+               - qcom,sa8775p-ufshc
+               - qcom,sc8280xp-ufshc
+               - qcom,sm8250-ufshc
+-- 
+2.46.0
+

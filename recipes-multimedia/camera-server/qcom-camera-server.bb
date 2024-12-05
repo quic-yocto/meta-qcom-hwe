@@ -9,11 +9,16 @@ SSTATE_ALLOW_OVERLAP_FILES = "/"
 DEPENDS += "glib-2.0"
 DEPENDS += "gtest"
 DEPENDS += "gbm"
-DEPENDS:append:qcm6490 = " property-vault syslog-plumber protobuf-native protobuf-c protobuf-c-native camx-kt"
+DEPENDS += "property-vault syslog-plumber protobuf-native protobuf-c protobuf-c-native"
+DEPENDS:append:qcm6490 = " camx-kt"
+DEPENDS:append:qcs9100 = " camx"
 
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/le-services.git;protocol=https"
+SRCBRANCH  = "le-services.lnx.1.0.r1-rel"
+SRCREV     = "a90b5547d6e6ac0c817ab0387c8ecdaf65db6d7a"
 
-SRC_URI  := "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/le-services.git;protocol=https;rev=a90b5547d6e6ac0c817ab0387c8ecdaf65db6d7a;branch=le-services.lnx.1.0.r1-rel;destsuffix=le-camera-server"
-SRC_URI  += "file://cam-server-env"
+SRC_URI  = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=le-camera-server \
+            file://cam-server-env"
 
 S = "${WORKDIR}/le-camera-server"
 
@@ -26,11 +31,16 @@ EXTRA_OECMAKE += "-DSYSROOT_LIBDIR=${STAGING_LIBDIR}"
 EXTRA_OECMAKE += "-DBUILD_CATEGORY=ALL"
 EXTRA_OECMAKE += "-DCAM_SERVER_SYSTEMD_DIR=${sysconfdir}/systemd/system"
 EXTRA_OECMAKE += "-DGBM_FREE_FD=${GBM_FREE_FD}"
-EXTRA_OECMAKE:append:qcm6490 = " -DCMAKE_SYSROOT_NATIVE=${WORKDIR}/recipe-sysroot-native/"
+EXTRA_OECMAKE += "-DCMAKE_SYSROOT_NATIVE=${WORKDIR}/recipe-sysroot-native/"
 EXTRA_OECMAKE:append:qcm6490 = " -DTARGET_BOARD_PLATFORM=qcm6490 "
+EXTRA_OECMAKE:append:qcs9100 = " -DTARGET_BOARD_PLATFORM=qcs9100 "
 
 SOLIBS = ".so*"
 FILES_SOLIBSDEV = ""
+
+do_compile:prepend() {
+    export LD_LIBRARY_PATH="${STAGING_DIR_NATIVE}/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
+}
 
 do_install:append () {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then

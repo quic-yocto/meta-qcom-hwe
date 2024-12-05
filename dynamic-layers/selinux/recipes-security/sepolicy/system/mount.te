@@ -51,15 +51,8 @@ domain_getattr_all_domains(mount_t)
 domain_getattr_confined_domains(mount_t)
 mount_getattr_runtime_files(mount_t)
 corecmd_exec_bin(mount_t)
-#TODO: Need to clean/remove this post fixing the permission issue
-# Mount is expected to run only by root user
-# where treated as trusted server and running in permissive
-# for not going fwd will move out of permissive
-permissive mount_t;
-
 # connecting property-vault service
-qcom_mount_property_vault_to_var(mount_t)
-qcom_connect_property_vault_to_var(mount_t)
+qcom_connect_property_vault_to_etc(mount_t)
 
 qcom_manage_perf_data_files(mount_t)
 qcom_perfhal_read_config(mount_t)
@@ -77,3 +70,10 @@ systemd_backlight_dir_read(mount_t)
 
 #allow graceful shutdown
 access_systemd_units(mount_t)
+
+#TODO: Need to clean/remove this post fixing the permission issue
+# Mount is expected to run only by root user
+# where treated as trusted server and running in permissive
+# for not going fwd will move out of permissive
+# issue is systemd-tmpfs is triggering this for it management
+permissive mount_t;

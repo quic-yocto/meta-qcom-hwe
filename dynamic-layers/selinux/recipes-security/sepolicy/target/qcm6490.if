@@ -1,7 +1,0 @@
-#Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
-#SPDX-License-Identifier: BSD-3-Clause-Clear
-## <summary>qcm6490 target specific policies</summary>
-## <required val="true">
-##      Contains the qcm6490 specific interfaces.
-## </required>
-

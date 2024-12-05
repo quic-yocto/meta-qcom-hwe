@@ -1,0 +1,31 @@
+From 79f16b10f95a6edfd10484da33990ed3048c88ee Mon Sep 17 00:00:00 2001
+From: Xin Liu <quic_liuxin@quicinc.com>
+Date: Tue, 29 Oct 2024 11:12:22 +0800
+Subject: [PATCH 3/3] FROMLIST: arm64: dts: qcom: qcs8300-ride: Add watchdog
+ node
+
+Add watchdog clock on the Qualcomm QCS615 Ride platform.
+
+Change-Id: I634b09706dfc940803e5c28d90f8cc1d377ca67b
+Signed-off-by: Xin Liu <quic_liuxin@quicinc.com>
+Link: https://lore.kernel.org/all/20241029031222.1653123-4-quic_liuxin@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241029031222.1653123-4-quic_liuxin@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs8300-ride.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs8300-ride.dts b/arch/arm64/boot/dts/qcom/qcs8300-ride.dts
+index 4d9d726c6c1f..f8a25fc8a499 100644
+--- a/arch/arm64/boot/dts/qcom/qcs8300-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs8300-ride.dts
+@@ -268,3 +268,7 @@ &ufs_mem_phy {
+ 	vdda-pll-supply = <&vreg_l5a>;
+ 	status = "okay";
+ };
++
++&watchdog {
++	clocks = <&sleep_clk>;
++};
+-- 
+2.46.0
+

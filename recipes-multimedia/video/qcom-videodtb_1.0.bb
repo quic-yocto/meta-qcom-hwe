@@ -5,7 +5,11 @@ DESCRIPTION = "QCOM Video device-tree"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/opensource/video-devicetree.git;protocol=https;rev=58b62ea67fbcc0bb97d90dcea837f2ed3200b2ab;branch=video.qclinux.1.0.r1-rel;destsuffix=vendor/qcom/opensource/video-devicetree"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/video-devicetree.git;protocol=https"
+SRCBRANCH  = "video.qclinux.1.0.r1-rel"
+SRCREV     = "58b62ea67fbcc0bb97d90dcea837f2ed3200b2ab"
+
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=vendor/qcom/opensource/video-devicetree"
 
 S = "${WORKDIR}/vendor/qcom/opensource/video-devicetree"
 
@@ -19,6 +23,10 @@ do_compile:qcm6490() {
 
 do_compile:qcs9100() {
     oe_runmake ${EXTRA_OEMAKE} sa8775p-video
+}
+
+do_compile:qcs8300() {
+    oe_runmake ${EXTRA_OEMAKE} qcs8300-video
 }
 
 do_install() {

@@ -1,0 +1,45 @@
+From b9552f780bfc719787793008e9a3e489e6616101 Mon Sep 17 00:00:00 2001
+From: Ravi Kumar Siddojigari <quic_rsiddoji@quicinc.com>
+Date: Thu, 18 Jul 2024 16:51:35 +0530
+Subject: [PATCH] PENDING :sepolicy : update file_contexts.subs_dist for support /usr
+ sysroot
+
+ostree is remount the  / ->/usr so updating the paths
+
+Signed-off-by: Ravi Kumar Siddojigari <quic_rsiddoji@quicinc.com>
+Change-Id: If3f7360e89919de05cc4ccf8c52d78fb6cba31b2
+---
+ config/file_contexts.subs_dist | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/config/file_contexts.subs_dist b/config/file_contexts.subs_dist
+index f80499ebf0da..fac3a0357b67 100644
+--- a/config/file_contexts.subs_dist
++++ b/config/file_contexts.subs_dist
+@@ -53,3 +53,21 @@
+ #move /var/lib/selinux to /etc/selinux/policy-store
+ #selinux aliases
+ /etc/selinux/policy-store /var/lib/selinux
++
++
++#OSTree will need this
++
++/var/usrlocal        /usr/share/local
++/var/usrlocal/bin    /usr/bin
++/var/usrlocal/etc    /usr/etc
++/var/usrlocal/sbin   /usr/sbin
++/var/usrlocal/games  /usr/games
++/var/usrlocal/lib    /usr/lib
++/var/usrlocal/share  /usr/share
++/var/usrlocal/src    /usr/src
++/var/usrlocal/include  /usr/include
++/var/rootdirs/home    /home
++/sysroot             /boot
++/usr/rootdir         /
++/var/roothome        /root
++/usr/lib/opt        /opt
++/home             /var/home
++/sysroot/tmp      /tmp
+-- 
+2.17.1
+

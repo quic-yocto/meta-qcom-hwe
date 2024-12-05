@@ -1,0 +1,53 @@
+From 4dd0df0d3ff5157ba89a345dc79b3656c1770960 Mon Sep 17 00:00:00 2001
+From: Luca Weiss <luca.weiss@fairphone.com>
+Date: Wed, 20 Dec 2023 11:02:58 +0100
+Subject: [PATCH 14/19] BACKPORT: arm64: dts: qcom: qcm6490-fairphone-fp5: Add
+ PMIC GLINK
+
+Via the PMIC GLINK driver we can get info about fuel gauge, charger and
+USB connector events. Add the node to the dts and configure USB so that
+role switching works.
+
+Change-Id: I2092e3381adb6cb0894ba9d16ca811e9c14fd84b
+Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Link: https://lore.kernel.org/r/20231220-fp5-pmic-glink-v1-3-2a1f8e3c661c@fairphone.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://github.com/torvalds/linux/commit/d51b2d5c4a041b8a8200dc7fd8520171117db152\
+---
+ arch/arm64/boot/dts/qcom/sc7280.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sc7280.dtsi b/arch/arm64/boot/dts/qcom/sc7280.dtsi
+index cc0c72233eb9..f50a8602983a 100644
+--- a/arch/arm64/boot/dts/qcom/sc7280.dtsi
++++ b/arch/arm64/boot/dts/qcom/sc7280.dtsi
+@@ -3984,6 +3984,25 @@ usb_1_dwc3: usb@a600000 {
+ 				phys = <&usb_1_hsphy>, <&usb_1_qmpphy QMP_USB43DP_USB3_PHY>;
+ 				phy-names = "usb2-phy", "usb3-phy";
+ 				maximum-speed = "super-speed";
++
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++
++					port@0 {
++						reg = <0>;
++
++						usb_1_dwc3_hs: endpoint {
++						};
++					};
++
++					port@1 {
++						reg = <1>;
++
++						usb_1_dwc3_ss: endpoint {
++						};
++					};
++				};
+ 			};
+ 		};
+ 
+-- 
+2.46.0
+

@@ -1,0 +1,31 @@
+From f0ea3df32d68bd65da89077cb9642db1627ee495 Mon Sep 17 00:00:00 2001
+From: Lijuan Gao <quic_lijuang@quicinc.com>
+Date: Tue, 10 Sep 2024 14:01:14 +0800
+Subject: [PATCH 03/22] FROMLIST: dt-bindings: watchdog: Document Qualcomm
+ QCS615 watchdog
+
+Add devicetree binding for watchdog present on Qualcomm QCS615 SoC.
+
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Lijuan Gao <quic_lijuang@quicinc.com>
+Link: https://lore.kernel.org/all/20240920-add_watchdog_compatible_for_qcs615-v2-1-427944f1151e@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20240920-add_watchdog_compatible_for_qcs615-v2-1-427944f1151e@quicinc.com/]
+---
+ Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml b/Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml
+index 5046dfa55f13..219009d37b52 100644
+--- a/Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml
++++ b/Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml
+@@ -24,6 +24,7 @@ properties:
+               - qcom,apss-wdt-msm8994
+               - qcom,apss-wdt-qcm2290
+               - qcom,apss-wdt-qcs404
++              - qcom,apss-wdt-qcs615
+               - qcom,apss-wdt-sa8775p
+               - qcom,apss-wdt-sc7180
+               - qcom,apss-wdt-sc7280
+-- 
+2.46.0
+

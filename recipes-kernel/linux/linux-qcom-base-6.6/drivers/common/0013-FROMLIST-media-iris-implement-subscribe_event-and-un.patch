@@ -1,0 +1,144 @@
+From f0f232aa53aa93189316b348967d6e13650d7fe1 Mon Sep 17 00:00:00 2001
+From: Vedang Nagar <quic_vnagar@quicinc.com>
+Date: Tue, 27 Aug 2024 15:35:40 +0530
+Subject: FROMLIST: media: iris: implement subscribe_event and
+ unsubscribe_event ioctls
+
+Implement subscribe_event and unsubscribe_event iocts with necessary
+hooks.
+
+Change-Id: I7c660b69b8832f52a77527467d7234bc3f21ee18
+Signed-off-by: Vedang Nagar <quic_vnagar@quicinc.com>
+Signed-off-by: Dikshita Agarwal <quic_dikshita@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/linux-media/20241014-qcom-video-iris-v4-v4-13-c5eaa4e9ab9e@quicinc.com/]
+---
+ .../media/platform/qcom/iris/iris_instance.h  |  2 ++
+ drivers/media/platform/qcom/iris/iris_vdec.c  | 26 +++++++++++++++++++
+ drivers/media/platform/qcom/iris/iris_vdec.h  |  1 +
+ drivers/media/platform/qcom/iris/iris_vidc.c  | 17 ++++++++++++
+ 4 files changed, 46 insertions(+)
+
+diff --git a/drivers/media/platform/qcom/iris/iris_instance.h b/drivers/media/platform/qcom/iris/iris_instance.h
+index bb43119af352..d28b8fd7ec2f 100644
+--- a/drivers/media/platform/qcom/iris/iris_instance.h
++++ b/drivers/media/platform/qcom/iris/iris_instance.h
+@@ -30,6 +30,7 @@
+  * @once_per_session_set: boolean to set once per session property
+  * @m2m_dev:	a reference to m2m device structure
+  * @m2m_ctx:	a reference to m2m context structure
++ * @subscriptions: variable to hold current events subscriptions
+  */
+ 
+ struct iris_inst {
+@@ -48,6 +49,7 @@ struct iris_inst {
+ 	bool				once_per_session_set;
+ 	struct v4l2_m2m_dev		*m2m_dev;
+ 	struct v4l2_m2m_ctx		*m2m_ctx;
++	unsigned int			subscriptions;
+ };
+ 
+ #endif
+diff --git a/drivers/media/platform/qcom/iris/iris_vdec.c b/drivers/media/platform/qcom/iris/iris_vdec.c
+index fd0f1ebc33e8..c4eeba5ed6da 100644
+--- a/drivers/media/platform/qcom/iris/iris_vdec.c
++++ b/drivers/media/platform/qcom/iris/iris_vdec.c
+@@ -3,6 +3,7 @@
+  * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+  */
+ 
++#include <media/v4l2-event.h>
+ #include <media/v4l2-mem2mem.h>
+ 
+ #include "iris_buffer.h"
+@@ -13,6 +14,7 @@
+ #define DEFAULT_WIDTH 320
+ #define DEFAULT_HEIGHT 240
+ #define DEFAULT_CODEC_ALIGNMENT 16
++#define MAX_EVENTS 30
+ 
+ void iris_vdec_inst_init(struct iris_inst *inst)
+ {
+@@ -208,3 +210,27 @@ int iris_vdec_s_fmt(struct iris_inst *inst, struct v4l2_format *f)
+ 
+ 	return 0;
+ }
++
++int iris_vdec_subscribe_event(struct iris_inst *inst, const struct v4l2_event_subscription *sub)
++{
++	int ret = 0;
++
++	switch (sub->type) {
++	case V4L2_EVENT_EOS:
++		ret = v4l2_event_subscribe(&inst->fh, sub, MAX_EVENTS, NULL);
++		inst->subscriptions |= V4L2_EVENT_EOS;
++		break;
++	case V4L2_EVENT_SOURCE_CHANGE:
++		ret = v4l2_src_change_event_subscribe(&inst->fh, sub);
++		inst->subscriptions |= V4L2_EVENT_SOURCE_CHANGE;
++		break;
++	case V4L2_EVENT_CTRL:
++		ret = v4l2_ctrl_subscribe_event(&inst->fh, sub);
++		inst->subscriptions |= V4L2_EVENT_CTRL;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return ret;
++}
+diff --git a/drivers/media/platform/qcom/iris/iris_vdec.h b/drivers/media/platform/qcom/iris/iris_vdec.h
+index eb8a1121ae92..707fff34bf4d 100644
+--- a/drivers/media/platform/qcom/iris/iris_vdec.h
++++ b/drivers/media/platform/qcom/iris/iris_vdec.h
+@@ -13,5 +13,6 @@ void iris_vdec_inst_deinit(struct iris_inst *inst);
+ int iris_vdec_enum_fmt(struct iris_inst *inst, struct v4l2_fmtdesc *f);
+ int iris_vdec_try_fmt(struct iris_inst *inst, struct v4l2_format *f);
+ int iris_vdec_s_fmt(struct iris_inst *inst, struct v4l2_format *f);
++int iris_vdec_subscribe_event(struct iris_inst *inst, const struct v4l2_event_subscription *sub);
+ 
+ #endif
+diff --git a/drivers/media/platform/qcom/iris/iris_vidc.c b/drivers/media/platform/qcom/iris/iris_vidc.c
+index 1d6c5e8fafb4..8068c06c1f11 100644
+--- a/drivers/media/platform/qcom/iris/iris_vidc.c
++++ b/drivers/media/platform/qcom/iris/iris_vidc.c
+@@ -4,6 +4,7 @@
+  */
+ 
+ #include <linux/pm_runtime.h>
++#include <media/v4l2-event.h>
+ #include <media/v4l2-ioctl.h>
+ #include <media/v4l2-mem2mem.h>
+ 
+@@ -320,6 +321,20 @@ static int iris_g_selection(struct file *filp, void *fh, struct v4l2_selection *
+ 	return 0;
+ }
+ 
++static int iris_subscribe_event(struct v4l2_fh *fh, const struct v4l2_event_subscription *sub)
++{
++	struct iris_inst *inst = container_of(fh, struct iris_inst, fh);
++
++	return iris_vdec_subscribe_event(inst, sub);
++}
++
++static int iris_unsubscribe_event(struct v4l2_fh *fh, const struct v4l2_event_subscription *sub)
++{
++	struct iris_inst *inst = container_of(fh, struct iris_inst, fh);
++
++	return v4l2_event_unsubscribe(&inst->fh, sub);
++}
++
+ static struct v4l2_file_operations iris_v4l2_file_ops = {
+ 	.owner                          = THIS_MODULE,
+ 	.open                           = iris_open,
+@@ -345,6 +360,8 @@ static const struct v4l2_ioctl_ops iris_v4l2_ioctl_ops = {
+ 	.vidioc_enum_framesizes         = iris_enum_framesizes,
+ 	.vidioc_reqbufs                 = v4l2_m2m_ioctl_reqbufs,
+ 	.vidioc_g_selection             = iris_g_selection,
++	.vidioc_subscribe_event         = iris_subscribe_event,
++	.vidioc_unsubscribe_event       = iris_unsubscribe_event,
+ };
+ 
+ void iris_init_ops(struct iris_core *core)
+-- 
+2.34.1
+

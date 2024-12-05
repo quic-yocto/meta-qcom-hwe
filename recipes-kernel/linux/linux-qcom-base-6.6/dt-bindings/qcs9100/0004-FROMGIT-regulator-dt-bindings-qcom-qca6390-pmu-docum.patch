@@ -1,0 +1,35 @@
+From 1a1b8befb906d95ea0e346e0ac5a5141fa5f18c5 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Tue, 13 Aug 2024 20:58:27 +0200
+Subject: [PATCH 4/4] FROMGIT: regulator: dt-bindings: qcom,qca6390-pmu:
+ document the swctrl-gpios property
+
+Add support for the swctrl-gpios property which contains the phandle to
+the GPIO indicating the clock supply to the BT module.
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Link: https://patch.msgid.link/20240813185827.154779-3-brgl@bgdev.pl
+Signed-off-by: Mark Brown <broonie@kernel.org>
+Upstream-status: Backport [ https://patch.msgid.link/20240813185827.154779-3-brgl@bgdev.pl 39b8cb4e1b51191dd0da03b77fbd8b2a2e3e7645 ]
+---
+ .../devicetree/bindings/regulator/qcom,qca6390-pmu.yaml       | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml b/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml
+index 6677939dd957..11ed04c95542 100644
+--- a/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml
++++ b/Documentation/devicetree/bindings/regulator/qcom,qca6390-pmu.yaml
+@@ -68,6 +68,10 @@ properties:
+     maxItems: 1
+     description: GPIO line enabling the Bluetooth module supplied by the PMU
+ 
++  swctrl-gpios:
++    maxItems: 1
++    description: GPIO line indicating the state of the clock supply to the BT module
++
+   clocks:
+     maxItems: 1
+     description: Reference clock handle
+-- 
+2.34.1
+

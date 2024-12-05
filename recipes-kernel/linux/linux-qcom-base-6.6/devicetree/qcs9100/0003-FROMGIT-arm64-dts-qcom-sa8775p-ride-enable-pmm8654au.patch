@@ -1,0 +1,35 @@
+From d6b7a900b22043c5b374ef034ccb21c84735a83f Mon Sep 17 00:00:00 2001
+From: Shazad Hussain <quic_shazhuss@quicinc.com>
+Date: Tue, 7 Nov 2023 17:35:02 +0530
+Subject: [PATCH 7/9] FROMGIT: arm64: dts: qcom: sa8775p-ride: enable
+ pmm8654au_0_pon_resin
+
+The volume down key is controlled by PMIC via the PON hardware on
+sa8775p platform, so enable the same for sa8775p-ride.
+
+Signed-off-by: Shazad Hussain <quic_shazhuss@quicinc.com>
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://lore.kernel.org/r/20231107120503.28917-1-quic_shazhuss@quicinc.com]
+---
+ arch/arm64/boot/dts/qcom/sa8775p-ride.dts | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+index d8dabd1859b7..4d7cd38ac65a 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
++++ b/arch/arm64/boot/dts/qcom/sa8775p-ride.dts
+@@ -461,6 +461,11 @@ &pmm8654au_0_gpios {
+ 			  "ANALOG_PON_OPT";
+ };
+ 
++&pmm8654au_0_pon_resin {
++	linux,code = <KEY_VOLUMEDOWN>;
++	status = "okay";
++};
++
+ &pmm8654au_1_gpios {
+ 	gpio-line-names = "PMIC_C_ID0",
+ 			  "PMIC_C_ID1",
+-- 
+2.34.1
+

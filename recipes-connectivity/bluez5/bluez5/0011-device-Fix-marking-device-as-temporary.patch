@@ -9,7 +9,7 @@ the device as temporary.
 Fixes: https://github.com/bluez/bluez/issues/856
 
 Signed-off-by: Cheng Jiang <quic_chejiang@quicinc.com>
-Upstream-Status: BACKPORT
+Upstream-Status: Backport
 ---
  src/device.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)

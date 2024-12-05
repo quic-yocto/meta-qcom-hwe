@@ -57,8 +57,28 @@ do_compile() {
     ukify_cmd="$ukify_cmd --uname ${KERNEL_VERSION}"
 
     # Kernel cmdline
-    if [ -n "${KERNEL_CMDLINE_EXTRA}" ]; then
-        printf '%s' "${KERNEL_CMDLINE_EXTRA}" > ${B}/cmdline
+    if ! echo "${DISTRO_FEATURES}" | grep -q 'sota'; then
+        cmdline=""
+        if [ -n "${QCOM_BOOTIMG_ROOTFS}" ]; then
+            cmdline="$cmdline root=${QCOM_BOOTIMG_ROOTFS} rw rootwait"
+        fi
+
+        if [ ! -z "${SERIAL_CONSOLES}" ]; then
+            tmp="${SERIAL_CONSOLES}"
+            console=""
+            for entry in $tmp ; do
+                baudrate=`echo $entry | sed 's/\;.*//'`
+                tty=`echo $entry | sed -e 's/^[0-9]*\;//' -e 's/\;.*//'`
+                console="$tty","$baudrate"n8
+            done
+            cmdline="$cmdline console=$console"
+        fi
+
+        if [ -n "${KERNEL_CMDLINE_EXTRA}" ]; then
+            cmdline="$cmdline ${KERNEL_CMDLINE_EXTRA}"
+        fi
+
+        printf '%s' "$cmdline" > ${B}/cmdline
         ukify_cmd="$ukify_cmd --cmdline @${B}/cmdline"
     fi
 
@@ -84,9 +104,16 @@ do_compile() {
     echo "ukify cmd:$ukify_cmd"
     ukify build $ukify_cmd
 }
+do_compile[vardeps] += "KERNEL_CMDLINE_EXTRA QCOM_BOOTIMG_ROOTFS"
 
 do_install() {
     install -Dm 0755 ${B}${EFI_UKI_PATH}/${EFI_LINUX_IMG} ${D}${EFI_UKI_PATH}/${EFI_LINUX_IMG}
+}
+
+inherit deploy
+
+do_deploy() {
+    install ${B}${EFI_UKI_PATH}/${EFI_LINUX_IMG} ${DEPLOY_DIR_IMAGE}/${EFI_LINUX_IMG}
 }
 
 FILES:${PN} = "${EFI_UKI_PATH}/${EFI_LINUX_IMG}"
@@ -94,3 +121,5 @@ FILES:${PN} = "${EFI_UKI_PATH}/${EFI_LINUX_IMG}"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 SKIP_RECIPE[linux-qcom-uki] ?= "${@bb.utils.contains('KERNEL_IMAGETYPES', 'Image', '', 'systemd-boot needs uncompressed kernel image. Add "Image" to KERNEL_IMAGETYPES.', d)}"
+
+addtask deploy after do_compile

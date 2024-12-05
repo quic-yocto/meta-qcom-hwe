@@ -1,0 +1,31 @@
+From 7855efba639fd36524538df1be9a041c4034fecb Mon Sep 17 00:00:00 2001
+From: Puranam V G Tejaswi <quic_pvgtejas@quicinc.com>
+Date: Thu, 27 Jun 2024 14:41:01 +0530
+Subject: [PATCH 2/3] FROMLIST: dt-bindings: display/msm/gmu: Add Adreno 663
+ GMU
+
+Document Adreno 663 GMU in the dt-binding specification.
+
+Signed-off-by: Puranam V G Tejaswi <quic_pvgtejas@quicinc.com>
+Signed-off-by: Akhil P Oommen <quic_akhilpo@quicinc.com>
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241022-a663-gpu-support-v2-2-38da38234697@quicinc.com/]
+---
+ Documentation/devicetree/bindings/display/msm/gmu.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/display/msm/gmu.yaml b/Documentation/devicetree/bindings/display/msm/gmu.yaml
+index d65926b4f054..b27792a0a3cf 100644
+--- a/Documentation/devicetree/bindings/display/msm/gmu.yaml
++++ b/Documentation/devicetree/bindings/display/msm/gmu.yaml
+@@ -118,6 +118,7 @@ allOf:
+             enum:
+               - qcom,adreno-gmu-635.0
+               - qcom,adreno-gmu-660.1
++              - qcom,adreno-gmu-663.0
+     then:
+       properties:
+         reg:
+-- 
+2.34.1
+

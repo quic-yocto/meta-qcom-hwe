@@ -1,0 +1,12 @@
+[Unit]
+Description=Mount SD card
+After=local-fs.target
+ 
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /etc/udev/scripts/automountsdcard.sh add mmcblk1p1
+ExecStop=/bin/sh /etc/udev/scripts/automountsdcard.sh remove mmcblk1p1
+RemainAfterExit=true
+ 
+[Install]
+WantedBy=multi-user.target

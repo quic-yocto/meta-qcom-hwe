@@ -1,0 +1,87 @@
+From 23e080922f871b2c326797f919360f606b6fb8fb Mon Sep 17 00:00:00 2001
+From: Elliot Berman <quic_eberman@quicinc.com>
+Date: Thu, 7 Nov 2024 15:38:26 -0800
+Subject: [PATCH 3/5] FROMLIST: dt-bindings: arm: Document reboot mode magic
+
+Add bindings to describe vendor-specific reboot modes. Values here
+correspond to valid parameters to vendor-specific reset types in PSCI
+SYSTEM_RESET2 call.
+
+Change-Id: I563f7ee05ba65a651a474bd1d1065ae7e8b1e322
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/all/20241107-arm-psci-system_reset2-vendor-reboots-v8-2-e8715fa65cb5@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20241107-arm-psci-system_reset2-vendor-reboots-v8-2-e8715fa65cb5@quicinc.com/]
+---
+ .../devicetree/bindings/arm/psci.yaml         | 43 +++++++++++++++++++
+ 1 file changed, 43 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/psci.yaml b/Documentation/devicetree/bindings/arm/psci.yaml
+index 0c5381e081bd..1322bb04d7c5 100644
+--- a/Documentation/devicetree/bindings/arm/psci.yaml
++++ b/Documentation/devicetree/bindings/arm/psci.yaml
+@@ -98,6 +98,27 @@ properties:
+       [1] Kernel documentation - ARM idle states bindings
+         Documentation/devicetree/bindings/cpu/idle-states.yaml
+ 
++  reset-types:
++    type: object
++    $ref: /schemas/power/reset/reboot-mode.yaml#
++    unevaluatedProperties: false
++    properties:
++      # "mode-normal" is just SYSTEM_RESET
++      mode-normal: false
++    patternProperties:
++      "^mode-.*$":
++        minItems: 1
++        maxItems: 2
++        description: |
++          Describes a vendor-specific reset type. The string after "mode-"
++          maps a reboot mode to the parameters in the PSCI SYSTEM_RESET2 call.
++
++          Parameters are named mode-xxx = <type[, cookie]>, where xxx
++          is the name of the magic reboot mode, type is the lower 31 bits
++          of the reset_type, and, optionally, the cookie value. If the cookie
++          is not provided, it is defaulted to zero.
++          The 31st bit (vendor-resets) will be implicitly set by the driver.
++
+ patternProperties:
+   "^power-domain-":
+     $ref: /schemas/power/power-domain.yaml#
+@@ -136,6 +157,15 @@ allOf:
+       required:
+         - cpu_off
+         - cpu_on
++  - if:
++      not:
++        properties:
++          compatible:
++            contains:
++              const: arm,psci-1.0
++    then:
++      properties:
++        reset-types: false
+ 
+ additionalProperties: false
+ 
+@@ -260,4 +290,17 @@ examples:
+         domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWRDN>;
+       };
+     };
++
++  - |+
++
++    // Case 5: SYSTEM_RESET2 vendor resets
++    psci {
++      compatible = "arm,psci-1.0";
++      method = "smc";
++
++      reset-types {
++        mode-edl = <0>;
++        mode-bootloader = <1 2>;
++      };
++    };
+ ...
+-- 
+2.46.0
+

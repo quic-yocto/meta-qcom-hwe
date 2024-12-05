@@ -41,6 +41,8 @@ gen_require(`
         type var_lib_t;
         type ntp_drift_t;
 	type  udev_t;
+        type unconfined_execmem_t;
+        type tmpfs_t;
 ')
 
 # Systemd_analyze will read each services
@@ -83,6 +85,12 @@ domtrans_pattern(unconfined_t, qcom_nativehaltest_exec_t, qcom_nativehaltest_t)
 domtrans_pattern(initrc_t, qcom_nativehaltest_exec_t, qcom_nativehaltest_t)
 can_exec(initrc_t, qcom_nativehaltest_t)
 permissive  qcom_nativehaltest_t;
+
+
+mls_file_write_all_levels( unconfined_execmem_t)
+mls_file_read_all_levels(unconfined_execmem_t)
+
+manage_dirs_pattern(unconfined_execmem_t, tmpfs_t, tmpfs_t)
 
 #ssgtzd_unite test
 qcom_allow_ssgtzd_sock_write(initrc_t)
@@ -135,3 +143,42 @@ relabelfrom_dirs_pattern(mount_t ,var_lib_t , {systemd_pstore_var_lib_t chronyd_
 ## needed for serial shell
 dev_rw_kmsg(unconfined_t)
 allow getty_t self:capability2  {checkpoint_restore };
+allow  kernel_t self:capability2 { checkpoint_restore audit_read bpf perfmon};
+allow  kernel_t tty_device_t:chr_file {watch_reads };
+
+
+### OSTree temp changes  once we move var refernce we might not need this
+gen_require(`
+            type  systemd_generator_t;
+            type  systemd_modules_load_t;
+            type  systemd_logind_t;
+            type  qcom_usb_t;
+            type  usr_t;
+            type  var_run_t;
+            type  init_runtime_t;
+            type  systemd_networkd_t;
+            type  udev_t;
+            type  syslogd_t;
+            type  user_home_dir_t;
+            type  systemd_tmpfiles_t;
+')
+
+allow {systemd_generator_t  systemd_modules_load_t systemd_logind_t qcom_usb_t}   usr_t:lnk_file  {read getattr};
+allow systemd_generator_t    var_run_t:dir  {create search read write add_name};
+#this is where OStree set ostreebooteded flag .
+allow systemd_generator_t    var_run_t:file {create read write open};
+allow systemd_generator_t    init_runtime_t:file  {read  getattr link  write };
+allow systemd_modules_load_t var_t:lnk_file {getattr read };
+allow systemd_generator_t   var_t:lnk_file {getattr read };
+allow  kmod_t    var_t:lnk_file {read getattr };;
+allow udev_t  var_t:lnk_file {getattr read };
+allow qcom_usb_t var_t:lnk_file {getattr read };
+allow systemd_networkd_t var_t:lnk_file {getattr read };
+allow syslogd_t  var_t:lnk_file {getattr read };
+allow systemd_tmpfiles_t  user_home_dir_t:dir {create search read add_name};
+
+##LCA test app rules
+qcom_loc_read_loc_sock_files(unconfined_t)
+
+qcom_loc_locclient_generic_rules(unconfined_t)
+

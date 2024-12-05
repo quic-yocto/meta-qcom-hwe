@@ -1,0 +1,53 @@
+From 4c7f237570e052570bcf9e1ca930a28ecd33877d Mon Sep 17 00:00:00 2001
+From: Yuvaraj Ranganathan <quic_yrangana@quicinc.com>
+Date: Wed, 13 Nov 2024 07:53:32 +0530
+Subject: [PATCH] FROMGIT: arm64: dts: qcom: sa8775p: add QCrypto nodes
+
+Add the QCE and Crypto BAM DMA nodes.
+
+Signed-off-by: Yuvaraj Ranganathan <quic_yrangana@quicinc.com>
+Link: https://lore.kernel.org/r/20241017144500.3968797-3-quic_yrangana@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Git-commit: 7ff3da43ef4453a6295bf82cb942168414043119
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 7ff3da43ef4453a6295bf82cb942168414043119]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index 6dc42b6b3e0a..7265e9a7c546 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -1785,6 +1785,28 @@ ufs_mem_phy: phy@1d87000 {
+ 			status = "disabled";
+ 		};
+ 
++		cryptobam: dma-controller@1dc4000 {
++			compatible = "qcom,bam-v1.7.4", "qcom,bam-v1.7.0";
++			reg = <0x0 0x01dc4000 0x0 0x28000>;
++			interrupts = <GIC_SPI 272 IRQ_TYPE_LEVEL_HIGH>;
++			#dma-cells = <1>;
++			qcom,ee = <0>;
++			qcom,controlled-remotely;
++			iommus = <&apps_smmu 0x480 0x00>,
++				 <&apps_smmu 0x481 0x00>;
++		};
++
++		crypto: crypto@1dfa000 {
++			compatible = "qcom,sa8775p-qce", "qcom,qce";
++			reg = <0x0 0x01dfa000 0x0 0x6000>;
++			dmas = <&cryptobam 4>, <&cryptobam 5>;
++			dma-names = "rx", "tx";
++			iommus = <&apps_smmu 0x480 0x00>,
++				 <&apps_smmu 0x481 0x00>;
++			interconnects = <&aggre2_noc MASTER_CRYPTO_CORE0 0 &mc_virt SLAVE_EBI1 0>;
++			interconnect-names = "memory";
++		};
++
+ 		stm: stm@4002000 {
+ 			compatible = "arm,coresight-stm", "arm,primecell";
+ 			reg = <0x0 0x4002000 0x0 0x1000>,
+-- 
+2.34.1
+

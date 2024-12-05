@@ -1,0 +1,85 @@
+From 60c692b35d6fab53a0bab6cfcb37d8975e0a58a4 Mon Sep 17 00:00:00 2001
+From: Bjorn Andersson <quic_bjorande@quicinc.com>
+Date: Tue, 26 Mar 2024 19:04:19 -0700
+Subject: [PATCH 12/19] UPSTREAM: arm64: dts: qcom: qcs6490-rb3gen2: Add DP
+ output
+
+The RB3Gen2 board comes with a mini DP connector, describe this, enable
+MDSS, DP controller and the PHY that drives this.
+
+Change-Id: I1a0c0495db8d6e35de64cffa09e2db22753d0a9f
+Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20240326-rb3gen2-dp-connector-v2-2-a9f1bc32ecaf@quicinc.com
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Upstream-Status: Backport [https://github.com/torvalds/linux/commit/756efb7cb7293b0d971f661405e044cceab13d99]
+---
+ arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts | 40 ++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+index 3f2af376691a..59f79cdc37a1 100644
+--- a/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
++++ b/arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts
+@@ -39,6 +39,20 @@ chosen {
+ 		stdout-path = "serial0:115200n8";
+ 	};
+ 
++	dp-connector {
++		compatible = "dp-connector";
++		label = "DP";
++		type = "mini";
++
++		hpd-gpios = <&tlmm 60 GPIO_ACTIVE_HIGH>;
++
++		port {
++			dp_connector_in: endpoint {
++				remote-endpoint = <&mdss_edp_out>;
++			};
++		};
++	};
++
+ 	reserved-memory {
+ 		xbl_mem: xbl@80700000 {
+ 			reg = <0x0 0x80700000 0x0 0x100000>;
+@@ -435,6 +449,25 @@ &lpass_audiocc {
+ 	/delete-property/ power-domains;
+ };
+ 
++&mdss {
++	status = "okay";
++};
++
++&mdss_edp {
++	status = "okay";
++};
++
++&mdss_edp_out {
++	data-lanes = <0 1 2 3>;
++	link-frequencies = /bits/ 64 <1620000000 2700000000 5400000000 8100000000>;
++
++	remote-endpoint = <&dp_connector_in>;
++};
++
++&mdss_edp_phy {
++	status = "okay";
++};
++
+ &qupv3_id_0 {
+ 	status = "okay";
+ };
+@@ -485,3 +518,10 @@ &usb_1_qmpphy {
+ &wifi {
+ 	memory-region = <&wlan_fw_mem>;
+ };
++
++/* PINCTRL - ADDITIONS TO NODES IN PARENT DEVICE TREE FILES */
++
++&edp_hot_plug_det {
++	function = "gpio";
++	bias-disable;
++};
+-- 
+2.46.0
+

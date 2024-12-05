@@ -1,0 +1,61 @@
+From c6124426929cbf585d4a6c896f8c9632f52e5f90 Mon Sep 17 00:00:00 2001
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Date: Thu, 21 Mar 2024 16:46:28 +0530
+Subject: [PATCH 05/11] FROMGIT: arm64: dts: qcom: sa8775p: Add PCIe bridge
+ node
+
+On Qcom SoCs, the PCIe host bridge is connected to a single PCIe bridge
+for each controller instance. Hence, add a node to represent the bridge.
+
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Link: https://lore.kernel.org/r/20240321-pcie-qcom-bridge-dts-v2-8-1eb790c53e43@linaro.org
+Signed-off-by: Bjorn Andersson <andersson@kernel.org>
+Git-commit: 3c3abb944d3ecce10738c73c94b300974da7b81b
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 3c3abb944d3ecce10738c73c94b300974da7b81b]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index 5ffc16955ae1..4e3a8320d0ae 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -4369,6 +4369,16 @@ pcie0: pci@1c00000{
+ 		phy-names = "pciephy";
+ 
+ 		status = "disabled";
++
++		pcie@0 {
++			device_type = "pci";
++			reg = <0x0 0x0 0x0 0x0 0x0>;
++			bus-range = <0x01 0xff>;
++
++			#address-cells = <3>;
++			#size-cells = <2>;
++			ranges;
++		};
+ 	};
+ 
+ 	pcie0_phy: phy@1c04000 {
+@@ -4469,6 +4479,16 @@ pcie1: pci@1c10000{
+ 		phy-names = "pciephy";
+ 
+ 		status = "disabled";
++
++		pcie@0 {
++			device_type = "pci";
++			reg = <0x0 0x0 0x0 0x0 0x0>;
++			bus-range = <0x01 0xff>;
++
++			#address-cells = <3>;
++			#size-cells = <2>;
++			ranges;
++		};
+ 	};
+ 
+ 	pcie1_phy: phy@1c14000 {
+-- 
+2.34.1
+

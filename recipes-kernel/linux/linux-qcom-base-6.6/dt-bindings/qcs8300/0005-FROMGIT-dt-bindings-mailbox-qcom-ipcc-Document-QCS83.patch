@@ -1,0 +1,36 @@
+From 77465a363669c3385e34864576427e1c7866183f Mon Sep 17 00:00:00 2001
+From: Jingyi Wang <quic_jingyw@quicinc.com>
+Date: Wed, 11 Sep 2024 15:25:15 +0800
+Subject: [PATCH 05/17] FROMGIT: dt-bindings: mailbox: qcom-ipcc: Document
+ QCS8300 IPCC
+
+Document the Inter-Processor Communication Controller on the Qualcomm
+QCS8300 Platform, which will be used to route interrupts across various
+subsystems found on the SoC.
+
+Change-Id: Ibac048374338102987650588717f11ca2dae2bdb
+Signed-off-by: Jingyi Wang <quic_jingyw@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Signed-off-by: Jassi Brar <jassisinghbrar@gmail.com>
+Git-repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+Git-commit: 5232544ea368b54b517dc504308c9e62bc6e87eb
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 5232544ea368b54b517dc504308c9e62bc6e87eb]
+---
+ Documentation/devicetree/bindings/mailbox/qcom-ipcc.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/mailbox/qcom-ipcc.yaml b/Documentation/devicetree/bindings/mailbox/qcom-ipcc.yaml
+index cc6f66eccc84..4fdff57f5638 100644
+--- a/Documentation/devicetree/bindings/mailbox/qcom-ipcc.yaml
++++ b/Documentation/devicetree/bindings/mailbox/qcom-ipcc.yaml
+@@ -24,6 +24,7 @@ properties:
+   compatible:
+     items:
+       - enum:
++          - qcom,qcs8300-ipcc
+           - qcom,qdu1000-ipcc
+           - qcom,sa8775p-ipcc
+           - qcom,sc7280-ipcc
+-- 
+2.46.0
+

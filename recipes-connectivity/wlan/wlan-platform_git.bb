@@ -4,7 +4,11 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=801f80980d171dd6
 
 inherit module
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https;rev=fe1d44e365c52cc66c4a39f48cd0919de4b72dee;branch=wlan-platform.qclinux.1.0.r2-rel;destsuffix=wlan/platform"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/platform.git;protocol=https"
+SRCBRANCH  = "wlan-platform.qclinux.1.0.r2-rel"
+SRCREV     = "fe1d44e365c52cc66c4a39f48cd0919de4b72dee"
+
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=wlan/platform"
 
 S = "${WORKDIR}/wlan/platform"
 

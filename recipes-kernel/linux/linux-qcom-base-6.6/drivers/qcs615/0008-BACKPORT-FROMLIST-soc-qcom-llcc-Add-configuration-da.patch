@@ -1,0 +1,71 @@
+From 9ad57dffb6211a7658f10cabb3e672f74f231798 Mon Sep 17 00:00:00 2001
+From: Song Xue <quic_songxue@quicinc.com>
+Date: Tue, 24 Sep 2024 18:07:12 +0800
+Subject: [PATCH] BACKPORT: FROMLIST: soc: qcom: llcc: Add configuration data
+ for QCS615
+
+Add LLCC configuration support for the QCS615 platform.
+
+Signed-off-by: Song Xue <quic_songxue@quicinc.com>
+Link: https://lore.kernel.org/all/20240924-add_llcc_support_for_qcs615-v1-2-a9f3289760d3@quicinc.com/
+Upstream-Status: Backport [https://lore.kernel.org/all/20240924-add_llcc_support_for_qcs615-v1-2-a9f3289760d3@quicinc.com/]
+---
+ drivers/soc/qcom/llcc-qcom.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/drivers/soc/qcom/llcc-qcom.c b/drivers/soc/qcom/llcc-qcom.c
+index 17d34698a6e5..1f3a18a04f85 100644
+--- a/drivers/soc/qcom/llcc-qcom.c
++++ b/drivers/soc/qcom/llcc-qcom.c
+@@ -136,6 +136,13 @@ enum llcc_reg_offset {
+ 	LLCC_COMMON_STATUS0,
+ };
+ 
++static const struct llcc_slice_config qcs615_data[] =  {
++	{ LLCC_CPUSS,    1,  128, 1, 0, 0xF, 0x0, 0, 0, 0, 0, 1, 1 },
++	{ LLCC_MDM,      8,  256, 0, 1, 0xF, 0x0, 0, 0, 0, 0, 1, 0 },
++	{ LLCC_GPUHTW,   11, 128, 1, 1, 0xF, 0x0, 0, 0, 0, 0, 1, 0 },
++	{ LLCC_GPU,      12, 128, 1, 0, 0xF, 0x0, 0, 0, 0, 0, 1, 0 },
++};
++
+ static const struct llcc_slice_config sa8775p_data[] =  {
+ 	{LLCC_CPUSS,    1, 2048, 1, 0, 0x00FF, 0x0, 0, 0, 0, 1, 1, 0, 0},
+ 	{LLCC_VIDSC0,   2, 512, 3, 1, 0x00FF, 0x0, 0, 0, 0, 1, 0, 0, 0},
+@@ -446,6 +453,16 @@ static const u32 llcc_v2_1_reg_offset[] = {
+ 	[LLCC_COMMON_STATUS0]	= 0x0003400c,
+ };
+ 
++static const struct qcom_llcc_config qcs615_cfg[] = {
++	{
++		.sct_data	= qcs615_data,
++		.size		= ARRAY_SIZE(qcs615_data),
++		.need_llcc_cfg	= true,
++		.reg_offset	= llcc_v1_reg_offset,
++		.edac_reg_offset = &llcc_v1_edac_reg_offset,
++	},
++};
++
+ static const struct qcom_llcc_config sa8775p_cfg[] = {
+ 	{
+ 		.sct_data	= sa8775p_data,
+@@ -577,6 +594,11 @@ static const struct qcom_llcc_config sm8550_cfg[] = {
+ 	},
+ };
+ 
++static const struct qcom_sct_config qcs615_cfgs = {
++	.llcc_config	= qcs615_cfg,
++	.num_config	= ARRAY_SIZE(qcs615_cfg),
++};
++
+ static const struct qcom_sct_config sa8775p_cfgs = {
+ 	.llcc_config	= sa8775p_cfg,
+ 	.num_config	= ARRAY_SIZE(sa8775p_cfg),
+@@ -1184,6 +1206,7 @@ static int qcom_llcc_probe(struct platform_device *pdev)
+ }
+ 
+ static const struct of_device_id qcom_llcc_of_match[] = {
++	{ .compatible = "qcom,qcs615-llcc", .data = &qcs615_cfgs },
+ 	{ .compatible = "qcom,sa8775p-llcc", .data = &sa8775p_cfgs },
+ 	{ .compatible = "qcom,sc7180-llcc", .data = &sc7180_cfgs },
+ 	{ .compatible = "qcom,sc7280-llcc", .data = &sc7280_cfgs },
+-- 

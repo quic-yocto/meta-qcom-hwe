@@ -1,0 +1,31 @@
+From ede7aa401c5856fffa46a0e726f0f669affd5498 Mon Sep 17 00:00:00 2001
+From: Krishna Kurapati <quic_kriskura@quicinc.com>
+Date: Fri, 25 Oct 2024 11:37:25 +0530
+Subject: [PATCH 2/3] UPSTREAM: dt-bindings: phy: qcom,usb-snps-femto-v2: Add
+ bindings for QCS8300
+
+Update dt-bindings to add QCS8300 to USB2 SNPS Femto Phy list.
+
+Change-Id: Ie4c944295cad04f54af614426f0639746f8ee0e6
+Signed-off-by: Krishna Kurapati <quic_kriskura@quicinc.com>
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Upstream-Status: Backport [https://lore.kernel.org/all/20241009195348.2649368-3-quic_kriskura@quicinc.com/]
+---
+ .../devicetree/bindings/phy/qcom,usb-snps-femto-v2.yaml          | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,usb-snps-femto-v2.yaml b/Documentation/devicetree/bindings/phy/qcom,usb-snps-femto-v2.yaml
+index fce7f8a19e9c..df8c925768fc 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,usb-snps-femto-v2.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,usb-snps-femto-v2.yaml
+@@ -22,6 +22,7 @@ properties:
+           - const: qcom,usb-snps-hs-5nm-phy
+       - items:
+           - enum:
++              - qcom,qcs8300-usb-hs-phy
+               - qcom,sc7280-usb-hs-phy
+               - qcom,sc8180x-usb-hs-phy
+               - qcom,sdx55-usb-hs-phy
+-- 
+2.34.1
+

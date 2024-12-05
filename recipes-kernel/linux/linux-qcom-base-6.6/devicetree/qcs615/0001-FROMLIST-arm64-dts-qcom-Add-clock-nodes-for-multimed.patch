@@ -1,0 +1,96 @@
+From d5e23790af6ca740c96bf6c4b3dc0e57e66922c6 Mon Sep 17 00:00:00 2001
+From: Taniya Das <quic_tdas@quicinc.com>
+Date: Fri, 8 Nov 2024 11:54:04 +0530
+Subject: [PATCH] FROMLIST: arm64: dts: qcom: Add clock nodes for multimedia
+ clock
+
+Add support for video, camera, display and gpu clock controller nodes
+for QCS615 platform.
+
+Signed-off-by: Taniya Das <quic_tdas@quicinc.com>
+Link: https://lore.kernel.org/linux-arm-msm/20241108-qcs615-mm-dt-nodes-v1-1-b2669cac0624@quicinc.com/
+Upstream-Status: Submitted [https://lore.kernel.org/linux-arm-msm/20241108-qcs615-mm-dt-nodes-v1-1-b2669cac0624@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/qcs615.dtsi | 51 ++++++++++++++++++++++++++++
+ 1 file changed, 51 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs615.dtsi b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+index c3a8ec3e44aa..1c5581e47456 100644
+--- a/arch/arm64/boot/dts/qcom/qcs615.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs615.dtsi
+@@ -3,7 +3,11 @@
+  * Copyright (c) 2024, Qualcomm Innovation Center, Inc. All rights reserved.
+  */
+ 
++#include <dt-bindings/clock/qcom,qcs615-camcc.h>
++#include <dt-bindings/clock/qcom,qcs615-dispcc.h>
+ #include <dt-bindings/clock/qcom,qcs615-gcc.h>
++#include <dt-bindings/clock/qcom,qcs615-gpucc.h>
++#include <dt-bindings/clock/qcom,qcs615-videocc.h>
+ #include <dt-bindings/clock/qcom,rpmh.h>
+ #include <dt-bindings/dma/qcom-gpi.h>
+ #include <dt-bindings/interconnect/qcom,icc.h>
+@@ -3027,6 +3031,18 @@ cti@7900000 {
+ 			clock-names = "apb_pclk";
+ 		};
+ 
++		gpucc: clock-controller@5090000 {
++			compatible = "qcom,qcs615-gpucc";
++			reg = <0x0 0x05090000 0x0 0x9000>;
++
++			clocks = <&rpmhcc RPMH_CXO_CLK>,
++				 <&gcc GPLL0>;
++
++			#clock-cells = <1>;
++			#reset-cells = <1>;
++			#power-domain-cells = <1>;
++		};
++
+ 		dc_noc: interconnect@9160000 {
+ 			reg = <0x0 0x9160000 0x0 0x3200>;
+ 			compatible = "qcom,qcs615-dc-noc";
+@@ -3049,6 +3065,41 @@ gem_noc: interconnect@9680000 {
+ 			qcom,bcm-voters = <&apps_bcm_voter>;
+ 		};
+ 
++		videocc: clock-controller@ab00000 {
++			compatible = "qcom,qcs615-videocc";
++			reg = <0x0 0x0ab00000 0x0 0x10000>;
++
++			clocks = <&rpmhcc RPMH_CXO_CLK>,
++				 <&sleep_clk>;
++
++			#clock-cells = <1>;
++			#reset-cells = <1>;
++			#power-domain-cells = <1>;
++		};
++
++		camcc: clock-controller@ad00000 {
++			compatible = "qcom,qcs615-camcc";
++			reg = <0x0 0x0ad00000 0x0 0x10000>;
++
++			clocks = <&rpmhcc RPMH_CXO_CLK>;
++
++			#clock-cells = <1>;
++			#reset-cells = <1>;
++			#power-domain-cells = <1>;
++		};
++
++		dispcc: clock-controller@af00000 {
++			compatible = "qcom,qcs615-dispcc";
++			reg = <0x0 0x0af00000 0x0 0x20000>;
++
++			clocks = <&rpmhcc RPMH_CXO_CLK>,
++				 <&gcc GCC_DISP_GPLL0_DIV_CLK_SRC>;
++
++			#clock-cells = <1>;
++			#reset-cells = <1>;
++			#power-domain-cells = <1>;
++		};
++
+ 		pdc: interrupt-controller@b220000 {
+ 			compatible = "qcom,qcs615-pdc", "qcom,pdc";
+ 			reg = <0x0 0x0b220000 0x0 0x30000>,
+-- 
+2.34.1
+

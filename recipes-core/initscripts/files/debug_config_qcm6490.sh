@@ -1362,7 +1362,6 @@ config_dcc_lpass_rsc ()
     echo R 0xB254510 2  > $CONFIG_PATH
     echo R 0xB250010 2  > $CONFIG_PATH
     echo R 0xB250900 2  > $CONFIG_PATH
-    echo R 0x03002028   > $CONFIG_PATH
     echo R 0x03500010 3 > $CONFIG_PATH
     echo R 0x03500030   > $CONFIG_PATH
     echo R 0x03500038   > $CONFIG_PATH

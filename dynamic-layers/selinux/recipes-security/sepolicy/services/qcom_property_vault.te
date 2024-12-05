@@ -36,9 +36,8 @@ files_read_etc_files(qcom_property_vault_t)
 qcom_search_property_vault_tmp(qcom_property_vault_t)
 
 ##########################
-#### label for /var/leutils/build.prop file.
+#### label for /etc/build.prop file.
 #### property-vault is using this file for persisting properties
-type qcom_property_vault_var_t;
-
-qcom_connect_property_vault_to_var(qcom_property_vault_t)
-
+type qcom_property_vault_etc_t;
+fs_associate(qcom_property_vault_etc_t)
+qcom_connect_property_vault_to_etc(qcom_property_vault_t)

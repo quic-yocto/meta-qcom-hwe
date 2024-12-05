@@ -1,0 +1,33 @@
+From c317ef7a7be1c355722b3173fa58069f747f5feb Mon Sep 17 00:00:00 2001
+From: Komal Bajaj <quic_kbajaj@quicinc.com>
+Date: Thu, 17 Oct 2024 12:35:20 +0530
+Subject: [PATCH] QCLINUX: arm64: dts: qcom: qcs8300-ride: add board id and msm
+ id support
+
+Add board id and msm id for QCS8300 platform for supporting pick correct
+DTB.
+
+Change-Id: I127fc1c8f4939d80565b9c29294fc5a750eea71c
+Signed-off-by: Komal Bajaj <quic_kbajaj@quicinc.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/qcs8300-ride.dts | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/qcs8300-ride.dts b/arch/arm64/boot/dts/qcom/qcs8300-ride.dts
+index 7eed19a694c3..4d9d726c6c1f 100644
+--- a/arch/arm64/boot/dts/qcom/qcs8300-ride.dts
++++ b/arch/arm64/boot/dts/qcom/qcs8300-ride.dts
+@@ -14,6 +14,9 @@ / {
+ 	compatible = "qcom,qcs8300-ride", "qcom,qcs8300";
+ 	chassis-type = "embedded";
+ 
++	qcom,msm-id = <606 0x10000>, <674 0x10000>, <675 0x10000>;
++	qcom,board-id = <0x00010019 0>, <0x01010019 1>;
++
+ 	aliases {
+ 		serial0 = &uart7;
+ 	};
+-- 
+2.46.0
+

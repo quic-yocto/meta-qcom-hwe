@@ -9,6 +9,9 @@ client/gatt.c:2146:2: warning: Null pointer passed to 2nd parameter
 expecting 'nonnull' [core.NonNullParamChecker]
         memcpy(*dst_value + offset, src_val, src_len);
         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Signed-off-by: Damodar Reddy GangiReddy<quic_dgangire@quicinc.com>
+Upstream-Status: Backport
 ---
  client/gatt.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)

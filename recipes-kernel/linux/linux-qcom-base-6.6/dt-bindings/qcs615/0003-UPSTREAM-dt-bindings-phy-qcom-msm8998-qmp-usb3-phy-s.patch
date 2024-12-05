@@ -1,0 +1,75 @@
+From e3a7a1427a91f3b3634733b490a76865a740b156 Mon Sep 17 00:00:00 2001
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Sat, 13 Jan 2024 22:55:47 +0200
+Subject: [PATCH] UPSTREAM: dt-bindings: phy: qcom,msm8998-qmp-usb3-phy:
+ support USB-C data
+
+Extend the Qualcomm USB-C QMP PHY schema with the USB-C related entry
+points: orientation-switch property and USB-C connection graph.
+
+Reviewed-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/r/20240113-pmi632-typec-v2-4-182d9aa0a5b3@linaro.org
+Signed-off-by: Vinod Koul <vkoul@kernel.org>
+Upstream-Status: Backport [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git c1214b579733df7017c0e5f97f26eeb4b66df0c6]
+---
+ .../phy/qcom,msm8998-qmp-usb3-phy.yaml        | 39 +++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml
+index 868fabd44d72..da5d4cbca24c 100644
+--- a/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml
++++ b/Documentation/devicetree/bindings/phy/qcom,msm8998-qmp-usb3-phy.yaml
+@@ -50,6 +50,22 @@ properties:
+   "#phy-cells":
+     const: 0
+ 
++  orientation-switch:
++    description:
++      Flag the PHY as possible handler of USB Type-C orientation switching
++    type: boolean
++
++  ports:
++    $ref: /schemas/graph.yaml#/properties/ports
++    properties:
++      port@0:
++        $ref: /schemas/graph.yaml#/properties/port
++        description: Output endpoint of the PHY
++
++      port@1:
++        $ref: /schemas/graph.yaml#/properties/port
++        description: Incoming endpoint from the USB controller
++
+ required:
+   - compatible
+   - reg
+@@ -129,4 +145,27 @@ examples:
+ 
+       vdda-phy-supply = <&vreg_l1a_0p875>;
+       vdda-pll-supply = <&vreg_l2a_1p2>;
++
++      orientation-switch;
++
++      ports {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        port@0 {
++          reg = <0>;
++
++          endpoint {
++            remote-endpoint = <&pmic_typec_mux_in>;
++          };
++        };
++
++        port@1 {
++          reg = <1>;
++
++          endpoint {
++            remote-endpoint = <&usb_dwc3_ss>;
++          };
++        };
++      };
+     };
+-- 

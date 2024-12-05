@@ -1,0 +1,4129 @@
+From ab5d7fc1a22f1419d960a11b2d0c8c6847d86f5b Mon Sep 17 00:00:00 2001
+From: Suman Voora <quic_sssanjee@quicinc.com>
+Date: Mon, 25 Nov 2024 10:52:12 +0530
+Subject: [PATCH] FROMLIST: Fastcv Ext for Opencv Acceleration
+
+Change-Id: I0a5b12247ebbf078d598e5ebed4c1f10074da7f5
+Signed-off-by: Suman Voora <quic_sssanjee@quicinc.com>
+Upstream-Status: Submitted [https://github.com/opencv/opencv_contrib/pull/3824]
+---
+ modules/fastcv/CMakeLists.txt                 |  13 ++
+ modules/fastcv/README.md                      |   7 +
+ modules/fastcv/include/opencv2/fastcv.hpp     |  32 +++
+ .../fastcv/include/opencv2/fastcv/arithm.hpp  |  30 +++
+ .../opencv2/fastcv/bilateralFilter.hpp        |  41 ++++
+ .../fastcv/include/opencv2/fastcv/cluster.hpp |  42 ++++
+ .../fastcv/include/opencv2/fastcv/draw.hpp    |  32 +++
+ .../fastcv/include/opencv2/fastcv/fast10.hpp  |  42 ++++
+ modules/fastcv/include/opencv2/fastcv/fft.hpp |  47 ++++
+ .../fastcv/include/opencv2/fastcv/hough.hpp   |  33 +++
+ .../fastcv/include/opencv2/fastcv/moments.hpp |  30 +++
+ .../fastcv/include/opencv2/fastcv/mser.hpp    | 125 +++++++++++
+ .../fastcv/include/opencv2/fastcv/remap.hpp   |  46 ++++
+ .../fastcv/include/opencv2/fastcv/scale.hpp   |  36 ++++
+ .../fastcv/include/opencv2/fastcv/shift.hpp   |  36 ++++
+ .../fastcv/include/opencv2/fastcv/smooth.hpp  |  35 +++
+ .../fastcv/include/opencv2/fastcv/thresh.hpp  |  37 ++++
+ modules/fastcv/perf/perf_bilateral.cpp        |  67 ++++++
+ .../fastcv/perf/perf_cluster_euclidean.cpp    |  79 +++++++
+ modules/fastcv/perf/perf_fast10.cpp           |  42 ++++
+ modules/fastcv/perf/perf_fill.cpp             |  89 ++++++++
+ modules/fastcv/perf/perf_hough.cpp            |  44 ++++
+ modules/fastcv/perf/perf_main.cpp             |   8 +
+ modules/fastcv/perf/perf_matmul.cpp           |  40 ++++
+ modules/fastcv/perf/perf_meanshift.cpp        |  60 ++++++
+ modules/fastcv/perf/perf_mser.cpp             |  70 ++++++
+ modules/fastcv/perf/perf_precomp.hpp          |  17 ++
+ modules/fastcv/perf/perf_threshold_range.cpp  |  48 +++++
+ modules/fastcv/src/arithm.cpp                 |  36 ++++
+ modules/fastcv/src/bilateralFilter.cpp        | 118 ++++++++++
+ modules/fastcv/src/cluster_euclidean.cpp      |  66 ++++++
+ modules/fastcv/src/fast10.cpp                 | 120 +++++++++++
+ modules/fastcv/src/fft.cpp                    |  72 +++++++
+ modules/fastcv/src/fill_poly.cpp              |  36 ++++
+ modules/fastcv/src/hough.cpp                  |  35 +++
+ modules/fastcv/src/moments.cpp                |  82 +++++++
+ modules/fastcv/src/mser.cpp                   | 202 ++++++++++++++++++
+ modules/fastcv/src/precomp.hpp                |  75 +++++++
+ modules/fastcv/src/remap.cpp                  | 146 +++++++++++++
+ modules/fastcv/src/scale.cpp                  |  64 ++++++
+ modules/fastcv/src/shift.cpp                  |  56 +++++
+ modules/fastcv/src/smooth.cpp                 |  37 ++++
+ modules/fastcv/src/thresh.cpp                 |  39 ++++
+ modules/fastcv/src/utils.cpp                  |  12 ++
+ modules/fastcv/test/test_arithm.cpp           |  56 +++++
+ modules/fastcv/test/test_bilateral.cpp        |  38 ++++
+ .../fastcv/test/test_cluster_euclidean.cpp    | 124 +++++++++++
+ modules/fastcv/test/test_fast10.cpp           |  65 ++++++
+ modules/fastcv/test/test_fft.cpp              |  69 ++++++
+ modules/fastcv/test/test_fill.cpp             |  85 ++++++++
+ modules/fastcv/test/test_hough.cpp            | 105 +++++++++
+ modules/fastcv/test/test_main.cpp             |   8 +
+ modules/fastcv/test/test_moments.cpp          |  44 ++++
+ modules/fastcv/test/test_mser.cpp             | 178 +++++++++++++++
+ modules/fastcv/test/test_precomp.hpp          |  10 +
+ modules/fastcv/test/test_remap.cpp            | 140 ++++++++++++
+ modules/fastcv/test/test_scale.cpp            | 113 ++++++++++
+ modules/fastcv/test/test_shift.cpp            |  75 +++++++
+ modules/fastcv/test/test_smooth.cpp           |  45 ++++
+ modules/fastcv/test/test_thresh.cpp           |  50 +++++
+ 60 files changed, 3629 insertions(+)
+ create mode 100644 modules/fastcv/CMakeLists.txt
+ create mode 100644 modules/fastcv/README.md
+ create mode 100644 modules/fastcv/include/opencv2/fastcv.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/arithm.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/bilateralFilter.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/cluster.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/draw.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/fast10.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/fft.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/hough.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/moments.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/mser.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/remap.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/scale.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/shift.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/smooth.hpp
+ create mode 100644 modules/fastcv/include/opencv2/fastcv/thresh.hpp
+ create mode 100644 modules/fastcv/perf/perf_bilateral.cpp
+ create mode 100644 modules/fastcv/perf/perf_cluster_euclidean.cpp
+ create mode 100644 modules/fastcv/perf/perf_fast10.cpp
+ create mode 100644 modules/fastcv/perf/perf_fill.cpp
+ create mode 100644 modules/fastcv/perf/perf_hough.cpp
+ create mode 100644 modules/fastcv/perf/perf_main.cpp
+ create mode 100644 modules/fastcv/perf/perf_matmul.cpp
+ create mode 100644 modules/fastcv/perf/perf_meanshift.cpp
+ create mode 100644 modules/fastcv/perf/perf_mser.cpp
+ create mode 100644 modules/fastcv/perf/perf_precomp.hpp
+ create mode 100644 modules/fastcv/perf/perf_threshold_range.cpp
+ create mode 100644 modules/fastcv/src/arithm.cpp
+ create mode 100644 modules/fastcv/src/bilateralFilter.cpp
+ create mode 100644 modules/fastcv/src/cluster_euclidean.cpp
+ create mode 100644 modules/fastcv/src/fast10.cpp
+ create mode 100644 modules/fastcv/src/fft.cpp
+ create mode 100644 modules/fastcv/src/fill_poly.cpp
+ create mode 100644 modules/fastcv/src/hough.cpp
+ create mode 100644 modules/fastcv/src/moments.cpp
+ create mode 100644 modules/fastcv/src/mser.cpp
+ create mode 100644 modules/fastcv/src/precomp.hpp
+ create mode 100644 modules/fastcv/src/remap.cpp
+ create mode 100644 modules/fastcv/src/scale.cpp
+ create mode 100644 modules/fastcv/src/shift.cpp
+ create mode 100644 modules/fastcv/src/smooth.cpp
+ create mode 100644 modules/fastcv/src/thresh.cpp
+ create mode 100644 modules/fastcv/src/utils.cpp
+ create mode 100644 modules/fastcv/test/test_arithm.cpp
+ create mode 100644 modules/fastcv/test/test_bilateral.cpp
+ create mode 100644 modules/fastcv/test/test_cluster_euclidean.cpp
+ create mode 100644 modules/fastcv/test/test_fast10.cpp
+ create mode 100644 modules/fastcv/test/test_fft.cpp
+ create mode 100644 modules/fastcv/test/test_fill.cpp
+ create mode 100644 modules/fastcv/test/test_hough.cpp
+ create mode 100644 modules/fastcv/test/test_main.cpp
+ create mode 100644 modules/fastcv/test/test_moments.cpp
+ create mode 100644 modules/fastcv/test/test_mser.cpp
+ create mode 100644 modules/fastcv/test/test_precomp.hpp
+ create mode 100644 modules/fastcv/test/test_remap.cpp
+ create mode 100644 modules/fastcv/test/test_scale.cpp
+ create mode 100644 modules/fastcv/test/test_shift.cpp
+ create mode 100644 modules/fastcv/test/test_smooth.cpp
+ create mode 100644 modules/fastcv/test/test_thresh.cpp
+
+diff --git a/modules/fastcv/CMakeLists.txt b/modules/fastcv/CMakeLists.txt
+new file mode 100644
+index 00000000..c11bd49e
+--- /dev/null
++++ b/modules/fastcv/CMakeLists.txt
+@@ -0,0 +1,13 @@
++if(HAVE_FASTCV)
++  set(the_description "Qualcomm FastCV accelerated functions")
++  ocv_define_module(fastcv opencv_core opencv_imgproc opencv_features2d opencv_video WRAP python java)
++  ocv_module_include_directories(
++    "${CMAKE_CURRENT_SOURCE_DIR}/include"
++    ${FastCV_INCLUDE_PATH})
++
++  ocv_target_link_libraries(${the_module} ${FASTCV_LIBRARY})
++  ocv_target_compile_definitions(${the_module} PRIVATE -DHAVE_FASTCV=1)
++  ocv_install_3rdparty_licenses(FastCV "${OpenCV_BINARY_DIR}/3rdparty/fastcv/LICENSE")
++else()
++  ocv_module_disable(fastcv)
++endif()
+diff --git a/modules/fastcv/README.md b/modules/fastcv/README.md
+new file mode 100644
+index 00000000..0c7323c0
+--- /dev/null
++++ b/modules/fastcv/README.md
+@@ -0,0 +1,7 @@
++FastCV extension for OpenCV
++===========================
++
++This module provides wrappers for several FastCV functions not covered by the corresponding HAL in OpenCV or have implementation incompatible with OpenCV.
++Please note that:
++1. This module supports ARM architecture only. This means that CMake script aborts configuration under x86 platform even if you don't want to build binaries for your machine and just want to build docs or enable code analysis in your IDE. In that case you should fix CMakeLists.txt file as told inside it.
++2. Test data is stored in misc folder. Before running tests on a device you should copy the content of `misc/` folder to `$YOUR_TESTDATA_PATH/fastcv/` folder on a device.
+diff --git a/modules/fastcv/include/opencv2/fastcv.hpp b/modules/fastcv/include/opencv2/fastcv.hpp
+new file mode 100644
+index 00000000..4248a674
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv.hpp
+@@ -0,0 +1,32 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_HPP
++#define OPENCV_FASTCV_HPP
++
++#include <opencv2/core.hpp>
++
++/**
++ * @defgroup fastcv Module-wrapper for FastCV hardware accelerated functions
++ */
++
++#include "opencv2/fastcv/arithm.hpp"
++#include "opencv2/fastcv/bilateralFilter.hpp"
++#include "opencv2/fastcv/cluster.hpp"
++#include "opencv2/fastcv/draw.hpp"
++#include "opencv2/fastcv/fast10.hpp"
++#include "opencv2/fastcv/fft.hpp"
++#include "opencv2/fastcv/hough.hpp"
++#include "opencv2/fastcv/moments.hpp"
++#include "opencv2/fastcv/mser.hpp"
++#include "opencv2/fastcv/remap.hpp"
++#include "opencv2/fastcv/scale.hpp"
++#include "opencv2/fastcv/shift.hpp"
++#include "opencv2/fastcv/smooth.hpp"
++#include "opencv2/fastcv/thresh.hpp"
++
++//! @}
++
++#endif // OPENCV_FASTCV_ARITHM_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/arithm.hpp b/modules/fastcv/include/opencv2/fastcv/arithm.hpp
+new file mode 100644
+index 00000000..e9007994
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/arithm.hpp
+@@ -0,0 +1,30 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_ARITHM_HPP
++#define OPENCV_FASTCV_ARITHM_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Matrix multiplication of two int8_t type matrices
++
++ * @param src1 First source matrix of type CV_8S
++ * @param src2 Second source matrix of type CV_8S
++ * @param dst Resulting matrix of type CV_32S
++ */
++CV_EXPORTS_W void matmuls8s32(InputArray src1, InputArray src2, OutputArray dst);
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_ARITHM_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/bilateralFilter.hpp b/modules/fastcv/include/opencv2/fastcv/bilateralFilter.hpp
+new file mode 100644
+index 00000000..3210e99f
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/bilateralFilter.hpp
+@@ -0,0 +1,41 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_BILATERALFILTER_HPP
++#define OPENCV_FASTCV_BILATERALFILTER_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Applies Bilateral filter to an image considering d-pixel diameter of each pixel's neighborhood.
++          This filter does not work inplace.
++
++ * @param _src Intput image with type CV_8UC1
++ * @param _dst Destination image with same type as _src
++ * @param d kernel size (can be 5, 7 or 9)
++ * @param sigmaColor Filter sigma in the color space.
++                     Typical value is 50.0f.
++                     Increasing this value means increasing the influence of the neighboring pixels of more different color to the smoothing result.
++ * @param sigmaSpace Filter sigma in the coordinate space.
++                     Typical value is 1.0f.
++                     Increasing this value means increasing the influence of farther neighboring pixels within the kernel size distance to the smoothing result.
++ * @param borderType border mode used to extrapolate pixels outside of the image
++ */
++CV_EXPORTS_W void bilateralFilter( InputArray _src, OutputArray _dst, int d,
++                      float sigmaColor, float sigmaSpace,
++                      int borderType = BORDER_DEFAULT );
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_BILATERALFILTER_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/cluster.hpp b/modules/fastcv/include/opencv2/fastcv/cluster.hpp
+new file mode 100644
+index 00000000..f90deeae
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/cluster.hpp
+@@ -0,0 +1,42 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_CLUSTER_HPP
++#define OPENCV_FASTCV_CLUSTER_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Clusterizes N input points in D-dimensional space into K clusters
++ * 
++ * @param points            Points array of type 8u, each row represets a point.
++ *                          Size is N rows by D columns, can be non-continuous.
++ * @param clusterCenters    Initial cluster centers array of type 32f, each row represents a center.
++ *                          Size is K rows by D columns, can be non-continuous.
++ * @param newClusterCenters Resulting cluster centers array of type 32f, each row represents found center.
++ *                          Size is set to be K rows by D columns.
++ * @param clusterSizes      Resulting cluster member counts array of type uint32, size is set to be 1 row by K columns.
++ * @param clusterBindings   Resulting points indices array of type uint32, each index tells to which cluster the corresponding point belongs to.
++ *                          Size is set to be 1 row by numPointsUsed columns.
++ * @param clusterSumDists   Resulting distance sums array of type 32f, each number is a sum of distances between each cluster center to its belonging points.
++ *                          Size is set to be 1 row by K columns
++ * @param numPointsUsed     Number of points to clusterize starting from 0 to numPointsUsed-1 inclusively. Sets to N if negative.
++ */
++CV_EXPORTS_W void clusterEuclidean(InputArray points, InputArray clusterCenters, OutputArray newClusterCenters,
++                                   OutputArray clusterSizes, OutputArray clusterBindings, OutputArray clusterSumDists,
++                                   int numPointsUsed = -1);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_CLUSTER_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/draw.hpp b/modules/fastcv/include/opencv2/fastcv/draw.hpp
+new file mode 100644
+index 00000000..baa2b58c
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/draw.hpp
+@@ -0,0 +1,32 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_DRAW_HPP
++#define OPENCV_FASTCV_DRAW_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Draw convex polygon
++          This function fills the interior of a convex polygon with the specified color.
++
++ * @param img Image to draw on. Should have up to 4 8-bit channels
++ * @param pts Array of polygon points coordinates. Should contain N two-channel or 2*N one-channel 32-bit integer elements
++ * @param color Color of drawn polygon stored as B,G,R and A(if supported)
++ */
++CV_EXPORTS_W void fillConvexPoly(InputOutputArray img, InputArray pts, Scalar color);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_DRAW_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/fast10.hpp b/modules/fastcv/include/opencv2/fastcv/fast10.hpp
+new file mode 100644
+index 00000000..1d97e9d0
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/fast10.hpp
+@@ -0,0 +1,42 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_FAST10_HPP
++#define OPENCV_FASTCV_FAST10_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Extracts FAST corners and scores from the image based on the mask.
++          The mask specifies pixels to be ignored by the detector
++
++ * @param src 8-bit grayscale image
++ * @param mask Optional mask indicating which pixels should be omited from corner dection.
++               Its size should be k times image width and height, where k = 1/2, 1/4 , 1/8 , 1, 2, 4 and 8
++               For more details see documentation to `fcvCornerFast9InMaskScoreu8` function in FastCV
++ * @param coords Output array of CV_32S containing interleave x, y positions of detected corners
++ * @param scores Optional output array containing the scores of the detected corners.
++                 The score is the highest threshold that can still validate the detected corner.
++                 A higher score value indicates a stronger corner feature.
++                 For example, a corner of score 108 is stronger than a corner of score 50
++ * @param barrier FAST threshold. The threshold is used to compare difference between intensity value
++                  of the central pixel and pixels on a circle surrounding this pixel
++ * @param border Number for pixels to ignore from top,bottom,right,left of the image. Defaults to 4 if it's below 4
++ * @param nmsEnabled Enable non-maximum suppresion to prune weak key points
++ */
++CV_EXPORTS_W void FAST10(InputArray src, InputArray mask, OutputArray coords, OutputArray scores, int barrier, int border, bool nmsEnabled);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_FAST10_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/fft.hpp b/modules/fastcv/include/opencv2/fastcv/fft.hpp
+new file mode 100644
+index 00000000..88901a6a
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/fft.hpp
+@@ -0,0 +1,47 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_FFT_HPP
++#define OPENCV_FASTCV_FFT_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Computes the 1D or 2D Fast Fourier Transform of a real valued matrix.
++          For the 2D case, the width and height of the input and output matrix must be powers of 2.
++          For the 1D case, the height of the matrices must be 1, while the width must be a power of 2.
++
++ * @param src Input array of CV_8UC1. The dimensions of the matrix must be powers of 2 for the 2D case,
++              and in the 1D case, the height must be 1, while the width must be a power of 2.
++ * @param dst The computed FFT matrix of type CV_32FC2. The FFT Re and Im coefficients are stored in different channels.
++              Hence the dimensions of the dst are (srcWidth, srcHeight)
++ */
++CV_EXPORTS_W void FFT(InputArray src, OutputArray dst);
++
++/**
++ * @brief Computes the 1D or 2D Inverse Fast Fourier Transform of a complex valued matrix.
++          For the 2D case, The width and height of the input and output matrix must be powers of 2.
++          For the 1D case, the height of the matrices must be 1, while the width must be a power of 2.
++
++ * @param src Input array of type CV_32FC2 containing FFT Re and Im coefficients stored in separate channels.
++              The dimensions of the matrix must be powers of 2 for the 2D case, and in the 1D case, the height must be 1,
++              while the width must be a power of 2.
++ * @param dst The computed IFFT matrix of type CV_8U. The matrix is real valued and has no imaginary components.
++              Hence the dimensions of the dst are (srcWidth , srcHeight)
++ */
++CV_EXPORTS_W void IFFT(InputArray src, OutputArray dst);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_FFT_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/hough.hpp b/modules/fastcv/include/opencv2/fastcv/hough.hpp
+new file mode 100644
+index 00000000..74f78a10
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/hough.hpp
+@@ -0,0 +1,33 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_HOUGH_HPP
++#define OPENCV_FASTCV_HOUGH_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Performs Hough Line detection
++ * 
++ * @param src Input 8-bit image containing binary contour. Width and step should be divisible by 8
++ * @param lines Output array containing detected lines in a form of (x1, y1, x2, y2) where all numbers are 32-bit floats
++ * @param threshold Controls the minimal length of a detected line. Value must be between 0.0 and 1.0
++ *                  Values close to 1.0 reduces the number of detected lines. Values close to 0.0
++ *                  detect more lines, but may be noisy. Recommended value is 0.25.
++ */
++CV_EXPORTS_W void houghLines(InputArray src, OutputArray lines, double threshold = 0.25);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_HOUGH_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/moments.hpp b/modules/fastcv/include/opencv2/fastcv/moments.hpp
+new file mode 100644
+index 00000000..3cffa62f
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/moments.hpp
+@@ -0,0 +1,30 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_MOMENTS_HPP
++#define OPENCV_FASTCV_MOMENTS_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Calculates all of the moments up to the third order of the image pixels' intensities
++          The results are returned in the structure cv::Moments.
++ * @param _src Input image with type CV_8UC1, CV_32SC1, CV_32FC1
++ * @param binary If 1, binary image (0x00-black, oxff-white); if 0, grayscale image
++ */
++CV_EXPORTS cv::Moments moments(InputArray _src, bool binary);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_MOMENTS_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/mser.hpp b/modules/fastcv/include/opencv2/fastcv/mser.hpp
+new file mode 100644
+index 00000000..78282b66
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/mser.hpp
+@@ -0,0 +1,125 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_MSER_HPP
++#define OPENCV_FASTCV_MSER_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Structure containing additional information about found contour
++ *
++ */
++struct ContourData
++{
++    uint32_t variation;   //!< Variation of a contour from previous grey level
++    int32_t  polarity;    //!< Polarity for a contour. This value is 1 if this is a MSER+ region, -1 if this is a MSER- region.
++    uint32_t nodeId;      //!< Node ID for a contour
++    uint32_t nodeCounter; //!< Node counter for a contour
++};
++
++/**
++ * @brief This is an overload for MSER() function
++ *
++ * @param src Source image of type CV_8UC1. Image width has to be greater than 50, and image height has to be greater than 5.
++              Pixels at the image boundary are not processed. If boundary pixels are important
++              for a particular application, please consider padding the input image with dummy
++              pixels of one pixel wide.
++ * @param contours Array containing found contours
++ * @param numNeighbors Number of neighbors in contours, can be 4 or 8
++ * @param delta Delta to be used in MSER algorithm (the difference in grayscale values
++                within which the region is stable ).
++                Typical value range [0.8 8], typical value 2
++ * @param minArea Minimum area (number of pixels) of a mser contour.
++                Typical value range [10 50], typical value 30
++ * @param maxArea Maximum area (number of pixels) of a  mser contour.
++                Typical value 14400 or 0.25*width*height
++ * @param maxVariation Maximum variation in grayscale between 2 levels allowed.
++                Typical value range [0.1 1.0], typical value 0.15
++ * @param minDiversity Minimum diversity in grayscale between 2 levels allowed.
++                Typical value range [0.1 1.0], typical value 0.2
++ */
++CV_EXPORTS void MSER(InputArray src, std::vector<std::vector<Point>>& contours,
++                       unsigned int numNeighbors = 4,
++                       unsigned int delta = 2,
++                       unsigned int minArea = 30,
++                       unsigned int maxArea = 14400,
++                       float        maxVariation = 0.15f,
++                       float        minDiversity = 0.2f);
++
++/**
++ * @brief This is an overload for MSER() function
++ *
++ * @param src Source image of type CV_8UC1. Image width has to be greater than 50, and image height has to be greater than 5.
++              Pixels at the image boundary are not processed. If boundary pixels are important
++              for a particular application, please consider padding the input image with dummy
++              pixels of one pixel wide.
++ * @param contours Array containing found contours
++ * @param boundingBoxes Array containing bounding boxes of found contours
++ * @param numNeighbors Number of neighbors in contours, can be 4 or 8
++ * @param delta Delta to be used in MSER algorithm (the difference in grayscale values
++                within which the region is stable ).
++                Typical value range [0.8 8], typical value 2
++ * @param minArea Minimum area (number of pixels) of a mser contour.
++                Typical value range [10 50], typical value 30
++ * @param maxArea Maximum area (number of pixels) of a  mser contour.
++                Typical value 14400 or 0.25*width*height
++ * @param maxVariation Maximum variation in grayscale between 2 levels allowed.
++                Typical value range [0.1 1.0], typical value 0.15
++ * @param minDiversity Minimum diversity in grayscale between 2 levels allowed.
++                Typical value range [0.1 1.0], typical value 0.2
++ */
++CV_EXPORTS void MSER(InputArray src, std::vector<std::vector<Point>>& contours, std::vector<cv::Rect>& boundingBoxes,
++                       unsigned int numNeighbors = 4,
++                       unsigned int delta = 2,
++                       unsigned int minArea = 30,
++                       unsigned int maxArea = 14400,
++                       float        maxVariation = 0.15f,
++                       float        minDiversity = 0.2f);
++
++/**
++ * @brief Runs MSER blob detector on the grayscale image
++ *
++ * @param src Source image of type CV_8UC1. Image width has to be greater than 50, and image height has to be greater than 5.
++              Pixels at the image boundary are not processed. If boundary pixels are important
++              for a particular application, please consider padding the input image with dummy
++              pixels of one pixel wide.
++ * @param contours Array containing found contours
++ * @param boundingBoxes Array containing bounding boxes of found contours
++ * @param contourData Array containing additional information about found contours
++ * @param numNeighbors Number of neighbors in contours, can be 4 or 8
++ * @param delta Delta to be used in MSER algorithm (the difference in grayscale values
++                within which the region is stable ).
++                Typical value range [0.8 8], typical value 2
++ * @param minArea Minimum area (number of pixels) of a mser contour.
++                Typical value range [10 50], typical value 30
++ * @param maxArea Maximum area (number of pixels) of a  mser contour.
++                Typical value 14400 or 0.25*width*height
++ * @param maxVariation Maximum variation in grayscale between 2 levels allowed.
++                Typical value range [0.1 1.0], typical value 0.15
++ * @param minDiversity Minimum diversity in grayscale between 2 levels allowed.
++                Typical value range [0.1 1.0], typical value 0.2
++ */
++CV_EXPORTS void MSER(InputArray src, std::vector<std::vector<Point>>& contours, std::vector<cv::Rect>& boundingBoxes,
++                       std::vector<ContourData>& contourData,
++                       unsigned int numNeighbors = 4,
++                       unsigned int delta = 2,
++                       unsigned int minArea = 30,
++                       unsigned int maxArea = 14400,
++                       float        maxVariation = 0.15f,
++                       float        minDiversity = 0.2f);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_MSER_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/remap.hpp b/modules/fastcv/include/opencv2/fastcv/remap.hpp
+new file mode 100644
+index 00000000..6482fb2b
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/remap.hpp
+@@ -0,0 +1,46 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_REMAP_HPP
++#define OPENCV_FASTCV_REMAP_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Applies a generic geometrical transformation to a greyscale CV_8UC1 image.
++ * @param src The first input image data, type CV_8UC1
++ * @param dst The output image data, type CV_8UC1
++ * @param map1 Floating-point CV_32FC1 matrix with each element as the column coordinate of the mapped location in the source image
++ * @param map2 Floating-point CV_32FC1 matrix with each element as the row coordinate of the mapped location in the source image.
++ * @param interpolation Only INTER_NEAREST and INTER_LINEAR interpolation is supported
++ * @param borderValue constant pixel value
++*/
++CV_EXPORTS_W void remap( InputArray src, OutputArray dst,
++                       InputArray map1, InputArray map2,
++                       int interpolation, int borderValue=0);
++
++/**
++ * @brief Applies a generic geometrical transformation to a 4-channel CV_8UC4 image with bilinear or nearest neighbor interpolation
++ * @param src The first input image data, type CV_8UC4
++ * @param dst The output image data, type CV_8UC4
++ * @param map1 Floating-point CV_32FC1 matrix with each element as the column coordinate of the mapped location in the source image
++ * @param map2 Floating-point CV_32FC1 matrix with each element as the row coordinate of the mapped location in the source image.
++ * @param interpolation Only INTER_NEAREST and INTER_LINEAR interpolation is supported
++*/
++CV_EXPORTS_W void remapRGBA( InputArray src, OutputArray dst,
++                             InputArray map1, InputArray map2, int interpolation);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_REMAP_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/scale.hpp b/modules/fastcv/include/opencv2/fastcv/scale.hpp
+new file mode 100644
+index 00000000..e499f6f3
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/scale.hpp
+@@ -0,0 +1,36 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_SCALE_HPP
++#define OPENCV_FASTCV_SCALE_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Down-scale the image by averaging each 2x2 pixel block.
++ * @param src The first input image data, type CV_8UC1, src height must be a multiple of 2
++ * @param dst The output image data, type CV_8UC1
++*/
++CV_EXPORTS_W void resizeDownBy2(cv::InputArray _src, cv::OutputArray _dst);
++
++/**
++ * @brief Down-scale the image by averaging each 4x4 pixel block.
++ * @param src The first input image data, type CV_8UC1, src height must be a multiple of 4
++ * @param dst The output image data, type CV_8UC1
++*/
++CV_EXPORTS_W void resizeDownBy4(cv::InputArray _src, cv::OutputArray _dst);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_SCALE_HPP
+\ No newline at end of file
+diff --git a/modules/fastcv/include/opencv2/fastcv/shift.hpp b/modules/fastcv/include/opencv2/fastcv/shift.hpp
+new file mode 100644
+index 00000000..a545789f
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/shift.hpp
+@@ -0,0 +1,36 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_SHIFT_HPP
++#define OPENCV_FASTCV_SHIFT_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Applies the meanshift procedure and obtains the final converged position.
++          This function applies the meanshift procedure to an original image (usually a probability image)
++          and obtains the final converged position. The converged position search will stop either it has reached
++          the required accuracy or the maximum number of iterations.
++
++ * @param src 8-bit grayscale image which is usually a probability image computed based on object histogram
++ * @param rect Initial search window position which also returns the final converged window position
++ * @param termCrit The criteria used to finish the MeanShift which consists of two termination criteria:
++ *                 1) epsilon: required accuracy; 2) max_iter: maximum number of iterations
++ * @return Iteration number at which the loop stopped
++ */
++CV_EXPORTS_W int meanShift(InputArray src, Rect& rect, TermCriteria termCrit);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_SHIFT_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/smooth.hpp b/modules/fastcv/include/opencv2/fastcv/smooth.hpp
+new file mode 100644
+index 00000000..a3cee45a
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/smooth.hpp
+@@ -0,0 +1,35 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_SMOOTH_HPP
++#define OPENCV_FASTCV_SMOOTH_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Recursive Bilateral Filtering
++
++Different from traditional bilateral filtering, here the smoothing is actually performed in gradient domain.
++The algorithm claims that it's more efficient than the original bilateral filtering in both image quality and computation.
++See algorithm description in the paper Recursive Bilateral Filtering, ECCV2012 by Prof Yang Qingxiong
++ * @param src Input image, should have one CV_8U channel
++ * @param dst Output array having one CV_8U channel
++ * @param sigmaColor Sigma in the color space, the bigger the value the more color difference is smoothed by the algorithm
++ * @param sigmaSpace Sigma in the coordinate space, the bigger the value the more distant pixels are smoothed
++ */
++CV_EXPORTS_W void bilateralRecursive(cv::InputArray src, cv::OutputArray dst, float sigmaColor = 0.03f, float sigmaSpace = 0.1f);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_SMOOTH_HPP
+diff --git a/modules/fastcv/include/opencv2/fastcv/thresh.hpp b/modules/fastcv/include/opencv2/fastcv/thresh.hpp
+new file mode 100644
+index 00000000..878761d7
+--- /dev/null
++++ b/modules/fastcv/include/opencv2/fastcv/thresh.hpp
+@@ -0,0 +1,37 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_THRESH_HPP
++#define OPENCV_FASTCV_THRESH_HPP
++
++#include <opencv2/core.hpp>
++
++namespace cv {
++namespace fastcv {
++
++//! @addtogroup fastcv
++//! @{
++
++/**
++ * @brief Binarizes a grayscale image based on a pair of threshold values. The binarized image will be in the two values
++ *        selected by user
++
++ * @param src 8-bit grayscale image
++ * @param dst Output image of the same size and type as input image, can be the same as input image
++ * @param lowThresh The lower threshold value for binarization
++ * @param highThresh The higher threshold value for binarization
++ * @param trueValue The value assigned to the destination pixel if the source is within the range inclusively defined by the
++ *                  pair of threshold values
++ * @param falseValue The value assigned to the destination pixel if the source is out of the range inclusively defined by the
++ *                   pair of threshold values
++ */
++CV_EXPORTS_W void thresholdRange(InputArray src, OutputArray dst, uint8_t lowThresh, uint8_t highThresh, uint8_t trueValue, uint8_t falseValue);
++
++//! @}
++
++} // fastcv::
++} // cv::
++
++#endif // OPENCV_FASTCV_THRESH_HPP
+diff --git a/modules/fastcv/perf/perf_bilateral.cpp b/modules/fastcv/perf/perf_bilateral.cpp
+new file mode 100644
+index 00000000..bb985da3
+--- /dev/null
++++ b/modules/fastcv/perf/perf_bilateral.cpp
+@@ -0,0 +1,67 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++namespace opencv_test {
++
++typedef std::tuple<float /*sigmaColor*/, float /*sigmaSpace*/> BilateralPerfParams;
++typedef perf::TestBaseWithParam<BilateralPerfParams> BilateralPerfTest;
++
++PERF_TEST_P(BilateralPerfTest, run,
++    ::testing::Combine(::testing::Values(0.01f, 0.03f, 0.1f, 1.f, 5.f),
++                       ::testing::Values(0.01f, 0.05f, 0.1f, 1.f, 5.f))
++           )
++{
++    auto p = GetParam();
++    float sigmaColor = std::get<0>(p);
++    float sigmaSpace = std::get<1>(p);
++
++    cv::Mat src = imread(cvtest::findDataFile("cv/shared/baboon.png"), cv::IMREAD_GRAYSCALE);
++    Mat dst;
++
++    while(next())
++    {
++        startTimer();
++        cv::fastcv::bilateralRecursive(src, dst, sigmaColor, sigmaSpace);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++typedef std::tuple<float /*sigmaColor*/, float /*sigmaSpace*/, cv::Size, int > BilateralPerfParams2;
++typedef perf::TestBaseWithParam<BilateralPerfParams2> BilateralPerfTest2;
++
++
++PERF_TEST_P(BilateralPerfTest2, run,
++    ::testing::Combine(::testing::Values(0.01f, 0.03f, 0.1f, 1.f, 5.f),
++                       ::testing::Values(0.01f, 0.05f, 0.1f, 1.f, 5.f),
++					   ::testing::Values(Size(8, 8), Size(640, 480), Size(800, 600)),
++                       ::testing::Values(5, 7, 9))
++           )
++{
++    auto p = GetParam();
++    float sigmaColor = std::get<0>(p);
++    float sigmaSpace = std::get<1>(p);
++    cv::Size size  = std::get<2>(p);
++	int d = get<3>(p);
++
++    RNG& rng = cv::theRNG();
++    Mat src(size, CV_8UC1);
++    cvtest::randUni(rng, src, Scalar::all(0), Scalar::all(256));
++    Mat dst;
++
++    for (;  next(); )
++    {
++        startTimer();
++		cv::fastcv::bilateralFilter(src, dst, d, sigmaColor, sigmaSpace);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++} // namespace
+diff --git a/modules/fastcv/perf/perf_cluster_euclidean.cpp b/modules/fastcv/perf/perf_cluster_euclidean.cpp
+new file mode 100644
+index 00000000..20bc31a7
+--- /dev/null
++++ b/modules/fastcv/perf/perf_cluster_euclidean.cpp
+@@ -0,0 +1,79 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++namespace opencv_test {
++
++typedef std::tuple<int /* nPts */, int /*nDims*/, int /*nClusters*/> ClusterEuclideanPerfParams;
++typedef perf::TestBaseWithParam<ClusterEuclideanPerfParams> ClusterEuclideanPerfTest;
++
++PERF_TEST_P(ClusterEuclideanPerfTest, run,
++            ::testing::Combine(::testing::Values(100, 1000, 10000), // nPts
++                               ::testing::Values(2, 10, 32),        // nDims
++                               ::testing::Values(5, 10, 16))        // nClusters
++           )
++{
++    auto p = GetParam();
++    int nPts      = std::get<0>(p);
++    int nDims     = std::get<1>(p);
++    int nClusters = std::get<2>(p);
++
++    Mat points(nPts, nDims, CV_8U);
++    Mat clusterCenters(nClusters, nDims, CV_32F);
++
++    Mat trueMeans(nClusters, nDims, CV_32F);
++    Mat stddevs(nClusters, nDims, CV_32F);
++    std::vector<int> trueClusterSizes(nClusters, 0);
++    std::vector<int> trueClusterBindings(nPts, 0);
++    std::vector<float> trueSumDists(nClusters, 0);
++
++    cv::RNG& rng = cv::theRNG();
++    for (int i = 0; i < nClusters; i++)
++    {
++        Mat mean(1, nDims, CV_64F), stdev(1, nDims, CV_64F);
++        rng.fill(mean,  cv::RNG::UNIFORM, 0, 256);
++        rng.fill(stdev, cv::RNG::UNIFORM, 5.f, 16);
++        int lo =    i    * nPts / nClusters;
++        int hi = (i + 1) * nPts / nClusters;
++
++        for (int d = 0; d < nDims; d++)
++        {
++            rng.fill(points.col(d).rowRange(lo, hi), cv::RNG::NORMAL,
++                     mean.at<double>(d), stdev.at<double>(d));
++        }
++
++        float sd = 0;
++        for (int j = lo; j < hi; j++)
++        {
++            Mat pts64f;
++            points.row(j).convertTo(pts64f, CV_64F);
++            sd += cv::norm(mean, pts64f, NORM_L2);
++            trueClusterBindings.at(j) = i;
++            trueClusterSizes.at(i)++;
++        }
++        trueSumDists.at(i) = sd;
++
++        // let's shift initial cluster center a bit
++        Mat(mean + stdev * 0.5).copyTo(clusterCenters.row(i));
++
++        mean.copyTo(trueMeans.row(i));
++        stdev.copyTo(stddevs.row(i));
++    }
++
++    while(next())
++    {
++        Mat newClusterCenters;
++        std::vector<int> clusterSizes, clusterBindings;
++        std::vector<float> clusterSumDists;
++        startTimer();
++        cv::fastcv::clusterEuclidean(points, clusterCenters, newClusterCenters, clusterSizes, clusterBindings, clusterSumDists);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++} // namespace
+diff --git a/modules/fastcv/perf/perf_fast10.cpp b/modules/fastcv/perf/perf_fast10.cpp
+new file mode 100644
+index 00000000..0d9111a8
+--- /dev/null
++++ b/modules/fastcv/perf/perf_fast10.cpp
+@@ -0,0 +1,42 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++namespace opencv_test {
++
++typedef std::tuple<bool /*useScores*/, int /*barrier*/, int /*border*/, bool /*nmsEnabled*/> FAST10PerfParams;
++typedef perf::TestBaseWithParam<FAST10PerfParams> FAST10PerfTest;
++
++PERF_TEST_P(FAST10PerfTest, run,
++::testing::Combine(::testing::Bool(),   // useScores
++                   ::testing::Values(10, 30, 50), // barrier
++                   ::testing::Values( 4, 10, 32), // border
++                   ::testing::Bool() // nonmax suppression
++                  )
++           )
++{
++    auto p = GetParam();
++    bool useScores  = std::get<0>(p);
++    int  barrier    = std::get<1>(p);
++    int  border     = std::get<2>(p);
++    bool nmsEnabled = std::get<3>(p);
++
++    cv::Mat src = imread(cvtest::findDataFile("cv/shared/baboon.png"), cv::IMREAD_GRAYSCALE);
++
++    std::vector<int> coords, scores;
++    while(next())
++    {
++        coords.clear();
++        scores.clear();
++        startTimer();
++        cv::fastcv::FAST10(src, noArray(), coords, useScores ? scores : noArray(), barrier, border, nmsEnabled);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++} // namespace
+diff --git a/modules/fastcv/perf/perf_fill.cpp b/modules/fastcv/perf/perf_fill.cpp
+new file mode 100644
+index 00000000..3a2056ef
+--- /dev/null
++++ b/modules/fastcv/perf/perf_fill.cpp
+@@ -0,0 +1,89 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++namespace opencv_test {
++
++typedef tuple<cv::Size /*imgSize*/, int /*nPts*/, int /*channels*/> FillConvexPerfParams;
++typedef perf::TestBaseWithParam<FillConvexPerfParams> FillConvexPerfTest;
++
++PERF_TEST_P(FillConvexPerfTest, randomDraw, Combine(
++                testing::Values(Size(640, 480), Size(512, 512), Size(1920, 1080)),
++                testing::Values(4, 64, 1024),
++                testing::Values(1, 2, 3, 4)
++            ))
++{
++    auto p = GetParam();
++
++    Size imgSize = std::get<0>(p);
++    int nPts     = std::get<1>(p);
++    int channels = std::get<2>(p);
++
++    cv::RNG rng = cv::theRNG();
++
++    std::vector<Point> allPts, contour;
++    for (int i = 0; i < nPts; i++)
++    {
++        allPts.push_back(Point(rng() % imgSize.width, rng() % imgSize.height));
++    }
++    cv::convexHull(allPts, contour);
++
++    Scalar color(rng() % 256, rng() % 256, rng() % 256);
++
++    Mat img(imgSize, CV_MAKE_TYPE(CV_8U, channels), Scalar(0));
++
++    while(next())
++    {
++        img = 0;
++        startTimer();
++        cv::fastcv::fillConvexPoly(img, contour, color);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++PERF_TEST_P(FillConvexPerfTest, circle, Combine(
++                testing::Values(Size(640, 480), Size(512, 512), Size(1920, 1080)),
++                testing::Values(4, 64, 1024),
++                testing::Values(1, 2, 3, 4)
++            ))
++{
++    auto p = GetParam();
++
++    Size imgSize = std::get<0>(p);
++    int nPts     = std::get<1>(p);
++    int channels = std::get<2>(p);
++
++    cv::RNG rng = cv::theRNG();
++
++    float r = std::min(imgSize.width, imgSize.height) / 2 * 0.9f;
++    float angle = CV_PI * 2.0f / (float)nPts;
++    std::vector<Point2i> contour;
++    for (int i = 0; i < nPts; i++)
++    {
++        Point2f pt(r * cos((float)i * angle),
++                   r * sin((float)i * angle));
++        contour.push_back({ imgSize.width  / 2 + int(pt.x),
++                            imgSize.height / 2 + int(pt.y)});
++    }
++    Scalar color(rng() % 256, rng() % 256, rng() % 256);
++
++    Mat img(imgSize, CV_MAKE_TYPE(CV_8U, channels), Scalar(0));
++
++    while(next())
++    {
++        img = 0;
++        startTimer();
++        cv::fastcv::fillConvexPoly(img, contour, color);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++
++} // namespace
+diff --git a/modules/fastcv/perf/perf_hough.cpp b/modules/fastcv/perf/perf_hough.cpp
+new file mode 100644
+index 00000000..78424a69
+--- /dev/null
++++ b/modules/fastcv/perf/perf_hough.cpp
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++namespace opencv_test {
++
++typedef std::tuple<std::string /* file name */, double /* threshold */ > HoughLinesPerfParams;
++typedef perf::TestBaseWithParam<HoughLinesPerfParams> HoughLinesPerfTest;
++
++PERF_TEST_P(HoughLinesPerfTest, run,
++                        ::testing::Combine(::testing::Values("cv/shared/pic5.png",
++                                                             "stitching/a1.png",
++                                                             "cv/shared/pic5.png",
++                                                             "cv/shared/pic1.png"), // images
++                                           ::testing::Values(0.05, 0.25, 0.5, 0.75, 5) // threshold
++                                           )
++           )
++{
++    auto p = GetParam();
++    std::string fname = std::get<0>(p);
++    double threshold  = std::get<1>(p);
++
++    cv::Mat src = imread(cvtest::findDataFile(fname), cv::IMREAD_GRAYSCALE);
++    // make it aligned by 8
++    cv::Mat withBorder;
++    int bpix = ((src.cols & 0xfffffff8) + 8) - src.cols;
++    cv::copyMakeBorder(src, withBorder, 0, 0, 0, bpix, BORDER_REFLECT101);
++    src = withBorder;
++
++    while(next())
++    {
++        std::vector<cv::Vec4f> lines;
++        startTimer();
++        cv::fastcv::houghLines(src, lines, threshold);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++} // namespace
+diff --git a/modules/fastcv/perf/perf_main.cpp b/modules/fastcv/perf/perf_main.cpp
+new file mode 100644
+index 00000000..a6824dfb
+--- /dev/null
++++ b/modules/fastcv/perf/perf_main.cpp
+@@ -0,0 +1,8 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++CV_PERF_TEST_MAIN(imgproc)
+diff --git a/modules/fastcv/perf/perf_matmul.cpp b/modules/fastcv/perf/perf_matmul.cpp
+new file mode 100644
+index 00000000..83af7618
+--- /dev/null
++++ b/modules/fastcv/perf/perf_matmul.cpp
+@@ -0,0 +1,40 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++namespace opencv_test {
++
++typedef std::tuple<int /*rows1*/, int /*cols1*/, int /*cols2*/> MatMulPerfParams;
++typedef perf::TestBaseWithParam<MatMulPerfParams> MatMulPerfTest;
++
++PERF_TEST_P(MatMulPerfTest, run,
++    ::testing::Combine(::testing::Values(8, 16, 128, 256), // rows1
++                       ::testing::Values(8, 16, 128, 256), // cols1
++                       ::testing::Values(8, 16, 128, 256)) // cols2
++           )
++{
++    auto p = GetParam();
++    int rows1 = std::get<0>(p);
++    int cols1 = std::get<1>(p);
++    int cols2 = std::get<2>(p);
++
++    RNG& rng = cv::theRNG();
++    Mat src1(rows1, cols1, CV_8SC1), src2(cols1, cols2, CV_8SC1);
++    cvtest::randUni(rng, src1, Scalar::all(-128), Scalar::all(128));
++    cvtest::randUni(rng, src2, Scalar::all(-128), Scalar::all(128));
++
++    Mat dst;
++    while(next())
++    {
++        startTimer();
++        cv::fastcv::matmuls8s32(src1, src2, dst);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++} // namespace
+diff --git a/modules/fastcv/perf/perf_meanshift.cpp b/modules/fastcv/perf/perf_meanshift.cpp
+new file mode 100644
+index 00000000..e98c246d
+--- /dev/null
++++ b/modules/fastcv/perf/perf_meanshift.cpp
+@@ -0,0 +1,60 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++namespace opencv_test {
++
++typedef std::tuple<cv::Size, MatType, int /*iterations*/, float /*epsilon*/, Size /*winSize*/> MeanShiftPerfParams;
++typedef perf::TestBaseWithParam<MeanShiftPerfParams> MeanShiftPerfTest;
++
++PERF_TEST_P(MeanShiftPerfTest, run,
++    ::testing::Combine(::testing::Values(Size(128, 128), Size(640, 480), Size(800, 600)),
++                       ::testing::Values(CV_8U, CV_32S, CV_32F), // type
++                       ::testing::Values(2, 10, 100), // nIterations
++                       ::testing::Values(0.01f, 0.1f, 1.f, 10.f), // epsilon
++                       ::testing::Values(Size(8, 8), Size(13, 48), Size(64, 64)) // window size
++                       )
++           )
++{
++    auto p = GetParam();
++    cv::Size size = std::get<0>(p);
++    MatType type  = std::get<1>(p);
++    int iters     = std::get<2>(p);
++    float eps     = std::get<3>(p);
++    Size winSize  = std::get<4>(p);
++
++    RNG& rng = cv::theRNG();
++
++    const int nPts = 20;
++    Mat ptsMap(size, CV_8UC1, Scalar(255));
++    for(size_t i = 0; i < nPts; ++i)
++    {
++        ptsMap.at<uchar>(rng() % size.height, rng() % size.width) = 0;
++    }
++    Mat distTrans(size, CV_8UC1);
++    cv::distanceTransform(ptsMap, distTrans, DIST_L2, DIST_MASK_PRECISE);
++    Mat vsrc = 255 - distTrans;
++    Mat src;
++    vsrc.convertTo(src, type);
++
++    Point startPt(rng() % (size.width  - winSize.width),
++                  rng() % (size.height - winSize.height));
++    Rect startRect(startPt, winSize);
++
++    cv::TermCriteria termCrit( TermCriteria::EPS + TermCriteria::MAX_ITER, iters, eps);
++
++    Rect window = startRect;
++    while(next())
++    {
++        startTimer();
++        cv::fastcv::meanShift(src, window, termCrit);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++} // namespace
+diff --git a/modules/fastcv/perf/perf_mser.cpp b/modules/fastcv/perf/perf_mser.cpp
+new file mode 100644
+index 00000000..4e1a6ce8
+--- /dev/null
++++ b/modules/fastcv/perf/perf_mser.cpp
+@@ -0,0 +1,70 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++namespace opencv_test {
++
++// we use such nested structure to combine test values
++typedef std::tuple< std::tuple<bool /* useBboxes */, bool /* useContourData */>,
++                    int  /* numNeighbors */, std::string /*file path*/> MSERPerfParams;
++typedef perf::TestBaseWithParam<MSERPerfParams> MSERPerfTest;
++
++PERF_TEST_P(MSERPerfTest, run,
++    ::testing::Combine(::testing::Values(std::tuple<bool, bool> { true, false},
++                                         std::tuple<bool, bool> {false, false},
++                                         std::tuple<bool, bool> { true,  true}
++                                        ), // useBboxes, useContourData
++                       ::testing::Values(4, 8), // numNeighbors
++                       ::testing::Values("cv/shared/baboon.png", "cv/mser/puzzle.png")
++                      )
++           )
++{
++    auto p = GetParam();
++    bool useBboxes      = std::get<0>(std::get<0>(p));
++    bool useContourData = std::get<1>(std::get<0>(p));
++    int  numNeighbors   =             std::get<1>(p); // 4 or 8
++    std::string imgPath =             std::get<2>(p);
++
++    cv::Mat src = imread(cvtest::findDataFile(imgPath), cv::IMREAD_GRAYSCALE);
++
++    unsigned int delta = 2;
++    unsigned int minArea = 256;
++    unsigned int maxArea = (int)src.total()/4;
++    float        maxVariation = 0.15f;
++    float        minDiversity = 0.2f;
++
++    while(next())
++    {
++        std::vector<std::vector<Point>> contours;
++        std::vector<cv::Rect> bboxes;
++        std::vector<cv::fastcv::ContourData> contourData;
++
++        startTimer();
++        if (useBboxes)
++        {
++            if (useContourData)
++            {
++                cv::fastcv::MSER(src, contours, bboxes, contourData, numNeighbors,
++                                 delta, minArea, maxArea, maxVariation, minDiversity);
++            }
++            else
++            {
++                cv::fastcv::MSER(src, contours, bboxes, numNeighbors,
++                                 delta, minArea, maxArea, maxVariation, minDiversity);
++            }
++        }
++        else
++        {
++            cv::fastcv::MSER(src, contours, numNeighbors,
++                             delta, minArea, maxArea, maxVariation, minDiversity);
++        }
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++} // namespace
+diff --git a/modules/fastcv/perf/perf_precomp.hpp b/modules/fastcv/perf/perf_precomp.hpp
+new file mode 100644
+index 00000000..e052a009
+--- /dev/null
++++ b/modules/fastcv/perf/perf_precomp.hpp
+@@ -0,0 +1,17 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef __FASTCV_EXT_PERF_PRECOMP_HPP__
++#define __FASTCV_EXT_PERF_PRECOMP_HPP__
++
++#include <opencv2/ts.hpp>
++#include <opencv2/features2d.hpp>
++#include <opencv2/fastcv.hpp>
++
++namespace opencv_test {
++using namespace perf;
++} // namespace
++
++#endif
+diff --git a/modules/fastcv/perf/perf_threshold_range.cpp b/modules/fastcv/perf/perf_threshold_range.cpp
+new file mode 100644
+index 00000000..a68e3b9f
+--- /dev/null
++++ b/modules/fastcv/perf/perf_threshold_range.cpp
+@@ -0,0 +1,48 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "perf_precomp.hpp"
++
++namespace opencv_test {
++
++typedef std::tuple<cv::Size, int /*lowThresh*/, int /*highThresh*/, int /*trueValue*/, int /*falseValue*/> ThresholdRangePerfParams;
++typedef perf::TestBaseWithParam<ThresholdRangePerfParams> ThresholdRangePerfTest;
++
++PERF_TEST_P(ThresholdRangePerfTest, run,
++    ::testing::Combine(::testing::Values(Size(8, 8), Size(640, 480), Size(800, 600)),
++                       ::testing::Values(0, 15, 128, 255), // lowThresh
++                       ::testing::Values(0, 15, 128, 255), // highThresh
++                       ::testing::Values(0, 15, 128, 255), // trueValue
++                       ::testing::Values(0, 15, 128, 255)  // falseValue
++                       )
++           )
++{
++    auto p = GetParam();
++    cv::Size size  = std::get<0>(p);
++    int loThresh   = std::get<1>(p);
++    int hiThresh   = std::get<2>(p);
++    int trueValue  = std::get<3>(p);
++    int falseValue = std::get<4>(p);
++
++    int lowThresh  = std::min(loThresh, hiThresh);
++    int highThresh = std::max(loThresh, hiThresh);
++
++    RNG& rng = cv::theRNG();
++    Mat src(size, CV_8UC1);
++    cvtest::randUni(rng, src, Scalar::all(0), Scalar::all(256));
++
++    Mat dst;
++    while(next())
++    {
++        startTimer();
++        cv::fastcv::thresholdRange(src, dst, lowThresh, highThresh, trueValue, falseValue);
++        stopTimer();
++    }
++
++    SANITY_CHECK_NOTHING();
++}
++
++
++} // namespace
+diff --git a/modules/fastcv/src/arithm.cpp b/modules/fastcv/src/arithm.cpp
+new file mode 100644
+index 00000000..bf8077cb
+--- /dev/null
++++ b/modules/fastcv/src/arithm.cpp
+@@ -0,0 +1,36 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++void matmuls8s32(InputArray _src1, InputArray _src2, OutputArray _dst)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src1.empty() && _src1.type() == CV_8SC1);
++    CV_Assert(_src1.cols() <= 131072);
++    CV_Assert(_src1.step() % 8 == 0);
++    CV_Assert(_src1.cols() == _src2.rows());
++    Mat src1 = _src1.getMat();
++
++    CV_Assert(!_src2.empty() && _src2.type() == CV_8SC1);
++    CV_Assert(_src2.step() % 8 == 0);
++    Mat src2 = _src2.getMat();
++
++    _dst.create(_src1.rows(), _src2.cols(), CV_32SC1);
++    // in case of fixed layout array we cannot fix this on our side, can only fail if false
++    CV_Assert(_dst.step() % 8 == 0);
++    Mat dst = _dst.getMat();
++
++    fcvMatrixMultiplys8s32((const int8_t*)src1.data, src1.cols, src1.rows, src1.step,
++                           (const int8_t*)src2.data, src2.cols, src2.step,
++                           (int32_t*)dst.data, dst.step);
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/bilateralFilter.cpp b/modules/fastcv/src/bilateralFilter.cpp
+new file mode 100644
+index 00000000..1cd0ece6
+--- /dev/null
++++ b/modules/fastcv/src/bilateralFilter.cpp
+@@ -0,0 +1,118 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++class FcvFilterLoop_Invoker : public cv::ParallelLoopBody
++{
++public:
++
++    FcvFilterLoop_Invoker(cv::Mat src_, size_t src_step_, cv::Mat dst_, size_t dst_step_, int width_, int height_,  int bdr_, int knl_, float32_t sigma_color_, float32_t sigma_space_) :
++        cv::ParallelLoopBody(), src_step(src_step_), dst_step(dst_step_), width(width_), height(height_),
++        bdr(bdr_), knl(knl_), sigma_color(sigma_color_), sigma_space(sigma_space_), src(src_), dst(dst_)
++    {
++    }
++
++    virtual void operator()(const cv::Range& range) const CV_OVERRIDE
++    {
++
++        fcvStatus status = FASTCV_SUCCESS;
++		int height_ = range.end - range.start;
++        int width_  = width;
++		cv::Mat src_;
++		int n = knl/2;
++
++		if(range.start == 0 && range.end == height)
++		{
++			src_ = cv::Mat(height_ + 2*n, width_ + 2*n, CV_8U);
++			cv::copyMakeBorder(src, src_, n, n, n, n, bdr);
++		}
++		else if(range.start == 0)
++		{
++			src_ = cv::Mat(height_ + 2*n, width_ + 2*n, CV_8U);
++			cv::copyMakeBorder(src(cv::Rect(0, 0, width_, height_ + n)), src_, n, 0, n, n, bdr);
++		}
++		else if(range.end == (height))
++        {
++			src_ = cv::Mat(height_ + 2*n, width_ + 2*n, CV_8U);
++			cv::copyMakeBorder(src(cv::Rect(0, range.start - n, width_, height_ + n)), src_, 0, n, n, n, bdr);
++		}
++		else
++		{
++			src_ = cv::Mat(height_ + 2*n, width_ + 2*n, CV_8U);
++			cv::copyMakeBorder(src(cv::Rect(0, range.start - n, width_, height_ + 2*n)), src_, 0, 0, n, n, bdr);
++		}
++
++
++		cv::Mat dst_padded = cv::Mat(height_ + 2*n, width_ + 2*n, CV_8U);
++
++		if(knl == 5)
++		    status = fcvBilateralFilter5x5u8_v3(src_.data, width_ + 2*n, height_ + 2*n, width_ + 2*n,
++		                                        dst_padded.data, width_ + 2*n, sigma_color, sigma_space, 0);
++		else if(knl == 7)
++		    status = fcvBilateralFilter7x7u8_v3(src_.data, width_ + 2*n, height_ + 2*n, width_ + 2*n,
++		                                        dst_padded.data, width_ + 2*n, sigma_color, sigma_space, 0);
++		else if(knl == 9)
++		    status = fcvBilateralFilter9x9u8_v3(src_.data, width_ + 2*n, height_ + 2*n, width_ + 2*n,
++		                                        dst_padded.data, width_ + 2*n, sigma_color, sigma_space, 0);
++
++		cv::Mat dst_temp1 = dst_padded(cv::Rect(n, n, width_, height_));
++		cv::Mat dst_temp2 = dst(cv::Rect(0, range.start, width_, height_));
++		dst_temp1.copyTo(dst_temp2);
++	}
++
++private:
++    const size_t src_step;
++    const size_t dst_step;
++    const int width;
++    const int height;
++    const int bdr;
++    const int knl;
++    float32_t sigma_color;
++    float32_t sigma_space;
++    int ret;
++	cv::Mat src;
++	cv::Mat dst;
++
++    FcvFilterLoop_Invoker(const FcvFilterLoop_Invoker &);  // = delete;
++    const FcvFilterLoop_Invoker& operator= (const FcvFilterLoop_Invoker &);  // = delete;
++};
++
++void bilateralFilter( InputArray _src, OutputArray _dst, int d,
++                      float sigmaColor, float sigmaSpace,
++                      int borderType )
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty());
++    int type = _src.type();
++	CV_Assert(type == CV_8UC1);
++	CV_Assert(d == 5 || d == 7 || d == 9);
++
++    Size size = _src.size();
++	_dst.create( size, type );
++    Mat src = _src.getMat();
++	Mat dst = _dst.getMat();
++
++    if( sigmaColor <= 0 )
++        sigmaColor = 1;
++    if( sigmaSpace <= 0 )
++        sigmaSpace = 1;
++
++	int nStripes = 1;
++	if(src.rows/20 == 0)
++		nStripes = 1;
++	else
++		nStripes = (src.rows/20);
++
++	cv::parallel_for_(cv::Range(0, src.rows),
++              FcvFilterLoop_Invoker(src, src.step, dst, dst.step, src.cols, src.rows, borderType, d, sigmaColor, sigmaSpace), nStripes);
++}
++
++}
++}
+diff --git a/modules/fastcv/src/cluster_euclidean.cpp b/modules/fastcv/src/cluster_euclidean.cpp
+new file mode 100644
+index 00000000..a50b027c
+--- /dev/null
++++ b/modules/fastcv/src/cluster_euclidean.cpp
+@@ -0,0 +1,66 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++void clusterEuclidean(InputArray _points, InputArray _clusterCenters, OutputArray _newClusterCenters,
++                      OutputArray _clusterSizes, OutputArray _clusterBindings, OutputArray _clusterSumDists,
++                      int numPointsUsed)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_points.empty() && _points.type() == CV_8UC1);
++    int nPts      = _points.rows();
++    int nDims     = _points.cols();
++    int ptsStride = _points.step();
++
++    CV_Assert(!_clusterCenters.empty() && _clusterCenters.depth() == CV_32F);
++    int nClusters           = _clusterCenters.rows();
++    int clusterCenterStride = _clusterCenters.step();
++
++    CV_Assert(_clusterCenters.cols() == nDims);
++
++    CV_Assert(numPointsUsed <= nPts);
++    if (numPointsUsed < 0)
++    {
++        numPointsUsed = nPts;
++    }
++
++    _newClusterCenters.create(nClusters, nDims, CV_32FC1);
++    _clusterSizes.create(1, nClusters, CV_32SC1);
++    _clusterBindings.create(1, numPointsUsed, CV_32SC1);
++    _clusterSumDists.create(1, nClusters, CV_32FC1);
++
++    Mat points            = _points.getMat();
++    Mat clusterCenters    = _clusterCenters.getMat();
++    Mat newClusterCenters = _newClusterCenters.getMat();
++    Mat clusterSizes      = _clusterSizes.getMat();
++    Mat clusterBindings   = _clusterBindings.getMat();
++    Mat clusterSumDists   = _clusterSumDists.getMat();
++
++    int result = fcvClusterEuclideanu8(points.data,
++                                       nPts,
++                                       nDims,
++                                       ptsStride,
++                                       numPointsUsed,
++                                       nClusters,
++                                       (float32_t*)clusterCenters.data,
++                                       clusterCenterStride,
++                                       (float32_t*)newClusterCenters.data,
++                                       (uint32_t*)clusterSizes.data,
++                                       (uint32_t*)clusterBindings.data,
++                                       (float32_t*)clusterSumDists.data);
++
++    if (result)
++    {
++        CV_Error(cv::Error::StsInternal, cv::format("Failed to clusterize, error code: %d", result));
++    }
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/fast10.cpp b/modules/fastcv/src/fast10.cpp
+new file mode 100644
+index 00000000..0f8e54e5
+--- /dev/null
++++ b/modules/fastcv/src/fast10.cpp
+@@ -0,0 +1,120 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++void FAST10(InputArray _src, InputArray _mask, OutputArray _coords, OutputArray _scores, int barrier, int border, bool nmsEnabled)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty() && _src.type() == CV_8UC1);
++    CV_Assert(_src.cols() % 8 == 0);
++    CV_Assert(_src.cols() <= 2048);
++    CV_Assert(_src.step() % 8 == 0);
++
++    // segfaults at border <= 3, fixing it
++    border = std::max(4, border);
++
++    CV_Assert(_src.cols() > 2*border);
++    CV_Assert(_src.rows() > 2*border);
++
++    Mat src = _src.getMat();
++
++    Mat mask;
++    if (!_mask.empty())
++    {
++        CV_Assert(_mask.type() == CV_8UC1);
++        float kw = (float)src.cols  / (float)_mask.cols();
++        float kh = (float)src.rows  / (float)_mask.rows();
++        float eps = std::numeric_limits<float>::epsilon();
++        if (std::abs(kw - kh) > eps)
++        {
++            CV_Error(cv::Error::StsBadArg, "Mask proportions do not correspond to image proportions");
++        }
++        bool sizeFits = false;
++        for (int k = -3; k <= 3; k++)
++        {
++            if (std::abs(kw - std::pow(2.f, (float)k)) < eps)
++            {
++                sizeFits = true;
++                break;
++            }
++        }
++        if (!sizeFits)
++        {
++            CV_Error(cv::Error::StsBadArg, "Mask size do not correspond to image size divided by k from -3 to 3");
++        }
++
++        mask = _mask.getMat();
++    }
++
++    CV_Assert(_coords.needed());
++
++    const int maxCorners = 32768;
++
++    Mat coords(1, maxCorners * 2, CV_32SC1);
++
++    AutoBuffer<uint32_t> tempBuf;
++    Mat scores;
++    if  (_scores.needed())
++    {
++        scores.create(1, maxCorners, CV_32SC1);
++
++        tempBuf.allocate(maxCorners * 3 + src.rows + 1);
++    }
++
++    uint32_t nCorners = maxCorners;
++
++    if (!mask.empty())
++    {
++        if (!scores.empty())
++        {
++            fcvCornerFast10InMaskScoreu8(src.data, src.cols, src.rows, src.step,
++                                         barrier, border,
++                                         (uint32_t*)coords.data, (uint32_t*)scores.data, maxCorners, &nCorners,
++                                         mask.data, mask.cols, mask.rows,
++                                         nmsEnabled,
++                                         tempBuf.data());
++        }
++        else
++        {
++            fcvCornerFast10InMasku8(src.data, src.cols, src.rows, src.step,
++                                    barrier, border,
++                                    (uint32_t*)coords.data, maxCorners, &nCorners,
++                                    mask.data, mask.cols, mask.rows);
++        }
++    }
++    else
++    {
++        if (!scores.empty())
++        {
++            fcvCornerFast10Scoreu8(src.data, src.cols, src.rows, src.step,
++                                   barrier, border,
++                                   (uint32_t*)coords.data, (uint32_t*)scores.data, maxCorners, &nCorners,
++                                   nmsEnabled,
++                                   tempBuf.data());
++        }
++        else
++        {
++            fcvCornerFast10u8(src.data, src.cols, src.rows, src.step,
++                                    barrier, border,
++                                    (uint32_t*)coords.data, maxCorners, &nCorners);
++        }
++    }
++
++    _coords.create(1, nCorners*2, CV_32SC1);
++    coords(Range::all(), Range(0, nCorners*2)).copyTo(_coords);
++
++    if (_scores.needed())
++    {
++        scores(Range::all(), Range(0, nCorners)).copyTo(_scores);
++    }
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/fft.cpp b/modules/fastcv/src/fft.cpp
+new file mode 100644
+index 00000000..c9610a32
+--- /dev/null
++++ b/modules/fastcv/src/fft.cpp
+@@ -0,0 +1,72 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++static bool isPow2(int x)
++{
++    return x && (!(x & (x - 1)));
++}
++
++void FFT(InputArray _src, OutputArray _dst)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty() && _src.type() == CV_8UC1);
++    CV_Assert(isPow2(_src.rows()) || _src.rows() == 1);
++    CV_Assert(isPow2(_src.cols()));
++    CV_Assert(_src.step() % 8 == 0);
++
++    Mat src = _src.getMat();
++
++    _dst.create(_src.rows(), _src.cols(), CV_32FC2);
++    // in case of fixed layout array we cannot fix this on our side, can only fail if false
++    CV_Assert(_dst.step() % 8 == 0);
++
++    Mat dst = _dst.getMat();
++
++    fcvStatus status = fcvFFTu8(src.data, src.cols, src.rows, src.step,
++                                (float*)dst.data, dst.step);
++
++    if (status != FASTCV_SUCCESS)
++    {
++        std::string s = fcvStatusStrings.count(status) ? fcvStatusStrings.at(status) : "unknown";
++        CV_Error( cv::Error::StsInternal, "FastCV error: " + s);
++    }
++}
++
++void IFFT(InputArray _src, OutputArray _dst)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty() && _src.type() == CV_32FC2);
++    CV_Assert(isPow2(_src.rows()) || _src.rows() == 1);
++    CV_Assert(isPow2(_src.cols()));
++    // in case of fixed layout array we cannot fix this on our side, can only fail if false
++    CV_Assert(_src.step() % 8 == 0);
++
++    Mat src = _src.getMat();
++
++    _dst.create(_src.rows(), _src.cols(), CV_8UC1);
++    // in case of fixed layout array we cannot fix this on our side, can only fail if false
++    CV_Assert(_dst.step() % 8 == 0);
++
++    Mat dst = _dst.getMat();
++
++    fcvStatus status = fcvIFFTf32((const float*)src.data, src.cols * 2, src.rows, src.step,
++                                  dst.data, dst.step);
++
++    if (status != FASTCV_SUCCESS)
++    {
++        std::string s = fcvStatusStrings.count(status) ? fcvStatusStrings.at(status) : "unknown";
++        CV_Error( cv::Error::StsInternal, "FastCV error: " + s);
++    }
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/fill_poly.cpp b/modules/fastcv/src/fill_poly.cpp
+new file mode 100644
+index 00000000..3bb64ad4
+--- /dev/null
++++ b/modules/fastcv/src/fill_poly.cpp
+@@ -0,0 +1,36 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++void fillConvexPoly(InputOutputArray _img, InputArray _pts, Scalar color)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_img.empty() && _img.depth() == CV_8U && _img.channels() <= 4);
++    CV_Assert(_img.cols() % 8 == 0);
++    CV_Assert(_img.step() % 8 == 0);
++
++    Mat img = _img.getMat();
++
++    CV_Assert(!_pts.empty() && (_pts.type() == CV_32SC1 || _pts.type() == CV_32SC2));
++    CV_Assert(_pts.isContinuous());
++    CV_Assert(_pts.total() * _pts.channels() % 2 == 0);
++
++    Mat pts = _pts.getMat();
++    uint32_t nPts = pts.total() * pts.channels() / 2;
++
++    Vec4b coloru8 = color;
++
++    fcvFillConvexPolyu8(nPts, (const uint32_t*)pts.data,
++                         img.channels(), coloru8.val,
++                         img.data, img.cols, img.rows, img.step);
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/hough.cpp b/modules/fastcv/src/hough.cpp
+new file mode 100644
+index 00000000..248f6b35
+--- /dev/null
++++ b/modules/fastcv/src/hough.cpp
+@@ -0,0 +1,35 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++void houghLines(InputArray _src, OutputArray _lines, double threshold)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty() && _src.type() == CV_8UC1);
++    CV_Assert(_src.cols() % 8 == 0);
++    CV_Assert(_src.step() % 8 == 0);
++
++    Mat src = _src.getMat();
++
++    const uint32_t maxLines = 16384;
++
++    cv::Mat lines(1, maxLines, CV_32FC4);
++
++    uint32_t nLines = maxLines;
++
++    fcvHoughLineu8(src.data, src.cols, src.rows, src.step,
++                   (float)threshold, maxLines, &nLines, (fcvLine*)lines.data);
++
++    _lines.create(1, nLines, CV_32FC4);
++    lines(Range::all(), Range(0, nLines)).copyTo(_lines);
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/moments.cpp b/modules/fastcv/src/moments.cpp
+new file mode 100644
+index 00000000..3a0c4249
+--- /dev/null
++++ b/modules/fastcv/src/moments.cpp
+@@ -0,0 +1,82 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++cv::Moments moments(InputArray _src, bool binary)
++{
++	INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty());
++    int type = _src.type();
++	CV_Assert(type == CV_8UC1 || type == CV_32SC1 || type == CV_32FC1);
++
++    Size size = _src.size();
++    Mat src = _src.getMat();
++
++    cv::Moments m;
++	if( size.width == 0 || size.height == 0 )
++        return m;
++
++	fcvMoments* mFCV = new fcvMoments();
++    fcvStatus status = FASTCV_SUCCESS;
++	if(binary)
++    {
++		cv::Mat src_binary(size, CV_8UC1);
++		cv::compare( src, 0, src_binary, cv::CMP_NE );
++		fcvImageMomentsu8(src_binary.data, src_binary.cols,
++		                  src_binary.rows, src_binary.step, mFCV, binary);
++    }
++	else
++	{
++		switch(type)
++		{
++			case CV_8UC1:
++			    fcvImageMomentsu8(src.data, src.cols, src.rows,
++				                  src.step, mFCV, binary);
++				break;
++			case CV_32SC1:
++			    fcvImageMomentss32((const int*)src.data, src.cols, src.rows,
++				                  src.step, mFCV, binary);
++				break;
++			case CV_32FC1:
++			    fcvImageMomentsf32((const float*)src.data, src.cols, src.rows,
++				                  src.step, mFCV, binary);
++				break;
++		}
++	}
++
++	if (status != FASTCV_SUCCESS)
++    {
++        CV_Error( cv::Error::StsError, cv::format("Error occurred!") );
++		delete mFCV;
++        return m;
++    }
++
++	m.m00  = mFCV->m00;  m.m10  = mFCV->m10;  m.m01  = mFCV->m01;
++	m.m20  = mFCV->m20;  m.m11  = mFCV->m11;  m.m02  = mFCV->m02;
++	m.m30  = mFCV->m30;  m.m21  = mFCV->m21;  m.m12  = mFCV->m12;
++	m.m03  = mFCV->m03;  m.mu02 = mFCV->mu02; m.m03  = mFCV->mu03;
++	m.mu11 = mFCV->mu11; m.mu12 = mFCV->mu12; m.mu20 = mFCV->mu20;
++	m.mu21 = mFCV->mu21; m.mu30 = mFCV->mu30;
++
++	float32_t inv_m00 = 1.0/mFCV->m00;
++	float32_t inv_sqrt_m00 = mFCV->inv_sqrt_m00;
++    float32_t s2 = inv_m00 * inv_m00, s3 = s2 * inv_sqrt_m00;
++
++    m.nu20 = mFCV->mu20 * s2; m.nu11 = mFCV->mu11 * s2;
++	m.nu02 = mFCV->mu02 * s2; m.nu30 = mFCV->mu30 * s3;
++	m.nu21 = mFCV->mu21 * s3; m.nu12 = mFCV->mu12 * s3;
++	m.nu03 = mFCV->mu03 * s3;
++
++    delete mFCV;
++    return m;
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/mser.cpp b/modules/fastcv/src/mser.cpp
+new file mode 100644
+index 00000000..ae851931
+--- /dev/null
++++ b/modules/fastcv/src/mser.cpp
+@@ -0,0 +1,202 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++static void runMSER(InputArray _src, std::vector<std::vector<Point>>& contours, std::vector<cv::Rect>& boundingBoxes,
++                    std::vector<ContourData>& contourData,
++                    bool useBoundingBoxes = true,
++                    bool useContourData = true,
++                    unsigned int numNeighbors = 4,
++                    unsigned int delta = 2,
++                    unsigned int minArea = 30,
++                    unsigned int maxArea = 14400,
++                    float        maxVariation = 0.15f,
++                    float        minDiversity = 0.2f)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty() && _src.type() == CV_8UC1);
++    CV_Assert(_src.cols() > 50);
++    CV_Assert(_src.rows() > 5);
++
++    Mat src = _src.getMat();
++
++    CV_Assert(numNeighbors == 4 || numNeighbors == 8);
++    bool useNN4 = (numNeighbors == 4);
++
++    bool usePointsArray = !useNN4;
++
++    void *mserHandle;
++
++    bool isInitOk = false;
++    if (useNN4)
++    {
++        isInitOk = fcvMserInit(src.cols, src.rows, delta, minArea, maxArea, maxVariation, minDiversity, &mserHandle);
++    }
++    else
++    {
++        isInitOk = fcvMserNN8Init(src.cols, src.rows, delta, minArea, maxArea, maxVariation, minDiversity, &mserHandle);
++    }
++
++    if (!isInitOk)
++    {
++        CV_Error(cv::Error::StsInternal, "Failed to initialize MSER");
++    }
++
++    //bufSize for pts and bboxes
++    const unsigned int maxContours = 16384;
++    unsigned int numContours;
++    std::vector<uint32_t> numPointsInContour(maxContours);
++
++    std::vector<uint16_t> rectArray;
++    rectArray.resize(4 * maxContours); // xMin, xMax, yMax, yMin
++
++    unsigned int pointsArraySize = src.total() * 30; // Recommended typical size
++    std::vector<uint16_t> pointsArray;
++    std::vector<uint32_t> contourStartingPoints;
++    uint32_t pathArraySize = src.total() * 4; // Recommended size
++    std::vector<uint16_t> pathArray;
++    if (usePointsArray)
++    {
++        pointsArray.resize(pointsArraySize);
++    }
++    else
++    {
++        contourStartingPoints.resize(maxContours);
++        pathArray.resize(pathArraySize);
++    }
++
++    std::vector<uint32_t> contourVariation(maxContours), contourNodeId(maxContours), contourNodeCounter(maxContours);
++    std::vector<int8_t> contourPolarity(maxContours);
++
++    int mserRetcode = -1;
++    if (useNN4)
++    {
++        mserRetcode = fcvMserExtu8_v3(mserHandle, src.data, src.cols, src.rows, src.step,
++                                      maxContours, &numContours,
++                                      rectArray.data(),
++                                      contourStartingPoints.data(),
++                                      numPointsInContour.data(),
++                                      pathArraySize, pathArray.data(),
++                                      contourVariation.data(), contourPolarity.data(), contourNodeId.data(), contourNodeCounter.data());
++        CV_LOG_INFO(NULL, "fcvMserExtu8_v3");
++    }
++    else
++    {
++        if (useContourData)
++        {
++            mserRetcode = fcvMserExtNN8u8(mserHandle, src.data, src.cols, src.rows, src.step,
++                                          maxContours, &numContours,
++                                          rectArray.data(),
++                                          numPointsInContour.data(), pointsArraySize, pointsArray.data(),
++                                          contourVariation.data(), contourPolarity.data(), contourNodeId.data(), contourNodeCounter.data());
++            CV_LOG_INFO(NULL, "fcvMserExtNN8u8");
++        }
++        else
++        {
++            mserRetcode = fcvMserNN8u8(mserHandle, src.data, src.cols, src.rows, src.step,
++                                       maxContours, &numContours,
++                                       rectArray.data(),
++                                       numPointsInContour.data(), pointsArraySize, pointsArray.data());
++            CV_LOG_INFO(NULL, "fcvMserNN8u8");
++        }
++    }
++
++    if (mserRetcode != 1)
++    {
++        CV_Error(cv::Error::StsInternal, "Failed to run MSER");
++    }
++
++    contours.clear();
++    contours.reserve(numContours);
++    if (useBoundingBoxes)
++    {
++        boundingBoxes.clear();
++        boundingBoxes.reserve(numContours);
++    }
++    if (useContourData)
++    {
++        contourData.clear();
++        contourData.reserve(numContours);
++    }
++    int ptCtr = 0;
++    for (uint32_t i = 0; i < numContours; i++)
++    {
++        std::vector<Point> contour;
++        contour.reserve(numPointsInContour[i]);
++        for (uint32_t j = 0; j < numPointsInContour[i]; j++)
++        {
++            Point pt;
++            if (usePointsArray)
++            {
++                uint32_t idx = (ptCtr + j) * 2;
++                pt = Point {pointsArray[idx + 0], pointsArray[idx + 1]};
++            }
++            else
++            {
++                uint32_t idx = contourStartingPoints[i] + j * 2;
++                pt = Point {pathArray[idx + 0], pathArray[idx + 1]};
++            }
++            contour.push_back(pt);
++        }
++        contours.push_back(contour);
++        ptCtr += numPointsInContour[i];
++
++        if (useBoundingBoxes)
++        {
++            uint16_t xMin = rectArray[i * 4 + 0];
++            uint16_t xMax = rectArray[i * 4 + 1];
++            uint16_t yMax = rectArray[i * 4 + 2];
++            uint16_t yMin = rectArray[i * 4 + 3];
++            // +1 is because max limit in cv::Rect() is exclusive
++            cv::Rect bbox(Point {xMin, yMin},
++                          Point {xMax + 1, yMax + 1});
++            boundingBoxes.push_back(bbox);
++        }
++
++        if (useContourData)
++        {
++            ContourData data;
++            data.variation   = contourVariation[i];
++            data.polarity    = contourPolarity[i];
++            data.nodeId      = contourNodeId[i];
++            data.nodeCounter = contourNodeCounter[i];
++            contourData.push_back(data);
++        }
++    }
++
++    fcvMserRelease(mserHandle);
++}
++
++void MSER(InputArray _src, std::vector<std::vector<Point>> &contours,
++          unsigned int numNeighbors, unsigned int delta, unsigned int minArea, unsigned int maxArea, float maxVariation, float minDiversity)
++{
++    std::vector<cv::Rect> boundingBoxes;
++    std::vector<ContourData> contourData;
++    runMSER(_src, contours, boundingBoxes, contourData, false, false, numNeighbors,
++            delta, minArea, maxArea, maxVariation, minDiversity);
++}
++
++void MSER(InputArray _src, std::vector<std::vector<Point>>& contours, std::vector<cv::Rect>& boundingBoxes,
++          unsigned int numNeighbors, unsigned int delta, unsigned int minArea, unsigned int maxArea, float maxVariation, float minDiversity)
++{
++    std::vector<ContourData> contourData;
++    runMSER(_src, contours, boundingBoxes, contourData, true, false, numNeighbors,
++            delta, minArea, maxArea, maxVariation, minDiversity);
++}
++
++void MSER(InputArray _src, std::vector<std::vector<Point>>& contours, std::vector<cv::Rect>& boundingBoxes, std::vector<ContourData>& contourData,
++          unsigned int numNeighbors, unsigned int delta, unsigned int minArea, unsigned int maxArea, float maxVariation, float minDiversity)
++{
++    runMSER(_src, contours, boundingBoxes, contourData, true, true, numNeighbors,
++            delta, minArea, maxArea, maxVariation, minDiversity);
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/precomp.hpp b/modules/fastcv/src/precomp.hpp
+new file mode 100644
+index 00000000..d33cb25b
+--- /dev/null
++++ b/modules/fastcv/src/precomp.hpp
+@@ -0,0 +1,75 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#ifndef OPENCV_FASTCV_PRECOMP_HPP
++#define OPENCV_FASTCV_PRECOMP_HPP
++
++#include <opencv2/core.hpp>
++#include <opencv2/imgproc.hpp>
++#include "opencv2/core/private.hpp"
++#include "opencv2/core/utils/logger.hpp"
++
++#include <opencv2/fastcv.hpp>
++#include <map>
++
++#include "fastcv.h"
++
++namespace cv {
++namespace fastcv {
++
++#define INITIALIZATION_CHECK                                                \
++{                                                                           \
++    if (!FastCvContext::getContext().isInitialized)                         \
++    {                                                                       \
++        CV_Error(cv::Error::StsBadArg, cv::format("Set mode failed!"));     \
++    }                                                                       \
++    CV_INSTRUMENT_REGION();                                                 \
++}
++
++const std::map<fcvStatus, std::string> fcvStatusStrings =
++{
++    { FASTCV_SUCCESS,       "Success"},
++    { FASTCV_EFAIL,         "General failure"},
++    { FASTCV_EUNALIGNPARAM, "Unaligned pointer parameter"},
++    { FASTCV_EBADPARAM,     "Bad parameters"},
++    { FASTCV_EINVALSTATE,   "Called at invalid state"},
++    { FASTCV_ENORES,        "Insufficient resources, memory, thread"},
++    { FASTCV_EUNSUPPORTED,  "Unsupported feature"},
++    { FASTCV_EHWQDSP,       "Hardware QDSP failed to respond"},
++    { FASTCV_EHWGPU,        "Hardware GPU failed to respond"},
++};
++
++struct FastCvContext
++{
++public:
++    // initialize at first call
++    // Defines a static local variable context. Variable is created only once.
++    static FastCvContext& getContext()
++    {
++        static FastCvContext context;
++        return context;
++    }
++
++    FastCvContext()
++    {
++        if (fcvSetOperationMode(FASTCV_OP_CPU_PERFORMANCE) != 0)
++        {
++            CV_LOG_WARNING(NULL, "Failed to switch FastCV operation mode");
++            isInitialized = false;
++        }
++        else
++        {
++            CV_LOG_INFO(NULL, "FastCV Operation Mode Switched");
++            isInitialized = true;
++        }
++    }
++
++    bool isInitialized;
++};
++
++} // namespace fastcv
++} // namespace cv
++
++#endif // OPENCV_FASTCV_PRECOMP_HPP
+diff --git a/modules/fastcv/src/remap.cpp b/modules/fastcv/src/remap.cpp
+new file mode 100644
+index 00000000..a0b4849a
+--- /dev/null
++++ b/modules/fastcv/src/remap.cpp
+@@ -0,0 +1,146 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++class RemapParallel : public cv::ParallelLoopBody {
++public:
++    RemapParallel(int src_type, const uint8_t* src, unsigned int srcWidth, unsigned int srcHeight, unsigned int srcStride, uint8_t* dst,
++                unsigned int dstWidth, unsigned int dstHeight, unsigned int dstStride, const float32_t* __restrict  mapX,
++                const float32_t* __restrict mapY, uint32_t mapStride, fcvInterpolationType interpolation, uint8_t borderValue)
++                : src_type_(src_type), src_(src), srcWidth_(srcWidth), srcHeight_(srcHeight), srcStride_(srcStride), dst_(dst), dstWidth_(dstWidth),
++                dstHeight_(dstHeight), dstStride_(dstStride), mapX_(mapX), mapY_(mapY), mapStride_(mapStride),
++                fcvInterpolation_(interpolation), borderValue_(borderValue) {}
++
++    void operator()(const cv::Range& range) const override {
++        CV_UNUSED(srcHeight_);
++        CV_UNUSED(dstHeight_);
++        int rangeHeight = range.end-range.start;
++        fcvStatus   status = FASTCV_SUCCESS;
++        if(src_type_==CV_8UC1)
++        {
++            status = fcvRemapu8_v2(src_ + range.start*srcStride_, srcWidth_, rangeHeight, srcStride_, dst_ + range.start*dstStride_,
++                            srcWidth_, rangeHeight, dstStride_, mapX_, mapY_, mapStride_, fcvInterpolation_, FASTCV_BORDER_CONSTANT, borderValue_);
++        }
++        else if(src_type_==CV_8UC4)
++        {
++            if(fcvInterpolation_ == FASTCV_INTERPOLATION_TYPE_BILINEAR)
++            {
++                fcvRemapRGBA8888BLu8(src_ + range.start*srcStride_, srcWidth_, rangeHeight, srcStride_, dst_ + range.start*dstStride_, dstWidth_, rangeHeight,
++                                    dstStride_, mapX_, mapY_, mapStride_);
++            }
++            else if(fcvInterpolation_ == FASTCV_INTERPOLATION_TYPE_NEAREST_NEIGHBOR)
++            {
++                fcvRemapRGBA8888NNu8(src_ + range.start*srcStride_, srcWidth_, rangeHeight, srcStride_, dst_ + range.start*dstStride_, dstWidth_, rangeHeight,
++                                    dstStride_, mapX_, mapY_, mapStride_);
++            }
++        }
++
++        if(status!=FASTCV_SUCCESS)
++        {
++			std::string s = fcvStatusStrings.count(status) ? fcvStatusStrings.at(status) : "unknown";
++            CV_Error( cv::Error::StsInternal, "FastCV error: " + s);
++        }
++    }
++
++private:
++    int src_type_;
++    const uint8_t* src_;
++    unsigned int srcWidth_;
++    unsigned int srcHeight_;
++    unsigned int srcStride_;
++    uint8_t* dst_;
++    unsigned int dstWidth_;
++    unsigned int dstHeight_;
++    unsigned int dstStride_;
++    const float32_t* __restrict mapX_;
++    const float32_t* __restrict mapY_;
++    unsigned int mapStride_;
++    fcvInterpolationType fcvInterpolation_;
++    uint8_t borderValue_;
++};
++
++void remap(cv::InputArray _src, cv::OutputArray _dst, cv::InputArray _map1, cv::InputArray _map2,
++                      int interpolation, int borderValue)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(_src.type() == CV_8UC1);
++    CV_Assert(_map1.type()==CV_32FC1);
++    CV_Assert(interpolation == cv::InterpolationFlags::INTER_NEAREST || interpolation == cv::InterpolationFlags::INTER_LINEAR);
++    CV_Assert(!_map1.empty() && !_map2.empty());
++    CV_Assert(_map1.size() == _map2.size());
++    CV_Assert(borderValue >= 0 && borderValue < 256);
++
++    Size size = _map1.size();
++    int type = _src.type();
++    _dst.create( size, type);
++
++    Mat src = _src.getMat();
++    Mat map1 = _map1.getMat();
++    Mat map2 = _map2.getMat();
++    Mat dst = _dst.getMat();
++    CV_Assert(map1.step == map2.step);
++    fcvStatus               status = FASTCV_SUCCESS;
++    fcvInterpolationType    fcvInterpolation;
++
++    if(interpolation==cv::InterpolationFlags::INTER_NEAREST)
++        fcvInterpolation = FASTCV_INTERPOLATION_TYPE_NEAREST_NEIGHBOR;
++    else
++        fcvInterpolation = FASTCV_INTERPOLATION_TYPE_BILINEAR;
++
++
++    cv::parallel_for_(cv::Range(0, src.rows), RemapParallel(CV_8UC1, src.data, src.cols, src.rows, src.step, dst.data, dst.cols, dst.rows, dst.step,
++    (float32_t*)map1.data, (float32_t*)map2.data, map1.step, fcvInterpolation, borderValue), (src.cols*src.rows)/(double)(1 << 16));
++
++    if (status != FASTCV_SUCCESS)
++    {
++        std::string s = fcvStatusStrings.count(status) ? fcvStatusStrings.at(status) : "unknown";
++        CV_Error( cv::Error::StsInternal, "FastCV error: " + s);
++    }
++}
++
++void remapRGBA(cv::InputArray _src, cv::OutputArray _dst, cv::InputArray _map1, cv::InputArray _map2, int interpolation)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(_src.type() == CV_8UC4);
++    CV_Assert(_map1.type()==CV_32FC1);
++    CV_Assert(interpolation == cv::InterpolationFlags::INTER_NEAREST || interpolation == cv::InterpolationFlags::INTER_LINEAR);
++    CV_Assert(!_map1.empty() && !_map2.empty());
++    CV_Assert(_map1.size() == _map2.size());
++
++    Size size = _map1.size();
++    int type = _src.type();
++    _dst.create( size, type);
++
++    Mat src = _src.getMat();
++    Mat map1 = _map1.getMat();
++    Mat map2 = _map2.getMat();
++    Mat dst = _dst.getMat();
++    CV_Assert(map1.step == map2.step);
++    fcvStatus               status = FASTCV_SUCCESS;
++    fcvInterpolationType    fcvInterpolation;
++
++    if(interpolation==cv::InterpolationFlags::INTER_NEAREST)
++        fcvInterpolation = FASTCV_INTERPOLATION_TYPE_NEAREST_NEIGHBOR;
++    else
++        fcvInterpolation = FASTCV_INTERPOLATION_TYPE_BILINEAR;
++
++    cv::parallel_for_(cv::Range(0, src.rows), RemapParallel(CV_8UC4, src.data, src.cols, src.rows, src.step, dst.data, dst.cols, dst.rows, dst.step,
++    (float32_t*)map1.data, (float32_t*)map2.data, map1.step, fcvInterpolation, 0), (src.cols*src.rows)/(double)(1 << 16) );
++
++    if (status != FASTCV_SUCCESS)
++    {
++        std::string s = fcvStatusStrings.count(status) ? fcvStatusStrings.at(status) : "unknown";
++        CV_Error( cv::Error::StsInternal, "FastCV error: " + s);
++    }
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/scale.cpp b/modules/fastcv/src/scale.cpp
+new file mode 100644
+index 00000000..3e1a3a74
+--- /dev/null
++++ b/modules/fastcv/src/scale.cpp
+@@ -0,0 +1,64 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++void resizeDownBy2(cv::InputArray _src, cv::OutputArray _dst)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty() && _src.type() == CV_8UC1);
++
++    Mat src = _src.getMat();
++    CV_Assert((src.cols & 1)==0 && (src.rows & 1)==0);
++
++    int type = _src.type();
++    cv::Size dsize(src.cols / 2, src.rows / 2);
++
++    _dst.create(dsize, type);
++
++    Mat dst = _dst.getMat();
++
++    fcvStatus status = (fcvStatus)fcvScaleDownBy2u8_v2((const uint8_t*)src.data, src.cols, src.rows, src.step, (uint8_t*)dst.data,
++        src.cols/2);
++
++    if (status != FASTCV_SUCCESS)
++    {
++        std::string s = fcvStatusStrings.count(status) ? fcvStatusStrings.at(status) : "unknown";
++        CV_Error( cv::Error::StsInternal, "FastCV error: " + s);
++    }
++}
++
++void resizeDownBy4(cv::InputArray _src, cv::OutputArray _dst)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty() && _src.type() == CV_8UC1);
++
++    Mat src = _src.getMat();
++    CV_Assert((src.cols & 3)==0 && (src.rows & 3)==0);
++
++    int type = _src.type();
++    cv::Size dsize(src.cols / 4, src.rows / 4);
++
++    _dst.create(dsize, type);
++
++    Mat dst = _dst.getMat();
++
++    fcvStatus status = (fcvStatus)fcvScaleDownBy4u8_v2((const uint8_t*)src.data, src.cols, src.rows, src.step,
++        (uint8_t*)dst.data, src.cols/4);
++
++    if (status != FASTCV_SUCCESS)
++    {
++        std::string s = fcvStatusStrings.count(status) ? fcvStatusStrings.at(status) : "unknown";
++        CV_Error( cv::Error::StsInternal, "FastCV error: " + s);
++    }
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/shift.cpp b/modules/fastcv/src/shift.cpp
+new file mode 100644
+index 00000000..6dfd71a6
+--- /dev/null
++++ b/modules/fastcv/src/shift.cpp
+@@ -0,0 +1,56 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++int meanShift(InputArray _src, Rect& rect, TermCriteria termCrit)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty() && (_src.type() == CV_8UC1 || _src.type() == CV_32SC1 || _src.type() == CV_32FC1));
++    CV_Assert(_src.cols() % 8 == 0);
++    CV_Assert(_src.step() % 8 == 0);
++
++    Mat src = _src.getMat();
++
++    fcvRectangleInt window;
++    window.x = rect.x;
++    window.y = rect.y;
++    window.width  = rect.width;
++    window.height = rect.height;
++
++    fcvTermCriteria criteria;
++    criteria.epsilon  = (termCrit.type & TermCriteria::EPS) ? termCrit.epsilon : 0;
++    criteria.max_iter = (termCrit.type & TermCriteria::COUNT) ? termCrit.maxCount : 1024;
++    uint32_t nIterations = 0;
++    if (src.depth() == CV_8U)
++    {
++        nIterations = fcvMeanShiftu8(src.data, src.cols, src.rows, src.step,
++                                     &window, criteria);
++    }
++    else if (src.depth() == CV_32S)
++    {
++        nIterations = fcvMeanShifts32((const int *)src.data, src.cols, src.rows, src.step,
++                                      &window, criteria);
++    }
++    else if (src.depth() == CV_32F)
++    {
++        nIterations = fcvMeanShiftf32((const float*)src.data, src.cols, src.rows, src.step,
++                                       &window, criteria);
++    }
++
++    rect.x = window.x;
++    rect.y = window.y;
++    rect.width  = window.width;
++    rect.height = window.height;
++
++    return nIterations;
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/smooth.cpp b/modules/fastcv/src/smooth.cpp
+new file mode 100644
+index 00000000..74b72db7
+--- /dev/null
++++ b/modules/fastcv/src/smooth.cpp
+@@ -0,0 +1,37 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++void bilateralRecursive(cv::InputArray _src, cv::OutputArray _dst, float sigmaColor, float sigmaSpace)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(!_src.empty() && _src.type() == CV_8UC1);
++    CV_Assert(_src.step() % 8 == 0);
++
++    Size size = _src.size();
++    int type = _src.type();
++    _dst.create(size, type);
++    // in case of fixed layout array we cannot fix this on our side, can only fail if false
++    CV_Assert(_dst.step() % 8 == 0);
++
++    Mat src = _src.getMat();
++    Mat dst = _dst.getMat();
++
++    fcvStatus status  = fcvBilateralFilterRecursiveu8(src.data, src.cols, src.rows, src.step,
++                                                      dst.data, dst.step, sigmaColor, sigmaSpace);
++    if (status != FASTCV_SUCCESS)
++    {
++        std::string s = fcvStatusStrings.count(status) ? fcvStatusStrings.at(status) : "unknown";
++        CV_Error( cv::Error::StsInternal, "FastCV error: " + s);
++    }
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/thresh.cpp b/modules/fastcv/src/thresh.cpp
+new file mode 100644
+index 00000000..c97a3656
+--- /dev/null
++++ b/modules/fastcv/src/thresh.cpp
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++void thresholdRange(InputArray _src, OutputArray _dst, uint8_t lowThresh, uint8_t highThresh, uint8_t trueValue, uint8_t falseValue)
++{
++    INITIALIZATION_CHECK;
++
++    CV_Assert(lowThresh <= highThresh);
++
++    CV_Assert(!_src.empty() && _src.type() == CV_8UC1);
++    CV_Assert(_src.cols() % 8 == 0);
++    CV_Assert(_src.step() % 8 == 0);
++    Mat src = _src.getMat();
++
++    _dst.create(_src.size(), CV_8UC1);
++    // in case of fixed layout array we cannot fix this on our side, can only fail if false
++    CV_Assert(_dst.step() % 8 == 0);
++    Mat dst = _dst.getMat();
++
++    fcvStatus status = fcvFilterThresholdRangeu8_v2(src.data, src.cols, src.rows, src.step,
++                                                    dst.data, dst.step,
++                                                    lowThresh, highThresh, trueValue, falseValue);
++
++    if (status != FASTCV_SUCCESS)
++    {
++        std::string s = fcvStatusStrings.count(status) ? fcvStatusStrings.at(status) : "unknown";
++        CV_Error( cv::Error::StsInternal, "FastCV error: " + s);
++    }
++}
++
++} // fastcv::
++} // cv::
+diff --git a/modules/fastcv/src/utils.cpp b/modules/fastcv/src/utils.cpp
+new file mode 100644
+index 00000000..81723b09
+--- /dev/null
++++ b/modules/fastcv/src/utils.cpp
+@@ -0,0 +1,12 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "precomp.hpp"
++
++namespace cv {
++namespace fastcv {
++
++} // namespace fastcv
++} // namespace cv
+diff --git a/modules/fastcv/test/test_arithm.cpp b/modules/fastcv/test/test_arithm.cpp
+new file mode 100644
+index 00000000..39979908
+--- /dev/null
++++ b/modules/fastcv/test/test_arithm.cpp
+@@ -0,0 +1,56 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++typedef std::tuple<int /*rows1*/, int /*cols1*/, int /*cols2*/> MatMulTestParams;
++class MatMulTest : public ::testing::TestWithParam<MatMulTestParams> {};
++
++TEST_P(MatMulTest, accuracy)
++{
++    auto p = GetParam();
++    int rows1 = std::get<0>(p);
++    int cols1 = std::get<1>(p);
++    int cols2 = std::get<2>(p);
++
++    RNG& rng = cv::theRNG();
++    Mat src1(rows1, cols1, CV_8SC1), src2(cols1, cols2, CV_8SC1);
++    cvtest::randUni(rng, src1, Scalar::all(-128), Scalar::all(128));
++    cvtest::randUni(rng, src2, Scalar::all(-128), Scalar::all(128));
++
++    Mat dst;
++    cv::fastcv::matmuls8s32(src1, src2, dst);
++    Mat fdst;
++    dst.convertTo(fdst, CV_32F);
++
++    Mat fsrc1, fsrc2;
++    src1.convertTo(fsrc1, CV_32F);
++    src2.convertTo(fsrc2, CV_32F);
++    Mat ref;
++    cv::gemm(fsrc1, fsrc2, 1.0, noArray(), 0, ref, 0);
++
++    double normInf = cvtest::norm(ref, fdst, cv::NORM_INF);
++    double normL2  = cvtest::norm(ref, fdst, cv::NORM_L2);
++
++    EXPECT_EQ(normInf, 0);
++    EXPECT_EQ(normL2, 0);
++
++    if (cvtest::debugLevel > 0 && (normInf > 0 || normL2 > 0))
++    {
++        std::ofstream of(cv::format("out_%d_%d_%d.txt", rows1, cols1, cols2));
++        of << ref << std::endl;
++        of << dst << std::endl;
++        of.close();
++    }
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, MatMulTest,
++                         ::testing::Combine(::testing::Values(8, 16, 128, 256),   // rows1
++                                            ::testing::Values(8, 16, 128, 256),   // cols1
++                                            ::testing::Values(8, 16, 128, 256))); // cols2
++
++}} // namespaces opencv_test, ::
+diff --git a/modules/fastcv/test/test_bilateral.cpp b/modules/fastcv/test/test_bilateral.cpp
+new file mode 100644
+index 00000000..4f582c2e
+--- /dev/null
++++ b/modules/fastcv/test/test_bilateral.cpp
+@@ -0,0 +1,38 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++typedef testing::TestWithParam<tuple<cv::Size,int,int>> fcv_bilateralFilterTest;
++
++TEST_P(fcv_bilateralFilterTest, accuracy)
++{	
++    cv::Size size  = get<0>(GetParam());
++	int d = get<1>(GetParam());
++    double sigmaColor = get<2>(GetParam());
++	double sigmaSpace = sigmaColor;
++	
++	RNG& rng = cv::theRNG();
++    Mat src(size, CV_8UC1);
++    cvtest::randUni(rng, src, Scalar::all(0), Scalar::all(256));
++
++    cv::Mat dst;
++
++	cv::fastcv::bilateralFilter(src, dst, d, sigmaColor, sigmaSpace);
++	
++    EXPECT_FALSE(dst.empty());
++}
++
++INSTANTIATE_TEST_CASE_P(/*nothing*/, fcv_bilateralFilterTest, Combine(
++                   ::testing::Values(Size(8, 8), Size(640, 480), Size(800, 600)),
++                   ::testing::Values(5, 7, 9),
++                   ::testing::Values(1., 10.)
++));
++
++}
++}
++
+diff --git a/modules/fastcv/test/test_cluster_euclidean.cpp b/modules/fastcv/test/test_cluster_euclidean.cpp
+new file mode 100644
+index 00000000..c108f754
+--- /dev/null
++++ b/modules/fastcv/test/test_cluster_euclidean.cpp
+@@ -0,0 +1,124 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++// nPts, nDims, nClusters
++typedef std::tuple<int, int, int> ClusterEuclideanTestParams;
++class ClusterEuclideanTest : public ::testing::TestWithParam<ClusterEuclideanTestParams> {};
++
++TEST_P(ClusterEuclideanTest, accuracy)
++{
++    auto p = GetParam();
++    int nPts      = std::get<0>(p);
++    int nDims     = std::get<1>(p);
++    int nClusters = std::get<2>(p);
++
++    Mat points(nPts, nDims, CV_8U);
++    Mat clusterCenters(nClusters, nDims, CV_32F);
++
++    Mat trueMeans(nClusters, nDims, CV_32F);
++    Mat stddevs(nClusters, nDims, CV_32F);
++    std::vector<int> trueClusterSizes(nClusters, 0);
++    std::vector<int> trueClusterBindings(nPts, 0);
++    std::vector<float> trueSumDists(nClusters, 0);
++
++    cv::RNG& rng = cv::theRNG();
++    for (int i = 0; i < nClusters; i++)
++    {
++        Mat mean(1, nDims, CV_64F), stdev(1, nDims, CV_64F);
++        rng.fill(mean,  cv::RNG::UNIFORM, 0, 256);
++        rng.fill(stdev, cv::RNG::UNIFORM, 5.f, 16);
++        int lo =    i    * nPts / nClusters;
++        int hi = (i + 1) * nPts / nClusters;
++
++        for (int d = 0; d < nDims; d++)
++        {
++            rng.fill(points.col(d).rowRange(lo, hi), cv::RNG::NORMAL,
++                     mean.at<double>(d), stdev.at<double>(d));
++        }
++
++        float sd = 0;
++        for (int j = lo; j < hi; j++)
++        {
++            Mat pts64f;
++            points.row(j).convertTo(pts64f, CV_64F);
++            sd += cv::norm(mean, pts64f, NORM_L2);
++            trueClusterBindings.at(j) = i;
++            trueClusterSizes.at(i)++;
++        }
++        trueSumDists.at(i) = sd;
++
++        // let's shift initial cluster center a bit
++        Mat(mean + stdev * 0.5).copyTo(clusterCenters.row(i));
++
++        mean.copyTo(trueMeans.row(i));
++        stdev.copyTo(stddevs.row(i));
++    }
++
++    Mat newClusterCenters;
++    std::vector<int> clusterSizes, clusterBindings;
++    std::vector<float> clusterSumDists;
++    cv::fastcv::clusterEuclidean(points, clusterCenters, newClusterCenters, clusterSizes, clusterBindings, clusterSumDists);
++
++    if (cvtest::debugLevel > 0 && nDims == 2)
++    {
++        Mat draw(256, 256, CV_8UC3, Scalar(0));
++        for (int i = 0; i < nPts; i++)
++        {
++            int x = std::rint(points.at<uchar>(i, 0));
++            int y = std::rint(points.at<uchar>(i, 1));
++            draw.at<Vec3b>(y, x) = Vec3b::all(128);
++        }
++        for (int i = 0; i < nClusters; i++)
++        {
++            float cx = trueMeans.at<double>(i, 0);
++            float cy = trueMeans.at<double>(i, 1);
++            draw.at<Vec3b>(cy, cx) = Vec3b(0, 255, 0);
++
++            float sx = stddevs.at<double>(i, 0);
++            float sy = stddevs.at<double>(i, 1);
++            cv::ellipse(draw, Point(cx, cy), Size(sx, sy), 0, 0, 360, Scalar(255, 0, 0));
++
++            float ox = clusterCenters.at<float>(i, 0);
++            float oy = clusterCenters.at<float>(i, 1);
++            draw.at<Vec3b>(oy, ox) = Vec3b(0, 0, 255);
++
++            float nx = newClusterCenters.at<float>(i, 0);
++            float ny = newClusterCenters.at<float>(i, 1);
++            draw.at<Vec3b>(ny, nx) = Vec3b(255, 255, 0);
++        }
++        cv::imwrite(cv::format("draw_%d_%d_%d.png", nPts, nDims, nClusters), draw);
++    }
++
++    {
++        std::vector<double> diffs;
++        for (int i = 0; i < nClusters; i++)
++        {
++            double cs = std::abs((trueClusterSizes[i] - clusterSizes[i]) / double(trueClusterSizes[i]));
++            diffs.push_back(cs);
++        }
++        double normL2  = cv::norm(diffs, NORM_L2) / nClusters;
++
++        EXPECT_LT(normL2, 0.392);
++    }
++
++    {
++        Mat bindings8u, trueBindings8u;
++        Mat(clusterBindings).convertTo(bindings8u, CV_8U);
++        Mat(trueClusterBindings).convertTo(trueBindings8u, CV_8U);
++        double normH = cv::norm(bindings8u, trueBindings8u, NORM_HAMMING) / nPts;
++        EXPECT_LT(normH, 0.658);
++    }
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, ClusterEuclideanTest,
++                        ::testing::Combine(::testing::Values(100, 1000, 10000), // nPts
++                                           ::testing::Values(2, 10, 32),        // nDims
++                                           ::testing::Values(5, 10, 16)));      // nClusters
++
++}} // namespaces opencv_test, ::
+\ No newline at end of file
+diff --git a/modules/fastcv/test/test_fast10.cpp b/modules/fastcv/test/test_fast10.cpp
+new file mode 100644
+index 00000000..51123a1b
+--- /dev/null
++++ b/modules/fastcv/test/test_fast10.cpp
+@@ -0,0 +1,65 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++typedef std::tuple<bool /*useScores*/, int /*barrier*/, int /*border*/, bool /*nmsEnabled*/> Fast10TestParams;
++class Fast10Test : public ::testing::TestWithParam<Fast10TestParams> {};
++
++TEST_P(Fast10Test, accuracy)
++{
++    auto p = GetParam();
++    bool useScores  = std::get<0>(p);
++    int barrier     = std::get<1>(p);
++    int border      = std::get<2>(p);
++    bool nmsEnabled = std::get<3>(p);
++
++    cv::Mat src = imread(cvtest::findDataFile("cv/shared/baboon.png"), cv::IMREAD_GRAYSCALE);
++
++    std::vector<int> coords, scores;
++    cv::fastcv::FAST10(src, noArray(), coords, useScores ? scores : noArray(), barrier, border, nmsEnabled);
++
++    std::vector<KeyPoint> ocvKeypoints;
++    int thresh = barrier;
++    cv::FAST(src, ocvKeypoints, thresh, nmsEnabled, FastFeatureDetector::DetectorType::TYPE_9_16 );
++
++    if (useScores)
++    {
++        ASSERT_EQ(scores.size() * 2, coords.size());
++    }
++
++    Mat ptsMap(src.size(), CV_8U, Scalar(255));
++    for(size_t i = 0; i < coords.size() / 2; ++i)
++    {
++        ptsMap.at<uchar>(coords[2*i + 1], coords[2*i + 0]) = 0;
++    }
++    Mat distTrans(src.size(), CV_8U);
++    cv::distanceTransform(ptsMap, distTrans, DIST_L2, DIST_MASK_PRECISE);
++
++    Mat refPtsMap(src.size(), CV_8U, Scalar(255));
++    for(size_t i = 0; i < ocvKeypoints.size(); ++i)
++    {
++        refPtsMap.at<uchar>(ocvKeypoints[i].pt) = 0;
++    }
++    Mat refDistTrans(src.size(), CV_8U);
++    cv::distanceTransform(refPtsMap, refDistTrans, DIST_L2, DIST_MASK_PRECISE);
++
++    double normInf = cvtest::norm(refDistTrans, distTrans, cv::NORM_INF);
++    double normL2  = cvtest::norm(refDistTrans, distTrans, cv::NORM_L2)  / src.size().area();
++
++    EXPECT_LT(normInf, 129.7);
++    EXPECT_LT(normL2, 0.067);
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, Fast10Test,
++                        ::testing::Combine(::testing::Bool(),   // useScores
++                                           ::testing::Values(10, 30, 50), // barrier
++                                           ::testing::Values( 4, 10, 32), // border
++                                           ::testing::Bool() // nonmax suppression
++                                           ));
++
++}} // namespaces opencv_test, ::
+diff --git a/modules/fastcv/test/test_fft.cpp b/modules/fastcv/test/test_fft.cpp
+new file mode 100644
+index 00000000..18b53d88
+--- /dev/null
++++ b/modules/fastcv/test/test_fft.cpp
+@@ -0,0 +1,69 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++class FFTExtTest : public ::testing::TestWithParam<cv::Size> {};
++
++TEST_P(FFTExtTest, forward)
++{
++    Size size = GetParam();
++
++    RNG& rng = cv::theRNG();
++    Mat src(size, CV_8UC1);
++    cvtest::randUni(rng, src, Scalar::all(0), Scalar::all(256));
++
++    Mat srcFloat;
++    src.convertTo(srcFloat, CV_32F);
++
++    Mat dst, ref;
++    cv::fastcv::FFT(src, dst);
++
++    cv::dft(srcFloat, ref, DFT_COMPLEX_OUTPUT);
++
++    double normInf = cvtest::norm(dst, ref, cv::NORM_INF);
++    double normL2  = cvtest::norm(dst, ref, cv::NORM_L2)  / dst.size().area();
++
++    EXPECT_LT(normInf, 19.1); // for 512x512 case
++    EXPECT_LT(normL2, 18.0 / 256.0 );
++}
++
++TEST_P(FFTExtTest, inverse)
++{
++    Size size = GetParam();
++
++    RNG& rng = cv::theRNG();
++    Mat src(size, CV_8UC1);
++    cvtest::randUni(rng, src, Scalar::all(0), Scalar::all(256));
++    //cv::Mat src = imread(cvtest::findDataFile("cv/shared/lena.png"), IMREAD_GRAYSCALE);
++
++    Mat srcFloat;
++    src.convertTo(srcFloat, CV_32F);
++
++    Mat fwd, back;
++    cv::fastcv::FFT(src, fwd);
++    cv::fastcv::IFFT(fwd, back);
++    Mat backFloat;
++    back.convertTo(backFloat, CV_32F);
++
++    Mat fwdRef, backRef;
++    cv::dft(srcFloat, fwdRef, DFT_COMPLEX_OUTPUT);
++    cv::idft(fwdRef, backRef, DFT_REAL_OUTPUT);
++
++    backRef *= 1./(src.size().area());
++
++    double normInf = cvtest::norm(backFloat, backRef, cv::NORM_INF);
++    double normL2  = cvtest::norm(backFloat, backRef, cv::NORM_L2)  / src.size().area();
++
++    EXPECT_LT(normInf, 9.16e-05);
++    EXPECT_LT(normL2,  1.228e-06);
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, FFTExtTest, ::testing::Values(Size(8, 8), Size(128, 128), Size(32, 256), Size(512, 512),
++                                                                        Size(32, 1), Size(512, 1)));
++
++}} // namespaces opencv_test, ::
+diff --git a/modules/fastcv/test/test_fill.cpp b/modules/fastcv/test/test_fill.cpp
+new file mode 100644
+index 00000000..31cd6b07
+--- /dev/null
++++ b/modules/fastcv/test/test_fill.cpp
+@@ -0,0 +1,85 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++typedef tuple<cv::Size /*imgSize*/, int /*nPts*/, int /*channels*/> FillConvexTestParams;
++class FillConvexTest : public ::testing::TestWithParam<FillConvexTestParams> {};
++
++TEST_P(FillConvexTest, randomDraw)
++{
++    auto p = GetParam();
++
++    Size imgSize = std::get<0>(p);
++    int nPts     = std::get<1>(p);
++    int channels = std::get<2>(p);
++
++    cv::RNG rng = cv::theRNG();
++
++    std::vector<Point> allPts, contour;
++    for (int i = 0; i < nPts; i++)
++    {
++        allPts.push_back(Point(rng() % imgSize.width, rng() % imgSize.height));
++    }
++    cv::convexHull(allPts, contour);
++
++    Scalar color(rng() % 256, rng() % 256, rng() % 256);
++
++    Mat imgRef(imgSize, CV_MAKE_TYPE(CV_8U, channels), Scalar(0));
++    Mat imgFast = imgRef.clone();
++
++    cv::fillConvexPoly(imgRef, contour, color);
++    cv::fastcv::fillConvexPoly(imgFast, contour, color);
++
++    double normInf = cvtest::norm(imgRef, imgFast, cv::NORM_INF);
++    double normL2  = cvtest::norm(imgRef, imgFast, cv::NORM_L2);
++
++    EXPECT_EQ(normInf, 0);
++    EXPECT_EQ(normL2, 0);
++}
++
++TEST_P(FillConvexTest, circle)
++{
++    auto p = GetParam();
++
++    Size imgSize = std::get<0>(p);
++    int nPts     = std::get<1>(p);
++    int channels = std::get<2>(p);
++
++    cv::RNG rng = cv::theRNG();
++
++    float r = std::min(imgSize.width, imgSize.height) / 2 * 0.9f;
++    float angle = CV_PI * 2.0f / (float)nPts;
++    std::vector<Point> contour;
++    for (int i = 0; i < nPts; i++)
++    {
++        Point2f pt(r * cos((float)i * angle),
++                   r * sin((float)i * angle));
++        contour.push_back({ imgSize.width  / 2 + int(pt.x),
++                            imgSize.height / 2 + int(pt.y)});
++    }
++    Scalar color(rng() % 256, rng() % 256, rng() % 256);
++
++    Mat imgRef(imgSize, CV_MAKE_TYPE(CV_8U, channels), Scalar(0));
++    Mat imgFast = imgRef.clone();
++
++    cv::fillConvexPoly(imgRef, contour, color);
++    cv::fastcv::fillConvexPoly(imgFast, contour, color);
++
++    double normInf = cvtest::norm(imgRef, imgFast, cv::NORM_INF);
++    double normL2  = cvtest::norm(imgRef, imgFast, cv::NORM_L2);
++
++    EXPECT_EQ(normInf, 0);
++    EXPECT_EQ(normL2, 0);
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, FillConvexTest,
++                        ::testing::Combine(testing::Values(Size(640, 480), Size(512, 512), Size(1920, 1080)), // imgSize
++                                           testing::Values(4, 64, 1024), // nPts
++                                           testing::Values(1, 2, 3, 4))); // channels
++
++}} // namespaces opencv_test, ::
+\ No newline at end of file
+diff --git a/modules/fastcv/test/test_hough.cpp b/modules/fastcv/test/test_hough.cpp
+new file mode 100644
+index 00000000..31bfca64
+--- /dev/null
++++ b/modules/fastcv/test/test_hough.cpp
+@@ -0,0 +1,105 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++typedef std::tuple<std::string /* file name */, double /* threshold */ > HoughLinesTestParams;
++class HoughLinesTest : public ::testing::TestWithParam<HoughLinesTestParams> {};
++
++TEST_P(HoughLinesTest, accuracy)
++{
++    auto p = GetParam();
++    std::string fname = std::get<0>(p);
++    double threshold  = std::get<1>(p);
++
++    cv::Mat src = imread(cvtest::findDataFile(fname), cv::IMREAD_GRAYSCALE);
++
++    // make it aligned by 8
++    cv::Mat withBorder;
++    int bpix = ((src.cols & 0xfffffff8) + 8) - src.cols;
++    cv::copyMakeBorder(src, withBorder, 0, 0, 0, bpix, BORDER_REFLECT101);
++    src = withBorder;
++
++    cv::Mat contoured;
++    cv::Canny(src, contoured, 100, 200);
++
++    std::vector<cv::Vec4f> lines;
++    cv::fastcv::houghLines(contoured, lines, threshold);
++
++    std::vector<cv::Vec4f> refLines;
++    double rho = 1.0, theta = 1.0 * CV_PI / 180.0;
++    // cloned since image may be modified by the function
++    cv::HoughLinesP(contoured.clone(), refLines, rho, theta, threshold);
++
++    for (const cv::Vec4f& l : lines)
++    {
++        cv::Point2f from(l[0], l[1]), to(l[2], l[3]);
++        EXPECT_GE(from.x, 0);
++        EXPECT_GE(from.y, 0);
++        EXPECT_LE(from.x, src.cols);
++        EXPECT_LE(from.y, src.rows);
++        EXPECT_GE(to.x, 0);
++        EXPECT_GE(to.y, 0);
++        EXPECT_LE(to.x, src.cols);
++        EXPECT_LE(to.y, src.rows);
++    }
++
++    auto makeDistTrans = [src](const std::vector<Vec4f>& ls) -> cv::Mat
++    {
++        Mat lineMap(src.size(), CV_8U, Scalar(255));
++        for (const cv::Vec4f& l : ls)
++        {
++            cv::Point from(l[0], l[1]), to(l[2], l[3]);
++            cv::line(lineMap, from, to, Scalar::all(0));
++        }
++        Mat distTrans(src.size(), CV_8U);
++        cv::distanceTransform(lineMap, distTrans, DIST_L2, DIST_MASK_PRECISE);
++        return distTrans;
++    };
++
++    cv::Mat distTrans = makeDistTrans(lines);
++    cv::Mat refDistTrans = makeDistTrans(refLines);
++
++    double normInf = cvtest::norm(refDistTrans, distTrans, cv::NORM_INF);
++    double normL2  = cvtest::norm(refDistTrans, distTrans, cv::NORM_L2)  / src.size().area();
++
++    EXPECT_LT(normInf, 120.0);
++    EXPECT_LT(normL2, 0.0361);
++
++    if (cvtest::debugLevel > 0)
++    {
++        cv::Mat draw;
++        cvtColor(src, draw, COLOR_GRAY2BGR);
++        cv::Mat refDraw = draw.clone();
++
++        for (const cv::Vec4f& l : lines)
++        {
++            cv::Point from(l[0], l[1]), to(l[2], l[3]);
++            cv::line(draw, from, to, Scalar(0, 255, 0));
++        }
++        size_t idx = fname.find_last_of("/\\");
++        std::string fout = fname.substr(idx+1, fname.length() - idx - 5);
++        cv::imwrite(cv::format("line_%s_t%5f_fcv.png", fout.c_str(), threshold), draw);
++
++        for (const cv::Vec4f& l : refLines)
++        {
++            cv::Point from(l[0], l[1]), to(l[2], l[3]);
++            cv::line(refDraw, from, to, Scalar(0, 255, 0));
++        }
++        cv::imwrite(cv::format("line_%s_t%5f_ref.png", fout.c_str(), threshold), refDraw);
++    }
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, HoughLinesTest,
++                        ::testing::Combine(::testing::Values("cv/shared/pic5.png",
++                                                             "stitching/a1.png",
++                                                             "cv/shared/pic5.png",
++                                                             "cv/shared/pic1.png"), // images
++                                           ::testing::Values(0.05, 0.25, 0.5, 0.75) // threshold
++                                           ));
++
++}} // namespaces opencv_test, ::
+diff --git a/modules/fastcv/test/test_main.cpp b/modules/fastcv/test/test_main.cpp
+new file mode 100644
+index 00000000..cc60576e
+--- /dev/null
++++ b/modules/fastcv/test/test_main.cpp
+@@ -0,0 +1,8 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++CV_TEST_MAIN("")
+diff --git a/modules/fastcv/test/test_moments.cpp b/modules/fastcv/test/test_moments.cpp
+new file mode 100644
+index 00000000..1d23156d
+--- /dev/null
++++ b/modules/fastcv/test/test_moments.cpp
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "opencv2/ts.hpp"
++#include "opencv2/fastcv/moments.hpp"
++
++namespace opencv_test { namespace {
++
++typedef testing::TestWithParam<tuple<bool,Size,int>> fcv_momentsTest;
++
++TEST_P(fcv_momentsTest, accuracy)
++{
++    const bool binaryImage = get<0>(GetParam());
++    const Size srcSize = get<1>(GetParam());
++    const MatDepth srcType = get<2>(GetParam());
++    Mat src(srcSize, srcType);
++
++	for(int j = 0; j < srcSize.width; ++j)
++        for(int i = 0; i < srcSize.height; ++i)
++		{
++			if(srcType == CV_8UC1)
++				src.at<uchar>(i, j) = cv::randu<uchar>();
++			else if(srcType == CV_32SC1)
++				src.at<int>(i, j) = cv::randu<int>();
++			else if(srcType == CV_32FC1)
++				src.at<float>(i, j) = cv::randu<float>();
++	    }
++
++	cv::Moments m = cv::fastcv::moments(src, binaryImage);
++
++    int len_m = sizeof(m)/sizeof(m.m00);
++    EXPECT_FALSE(len_m != 24);
++}
++
++INSTANTIATE_TEST_CASE_P(/*nothing*/, fcv_momentsTest, Combine(
++                   Values(false, true),
++                   Values(TYPICAL_MAT_SIZES),
++                   Values(CV_8UC1, CV_32SC1, CV_32FC1)			   
++));
++
++}
++}
+diff --git a/modules/fastcv/test/test_mser.cpp b/modules/fastcv/test/test_mser.cpp
+new file mode 100644
+index 00000000..ebacbad3
+--- /dev/null
++++ b/modules/fastcv/test/test_mser.cpp
+@@ -0,0 +1,178 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++// we use such nested structure to combine test values
++typedef std::tuple< std::tuple<bool /* useBboxes */, bool /* useContourData */>,
++                    int  /* numNeighbors */, std::string /*file path*/> MSERTestParams;
++class MSERTest : public ::testing::TestWithParam<MSERTestParams> {};
++
++// compare results to OpenCV's MSER detector
++// by comparing resulting contours
++TEST_P(MSERTest, accuracy)
++{
++    auto p = GetParam();
++    bool useBboxes      = std::get<0>(std::get<0>(p));
++    bool useContourData = std::get<1>(std::get<0>(p));
++    int  numNeighbors   =             std::get<1>(p); // 4 or 8
++    std::string imgPath =             std::get<2>(p);
++
++    cv::Mat src = imread(cvtest::findDataFile(imgPath), cv::IMREAD_GRAYSCALE);
++
++    unsigned int delta = 2;
++    unsigned int minArea = 256;
++    unsigned int maxArea = (int)src.total()/4;
++    float        maxVariation = 0.15f;
++    float        minDiversity = 0.2f;
++
++    std::vector<std::vector<Point>> contours;
++    std::vector<cv::Rect> bboxes;
++    std::vector<cv::fastcv::ContourData> contourData;
++    if (useBboxes)
++    {
++        if (useContourData)
++        {
++            cv::fastcv::MSER(src, contours, bboxes, contourData, numNeighbors,
++                             delta, minArea, maxArea, maxVariation, minDiversity);
++        }
++        else
++        {
++            cv::fastcv::MSER(src, contours, bboxes, numNeighbors,
++                             delta, minArea, maxArea, maxVariation, minDiversity);
++        }
++    }
++    else
++    {
++        cv::fastcv::MSER(src, contours, numNeighbors,
++                         delta, minArea, maxArea, maxVariation, minDiversity);
++    }
++
++    Rect imgRect(0, 0, src.cols, src.rows);
++    if (useBboxes)
++    {
++        ASSERT_EQ(contours.size(), bboxes.size());
++        for (size_t i = 0; i < contours.size(); i++)
++        {
++            ASSERT_TRUE(imgRect.contains(bboxes[i].tl()));
++            ASSERT_TRUE(imgRect.contains(bboxes[i].br()));
++
++            for (size_t j = 0; j < contours[i].size(); j++)
++            {
++                ASSERT_TRUE(bboxes[i].contains(contours[i][j]));
++            }
++        }
++    }
++
++    if (useContourData)
++    {
++        ASSERT_EQ(contours.size(), contourData.size());
++        for (size_t i = 0; i < contours.size(); i++)
++        {
++            int polarity = contourData[i].polarity;
++            EXPECT_TRUE(polarity == -1 || polarity == 1);
++        }
++    }
++
++    // compare each pair of contours using dist transform of their points
++    // find pair of contours by similar moments
++    typedef cv::Matx<double, 10, 1> MomentVec;
++
++    auto calcEstimate = [](const std::vector<std::vector<Point>>& contours, Size srcSize) -> std::vector<std::pair<Mat, MomentVec>>
++    {
++        std::vector<std::pair<Mat, MomentVec>> res;
++        for (size_t i = 0; i < contours.size(); i++)
++        {
++            const std::vector<Point>& contour = contours[i];
++            Mat ptsMap(srcSize, CV_8U, Scalar(255));
++            for(size_t j = 0; j < contour.size(); ++j)
++            {
++                ptsMap.at<uchar>(contour[j].y, contour[j].x) = 0;
++            }
++            Mat distTrans(srcSize, CV_8U);
++            cv::distanceTransform(ptsMap, distTrans, DIST_L2, DIST_MASK_PRECISE);
++
++            cv::Moments m = cv::moments(contour);
++            double invRows = 1.0 / srcSize.height,       invCols = 1.0 / srcSize.width;
++            double invRows2 = invRows  / srcSize.height, invCols2 = invCols  / srcSize.width;
++            double invRows3 = invRows2 / srcSize.height, invCols3 = invCols2 / srcSize.width;
++            MomentVec mx  = { m.m00, m.m10 * invCols, m.m01 * invRows,
++                              m.m20 * invCols2, m.m11 * invCols * invRows, m.m02 * invRows2,
++                              m.m30 * invCols3,
++                              m.m21 * invCols2 * invRows,
++                              m.m12 * invCols * invRows2,
++                              m.m03 * invRows3};
++            res.push_back({distTrans, mx});
++        }
++
++        return res;
++    };
++
++    std::vector<std::pair<Mat, MomentVec>> contourEstimate = calcEstimate(contours, src.size());
++
++    std::vector<std::vector<Point>> ocvContours;
++    std::vector<cv::Rect> ocvBboxes;
++
++    cv::Ptr<MSER> ocvMser = cv::MSER::create(delta, minArea, maxArea, maxVariation, minDiversity);
++    ocvMser->detectRegions(src, ocvContours, ocvBboxes);
++
++    std::vector<std::pair<Mat, MomentVec>> ocvContourEstimate = calcEstimate(ocvContours, src.size());
++
++    // brute force match by moments comparison
++    double overallL2Sqr = 0;
++    int nInliers = 0;
++    for (size_t i = 0; i < contourEstimate.size(); i++)
++    {
++        double minDist = std::numeric_limits<double>::max();
++        size_t minIdx = -1;
++        for (size_t j = 0; j < ocvContourEstimate.size(); j++)
++        {
++            double d = cv::norm(contourEstimate[i].second - ocvContourEstimate[j].second);
++            if (d < minDist)
++            {
++                minDist = d; minIdx = j;
++            }
++        }
++        // compare dist transforms of contours
++        Mat ref = ocvContourEstimate[minIdx].first;
++        Mat fcv = contourEstimate[i].first;
++        double normL2Sqr  = cvtest::norm(ref, fcv, cv::NORM_L2SQR);
++        double normInf    = cvtest::norm(ref, fcv, cv::NORM_INF);
++        normL2Sqr = normL2Sqr / src.size().area();
++
++        if (cvtest::debugLevel > 0)
++        {
++            Mat draw(src.rows, src.cols*2, CV_8U);
++            ref.copyTo(draw(Range::all(), Range(0, src.cols)));
++            fcv.copyTo(draw(Range::all(), Range(src.cols, src.cols*2)));
++            cv::putText(draw, cv::format("dM: %f L2^2: %f Inf: %f",minDist, normL2Sqr, normInf), Point(0, src.rows),
++                        cv::FONT_HERSHEY_COMPLEX, 1, Scalar::all(128));
++            cv::imwrite(cv::format("dist_n%d_c%03d_r%03d.png", numNeighbors, (int)i, (int)minIdx), draw);
++        }
++
++        if (normInf < 50.0)
++        {
++            overallL2Sqr += normL2Sqr;
++            nInliers++;
++        }
++    }
++
++    double overallL2 = std::sqrt(overallL2Sqr);
++    EXPECT_LT(std::sqrt(overallL2), 11.45);
++    double ratioInliers = double(nInliers) / contourEstimate.size();
++    EXPECT_GT(ratioInliers, 0.363);
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, MSERTest,
++    ::testing::Combine(::testing::Values( // useBboxes useContourData
++                                         std::tuple<bool, bool> { true, false},
++                                         std::tuple<bool, bool> {false, false},
++                                         std::tuple<bool, bool> { true,  true}),
++                       ::testing::Values(4, 8), // numNeighbors
++                       ::testing::Values("cv/shared/baboon.png", "cv/mser/puzzle.png")
++                      )
++    );
++}} // namespaces opencv_test, ::
+\ No newline at end of file
+diff --git a/modules/fastcv/test/test_precomp.hpp b/modules/fastcv/test/test_precomp.hpp
+new file mode 100644
+index 00000000..1b4c23ec
+--- /dev/null
++++ b/modules/fastcv/test/test_precomp.hpp
+@@ -0,0 +1,10 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include <opencv2/ts.hpp>
++#include <opencv2/features2d.hpp>
++#include <opencv2/video.hpp>
++
++#include <opencv2/fastcv.hpp>
+diff --git a/modules/fastcv/test/test_remap.cpp b/modules/fastcv/test/test_remap.cpp
+new file mode 100644
+index 00000000..6fa5ccda
+--- /dev/null
++++ b/modules/fastcv/test/test_remap.cpp
+@@ -0,0 +1,140 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "opencv2/ts.hpp"
++#include "opencv2/fastcv/remap.hpp"
++
++namespace opencv_test { namespace {
++
++class RemapTest : public ::testing::TestWithParam<tuple<int, int, Size>> {
++protected:
++    void SetUp() override {
++        // Generate random source data
++        Size size = get<2>(GetParam());
++        src = Mat(size, get<0>(GetParam()));
++        randu(src, Scalar::all(0), Scalar::all(255)); // Fill with random values
++
++        ASSERT_FALSE(src.empty()) << "Unable to generate the image!";
++
++        // Create map matrices
++        map_x.create(src.size(), CV_32FC1);
++        map_y.create(src.size(), CV_32FC1);
++
++        // Initialize the map matrices
++        for (int i = 0; i < src.rows; i++) {
++            for (int j = 0; j < src.cols; j++) {
++                map_x.at<float>(i, j) = static_cast<float>(src.cols - j); //Flips the image horizonally
++                map_y.at<float>(i, j) = static_cast<float>(i); //Keep y coordinate unchanged
++            }
++        }
++    }
++
++    Mat src, map_x, map_y, dst;
++};
++
++class RemapTestRGBA : public ::testing::TestWithParam<tuple<int, int, Size>> {
++protected:
++    void SetUp() override {
++        // Generate random source data
++        Size size = get<2>(GetParam());
++        src = Mat(size, get<0>(GetParam()));
++        randu(src, Scalar::all(0), Scalar::all(255)); // Fill with random values
++
++        ASSERT_FALSE(src.empty()) << "Unable to generate the image!";
++
++        // Create map matrices
++        map_x.create(src.size(), CV_32FC1);
++        map_y.create(src.size(), CV_32FC1);
++
++        // Initialize the map matrices
++        for (int i = 0; i < src.rows; i++) {
++            for (int j = 0; j < src.cols; j++) {
++                map_x.at<float>(i, j) = static_cast<float>(src.cols - j); //Flips the image horizonally
++                map_y.at<float>(i, j) = static_cast<float>(i); //Keep y coordinate unchanged
++            }
++        }
++    }
++
++    Mat src, map_x, map_y, dst;
++};
++
++TEST_P(RemapTest, accuracy)
++{
++    int type = get<0>(GetParam());
++    int interpolation = get<1>(GetParam());
++
++    // Convert source image to the specified type
++    Mat src_converted;
++    src.convertTo(src_converted, type);
++
++    cv::fastcv::remap(src_converted, dst, map_x, map_y, interpolation);
++
++    // Check if the remapped image is not empty
++    ASSERT_FALSE(dst.empty()) << "Remapped image is empty!";
++
++    cv::Mat remapOpenCV;
++    cv::remap(src_converted, remapOpenCV, map_x, map_y, interpolation);
++
++    cv::Mat diffImage;
++    cv::absdiff(dst, remapOpenCV, diffImage);
++
++    // Calculate the maximum difference
++    double maxVal=0.0;
++    cv::minMaxLoc(diffImage, nullptr, &maxVal);
++
++    // Assert if the difference is acceptable (max difference should be less than 10)
++    CV_Assert(maxVal < 10 && "Difference between images is too high!");
++}
++
++TEST_P(RemapTestRGBA, accuracy)
++{
++    int type = get<0>(GetParam());
++    int interpolation = get<1>(GetParam());
++
++    // Convert source image to the specified type
++    Mat src_converted;
++    src.convertTo(src_converted, type);
++
++    cv::fastcv::remapRGBA(src_converted, dst, map_x, map_y, interpolation);
++
++    // Check if the remapped image is not empty
++    ASSERT_FALSE(dst.empty()) << "Remapped image is empty!";
++
++    cv::Mat remapOpenCV;
++    cv::remap(src_converted, remapOpenCV, map_x, map_y, interpolation);
++
++    cv::Mat diffImage;
++    cv::absdiff(dst, remapOpenCV, diffImage);
++
++    // Calculate the maximum difference
++    double maxVal=0.0;
++    cv::minMaxLoc(diffImage, nullptr, &maxVal);
++
++    // Assert if the difference is acceptable (max difference should be less than 10)
++    CV_Assert(maxVal < 10 && "Difference between images is too high!");
++}
++
++
++INSTANTIATE_TEST_CASE_P(
++    RemapTests,
++    RemapTest,
++    ::testing::Combine(
++        ::testing::Values(CV_8UC1),
++        ::testing::Values(INTER_LINEAR, INTER_NEAREST),
++        ::testing::Values(Size(640, 480), Size(1280, 720), Size(1920, 1080))
++    )
++);
++
++INSTANTIATE_TEST_CASE_P(
++    RemapTests,
++    RemapTestRGBA,
++    ::testing::Combine(
++        ::testing::Values(CV_8UC4),
++        ::testing::Values(INTER_LINEAR, INTER_NEAREST),
++        ::testing::Values(Size(640, 480), Size(1280, 720), Size(1920, 1080))
++    )
++);
++
++}} // namespaces opencv_test, ::
+\ No newline at end of file
+diff --git a/modules/fastcv/test/test_scale.cpp b/modules/fastcv/test/test_scale.cpp
+new file mode 100644
+index 00000000..394fd907
+--- /dev/null
++++ b/modules/fastcv/test/test_scale.cpp
+@@ -0,0 +1,113 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "opencv2/ts.hpp"
++#include "opencv2/fastcv/scale.hpp"
++
++namespace opencv_test { namespace {
++
++class ResizeBy2Test : public ::testing::TestWithParam<cv::Size> {};
++class ResizeBy4Test : public ::testing::TestWithParam<cv::Size> {};
++
++TEST(resizeDownBy2, accuracy)
++{
++    cv::Mat inputImage = cv::imread(cvtest::findDataFile("cv/shared/box_in_scene.png"), cv::IMREAD_GRAYSCALE);
++
++    Size dsize;
++    cv::Mat resized_image;
++
++    cv::fastcv::resizeDownBy2(inputImage, resized_image);
++
++    EXPECT_FALSE(resized_image.empty());
++
++    cv::Mat resizedImageOpenCV;
++    cv::resize(inputImage, resizedImageOpenCV, cv::Size(inputImage.cols / 2, inputImage.rows / 2), 0, 0, INTER_AREA);
++
++    cv::Mat diffImage;
++    cv::absdiff(resized_image, resizedImageOpenCV, diffImage);
++
++    // Calculate the maximum difference
++    double maxVal=0.0;
++    cv::minMaxLoc(diffImage, nullptr, &maxVal);
++
++    // Assert if the difference is acceptable (max difference should be less than 10)
++    CV_Assert(maxVal < 10 && "Difference between images is too high!");
++}
++
++TEST(resizeDownBy4, accuracy)
++{
++    cv::Mat inputImage = cv::imread(cvtest::findDataFile("cv/shared/box_in_scene.png"), cv::IMREAD_GRAYSCALE);
++
++    Size dsize;
++    cv::Mat resized_image;
++
++    cv::fastcv::resizeDownBy4(inputImage, resized_image);
++
++    EXPECT_FALSE(resized_image.empty());
++
++    cv::Mat resizedImageOpenCV;
++    cv::resize(inputImage, resizedImageOpenCV, cv::Size(inputImage.cols / 4, inputImage.rows / 4), 0, 0, INTER_AREA);
++
++    cv::Mat diffImage;
++    cv::absdiff(resized_image, resizedImageOpenCV, diffImage);
++
++    // Calculate the maximum difference
++    double maxVal=0.0;
++    cv::minMaxLoc(diffImage, nullptr, &maxVal);
++
++    // Assert if the difference is acceptable (max difference should be less than 10)
++    CV_Assert(maxVal < 10 && "Difference between images is too high!");
++}
++
++TEST_P(ResizeBy2Test, ResizeBy2) {
++
++    //Size size = get<0>(GetParam());
++    Size size = GetParam();
++    cv::Mat inputImage(size, CV_8UC1);
++    randu(inputImage, Scalar::all(0), Scalar::all(255)); // Fill with random values
++
++    Size dsize;
++    cv::Mat resized_image;
++
++    // Resize the image by a factor of 2
++    cv::fastcv::resizeDownBy2(inputImage, resized_image);
++
++    // Check if the output size is correct
++    EXPECT_EQ(resized_image.size().width, size.width * 0.5);
++    EXPECT_EQ(resized_image.size().height, size.height * 0.5);
++}
++
++TEST_P(ResizeBy4Test, ResizeBy2) {
++
++    //Size size = get<0>(GetParam());
++    Size size = GetParam();
++    cv::Mat inputImage(size, CV_8UC1);
++    randu(inputImage, Scalar::all(0), Scalar::all(255)); // Fill with random values
++
++    Size dsize;
++    cv::Mat resized_image;
++
++    // Resize the image by a factor of 2
++    cv::fastcv::resizeDownBy4(inputImage, resized_image);
++
++    // Check if the output size is correct
++    EXPECT_EQ(resized_image.size().width, size.width * 0.25);
++    EXPECT_EQ(resized_image.size().height, size.height * 0.25);
++}
++
++INSTANTIATE_TEST_CASE_P(
++    ResizeTests, 
++    ResizeBy2Test, 
++    ::testing::Values(cv::Size(640, 480), cv::Size(1280, 720), cv::Size(1920, 1080)
++));
++
++INSTANTIATE_TEST_CASE_P(
++    ResizeTests, 
++    ResizeBy4Test, 
++    ::testing::Values(cv::Size(640, 480), cv::Size(1280, 720), cv::Size(1920, 1080)
++));
++
++
++}} // namespaces opencv_test, ::
+\ No newline at end of file
+diff --git a/modules/fastcv/test/test_shift.cpp b/modules/fastcv/test/test_shift.cpp
+new file mode 100644
+index 00000000..1473f91d
+--- /dev/null
++++ b/modules/fastcv/test/test_shift.cpp
+@@ -0,0 +1,75 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++typedef std::tuple<cv::Size, MatType, int /*iterations*/, float /*epsilon*/, Size /*winSize*/> MeanShiftTestParams;
++class MeanShiftTest : public ::testing::TestWithParam<MeanShiftTestParams> {};
++
++TEST_P(MeanShiftTest, accuracy)
++{
++    auto p = GetParam();
++    cv::Size size = std::get<0>(p);
++    MatType type  = std::get<1>(p);
++    int iters     = std::get<2>(p);
++    float eps     = std::get<3>(p);
++    Size winSize  = std::get<4>(p);
++
++    RNG& rng = cv::theRNG();
++
++    const int nPts = 20;
++    Mat ptsMap(size, CV_8UC1, Scalar(255));
++    for(size_t i = 0; i < nPts; ++i)
++    {
++        ptsMap.at<uchar>(rng() % size.height, rng() % size.width) = 0;
++    }
++    Mat distTrans(size, CV_8UC1);
++    cv::distanceTransform(ptsMap, distTrans, DIST_L2, DIST_MASK_PRECISE);
++    Mat vsrc = 255 - distTrans;
++    Mat src;
++    vsrc.convertTo(src, type);
++
++    Point startPt(rng() % (size.width  - winSize.width),
++                  rng() % (size.height - winSize.height));
++    Rect startRect(startPt, winSize);
++
++    cv::TermCriteria termCrit( TermCriteria::EPS + TermCriteria::MAX_ITER, iters, eps);
++
++    Rect window = startRect;
++    cv::fastcv::meanShift(src, window, termCrit);
++
++    Rect windowRef = startRect;
++    cv::meanShift(vsrc, windowRef, termCrit);
++
++    if (cvtest::debugLevel > 0)
++    {
++        Mat draw;
++        cvtColor(vsrc, draw, COLOR_GRAY2RGB);
++        cv::rectangle(draw, startRect, Scalar(0, 0, 255));
++        cv::rectangle(draw, window, Scalar(255, 255, 0));
++        cv::rectangle(draw, windowRef, Scalar(0, 255, 0));
++        std::string stype = (type == CV_8U ? "8U" : (type == CV_32S ? "32S" : (type == CV_32F ? "F" : "?")));
++        cv::imwrite(cv::format("src_%dx%d_%s_%dit_%feps_%dx%d.png", size.width, size.height, stype.c_str(),
++                                                                    iters, eps, winSize.width, winSize.height),
++                    draw);
++    }
++
++    cv::Point diff = (window.tl() - windowRef.tl());
++    double dist = std::sqrt(diff.ddot(diff));
++
++    EXPECT_LE(dist, 3.0);
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, MeanShiftTest,
++                         ::testing::Combine(::testing::Values(Size(128, 128), Size(640, 480), Size(800, 600)),
++                                            ::testing::Values(CV_8U, CV_32S, CV_32F), // type
++                                            ::testing::Values(2, 10, 100), // nIterations
++                                            ::testing::Values(0.01f, 0.1f, 1.f, 10.f), // epsilon
++                                            ::testing::Values(Size(8, 8), Size(13, 48), Size(64, 64)) // window size
++                                            ));
++
++}} // namespaces opencv_test, ::
+diff --git a/modules/fastcv/test/test_smooth.cpp b/modules/fastcv/test/test_smooth.cpp
+new file mode 100644
+index 00000000..0b73baa5
+--- /dev/null
++++ b/modules/fastcv/test/test_smooth.cpp
+@@ -0,0 +1,45 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++typedef std::tuple<float, float> BilateralTestParams;
++class BilateralRecursiveTest : public ::testing::TestWithParam<BilateralTestParams> {};
++
++TEST_P(BilateralRecursiveTest, accuracy)
++{
++    auto p = GetParam();
++    float sigmaColor = std::get<0>(p);
++    float sigmaSpace = std::get<1>(p);
++
++    cv::Mat src = imread(cvtest::findDataFile("cv/shared/baboon.png"), cv::IMREAD_GRAYSCALE);
++
++    Mat dst;
++    cv::fastcv::bilateralRecursive(src, dst, sigmaColor, sigmaSpace);
++
++    // NOTE: test files should be manually loaded to folder on a device, for example like this:
++    // adb push fastcv/misc/bilateral_recursive/ /sdcard/testdata/fastcv/bilateral/
++    cv::Mat ref = imread(cvtest::findDataFile(cv::format("fastcv/bilateral/rec_%2f_%2f.png", sigmaColor, sigmaSpace)),
++                         IMREAD_GRAYSCALE);
++
++    if (cvtest::debugLevel > 0)
++    {
++        cv::imwrite(cv::format("rec_%2f_%2f.png", sigmaColor, sigmaSpace), dst);
++    }
++
++    double normInf = cvtest::norm(dst, ref, cv::NORM_INF);
++    double normL2  = cvtest::norm(dst, ref, cv::NORM_L2);
++
++    ASSERT_LT(normInf, 1);
++    ASSERT_LT(normL2, 1.f / src.size().area());
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, BilateralRecursiveTest,
++                        ::testing::Combine(::testing::Values(0.01f, 0.03f, 0.1f, 1.f, 5.f),
++                                           ::testing::Values(0.01f, 0.05f, 0.1f, 1.f, 5.f)));
++
++}} // namespaces opencv_test, ::
+diff --git a/modules/fastcv/test/test_thresh.cpp b/modules/fastcv/test/test_thresh.cpp
+new file mode 100644
+index 00000000..b56c7841
+--- /dev/null
++++ b/modules/fastcv/test/test_thresh.cpp
+@@ -0,0 +1,50 @@
++/*
++ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
++ * SPDX-License-Identifier: Apache-2.0
++*/
++
++#include "test_precomp.hpp"
++
++namespace opencv_test { namespace {
++
++typedef std::tuple<cv::Size, int /*lowThresh*/, int /*highThresh*/, int /*trueValue*/, int /*falseValue*/> ThresholdRangeTestParams;
++class ThresholdRangeTest : public ::testing::TestWithParam<ThresholdRangeTestParams> {};
++
++TEST_P(ThresholdRangeTest, accuracy)
++{
++    auto p = GetParam();
++    cv::Size size  = std::get<0>(p);
++    int loThresh  = std::get<1>(p);
++    int hiThresh = std::get<2>(p);
++    int trueValue  = std::get<3>(p);
++    int falseValue = std::get<4>(p);
++
++    int lowThresh  = std::min(loThresh, hiThresh);
++    int highThresh = std::max(loThresh, hiThresh);
++
++    RNG& rng = cv::theRNG();
++    Mat src(size, CV_8UC1);
++    cvtest::randUni(rng, src, Scalar::all(0), Scalar::all(256));
++
++    Mat dst;
++    cv::fastcv::thresholdRange(src, dst, lowThresh, highThresh, trueValue, falseValue);
++
++    Mat inr, ref(src.size(), CV_8UC1);
++    cv::inRange(src, lowThresh, highThresh, inr);
++    ref.setTo(trueValue, inr);
++    ref.setTo(falseValue, ~inr);
++
++    double normInf = cvtest::norm(ref, dst, cv::NORM_INF);
++
++    EXPECT_EQ(normInf, 0);
++}
++
++INSTANTIATE_TEST_CASE_P(FastCV_Extension, ThresholdRangeTest,
++                         ::testing::Combine(::testing::Values(Size(8, 8), Size(640, 480), Size(800, 600)),
++                                            ::testing::Values(0, 15, 128, 255), // lowThresh
++                                            ::testing::Values(0, 15, 128, 255), // highThresh
++                                            ::testing::Values(0, 15, 128, 255), // trueValue
++                                            ::testing::Values(0, 15, 128, 255)  // falseValue
++                                            ));
++
++}} // namespaces opencv_test, ::
+-- 
+2.34.1
+

@@ -1,0 +1,20 @@
+inherit qprebuilt pkgconfig
+
+LICENSE          = "Qualcomm-Technologies-Inc.-Proprietary"
+LIC_FILES_CHKSUM = "file://${QCOM_COMMON_LICENSE_DIR}${LICENSE};md5=58d50a3d36f27f1a1e6089308a49b403"
+
+DESCRIPTION = "Qualcomm Technologies ath11k-fwtest"
+
+DEPENDS += "libnl"
+
+PV = "1.0"
+
+QCM6490_SHA256SUM = "c324f3f4c225c00d06db70a513e409df003485a1ff1abb9618e08656f842d8e7"
+QCS9100_SHA256SUM = "d856bcd72d908b98c8f6aa632284b665b21ab9d4b8d08650de03f029aecb3cf0"
+QCS8300_SHA256SUM = "88ddc048208cff94f530d1d2128af7b7991fb7e71eb485eb51cb1b7ec2c40080"
+
+SRC_URI[qcm6490.sha256sum] = "${QCM6490_SHA256SUM}"
+SRC_URI[qcs9100.sha256sum] = "${QCS9100_SHA256SUM}"
+SRC_URI[qcs8300.sha256sum] = "${QCS8300_SHA256SUM}"
+
+SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"

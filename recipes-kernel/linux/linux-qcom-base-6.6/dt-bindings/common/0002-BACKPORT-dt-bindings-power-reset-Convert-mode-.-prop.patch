@@ -1,0 +1,101 @@
+From abaf12251da7e3cae19125a8768c61a7ed6c8e95 Mon Sep 17 00:00:00 2001
+From: Elliot Berman <quic_eberman@quicinc.com>
+Date: Thu, 7 Nov 2024 15:38:25 -0800
+Subject: [PATCH 2/5] BACKPORT: dt-bindings: power: reset: Convert mode-.*
+ properties to array
+
+PSCI reboot mode will map a mode name to multiple magic values instead
+of just one. Convert the mode-.* property to an array. Users of the
+reboot-mode schema will need to specify the maxItems of the mode-.*
+properties. Existing users will all be 1.
+
+Change-Id: Ie5b8743d739cec3b812192296a2880423e83b90d
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: Elliot Berman <quic_eberman@quicinc.com>
+Link: https://lore.kernel.org/all/20241107-arm-psci-system_reset2-vendor-reboots-v8-1-e8715fa65cb5@quicinc.com/
+Upstream-Status: Backport [https://lore.kernel.org/all/20241107-arm-psci-system_reset2-vendor-reboots-v8-1-e8715fa65cb5@quicinc.com/]
+---
+ .../devicetree/bindings/power/reset/nvmem-reboot-mode.yaml | 4 ++++
+ .../devicetree/bindings/power/reset/qcom,pon.yaml          | 7 +++++++
+ .../devicetree/bindings/power/reset/reboot-mode.yaml       | 4 ++--
+ .../bindings/power/reset/syscon-reboot-mode.yaml           | 4 ++++
+ 4 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
+index 14a262bcbf7c..7509623dfeae 100644
+--- a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
++++ b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
+@@ -33,6 +33,10 @@ patternProperties:
+     $ref: /schemas/types.yaml#/definitions/uint32
+     description: Vendor-specific mode value written to the mode register
+ 
++patternProperties:
++  "^mode-.*$":
++    maxItems: 1
++
+ required:
+   - compatible
+   - nvmem-cells
+diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+index 5e460128b0d1..607eb11922f9 100644
+--- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
++++ b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+@@ -54,6 +54,10 @@ required:
+   - compatible
+   - reg
+ 
++patternProperties:
++  "^mode-.*$":
++    maxItems: 1
++
+ unevaluatedProperties: false
+ 
+ allOf:
+@@ -75,6 +79,9 @@ allOf:
+         reg-names:
+           items:
+             - const: pon
++    else:
++      patternProperties:
++        "^mode-.*$": false
+ 
+     # Special case for pm8941, which doesn't store reset mode
+   - if:
+diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
+index ad0a0b95cec1..3ddac06cec72 100644
+--- a/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
++++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
+@@ -28,13 +28,13 @@ description: |
+ 
+ properties:
+   mode-normal:
+-    $ref: /schemas/types.yaml#/definitions/uint32
++    $ref: /schemas/types.yaml#/definitions/uint32-array
+     description:
+       Default value to set on a reboot if no command was provided.
+ 
+ patternProperties:
+   "^mode-.*$":
+-    $ref: /schemas/types.yaml#/definitions/uint32
++    $ref: /schemas/types.yaml#/definitions/uint32-array
+ 
+ additionalProperties: true
+ 
+diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
+index b6acff199cde..79ffc78b23ea 100644
+--- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
++++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.yaml
+@@ -32,6 +32,10 @@ properties:
+ allOf:
+   - $ref: reboot-mode.yaml#
+ 
++patternProperties:
++  "^mode-.*$":
++    maxItems: 1
++
+ unevaluatedProperties: false
+ 
+ required:
+-- 
+2.46.0
+

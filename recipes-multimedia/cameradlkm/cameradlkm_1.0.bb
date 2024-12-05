@@ -6,13 +6,17 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/${LICENSE};md5=801f80980d171dd6
 
 DEPENDS += "linux-kernel-headers-install-native"
 
-SRC_URI     =  "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https;rev=64d85a197f7686950bd42aeb24394385374d20b6;branch=camera-kernel.qclinux.1.0.r1-rel;destsuffix=vendor/qcom/opensource/camera-kernel"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/camera-kernel.git;protocol=https"
+SRCBRANCH  = "camera-kernel.qclinux.1.0.r1-rel"
+SRCREV     = "64d85a197f7686950bd42aeb24394385374d20b6"
+
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=vendor/qcom/opensource/camera-kernel"
 
 S = "${WORKDIR}/vendor/qcom/opensource/camera-kernel"
 
 MODULES_INSTALL_TARGET = "modules_install headers_install"
 
-COMPATIBLE_MACHINE = "qcm6490|qcs9100"
+COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs8300"
 
 python get_soc_family() {
     need_machine = d.getVar('COMPATIBLE_MACHINE')
@@ -36,7 +40,9 @@ python get_soc_family() {
 do_compile[prefuncs] += "get_soc_family"
 do_install[prefuncs] += "get_soc_family"
 
-EXTRA_OEMAKE += "CAMERA_ARCH='${CAMERA_ARCH}' MACHINE='${SOC_FAM}' HEADERS_DIR='${HEADERS_DIR}'"
+EXTRA_OEMAKE += "CAMERA_ARCH='${CAMERA_ARCH}' SOC_FAM='${SOC_FAM}' HEADERS_DIR='${HEADERS_DIR}'"
+
+do_install[prefuncs] += "do_module_signing"
 
 do_install:append() {
 	install -d ${D}${includedir}/media

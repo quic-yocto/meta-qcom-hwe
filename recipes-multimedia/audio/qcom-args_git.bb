@@ -6,7 +6,11 @@ LIC_FILES_CHKSUM += "file://gsl/src/gsl_common.c;beginline=8;endline=10;md5=6f04
 
 inherit autotools pkgconfig
 
-SRC_URI = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/args.git;protocol=https;rev=31f8c04951e5c417b7b17c7054f89646f5df4c65;branch=audio-core.lnx.1.0.r1-rel;destsuffix=audio/opensource/args"
+SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/args.git;protocol=https"
+SRCBRANCH  = "audio-core.lnx.1.0.r1-rel"
+SRCREV     = "31f8c04951e5c417b7b17c7054f89646f5df4c65"
+
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/args"
 
 S = "${WORKDIR}/audio/opensource/args"
 

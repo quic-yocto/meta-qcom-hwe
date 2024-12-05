@@ -1,0 +1,259 @@
+From 75208b3b8a42f671b821b54df97c7cbbb0024737 Mon Sep 17 00:00:00 2001
+From: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Date: Tue, 8 Oct 2024 12:44:10 +0530
+Subject: [PATCH 6/7] FROMLIST: arm64: dts: qcom: sa8775p: add DisplayPort
+ device nodes
+
+Add device tree nodes for the DPTX0 and DPTX1 controllers
+with their corresponding PHYs found on Qualcomm SA8775P SoC.
+
+Signed-off-by: Soutrik Mukhopadhyay <quic_mukhopad@quicinc.com>
+Upstream-Status: Submitted [https://lore.kernel.org/lkml/20241008112516.17702-2-quic_mukhopad@quicinc.com/]
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 216 +++++++++++++++++++++++++-
+ 1 file changed, 215 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index 0bf1112a0adb..3b02a80da197 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -3343,6 +3343,25 @@
+ 				interrupt-parent = <&mdss0>;
+ 				interrupts = <0>;
+ 
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++
++					port@0 {
++						reg = <0>;
++						dpu_intf0_out: endpoint {
++							remote-endpoint = <&mdss0_dp0_in>;
++						};
++					};
++
++					port@1 {
++						reg = <0>;
++						dpu_intf4_out: endpoint {
++							remote-endpoint = <&mdss0_dp1_in>;
++						};
++					};
++				};
++
+ 				mdss0_mdp_opp_table: opp-table {
+ 					compatible = "operating-points-v2";
+ 
+@@ -3367,6 +3386,200 @@
+ 					};
+ 				};
+ 			};
++
++			mdss0_dp0_phy: phy@aec2a00 {
++				compatible = "qcom,sa8775p-edp-phy";
++
++				reg = <0x0 0xaec2a00 0x0 0x200>,
++				      <0x0 0xaec2200 0x0 0xd0>,
++				      <0x0 0xaec2600 0x0 0xd0>,
++				      <0x0 0xaec2000 0x0 0x1c8>;
++
++				clocks =<&dispcc0 MDSS_DISP_CC_MDSS_DPTX0_AUX_CLK>,
++					<&dispcc0 MDSS_DISP_CC_MDSS_AHB_CLK>;
++				clock-names = "aux",
++					      "cfg_ahb";
++
++				#clock-cells = <1>;
++				#phy-cells = <0>;
++
++				status = "disabled";
++			};
++
++			mdss0_dp1_phy: phy@aec5a00 {
++				compatible = "qcom,sa8775p-edp-phy";
++
++				reg = <0x0 0xaec5a00 0x0 0x200>,
++				      <0x0 0xaec5200 0x0 0xd0>,
++				      <0x0 0xaec5600 0x0 0xd0>,
++				      <0x0 0xaec5000 0x0 0x1c8>;
++
++				clocks =<&dispcc0 MDSS_DISP_CC_MDSS_DPTX1_AUX_CLK>,
++					<&dispcc0 MDSS_DISP_CC_MDSS_AHB_CLK>;
++				clock-names = "aux",
++					      "cfg_ahb";
++
++				#clock-cells = <1>;
++				#phy-cells = <0>;
++
++				status = "disabled";
++			};
++
++			mdss0_dp0: displayport-controller@af54000 {
++				compatible = "qcom,sa8775p-dp";
++
++				reg = <0x0 0xaf54000 0x0 0x104>,
++				      <0x0 0xaf54200 0x0 0x0c0>,
++				      <0x0 0xaf55000 0x0 0x770>,
++				      <0x0 0xaf56000 0x0 0x09c>;
++
++				interrupt-parent = <&mdss0>;
++				interrupts = <12>;
++
++				clocks = <&dispcc0 MDSS_DISP_CC_MDSS_AHB_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_DPTX0_AUX_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_DPTX0_LINK_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_DPTX0_LINK_INTF_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_DPTX0_PIXEL0_CLK>;
++				clock-names = "core_iface",
++					      "core_aux",
++					      "ctrl_link",
++					      "ctrl_link_iface",
++					      "stream_pixel";
++				assigned-clocks = <&dispcc0 MDSS_DISP_CC_MDSS_DPTX0_LINK_CLK_SRC>,
++						  <&dispcc0 MDSS_DISP_CC_MDSS_DPTX0_PIXEL0_CLK_SRC>;
++				assigned-clock-parents = <&mdss0_dp0_phy 0>, <&mdss0_dp0_phy 1>;
++				phys = <&mdss0_dp0_phy>;
++				phy-names = "dp";
++
++				operating-points-v2 = <&dp_opp_table>;
++				power-domains = <&rpmhpd SA8775P_MMCX>;
++
++				#sound-dai-cells = <0>;
++
++				status = "disabled";
++
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++
++					port@0 {
++						reg = <0>;
++
++						mdss0_dp0_in: endpoint {
++							remote-endpoint = <&dpu_intf0_out>;
++						};
++					};
++
++					port@1 {
++						reg = <1>;
++
++						mdss0_dp0_out: endpoint { };
++					};
++				};
++
++				dp_opp_table: opp-table {
++					compatible = "operating-points-v2";
++
++					opp-160000000 {
++						opp-hz = /bits/ 64 <160000000>;
++						required-opps = <&rpmhpd_opp_low_svs>;
++					};
++
++					opp-270000000 {
++						opp-hz = /bits/ 64 <270000000>;
++						required-opps = <&rpmhpd_opp_svs>;
++					};
++
++					opp-540000000 {
++						opp-hz = /bits/ 64 <540000000>;
++						required-opps = <&rpmhpd_opp_svs_l1>;
++					};
++
++					opp-810000000 {
++						opp-hz = /bits/ 64 <810000000>;
++						required-opps = <&rpmhpd_opp_nom>;
++					};
++				};
++			};
++
++			mdss0_dp1: displayport-controller@af5c000 {
++				compatible = "qcom,sa8775p-dp";
++
++				reg = <0x0 0xaf5c000 0x0 0x104>,
++				      <0x0 0xaf5c200 0x0 0x0c0>,
++				      <0x0 0xaf5d000 0x0 0x770>,
++				      <0x0 0xaf5e000 0x0 0x09c>;
++
++				interrupt-parent = <&mdss0>;
++				interrupts = <13>;
++
++				clocks = <&dispcc0 MDSS_DISP_CC_MDSS_AHB_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_DPTX1_AUX_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_DPTX1_LINK_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_DPTX1_LINK_INTF_CLK>,
++					 <&dispcc0 MDSS_DISP_CC_MDSS_DPTX1_PIXEL0_CLK>;
++				clock-names = "core_iface",
++					      "core_aux",
++					      "ctrl_link",
++					      "ctrl_link_iface",
++					      "stream_pixel";
++				assigned-clocks = <&dispcc0 MDSS_DISP_CC_MDSS_DPTX1_LINK_CLK_SRC>,
++						  <&dispcc0 MDSS_DISP_CC_MDSS_DPTX1_PIXEL0_CLK_SRC>;
++				assigned-clock-parents = <&mdss0_dp1_phy 0>, <&mdss0_dp1_phy 1>;
++				phys = <&mdss0_dp1_phy>;
++				phy-names = "dp";
++
++				operating-points-v2 = <&dp1_opp_table>;
++				power-domains = <&rpmhpd SA8775P_MMCX>;
++
++				#sound-dai-cells = <0>;
++
++				status = "disabled";
++
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++
++					port@0 {
++						reg = <0>;
++
++						mdss0_dp1_in: endpoint {
++							remote-endpoint = <&dpu_intf4_out>;
++						};
++					};
++
++					port@1 {
++						reg = <1>;
++
++						mdss0_dp1_out: endpoint { };
++					};
++				};
++
++				dp1_opp_table: opp-table {
++					compatible = "operating-points-v2";
++
++					opp-160000000 {
++						opp-hz = /bits/ 64 <160000000>;
++						required-opps = <&rpmhpd_opp_low_svs>;
++					};
++
++					opp-270000000 {
++						opp-hz = /bits/ 64 <270000000>;
++						required-opps = <&rpmhpd_opp_svs>;
++					};
++
++					opp-540000000 {
++						opp-hz = /bits/ 64 <540000000>;
++						required-opps = <&rpmhpd_opp_svs_l1>;
++					};
++
++					opp-810000000 {
++						opp-hz = /bits/ 64 <810000000>;
++						required-opps = <&rpmhpd_opp_nom>;
++					};
++				};
++			};
+ 		};
+ 
+ 		dispcc0: clock-controller@af00000 {
+@@ -3376,7 +3589,8 @@
+ 				 <&rpmhcc RPMH_CXO_CLK>,
+ 				 <&rpmhcc RPMH_CXO_CLK_A>,
+ 				 <&sleep_clk>,
+-				 <0>, <0>, <0>, <0>,
++				 <&mdss0_dp0_phy 0>, <&mdss0_dp0_phy 1>,
++				 <&mdss0_dp1_phy 0>, <&mdss0_dp1_phy 1>,
+ 				 <0>, <0>, <0>, <0>;
+ 			power-domains = <&rpmhpd SA8775P_MMCX>;
+ 			#clock-cells = <1>;
+-- 
+2.17.1
+

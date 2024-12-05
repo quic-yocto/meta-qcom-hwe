@@ -1,0 +1,45 @@
+From e55cc79d0f7a3889c42e3e5bfb85033cb9137006 Mon Sep 17 00:00:00 2001
+From: Raghuvarya S <quic_raghuvar@quicinc.com>
+Date: Tue, 10 Sep 2024 18:07:49 +0530
+Subject: [PATCH] PENDING: lxc: Create /var/lib/lxc at runtime for OSTree SOTA compatibility
+
+LXC uses /var/lib/lxc at runtime. In systems utilizing OSTree for
+SOTA updates, /var/lib is erased as part of the root filesystem
+at build time. To maintain compatibility, state directories under
+/var/lib should be created at runtime.
+
+Upstream-Status: Pending
+
+Signed-off-by: Raghuvarya S <quic_raghuvar@quicinc.com>
+---
+ config/init/systemd/lxc.service.in  | 1 +
+ config/init/systemd/lxc@.service.in | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/config/init/systemd/lxc.service.in b/config/init/systemd/lxc.service.in
+index 397a6c4d0..2173db42c 100644
+--- a/config/init/systemd/lxc.service.in
++++ b/config/init/systemd/lxc.service.in
+@@ -11,6 +11,7 @@ ExecStartPre=@LIBEXECDIR@/lxc/lxc-apparmor-load
+ ExecStart=@LIBEXECDIR@/lxc/lxc-containers start
+ ExecStop=@LIBEXECDIR@/lxc/lxc-containers stop
+ ExecReload=@LIBEXECDIR@/lxc/lxc-apparmor-load
++StateDirectory=lxc
+ # Environment=BOOTUP=serial
+ # Environment=CONSOLETYPE=serial
+ Delegate=yes
+diff --git a/config/init/systemd/lxc@.service.in b/config/init/systemd/lxc@.service.in
+index 21ce64aef..44e5b14dd 100644
+--- a/config/init/systemd/lxc@.service.in
++++ b/config/init/systemd/lxc@.service.in
+@@ -13,6 +13,7 @@ ExecStart=@BINDIR@/lxc-start -F -n %i
+ ExecStop=@BINDIR@/lxc-stop -n %i
+ # Environment=BOOTUP=serial
+ # Environment=CONSOLETYPE=serial
++StateDirectory=lxc
+ Delegate=yes
+ 
+ [Install]
+-- 
+2.25.1
+

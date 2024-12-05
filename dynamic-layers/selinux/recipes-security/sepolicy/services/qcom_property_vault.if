@@ -84,7 +84,7 @@ interface(`qcom_allow_property_vault_sock_manage',`
 
 ########################################
 ## <summary>
-##       Add rules for property-vault to fetch persist properties from /var/leutils/build.prop
+##       Add rules for property-vault to fetch persist properties from /etc/build.prop
 ## </summary>
 ## <param name="domain">
 ##      <summary>
@@ -92,17 +92,17 @@ interface(`qcom_allow_property_vault_sock_manage',`
 ##      </summary>
 ## </param>
 #
-interface(`qcom_connect_property_vault_to_var',`
+interface(`qcom_connect_property_vault_to_etc',`
     gen_require(`
-        type qcom_property_vault_var_t ;
+        type qcom_property_vault_etc_t ;
     ')
 
-    allow $1 qcom_property_vault_var_t:file { read open write setattr getattr };
+    allow $1 qcom_property_vault_etc_t:file { read open write setattr getattr };
 ')
 
 ########################################
 ## <summary>
-##       Add rules for mounting build.prop in /var/leutils
+##       Add rules for mounting build.prop in /etc
 ## </summary>
 ## <param name="domain">
 ##      <summary>
@@ -110,13 +110,14 @@ interface(`qcom_connect_property_vault_to_var',`
 ##      </summary>
 ## </param>
 #
-interface(`qcom_mount_property_vault_to_var',`
+interface(`qcom_mount_property_vault_to_etc',`
     gen_require(`
-        type qcom_property_vault_var_t ;
+        type qcom_property_vault_etc_t ;
     ')
 
-    allow $1 qcom_property_vault_var_t:file { link };
-    allow $1 var_t:dir { create rename reparent add_name };
+    allow $1 qcom_property_vault_etc_t:file { link };
+    allow $1 etc_t:dir { create rename reparent add_name };
+    allow $1 etc_t:file { write };
 ')
 
 ########################################
@@ -131,9 +132,9 @@ interface(`qcom_mount_property_vault_to_var',`
 #
 interface(`qcom_connect_cmdline_to_property_vault',`
     gen_require(`
-        type qcom_property_vault_var_t, qcom_property_vault_sock_t;
+        type qcom_property_vault_etc_t, qcom_property_vault_sock_t;
     ')
 
-    allow $1 qcom_property_vault_var_t:file { getattr write };
+    allow $1 qcom_property_vault_etc_t:file { getattr write };
     allow $1 qcom_property_vault_sock_t:sock_file { getattr write };
 ')
