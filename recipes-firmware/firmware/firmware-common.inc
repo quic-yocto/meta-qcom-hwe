@@ -28,6 +28,9 @@ def firmware_install(d, firmware, fw_path) :
     if zipfile:
         if os.path.exists(zipfile):
             shutil.unpack_archive(zipfile, dstdir)
+    else:
+        workdir = d.getVar('WORKDIR')
+        shutil.copytree(os.path.join(workdir, firmware), os.path.join(dstdir, firmware), symlinks=True, dirs_exist_ok=True)
 
     # Move content into ${D}
     root = os.path.join(dstdir, firmware)

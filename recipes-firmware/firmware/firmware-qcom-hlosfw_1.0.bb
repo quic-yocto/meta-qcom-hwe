@@ -6,18 +6,20 @@ COMPATIBLE_MACHINE = "qcm6490|qcs9100|qcs8300|qcs615"
 
 SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${HLOSFIRMWARE}.zip;name=${PBT_ARCH}"
 
-SRC_URI[qcm6490.sha256sum] = "5c1d4c3ee6cf9d7003ce8665f2168b89c8a528f8ffaf0ac71d505dddfe8c5e5e"
-SRC_URI[qcs9100.sha256sum] = "d37a2416b6377ac281c7221f79d40ad0270a30c9a6500954091e7286e0fc9f26"
+SRC_URI[qcm6490.sha256sum] = "a1bbe22108ea168e763a4f7fe8df3da2192abf4131acd508810a0dca86de35ad"
+SRC_URI[qcs9100.sha256sum] = "b461d3f9e01f6afc13946d39b6d3717ed9eece49421d08c2b31c55fa29a8d139"
+SRC_URI[qcs8300.sha256sum] = "77ec2d25b5674ca40b1ac6d67c28f0a65c12c430a7d8b0f06c2c21f83121fb44"
+SRC_URI[qcs615.sha256sum] = "fa061c1c2d1c7b10061fa36b9aa704bd1d5e24c821a029a49cce6f4701158d4c"
 
 include firmware-common.inc
 
 MATCHED_MACHINE = "${@get_matching_machine(d)}"
 include firmware-${MATCHED_MACHINE}.inc
 
-HLOSFIRMWARE:qcm6490 = "QCM6490_MSL"
-HLOSFIRMWARE:qcs9100 = "QCS9100_HSP"
-HLOSFIRMWARE:qcs8300 = "QCS8300_HSP"
-HLOSFIRMWARE:qcs615  = "QCS615_HSP"
+HLOSFIRMWARE:qcm6490 = "QCM6490_fw"
+HLOSFIRMWARE:qcs9100 = "QCS9100_fw"
+HLOSFIRMWARE:qcs8300 = "QCS8300_fw"
+HLOSFIRMWARE:qcs615  = "QCS615_fw"
 
 HLOSFIRMWARE_PATH = "${WORKDIR}/git/${BUILD_ID}/${BIN_PATH}"
 
@@ -39,6 +41,15 @@ python do_install() {
     if os.path.exists(dsp_fwpath) and os.path.isdir(dsp_fwpath):
         shutil.rmtree(dsp_fwpath)
 
+    # Move contents from /lib to /usr/lib if the usrmerge distro feature is enabled
+    if bb.utils.contains('DISTRO_FEATURES', 'usrmerge', True, False, d):
+        lib_path = os.path.join(d.getVar('D'), 'lib')
+        firm_path = os.path.join(d.getVar('D'), 'lib/firmware')
+        firm_path_usr = os.path.join(d.getVar('D'), 'usr/lib/firmware')
+        if os.path.exists(firm_path_usr):
+            shutil.rmtree(firm_path_usr)
+        shutil.copytree(firm_path, firm_path_usr)
+        shutil.rmtree(lib_path)
 }
 
 inherit deploy

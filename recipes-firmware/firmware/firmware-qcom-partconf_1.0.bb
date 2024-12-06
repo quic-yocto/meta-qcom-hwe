@@ -8,8 +8,10 @@ PROVIDES += "virtual/partconf"
 
 SRC_URI ="https://${FW_ARTIFACTORY}/${FW_BUILD_ID}/${FW_BIN_PATH}/${BOOTBINARIES}.zip;name=${PBT_ARCH}"
 
-SRC_URI[qcm6490.sha256sum] = "2ab34df1fdbff9f052b4bd55832fb2ad3385b4ea6a8a2a4a340e4a8dac2527c1"
-SRC_URI[qcs9100.sha256sum] = "b79572132c4b2d455dd4353c63fb66688ec728feaf43d52e79ddd38a9dce0074"
+SRC_URI[qcm6490.sha256sum] = "2c041291bebb956025f20308a1436d098976f066db7511011db52a49b61e35c6"
+SRC_URI[qcs9100.sha256sum] = "f46f92ebe193cb164ac8f633ae4864c70a453b3f6f665d699d632aeb37557ce4"
+SRC_URI[qcs8300.sha256sum] = "9f4b3c2f4c6350ee7225b01358e0ddcb3940c4fccf1e7ef441333dc189045de1"
+SRC_URI[qcs615.sha256sum]  = "d15d18296ada2c1d94d3127ab374ecb8cfb4f68a3db66f76d7a4a3f1f09e2130"
 
 include firmware-common.inc
 
