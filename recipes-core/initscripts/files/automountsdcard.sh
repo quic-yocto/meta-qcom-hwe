@@ -1,5 +1,5 @@
 #!/bin/sh
-MOUNT_DIR="/mnt/sdcard"
+MOUNT_DIR="/media/sdcard"
 DEVICE="/dev/$2"
 
 mount_sdcard() {

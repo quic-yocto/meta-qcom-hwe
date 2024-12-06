@@ -4,8 +4,10 @@ After=local-fs.target
  
 [Service]
 Type=oneshot
-ExecStart=/bin/sh /etc/udev/scripts/automountsdcard.sh add mmcblk1p1
-ExecStop=/bin/sh /etc/udev/scripts/automountsdcard.sh remove mmcblk1p1
+
+ExecStartPre=/bin/mkdir -p /media/sdcard
+ExecStart=/bin/sh /bin/automountsdcard.sh add mmcblk1p1
+ExecStop=/bin/sh /bin/automountsdcard.sh remove mmcblk1p1
 RemainAfterExit=true
  
 [Install]
