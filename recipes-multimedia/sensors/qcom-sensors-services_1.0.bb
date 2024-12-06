@@ -7,7 +7,7 @@ DESCRIPTION = "Sensors-services Library"
 
 DEPENDS += "glib-2.0 property-vault syslog-plumber protobuf qcom-sensors-utils fastrpc"
 
-QCM6490_SHA256SUM = "c6e5bd65949f8cfd8d5591fd830ae3c5320bbce3c29351352f94ff8fc8d7dd7c"
+QCM6490_SHA256SUM = "a67acb3a3f8ba20ca7b07fad46d94fe6de4249cdb26902feadcc79856866113b"
 
 SRC_URI[qcm6490.sha256sum] = "${QCM6490_SHA256SUM}"
 
@@ -16,10 +16,12 @@ SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${P
 FILES:${PN} += "${includedir}/*"
 FILES:${PN} += "/usr/lib/*"
 FILES:${PN} += "/usr/bin/*"
-FILES:${PN} += "${systemd_unitdir}/system/"
 FILES:${PN}-dev  = "${libdir}/*.la ${includedir}"
+FILES:${PN} += "${systemd_unitdir}/system/"
+
 
 INSANE_SKIP:${PN} = "dev-so"
+
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

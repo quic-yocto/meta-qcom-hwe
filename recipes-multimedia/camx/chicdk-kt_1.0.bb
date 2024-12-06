@@ -7,7 +7,7 @@ DESCRIPTION = "Camx"
 
 DEPENDS += "syslog-plumber glib-2.0 gbm property-vault camx-kt qcom-adreno qcom-fastcv-binaries"
 
-QCM6490_SHA256SUM = "1e975347830d09eab3def4e2a4182f85eb88980095093776bc802e8f0167514d"
+QCM6490_SHA256SUM = "5aaf4cc13bee43515bffc36c64a9ad30b7042f9156e47ea858104f6a32ab3c1d"
 
 SRC_URI[qcm6490.sha256sum] = "${QCM6490_SHA256SUM}"
 
@@ -20,8 +20,8 @@ FILES:${PN} = "\
     /usr/include/* \
     /lib/firmware/* \
     /system/etc/camera/* "
-
 FILES:${PN}-dev = ""
+
 
 INSANE_SKIP = "1"
 INSANE_SKIP:${PN} = "already-stripped"

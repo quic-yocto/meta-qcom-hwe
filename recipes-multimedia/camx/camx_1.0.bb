@@ -20,10 +20,9 @@ FILES:${PN} = "\
     /usr/bin/* \
     /usr/include/* \
     /lib/firmware/*"
-
 FILES:${PN}-dev = ""
 
-INSANE_SKIP = "1"
-
 #Skips check for .so symlinks
+INSANE_SKIP = "1"
 INSANE_SKIP:${PN} = "dev-so"
+

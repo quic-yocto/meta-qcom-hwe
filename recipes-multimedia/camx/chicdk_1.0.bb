@@ -22,10 +22,9 @@ FILES:${PN} = "\
     /usr/include/* \
     /lib/firmware/* \
     /system/etc/camera/*"
-
 FILES:${PN}-dev = ""
 
-INSANE_SKIP = "1"
-
 #Skips check for .so symlinks
+INSANE_SKIP = "1"
 INSANE_SKIP:${PN} = "already-stripped"
+

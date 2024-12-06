@@ -7,7 +7,7 @@ DESCRIPTION = "Camx"
 
 DEPENDS += "syslog-plumber glib-2.0 gbm property-vault camxlib-kt cameradlkm fastrpc qcom-sensinghub qcom-sensors-utils qcom-sensors-core qmi-framework"
 
-QCM6490_SHA256SUM = "1f6bd42127a9cef97ef90cb5e6085ab6e10d249b56526fa7c0860daed119733b"
+QCM6490_SHA256SUM = "8c1f35dfb12b2f3bb240ffe159af6d42b62b2eb8f28c3eeddaeb45d2a4df2868"
 
 SRC_URI[qcm6490.sha256sum] = "${QCM6490_SHA256SUM}"
 
@@ -20,5 +20,7 @@ FILES:${PN} = "\
     /lib/firmware/*"
 FILES:${PN}-dev = ""
 
+
 INSANE_SKIP = "1"
 INSANE_SKIP:${PN} = "dev-so"
+

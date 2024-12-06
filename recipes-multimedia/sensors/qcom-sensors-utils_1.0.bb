@@ -7,7 +7,7 @@ DESCRIPTION = "Sensors-utils Library"
 
 DEPENDS += "glib-2.0 property-vault syslog-plumber"
 
-QCM6490_SHA256SUM = "92173387c468c2a50022a323ab9e74d5ef8ceb0e370c22f355315324dbd16f1e"
+QCM6490_SHA256SUM = "8215ead57f259fa5fda8210e1f2733e1fd9a370cce28c9d18d543f168a8732d4"
 
 SRC_URI[qcm6490.sha256sum] = "${QCM6490_SHA256SUM}"
 
@@ -18,7 +18,9 @@ FILES:${PN} += "/usr/lib/*"
 FILES:${PN} += "/usr/bin/*"
 FILES:${PN}-dev  = "${libdir}/*.la ${includedir}"
 
+
 INSANE_SKIP:${PN} = "dev-so"
+
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

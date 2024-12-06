@@ -15,7 +15,7 @@ SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${P
 
 FILES:${PN}-dev = "/usr/include/*"
 
-INSANE_SKIP = "1"
-
 #Skips check for .so symlinks
+INSANE_SKIP = "1"
 INSANE_SKIP:${PN} = "already-stripped"
+

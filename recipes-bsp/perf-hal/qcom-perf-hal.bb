@@ -9,10 +9,10 @@ DEPENDS += "glib-2.0 libxml2 property-vault syslog-plumber"
 
 RDEPENDS:${PN} = "property-vault"
 
+
 PBT_ARCH = "armv8-2a"
 
-ARMV8_SHA256SUM = "1c10508605e7e6b73567b9aad987835c499eddc2a91413781d010589245b7510"
-
+ARMV8_SHA256SUM = "585e298578c3bbf4e2bcdeb91af63060183de99181b25eaa83588067bca71b86"
 SRC_URI[armv8-2a.sha256sum] = "${ARMV8_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
@@ -20,6 +20,7 @@ SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${P
 FILES:${PN} += " /etc/*"
 FILES:${PN} += " ${libdir} ${includedir}"
 FILES:${PN} += " ${systemd_system_unitdir}"
+
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
