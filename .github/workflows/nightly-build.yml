@@ -9,3 +9,4 @@ on:
 jobs:
   nightly:
     uses: ./.github/workflows/build-yocto.yml
+    secrets: inherit
