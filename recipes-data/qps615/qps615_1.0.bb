@@ -6,9 +6,10 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/${LICENSE};md5
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/opensource/data-eth.git;protocol=https"
 SRCBRANCH  = "data-kernel.qclinux.1.0.r1-rel"
-SRCREV     = "988995f8991c72d114783c178ef4a89b6d16b4dd"
+SRCREV     = "5f1f52ca95a7d1ea0ab83ea65f7381c8bc8a863e"
 
-SRC_URI =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=data-eth"
+SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=data-eth \
+           file://qps615.service"
 
 S = "${WORKDIR}/data-eth/drivers/qps615/src"
 MAKE_TARGETS = "modules"

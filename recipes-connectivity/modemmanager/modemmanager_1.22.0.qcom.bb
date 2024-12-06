@@ -20,7 +20,7 @@ FILESEXTRAPATHS:append := "${THISDIR}/patches:"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/mobile-broadband/ModemManager.git;protocol=https"
 SRCBRANCH  = "telephony.qclinux.0.0.r1-rel"
-SRCREV     = "7049bc0d57fd966c98f236d51d7b516a94b2643a"
+SRCREV     = "aabbd7ad498c0a049cf84e55596f8d01a1dafb89"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=mobile-broadband/ModemManager \
            file://0001-Increase-delay-for-probing.patch"

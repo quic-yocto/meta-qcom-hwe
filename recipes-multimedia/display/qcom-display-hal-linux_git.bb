@@ -14,7 +14,7 @@ PACKAGE_ARCH = "${SOC_ARCH}"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/hardware/qcom/display.git;protocol=https"
 SRCBRANCH  = "display.qclinux.1.0.r1-rel"
-SRCREV     = "036066afba14ac06a09e78f2036c206767e709e3"
+SRCREV     = "f8fd6ee4a1a305da49a8c3c613b81be890cba7d3"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=display/hardware/qcom/display"
 

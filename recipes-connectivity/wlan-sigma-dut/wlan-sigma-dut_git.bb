@@ -13,7 +13,7 @@ PACKAGE_ARCH ?= "${SOC_ARCH}"
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le//platform/vendor/qcom-opensource/sigma-dut.git;protocol=https"
 SRCBRANCH  = "wlan-os-service.qclinux.1.1.r1-rel"
-SRCREV     = "951a1dc2f153b00b7c32ee030313621ad62670d7"
+SRCREV     = "e0e36f765531112d502db57f233ad2059c3d3495"
 
 SRC_URI = "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=wlan/utils/sigma-dut \
            file://Makefile.patch"

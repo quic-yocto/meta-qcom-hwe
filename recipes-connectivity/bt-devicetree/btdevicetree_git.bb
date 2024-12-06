@@ -6,11 +6,11 @@ inherit module deploy
 
 QCOM_BT_DT_SRC ?= "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bt-devicetree.git;protocol=https"
 QCOM_BT_DT_SRCBRANCH ?= "bt-performant.qclinux.1.0.r1-rel"
-QCOM_BT_DT_SRCREV ?= "c49ddc861274291935391cd970f289e74022b5ae"
+QCOM_BT_DT_SRCREV ?= "bf9d4e3a5139a919099ace5978317e9e6f129507"
 
 QCOM_BLUETOOTH_EXT_SRC ?= "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/bluetooth_ext.git;protocol=https"
 QCOM_BLUETOOTH_EXT_SRCBRANCH ?= "bt-performant.qclinux.1.0.r1-rel"
-QCOM_BLUETOOTH_EXT_SRCREV ?= "339830ec33c244ca1747b1e7dce971f2a5050a4d"
+QCOM_BLUETOOTH_EXT_SRCREV ?= "996bbb712e62c5c22489cd84fad1a93a91d65ddc"
 
 SRC_URI = "${QCOM_BT_DT_SRC};branch=${QCOM_BT_DT_SRCBRANCH};rev=${QCOM_BT_DT_SRCREV};destsuffix=bluetooth/bt-devicetree \
            ${QCOM_BLUETOOTH_EXT_SRC};branch=${QCOM_BLUETOOTH_EXT_SRCBRANCH};rev=${QCOM_BLUETOOTH_EXT_SRCREV};destsuffix=bluetooth/stack/bluetooth_ext"

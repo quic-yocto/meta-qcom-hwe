@@ -6,7 +6,7 @@ inherit module deploy
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/wlan/wlan-devicetree.git;protocol=https"
 SRCBRANCH  = "wlan-platform.qclinux.1.0.r2-rel"
-SRCREV     = "1d891e6214c5c38796803ae09098833b2d5455ae"
+SRCREV     = "a0485a43966e5bb4e8b407260d179fa0285a8b68"
 
 SRC_URI   =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=wlan/wlan-devicetree \
 	      ${@bb.utils.contains('PREFERRED_PROVIDER_virtual/kernel', 'linux-kernel-qcom-rt', 'file://0001-wlan-devicetree-disable-icnss-driver.patch', '', d)}"

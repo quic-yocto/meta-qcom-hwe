@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM += "file://VoiceUIInterface.h;beginline=9;endline=11;md5=6e8121
 
 SRCPROJECT = "git://git.codelinaro.org/clo/le/platform/vendor/qcom/opensource/arpal-lx.git;protocol=https"
 SRCBRANCH  = "audio-core.lnx.1.0.r1-rel"
-SRCREV     = "0c3dadeb4ba53453b2a143fba6ceb5a2655fede6"
+SRCREV     = "9254849d3dc20f1c84dbc1af99ba5c37bd9188e3"
 
 SRC_URI    =  "${SRCPROJECT};branch=${SRCBRANCH};destsuffix=audio/opensource/arpal-lx"
 
