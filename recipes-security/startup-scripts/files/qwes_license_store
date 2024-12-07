@@ -11,6 +11,7 @@ set -e
 
 PFM_PATH=/var/persist/qtee_supplicant/pfm/
 OEM_QWES_OVERRIDE_LICENSE_STORE="${PFM_PATH}"/licenses/
+ROOTFS_PATH=/var/local/qwes/
 
 echo "Creating QWES LICENSE STORE : $OEM_QWES_OVERRIDE_LICENSE_STORE" > /dev/kmsg
 mkdir -p ${OEM_QWES_OVERRIDE_LICENSE_STORE}
@@ -20,22 +21,26 @@ if [ -d "${OEM_QWES_OVERRIDE_LICENSE_STORE}" ]; then
     chmod o+rwx "${OEM_QWES_OVERRIDE_LICENSE_STORE}"
     chmod o+rwx "${PFM_PATH}"
 
-    files=$(ls /var/cache/qwes/*.pfm 2> /dev/null | wc -l)
+    files=$(ls "${ROOTFS_PATH}"/*.pfm 2> /dev/null | wc -l)
     if [ "$files"  != "0" ]; then
          echo "Source location content" > /dev/kmsg
-         ls /var/cache/qwes/ > /dev/kmsg
+         ls "${ROOTFS_PATH}" > /dev/kmsg
          echo "Copying licenses to license store location" > /dev/kmsg
-         cp /var/cache/qwes/*.pfm "${OEM_QWES_OVERRIDE_LICENSE_STORE}" > /dev/kmsg
+         cp "${ROOTFS_PATH}"/*.pfm "${OEM_QWES_OVERRIDE_LICENSE_STORE}" > /dev/kmsg
          sync
          echo "Copy status is $?" > /dev/kmsg
          chown system:system "${OEM_QWES_OVERRIDE_LICENSE_STORE}"/*.pfm
          echo "Destination location content" > /dev/kmsg
          ls -l "${OEM_QWES_OVERRIDE_LICENSE_STORE}" > /dev/kmsg
          echo "Removing Source location files" > /dev/kmsg
-         rm -rf /var/cache/qwes/*.pfm
+         rm -rf "${ROOTFS_PATH}"/*.pfm
     fi
-    chown system:system -R /var/cache/qwes/
  else
     echo "Failed to create License store!!!"  > /dev/kmsg
 fi
 
+RUN_TIME_DATA_PATH=/var/cache/qwes
+if [ ! -d "${RUN_TIME_DATA_PATH}" ]; then
+  mkdir -p "${RUN_TIME_DATA_PATH}"
+  chown system:system -R "${RUN_TIME_DATA_PATH}"
+fi

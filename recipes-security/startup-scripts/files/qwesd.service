@@ -16,6 +16,7 @@ AmbientCapabilities=CAP_BLOCK_SUSPEND CAP_WAKE_ALARM
 RemainAfterExit=yes
 ExecStartPre=+/bin/sh /etc/initscripts/qwes_license_store
 ExecStartPre=+restorecon -R /var/persist/qtee_supplicant
+ExecStartPre=+restorecon -R /var/cache/qwes
 ExecStart=/usr/bin/qwesd
 ExecStartPost=+/bin/sh -c 'echo -n \"Qwesd Service Completed\" > /dev/kmsg'
 
