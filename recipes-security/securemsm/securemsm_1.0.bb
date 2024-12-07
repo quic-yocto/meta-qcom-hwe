@@ -17,16 +17,8 @@ SRC_URI[qcs8300.sha256sum] = "${QCS8300_SHA256SUM}"
 
 SRC_URI = "https://${PBT_ARTIFACTORY}/${PBT_BUILD_ID}/${PBT_BIN_PATH}/${BPN}_${PV}_${PBT_ARCH}.tar.gz;name=${PBT_ARCH}"
 
-do_install:append() {
-    dirname=d.getVar('D') + "/var/cache/qwes"
-    cmd = "mkdir -p %s" %(dirname)
-    (retval, output) = oe.utils.getstatusoutput(cmd)
-    if retval:
-        bb.fatal("could not create camera dir (%s)" % output)
-}
-
 FILES:${PN} += "/usr/bin/*"
-FILES:${PN} += "${bindir}/* /var/cache/*"
+FILES:${PN} += "${bindir}/* /var/local/*"
 
 INSANE_SKIP:${PN} += "debug-files"
 
