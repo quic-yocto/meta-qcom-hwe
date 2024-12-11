@@ -62,6 +62,80 @@ an easy way to setup bitbake based projects. For more details, visit the
 
 For a manual build without KAS, refer to the [Yocto Project Quick Build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html).
 
+## Flash
+
+### Build QDL tool
+
+QDL tool communicates with USB devices of id `05c6:9008` and uploads a flash
+loader, which is then used for flashing images. Follow the steps below to
+download and compile QDL for your platform:
+
+1. Clone the QDL repository:
+
+   ```
+   git clone https://github.com/linux-msm/qdl
+   ```
+
+2. Read the README and install build dependencies (`libxml2-dev` and
+   `libusb-1.0-0-dev`). On Debian-based distribution run:
+
+   ```
+   sudo apt install libxml2-dev libusb-1.0-0-dev
+   ```
+
+3. Build the QDL tool using make:
+
+   ```
+   cd qdl
+   make
+   ```
+
+### Flash images
+
+Make sure that ModemManager is not running, disable it if necessary.
+Location of all DIP switches, USB debug port and buttons (`F_DL` for instance)
+can be found on [RB3 Gen 2 Quick Start Guide](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-253/ubuntu_host.html).
+
+1. Set up `DIP_SW_0` positions `1` and `2` to `ON`. This enables serial output
+   to the debug port.
+2. Connect the mini USB debug cable to the host. Baud rate should be `115200`.
+   Check in `dmesg` how UART shows up (e.g. `/dev/ttyUSB0`):
+
+   ```
+   $ sudo dmesg | grep tty
+   [217664.921039] usb 3-1.1.4: FTDI Serial Device converter attached to ttyUSB0
+   ```
+
+3. Use your favorite serial comminication program to access the console, such
+   as minicom, picocom, putty etc. Baud rate should be 115200:
+
+   ```
+   picocom -b 115200 /dev/ttyUSB0
+   ```
+
+4. Plug in the USB-C cable from the host.
+5. Unpack the tarball stored in the deploy directory:
+
+   ```
+   cd build/tmp/deploy/images/qcs6490-rb3gen2-core-kit/
+   tar zxvf core-image-base-qcs6490-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
+   ```
+
+6. Use the QDL tool (built in the previous section) to flash the images:
+
+   ```
+   qdl --debug prog_firehose_ddr.elf rawprogram*.xml patch*.xml
+   ```
+
+7. Press and hold the `F_DL` button and connect the power cable. The process
+   of flashing should start:
+
+   ```
+   USB: using out-chunk-size of 1048576
+   HELLO version: 0x2 compatible: 0x1 max_len: 1024 mode: 0
+   READ64 image: 13 offset: 0x0 length: 0x40
+   ```
+
 ## Contributing
 
 Please submit any patches against the `meta-qcom-hwe` layer (branch **main**)
