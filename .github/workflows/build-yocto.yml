@@ -106,9 +106,21 @@ jobs:
           # Instruct our file server to make these files available for download
           url="https://quic-yocto-fileserver-1029608027416.us-central1.run.app/${GITHUB_RUN_ID}/${{ matrix.machine }}/"
 
-          retries=3
+          retries=4
+          okay=0
+          shopt -s lastpipe  # allows us to capture the value of `okay` in the while loop below
           for ((i=0; i<retries; i++)); do
-              curl -X POST -i -w '%{http_code}' --fail-with-body ${url} && break
+              curl -X POST -H "Accept: text/event-stream" -i --fail-with-body -s -N ${url} | \
+                  while read line; do
+                      echo $line
+                      if [[ $line == STATUS=* ]]; then
+                          if [[ $line == "STATUS=OK" ]]; then
+                              okay=1
+                              break
+                          fi
+                      fi
+                  done
+              [ $okay -eq 1 ] && break
               echo # new line break in case response doesn't have one
               echo "Error: unable to publish artifacts, sleep and retry"
               sleep 2
