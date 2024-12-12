@@ -75,6 +75,9 @@ jobs:
           - qcm6490-idp
           - qcs6490-rb3gen2-core-kit
           - sa8775p-ride-sx
+          - qcom-armv8a
+          - qcom-armv7a
+          - qcom-armv7a-modem
     runs-on: [self-hosted, x86]
     name: ${{ matrix.machine }}/poky/systemd
     steps:
