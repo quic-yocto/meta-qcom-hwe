@@ -106,7 +106,7 @@ jobs:
           # Instruct our file server to make these files available for download
           url="https://quic-yocto-fileserver-1029608027416.us-central1.run.app/${GITHUB_RUN_ID}/${{ matrix.machine }}/"
 
-          retries=4
+          retries=8
           okay=0
           shopt -s lastpipe  # allows us to capture the value of `okay` in the while loop below
           for ((i=0; i<retries; i++)); do
