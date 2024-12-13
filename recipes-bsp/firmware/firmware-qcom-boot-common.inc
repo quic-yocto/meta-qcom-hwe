@@ -18,3 +18,5 @@ do_deploy() {
     find "${UNPACKDIR}/${BOOTBINARIES}" -name '*.melf' -exec install -m 0644 {} ${DEPLOYDIR} \;
 }
 addtask deploy before do_build after do_install
+
+PACKAGE_ARCH = "${MACHINE_ARCH}"
