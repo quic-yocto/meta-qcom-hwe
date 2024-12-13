@@ -3,6 +3,9 @@
 S = "${WORKDIR}/sources"
 UNPACKDIR = "${S}"
 
+CDT_FILE ?= ""
+CDT_FILE:qcs6490-rb3gen2-core-kit ?= "cdt_core_kit"
+
 INHIBIT_DEFAULT_DEPS = "1"
 
 do_configure[noexec] = "1"
@@ -16,6 +19,10 @@ do_deploy() {
     find "${UNPACKDIR}/${BOOTBINARIES}" -name '*.fv' -exec install -m 0644 {} ${DEPLOYDIR} \;
     find "${UNPACKDIR}/${BOOTBINARIES}" -name '*.mbn' -exec install -m 0644 {} ${DEPLOYDIR} \;
     find "${UNPACKDIR}/${BOOTBINARIES}" -name '*.melf' -exec install -m 0644 {} ${DEPLOYDIR} \;
+
+    if [ -f "${UNPACKDIR}/${CDT_FILE}.bin" ]; then
+        install -m 0644 ${UNPACKDIR}/${CDT_FILE}.bin ${DEPLOYDIR}/cdt.bin
+    fi
 }
 addtask deploy before do_build after do_install
 
