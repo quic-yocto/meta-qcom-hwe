@@ -13,7 +13,7 @@ env:
 
 jobs:
   kas-lock:
-    if: github.repository == 'quic-yocto/meta-qcom-hwe'
+    if: github.repository == 'qualcomm-linux/meta-qcom-hwe'
     runs-on: [self-hosted, x86]
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
 
   yocto-check-layer:
     needs: kas-lock
-    if: github.repository == 'quic-yocto/meta-qcom-hwe'
+    if: github.repository == 'qualcomm-linux/meta-qcom-hwe'
     runs-on: [self-hosted, x86]
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
 
   yocto-patchreview:
     needs: kas-lock
-    if: github.repository == 'quic-yocto/meta-qcom-hwe'
+    if: github.repository == 'qualcomm-linux/meta-qcom-hwe'
     runs-on: [self-hosted, x86]
     steps:
       - uses: actions/checkout@v4
@@ -67,7 +67,7 @@ jobs:
 
   compile:
     needs: kas-lock
-    if: github.repository == 'quic-yocto/meta-qcom-hwe'
+    if: github.repository == 'qualcomm-linux/meta-qcom-hwe'
     strategy:
       fail-fast: true
       matrix:
@@ -131,7 +131,7 @@ jobs:
           echo Image available at: ${url}
   boot-test:
     needs: compile
-    if: github.repository == 'quic-yocto/meta-qcom-hwe' && contains(fromJSON('["push", "schedule"]'), github.event_name)
+    if: github.repository == 'qualcomm-linux/meta-qcom-hwe' && contains(fromJSON('["push", "schedule"]'), github.event_name)
     strategy:
       fail-fast: true
       matrix:
