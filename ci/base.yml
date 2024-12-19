@@ -12,9 +12,6 @@ defaults:
 repos:
   meta-qcom-hwe:
 
-  meta-qcom:
-    url: https://github.com/Linaro/meta-qcom
-
   poky:
     url: https://git.yoctoproject.org/git/poky
     layers:
