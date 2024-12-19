@@ -30,6 +30,7 @@ create_qcomflash_pkg() {
     # esp image
     if [ -n "${QCOM_ESP_FILE}" ]; then
         install -m 0644 ${DEPLOY_DIR_IMAGE}/${QCOM_ESP_IMAGE}-${MACHINE}.rootfs.vfat ${QCOM_ESP_FILE}
+        ln -sf ${QCOM_ESP_IMAGE}-${MACHINE}.rootfs.vfat ${IMGDEPLOYDIR}/${QCOM_ESP_FILE}
     fi
 
     # dtb image
@@ -37,6 +38,7 @@ create_qcomflash_pkg() {
                 [ -f "${DEPLOY_DIR_IMAGE}/dtb-${QCOM_DTB_DEFAULT}-image.vfat" ]; then
         # default image
         install -m 0644 ${DEPLOY_DIR_IMAGE}/dtb-${QCOM_DTB_DEFAULT}-image.vfat ${QCOM_DTB_FILE}
+        ln -sf dtb-${QCOM_DTB_DEFAULT}-image.vfat ${IMGDEPLOYDIR}/${QCOM_DTB_FILE}
         # copy all images so they can be made available via the same tarball
         for dtbimg in ${DEPLOY_DIR_IMAGE}/dtb-*-image.vfat; do
             install -m 0644 ${dtbimg} .
@@ -45,6 +47,7 @@ create_qcomflash_pkg() {
 
     # rootfs image
     install -m 0644 ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.${IMAGE_QCOMFLASH_FS_TYPE} ${QCOM_ROOTFS_FILE}
+    ln -sf ${IMAGE_LINK_NAME}.${IMAGE_QCOMFLASH_FS_TYPE} ${IMGDEPLOYDIR}/${QCOM_ROOTFS_FILE}
 
     # partition bins
     for pbin in `find ${DEPLOY_DIR_IMAGE} -type f -name 'gpt_main*.bin' \
