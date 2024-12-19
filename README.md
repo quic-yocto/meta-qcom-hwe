@@ -1,6 +1,6 @@
 # meta-qcom-hwe
 
-[![Build Yocto](https://github.com/quic-yocto/meta-qcom-hwe/actions/workflows/build-yocto.yml/badge.svg?event=push)](https://github.com/quic-yocto/meta-qcom-hwe/actions/workflows/build-yocto.yml)[![Nightly Build](https://github.com/quic-yocto/meta-qcom-hwe/actions/workflows/nightly-build.yml/badge.svg)](https://github.com/quic-yocto/meta-qcom-hwe/actions/workflows/nightly-build.yml)
+[![Build Yocto](https://github.com/qualcomm-linux/meta-qcom-hwe/actions/workflows/build-yocto.yml/badge.svg?event=push)](https://github.com/qualcomm-linux/meta-qcom-hwe/actions/workflows/build-yocto.yml)[![Nightly Build](https://github.com/qualcomm-linux/meta-qcom-hwe/actions/workflows/nightly-build.yml/badge.svg)](https://github.com/qualcomm-linux/meta-qcom-hwe/actions/workflows/nightly-build.yml)
 
 ## Introduction
 
@@ -41,7 +41,7 @@ Please follow the instructions below for a KAS-based build. The KAS tool offers 
 	```
 2. Clone meta-qcom-hwe layer
 	```
-	git clone https://github.com/quic-yocto/meta-qcom-hwe.git -b main
+	git clone https://github.com/qualcomm-linux/meta-qcom-hwe.git -b main
 	```
 3. Build using the KAS configuration for one of the supported boards
 	```
@@ -62,8 +62,8 @@ Branch **kirkstone** is not open for direct contributions, please raise an issue
 
 ## Communication
 
-- **GitHub Issues:** [meta-qcom-hwe issues](https://github.com/quic-yocto/meta-qcom-hwe/issues)
-- **Pull Requests:** [meta-qcom-hwe pull requests](https://github.com/quic-yocto/meta-qcom-hwe/pulls)
+- **GitHub Issues:** [meta-qcom-hwe issues](https://github.com/qualcomm-linux/meta-qcom-hwe/issues)
+- **Pull Requests:** [meta-qcom-hwe pull requests](https://github.com/qualcomm-linux/meta-qcom-hwe/pulls)
 
 ## Maintainer(s)
 
