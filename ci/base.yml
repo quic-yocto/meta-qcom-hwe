@@ -3,7 +3,7 @@
 header:
   version: 14
 
-distro: poky
+distro: nodistro
 
 defaults:
   repos:
@@ -15,11 +15,15 @@ repos:
   meta-qcom:
     url: https://github.com/Linaro/meta-qcom
 
-  poky:
-    url: https://git.yoctoproject.org/git/poky
+  oe-core:
+    url: https://git.openembedded.org/openembedded-core
     layers:
       meta:
-      meta-poky:
+
+  bitbake:
+    url: https://git.openembedded.org/bitbake
+    layers:
+      .: excluded
 
 local_conf_header:
   base: |
