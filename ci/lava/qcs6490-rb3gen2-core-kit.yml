@@ -10,6 +10,9 @@ actions:
         image: ghcr.io/foundriesio/lava-lmp-sign:main
         steps:
         - export IMAGE_PATH=$PWD
+        - cp overlay*.tar.gz overlay.tar.gz
+        - echo "OVERLAY=overlay.tar.gz" >> $IMAGE_PATH/flash.settings
+        - echo "OVERLAY_PATH=/home/" >> $IMAGE_PATH/flash.settings
         - echo "DEVICE_TYPE=qcs6490-rb3gen2" >> $IMAGE_PATH/flash.settings
         - cat $IMAGE_PATH/flash.settings
     timeout:
@@ -21,6 +24,8 @@ actions:
         url: downloads://{{BUILD_FILE_NAME}}
       settings:
         url: downloads://flash.settings
+      overlay:
+        url: downloads://overlay.tar.gz
     timeout:
       minutes: 5
     to: flasher
@@ -33,8 +38,20 @@ actions:
     - root@{{DEVICE_TYPE}}
     timeout:
       minutes: 3
+- test:
+    definitions:
+    - from: git
+      name: smoke-test
+      path: automated/linux/smoke/smoke.yaml
+      repository: https://github.com/linaro/test-definitions.git
+      parameters:
+        SKIP_INSTALL: "True"
+        TESTS: "pwd, uname -a, ip a"
 - command:
     name: network_turn_on
+context:
+  lava_test_results_dir: /home/lava-%s
+  test_character_delay: 10
 device_type: {{DEVICE_TYPE}}
 job_name: boot test ({{DEVICE_TYPE}}) {{GITHUB_RUN_ID}}
 metadata:
